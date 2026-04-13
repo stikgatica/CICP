@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matemática Cuestionario</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Matemática Cuestionario</h1>
+    <div class="meta">26 preguntas</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">Pregunta 1</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la forma correcta de leer el número <span class="math">19.000.000</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Observa cuántos grupos de tres ceros hay después del número <span class="math">19</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esta lectura ignora los dos grupos de tres ceros adicionales que indican la escala de los millones.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Diecinueve mil</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta lectura ignora los dos grupos de tres ceros adicionales que indican la escala de los millones.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta lectura añadiría tres órdenes de magnitud adicionales que no están presentes en el número original.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Diecinueve mil millones</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta lectura añadiría tres órdenes de magnitud adicionales que no están presentes en el número original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error confunde la posición de la decena de millón con la de centena de millón.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Ciento noventa millones</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error confunde la posición de la decena de millón con la de centena de millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="En el sistema decimal, el séptimo dígito de derecha a izquierda representa la unidad de millón.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Diecinueve millones</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En el sistema decimal, el séptimo dígito de derecha a izquierda representa la unidad de millón.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">Pregunta 2</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el número <span class="math">245.000</span>, ¿cuál es el valor posicional del dígito <span class="math">4</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta las posiciones desde la derecha: unidades, decenas, centenas, unidades de mil...</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Las decenas simples se encuentran en la segunda posición desde la derecha, que aquí es un cero.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Decenas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Las decenas simples se encuentran en la segunda posición desde la derecha, que aquí es un cero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La centena de mil es la sexta posición, ocupada en este caso por el dígito $2$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Centenas de mil</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La centena de mil es la sexta posición, ocupada en este caso por el dígito <span class="math">2</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al contar desde la derecha, la quinta posición corresponde a las decenas de mil, valiendo este dígito $40.000$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Decenas de mil</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al contar desde la derecha, la quinta posición corresponde a las decenas de mil, valiendo este dígito <span class="math">40.000</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El dígito $5$ es el que ocupa la posición de las unidades de mil en este número.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Unidades de mil</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El dígito <span class="math">5</span> es el que ocupa la posición de las unidades de mil en este número.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">Pregunta 3</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la descomposición aditiva correcta de <span class="math">1.245.000</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Separa el millón, las centenas de mil, las decenas de mil y las unidades de mil.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aunque la suma es correcta, no es una descomposición posicional completa de todos sus dígitos significativos.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1.000.000 + 245.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque la suma es correcta, no es una descomposición posicional completa de todos sus dígitos significativos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="En esta opción falta el valor correspondiente a la unidad de millón.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">100.000 + 20.000 + 4.000 + 5.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En esta opción falta el valor correspondiente a la unidad de millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Cada término representa el valor real de cada dígito según su posición en el número original.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1.000.000 + 200.000 + 40.000 + 5.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cada término representa el valor real de cada dígito según su posición en el número original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esta opción reduce significativamente el valor de las centenas y decenas de mil.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.000.000 + 20.000 + 4.000 + 500</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta opción reduce significativamente el valor de las centenas y decenas de mil.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">Pregunta 4</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si sumamos <span class="math">1.000.000 + 200.000 + 30.000</span>, ¿qué número se compone?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Ubica cada cifra en su lugar correspondiente dentro de la tabla de valor posicional.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esta cifra es diez veces mayor al resultado real de la composición.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">12.300.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta cifra es diez veces mayor al resultado real de la composición.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Se integran un millón, dos centenas de mil y tres decenas de mil, manteniendo los ceros en las posiciones restantes.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1.230.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se integran un millón, dos centenas de mil y tres decenas de mil, manteniendo los ceros en las posiciones restantes.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aquí se ha omitido el valor de la decena de mil al posicionar el número $3$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1.203 .000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí se ha omitido el valor de la decena de mil al posicionar el número <span class="math">3</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error coloca la centena de mil en la posición de la decena de mil.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.023.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error coloca la centena de mil en la posición de la decena de mil.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">Pregunta 5</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Al comparar los números <span class="math">2.450 .000</span> y <span class="math">2.405 .000</span>, ¿cuál es mayor y por qué?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Compara cifra por cifra empezando desde la izquierda (millones, luego centenas de mil...).</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El cero representa la ausencia de cantidad en esa posición, por lo que no aporta valor mayor que $5$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">2.405 .000</span> porque el cero hace que el número sea más grande.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El cero representa la ausencia de cantidad en esa posición, por lo que no aporta valor mayor que <span class="math">5</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aunque los dígitos sean iguales, su valor cambia drásticamente según la posición que ocupan.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Son iguales porque tienen los mismos dígitos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque los dígitos sean iguales, su valor cambia drásticamente según la posición que ocupan.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="La posición del dígito hacia la derecha disminuye su valor, no lo aumenta.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2.405 .000</span> porque el <span class="math">5</span> está al final.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La posición del dígito hacia la derecha disminuye su valor, no lo aumenta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Al comparar de izquierda a derecha, la primera diferencia ocurre en la decena de mil, donde $5 &gt; 0$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">2.450 .000</span> porque tiene un <span class="math">5</span> en las decenas de mil.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al comparar de izquierda a derecha, la primera diferencia ocurre en la decena de mil, donde <span class="math">5 &gt; 0</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">Pregunta 6</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En una recta numérica, ¿entre qué decenas de millón se ubica el número <span class="math">75.000.000</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Fíjate en el dígito que ocupa la decena de millón para encontrar los límites.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="El número tiene $7$ decenas de millón y está a mitad de camino hacia la octava decena de millón.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Entre <span class="math">70.000.000</span> y <span class="math">80.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número tiene <span class="math">7</span> decenas de millón y está a mitad de camino hacia la octava decena de millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Estas son unidades de millón, no decenas de millón como solicita la pregunta.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Entre <span class="math">74.000 .000</span> y <span class="math">76.000 .000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Estas son unidades de millón, no decenas de millón como solicita la pregunta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aunque es cierto, este rango se refiere a cincuentenas de millón, no a las decenas de millón más cercanas.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Entre <span class="math">50.000.000</span> y <span class="math">100.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es cierto, este rango se refiere a cincuentenas de millón, no a las decenas de millón más cercanas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este rango corresponde a unidades de millón, siendo diez veces más pequeño que el valor real.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Entre <span class="math">7.000.000</span> y <span class="math">8.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este rango corresponde a unidades de millón, siendo diez veces más pequeño que el valor real.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">Pregunta 7</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál de estos números está más cerca de <span class="math">1.000.000</span> en la recta numérica?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula la diferencia restando cada número de <span class="math">1.000.000</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="La distancia entre $900.000$ y un millón es de $100.000$ unidades.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">900.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La distancia entre <span class="math">900.000</span> y un millón es de <span class="math">100.000</span> unidades.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La distancia es de $200.000$ unidades, que es el doble de la distancia que hay desde $900.000$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1.200 .000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La distancia es de <span class="math">200.000</span> unidades, que es el doble de la distancia que hay desde <span class="math">900.000</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se aleja medio millón de unidades de la meta propuesta.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1.500 .000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se aleja medio millón de unidades de la meta propuesta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este número se encuentra exactamente en la mitad del camino entre $0$ y un millón.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">500.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este número se encuentra exactamente en la mitad del camino entre <span class="math">0</span> y un millón.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">Pregunta 8</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si aproximamos el número <span class="math">678.000</span> a la centena de mil más cercana, ¿cuál es el resultado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Observa el dígito de las decenas de mil; si es <span class="math">5</span> o más, la centena de mil sube.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esta es una aproximación a la decena de mil, no a la centena de mil.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">680.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta es una aproximación a la decena de mil, no a la centena de mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Como el dígito siguiente a la centena de mil es $7$ (mayor o igual a $5$), se debe redondear hacia arriba.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">700.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como el dígito siguiente a la centena de mil es <span class="math">7</span> (mayor o igual a <span class="math">5</span>), se debe redondear hacia arriba.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este redondeo es incorrecto porque el dígito de la decena de mil es mayor a $5$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">600.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este redondeo es incorrecto porque el dígito de la decena de mil es mayor a <span class="math">5</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esta aproximación salta a la unidad de millón, perdiendo demasiada precisión.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta aproximación salta a la unidad de millón, perdiendo demasiada precisión.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">Pregunta 9</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un estudiante estima que <span class="math">23 × 14</span> es aproximadamente <span class="math">280</span>. ¿Qué estrategia utilizó?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa qué multiplicación simple con un número terminado en cero daría <span class="math">280</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esa estrategia daría como resultado $200$, que está lejos de $280$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Redondeó ambos números a la decena (<span class="math">20 × 10</span>).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa estrategia daría como resultado <span class="math">200</span>, que está lejos de <span class="math">280</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este es un error conceptual, ya que el $4$ debe multiplicar también al $23$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Multiplicó <span class="math">23 × 10</span> y luego sumó <span class="math">4</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error conceptual, ya que el <span class="math">4</span> debe multiplicar también al <span class="math">23</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Sumar antes de multiplicar altera completamente el proceso de estimación del producto.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Sumó <span class="math">23 + 14</span> y luego multiplicó por <span class="math">10</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sumar antes de multiplicar altera completamente el proceso de estimación del producto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Multiplicar $2 \times 14$ da $28$, y agregar el cero del $20$ resulta en $280$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Redondeó <span class="math">23</span> a <span class="math">20</span> y mantuvo el <span class="math">14</span> (<span class="math">20 × 14</span>).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar <span class="math">2 × 14</span> da <span class="math">28</span>, y agregar el cero del <span class="math">20</span> resulta en <span class="math">280</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">Pregunta 10</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el algoritmo de la multiplicación <span class="math">15 × 12</span>, ¿qué cálculo representa el número <span class="math">30</span> que se escribe en la primera fila?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">El primer valor que anotamos viene de multiplicar la unidad del número de abajo por el de arriba.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es solo una parte del primer paso; falta multiplicar el $2$ por la decena del $15$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">2 × 5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es solo una parte del primer paso; falta multiplicar el <span class="math">2</span> por la decena del <span class="math">15</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Ese cálculo corresponde a la segunda parte del algoritmo y su resultado es $150$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10 × 15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ese cálculo corresponde a la segunda parte del algoritmo y su resultado es <span class="math">150</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="El primer paso del algoritmo consiste en multiplicar la unidad del multiplicador ($2$) por el multiplicando completo ($15$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2 × 15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El primer paso del algoritmo consiste en multiplicar la unidad del multiplicador (<span class="math">2</span>) por el multiplicando completo (<span class="math">15</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque la suma da $30$, el algoritmo se basa en la multiplicación de la unidad por el número superior.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">15 + 15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque la suma da <span class="math">30</span>, el algoritmo se basa en la multiplicación de la unidad por el número superior.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">Pregunta 11</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Por qué en el algoritmo de multiplicación se debe dejar un espacio o añadir un cero al comenzar a multiplicar por el segundo dígito?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que el segundo dígito (de derecha a izquierda) no vale solo su número, sino grupos de diez.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El resultado final no siempre termina en cero, solo el producto parcial de las decenas.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque el resultado siempre debe terminar en cero.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El resultado final no siempre termina en cero, solo el producto parcial de las decenas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="No es una regla estética, sino una necesidad matemática basada en el valor posicional.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Es solo una regla de orden para que los números no se amontonen.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No es una regla estética, sino una necesidad matemática basada en el valor posicional.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="La multiplicación algorítmica suma productos parciales, nunca resta.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque estamos restando el valor de las unidades.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La multiplicación algorítmica suma productos parciales, nunca resta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Al multiplicar por la decena, el resultado debe comenzar en la columna de las decenas.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque ese dígito representa decenas y su valor es diez veces mayor.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar por la decena, el resultado debe comenzar en la columna de las decenas.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">Pregunta 12</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una caja de lápices cuesta <span class="math">\</span> 24<span class="math"> y compras </span>18$ cajas, ¿cuál es el planteamiento correcto para hallar el total?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Buscas el total de un valor que se repite muchas veces.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="La división repartiría el precio entre las cajas, lo cual es opuesto a buscar un total de compra.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">24 ÷ 18</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La división repartiría el precio entre las cajas, lo cual es opuesto a buscar un total de compra.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La suma solo añadiría las unidades de las cajas al precio, lo cual no tiene sentido lógico.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">24 + 18</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La suma solo añadiría las unidades de las cajas al precio, lo cual no tiene sentido lógico.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="La resta se usa para quitar cantidades, no para acumular el costo de varios productos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">24 - 18</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La resta se usa para quitar cantidades, no para acumular el costo de varios productos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La multiplicación permite sumar repetidamente el precio de una caja ($24$) tantas veces como cajas haya ($18$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">24 × 18</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La multiplicación permite sumar repetidamente el precio de una caja (<span class="math">24</span>) tantas veces como cajas haya (<span class="math">18</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="12">
+          <div class="q-header">
+            <span class="q-number">Pregunta 13</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Al usar una matriz de puntos para resolver <span class="math">12 × 15</span>, ¿en cuántas partes principales se divide el cálculo según la descomposición de ambos números?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en descomponer el <span class="math">12</span> en <span class="math">10+2</span> y el <span class="math">15</span> en <span class="math">10+5</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Sería una división excesiva que no simplifica el uso del valor posicional.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">En <span class="math">10</span> partes.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sería una división excesiva que no simplifica el uso del valor posicional.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Se generan áreas para: $10 \times 10$, $10 \times 5$, $2 \times 10$ y $2 \times 5$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">En <span class="math">4</span> partes.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se generan áreas para: <span class="math">10 × 10</span>, <span class="math">10 × 5</span>, <span class="math">2 × 10</span> y <span class="math">2 × 5</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Contar uno a uno no es una estrategia de descomposición eficiente para números de dos dígitos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">No se divide, se cuenta uno a uno.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Contar uno a uno no es una estrategia de descomposición eficiente para números de dos dígitos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esto ocurriría si solo descompusiéramos uno de los dos números.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">En <span class="math">2</span> partes.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto ocurriría si solo descompusiéramos uno de los dos números.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="13">
+          <div class="q-header">
+            <span class="q-number">Pregunta 14</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un estudiante dice que <span class="math">150.000.000</span> es menor que <span class="math">384.000</span>. ¿Cuál es su error?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta cuántas cifras tiene cada número antes de mirar los dígitos individuales.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Comparar solo el primer dígito sin ver su valor posicional es un error común pero no justifica que $384.000$ sea mayor.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Se fijó en que el <span class="math">3</span> es más grande que el <span class="math">1</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Comparar solo el primer dígito sin ver su valor posicional es un error común pero no justifica que <span class="math">384.000</span> sea mayor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El primer número tiene nueve dígitos (millones) y el segundo solo seis (miles).">
+            <span class="opt-label">B</span>
+            <span class="opt-text">No comparó la cantidad de dígitos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El primer número tiene nueve dígitos (millones) y el segundo solo seis (miles).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Sumarlos daría un número aún mayor, no explicaría por qué cree que uno es menor.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Sumó los números en lugar de compararlos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sumarlos daría un número aún mayor, no explicaría por qué cree que uno es menor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque es un error de orientación, el problema matemático real es el valor de las posiciones.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Confundió la derecha con la izquierda.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es un error de orientación, el problema matemático real es el valor de las posiciones.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="14">
+          <div class="q-header">
+            <span class="q-number">Pregunta 15</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué número es exactamente <span class="math">10</span> veces más grande que <span class="math">1.000.000</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Al multiplicar por <span class="math">10</span>, todos los dígitos se corren un lugar hacia la izquierda.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este número es $100$ veces más grande que un millón.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">100.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este número es <span class="math">100</span> veces más grande que un millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Multiplicar por $10$ desplaza cada dígito una posición a la izquierda, convirtiendo la unidad de millón en decena de millón.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar por <span class="math">10</span> desplaza cada dígito una posición a la izquierda, convirtiendo la unidad de millón en decena de millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esto es el doble ($2$ veces), no diez veces la cantidad inicial.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto es el doble (<span class="math">2</span> veces), no diez veces la cantidad inicial.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esto es sumar $10$, no multiplicar por $10$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.000.010</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto es sumar <span class="math">10</span>, no multiplicar por <span class="math">10</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="15">
+          <div class="q-header">
+            <span class="q-number">Pregunta 16</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si en un sector VIP hay <span class="math">73</span> personas, ¿cuál es la mejor aproximación a la decena?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Mira la unidad: ¿está el <span class="math">73</span> más cerca del <span class="math">70</span> o del <span class="math">80</span>?</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esta es una aproximación a la centena, no a la decena.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">100</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta es una aproximación a la centena, no a la decena.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se redondea hacia arriba solo si la unidad es $5$ o mayor.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">80</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se redondea hacia arriba solo si la unidad es <span class="math">5</span> o mayor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aproximar a la decena significa terminar en un número que sea múltiplo de diez (terminado en $0$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">75</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aproximar a la decena significa terminar en un número que sea múltiplo de diez (terminado en <span class="math">0</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Como el $3$ es menor que $5$, el número se mantiene en la decena actual al aproximar.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">70</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como el <span class="math">3</span> es menor que <span class="math">5</span>, el número se mantiene en la decena actual al aproximar.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="16">
+          <div class="q-header">
+            <span class="q-number">Pregunta 17</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En la multiplicación <span class="math">32 × 11</span>, ¿cuál es el resultado exacto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Puedes multiplicar <span class="math">32 × 10</span> y sumarle <span class="math">32</span> una vez más.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado solo considera la multiplicación por la decena ($10$), olvidando la unidad.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">320</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado solo considera la multiplicación por la decena (<span class="math">10</span>), olvidando la unidad.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="$32 \times 10 = 320$ y $32 \times 1 = 32$; al sumar $320 + 32$ obtenemos $352$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">352</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale"><span class="math">32 × 10 = 320</span> y <span class="math">32 × 1 = 32</span>; al sumar <span class="math">320 + 32</span> obtenemos <span class="math">352</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error proviene de multiplicar dígito a dígito de forma vertical sin considerar el valor posicional.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">331</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error proviene de multiplicar dígito a dígito de forma vertical sin considerar el valor posicional.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Es un error común al sumar incorrectamente los productos parciales en el algoritmo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">432</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es un error común al sumar incorrectamente los productos parciales en el algoritmo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="17">
+          <div class="q-header">
+            <span class="q-number">Pregunta 18</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si aproximamos <span class="math">1.245.678</span> a la unidad de millón más cercana, el resultado es:</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Mira el dígito de las centenas de mil para decidir si el '1' se queda igual o sube a '2'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Redondear hacia arriba en la centena de mil sería incorrecto basándose en el dígito de las decenas de mil.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1.300 .000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Redondear hacia arriba en la centena de mil sería incorrecto basándose en el dígito de las decenas de mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="La centena de mil es $2$, que es menor que $5$, por lo que la unidad de millón no aumenta.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La centena de mil es <span class="math">2</span>, que es menor que <span class="math">5</span>, por lo que la unidad de millón no aumenta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Solo subiría a dos millones si la centena de mil fuera $5$ o superior.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Solo subiría a dos millones si la centena de mil fuera <span class="math">5</span> o superior.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esta es una aproximación a la centena de mil, no a la unidad de millón.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.200.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta es una aproximación a la centena de mil, no a la unidad de millón.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="18">
+          <div class="q-header">
+            <span class="q-number">Pregunta 19</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la función principal de 'estimar' un resultado antes de calcularlo exactamente?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en qué pasaría si cometes un error enorme y no tienes una idea aproximada de la respuesta.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Permite detectar errores groseros; si mi estimación es $300$ y mi cálculo da $9.000$, sé que algo falló.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Anticipar si el resultado final es razonable o tiene sentido.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Permite detectar errores groseros; si mi estimación es <span class="math">300</span> y mi cálculo da <span class="math">9.000</span>, sé que algo falló.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La estimación es una herramienta cognitiva de control, no un ahorro de materiales.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Ahorrar papel al no escribir números largos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La estimación es una herramienta cognitiva de control, no un ahorro de materiales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Hay situaciones (como pagos de dinero) donde la precisión exacta es indispensable.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Sustituir para siempre el cálculo exacto.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Hay situaciones (como pagos de dinero) donde la precisión exacta es indispensable.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Al contrario, estimar simplifica la comprensión inicial de un problema complejo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Hacer que las matemáticas parezcan más difíciles.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al contrario, estimar simplifica la comprensión inicial de un problema complejo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="19">
+          <div class="q-header">
+            <span class="q-number">Pregunta 20</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el número <span class="math">1.234.567</span>, ¿qué valor representa el dígito <span class="math">3</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Identifica la posición del <span class="math">3</span>: unidades, decenas, centenas, unidades de mil, decenas de mil...</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Es el valor de las centenas simples, lugar que ocupa el dígito $5$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">300</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es el valor de las centenas simples, lugar que ocupa el dígito <span class="math">5</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esa es la posición de las unidades de mil, donde actualmente se encuentra el $4$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">3.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa es la posición de las unidades de mil, donde actualmente se encuentra el <span class="math">4</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Ese valor correspondería si el $3$ estuviera una posición más a la izquierda.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">300.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ese valor correspondería si el <span class="math">3</span> estuviera una posición más a la izquierda.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El $3$ está en la posición de las decenas de mil, por lo tanto representa $3$ grupos de diez mil.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">30.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">3</span> está en la posición de las decenas de mil, por lo tanto representa <span class="math">3</span> grupos de diez mil.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="20">
+          <div class="q-header">
+            <span class="q-number">Pregunta 21</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué sucede con el valor de un número si movemos un dígito una posición hacia la izquierda?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Compara cuánto vale un <span class="math">1</span> en la decena versus un <span class="math">1</span> en la centena.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El valor relativo depende totalmente de la posición; si esta cambia, el valor también.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Su valor se mantiene igual.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El valor relativo depende totalmente de la posición; si esta cambia, el valor también.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="En nuestro sistema decimal, cada posición a la izquierda vale diez veces más que la anterior.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Su valor aumenta diez veces.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En nuestro sistema decimal, cada posición a la izquierda vale diez veces más que la anterior.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="No se suma una cantidad fija, sino que se multiplica el valor de la cifra por la base diez.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Se le suman <span class="math">100</span> unidades automáticamente.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No se suma una cantidad fija, sino que se multiplica el valor de la cifra por la base diez.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El sistema decimal no se basa en potencias de dos, sino de diez.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Su valor disminuye a la mitad.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El sistema decimal no se basa en potencias de dos, sino de diez.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="21">
+          <div class="q-header">
+            <span class="q-number">Pregunta 22</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Para ordenar de menor a mayor los números <span class="math">245.000</span>, <span class="math">2.450 .000</span> y <span class="math">24.500</span>, ¿cuál debe ir primero?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">El número con menos cantidad de cifras totales siempre será el más pequeño.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este número tiene seis dígitos, hay uno con menos dígitos que es menor.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">245.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este número tiene seis dígitos, hay uno con menos dígitos que es menor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Es el menor porque solo tiene cinco dígitos (llega hasta decena de mil), mientras los otros llegan a centena de mil y millón.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">24.500</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es el menor porque solo tiene cinco dígitos (llega hasta decena de mil), mientras los otros llegan a centena de mil y millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El orden matemático depende de la magnitud total, no de los dígitos que se repiten.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Cualquiera, porque todos tienen <span class="math">2</span>, <span class="math">4</span> y <span class="math">5</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El orden matemático depende de la magnitud total, no de los dígitos que se repiten.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es el mayor de los tres porque llega a la unidad de millón.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">2.450 .000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el mayor de los tres porque llega a la unidad de millón.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="22">
+          <div class="q-header">
+            <span class="q-number">Pregunta 23</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En la recta numérica, si un número <span class="math">A</span> está a la derecha de un número <span class="math">B</span>, podemos afirmar que:</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda hacia qué lado apuntan los números más grandes en una regla o termómetro.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="La convención de la recta numérica sitúa los valores crecientes hacia la derecha.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">A</span> es mayor que <span class="math">B</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La convención de la recta numérica sitúa los valores crecientes hacia la derecha.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Si estuvieran en la misma posición serían iguales, pero uno está desplazado respecto al otro.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Ambos números son iguales.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si estuvieran en la misma posición serían iguales, pero uno está desplazado respecto al otro.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Hacia la derecha los valores siempre aumentan en la recta numérica convencional.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">A</span> es menor que <span class="math">B</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Hacia la derecha los valores siempre aumentan en la recta numérica convencional.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="La posición visual en la recta ya nos da una relación de orden directa.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">No se puede saber sin calcular.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La posición visual en la recta ya nos da una relación de orden directa.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="23">
+          <div class="q-header">
+            <span class="q-number">Pregunta 24</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si aproximamos <span class="math">489.000</span> a la centena de mil, ¿por qué el resultado es <span class="math">500.000</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Fíjate en el número que está justo a la derecha del que quieres aproximar.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Los ceros finales son la consecuencia de aproximar, no la causa de subir o bajar.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque tiene muchos ceros al final.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Los ceros finales son la consecuencia de aproximar, no la causa de subir o bajar.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Al ser $8$ mayor que $5$, se debe aumentar en uno la posición que estamos aproximando.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque el dígito siguiente (decena de mil) es <span class="math">8</span>, que es mayor que <span class="math">5</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al ser <span class="math">8</span> mayor que <span class="math">5</span>, se debe aumentar en uno la posición que estamos aproximando.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Existen reglas específicas de redondeo; no siempre se sube.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque siempre se redondea al número más grande posible.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Existen reglas específicas de redondeo; no siempre se sube.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El $4$ por sí solo no indica subir, es el dígito siguiente el que manda.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque el dígito de las centenas de mil es <span class="math">4</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">4</span> por sí solo no indica subir, es el dígito siguiente el que manda.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="24">
+          <div class="q-header">
+            <span class="q-number">Pregunta 25</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el resultado de componer: <span class="math">2 × 1.000.000 + 4 × 10.000 + 5 × 100</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Ten cuidado con las posiciones que no tienen número (como la centena de mil); esas llevan un cero.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error asume que el $4$ está en la centena de mil, pero la instrucción dice diez mil.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">2.400 .500</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error asume que el <span class="math">4</span> está en la centena de mil, pero la instrucción dice diez mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aquí el $4$ se posicionó en la unidad de mil en lugar de la decena de mil.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">2.004 .500</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí el <span class="math">4</span> se posicionó en la unidad de mil en lugar de la decena de mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Representa correctamente $2$ millones, $4$ decenas de mil y $5$ centenas, con ceros en los espacios vacíos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2.040 .500</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representa correctamente <span class="math">2</span> millones, <span class="math">4</span> decenas de mil y <span class="math">5</span> centenas, con ceros en los espacios vacíos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esta cifra no alcanza el rango de los millones solicitado en la operación.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">245.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta cifra no alcanza el rango de los millones solicitado en la operación.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="25">
+          <div class="q-header">
+            <span class="q-number">Pregunta 26</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el contexto de un concierto, si se informa que asistieron 'cerca de <span class="math">250.000</span> personas', esto es una:</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa si es posible contar uno a uno a tanta gente en un solo instante.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Las cuentas exactas no usan palabras como 'cerca de' o 'aproximadamente'.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Cuenta exacta.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Las cuentas exactas no usan palabras como 'cerca de' o 'aproximadamente'.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La descomposición separa el número en sus partes, no lo resume en un valor cercano.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Descomposición aditiva.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La descomposición separa el número en sus partes, no lo resume en un valor cercano.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Se utiliza un número redondo cercano a la realidad para facilitar la comunicación y toma de decisiones.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Estimación o aproximación.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se utiliza un número redondo cercano a la realidad para facilitar la comunicación y toma de decisiones.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="No es un error de cálculo, sino una estrategia válida de manejo de grandes volúmenes de datos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Multiplicación incorrecta.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No es un error de cálculo, sino una estrategia válida de manejo de grandes volúmenes de datos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>¡Cuestionario completado!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Intentar de nuevo</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"¿Cuál es la forma correcta de leer el número $19.000.000$?","hint":"Observa cuántos grupos de tres ceros hay después del número $19$.","options":[{"label":"A","text":"Diecinueve mil","isCorrect":false,"rationale":"Esta lectura ignora los dos grupos de tres ceros adicionales que indican la escala de los millones."},{"label":"B","text":"Diecinueve mil millones","isCorrect":false,"rationale":"Esta lectura añadiría tres órdenes de magnitud adicionales que no están presentes en el número original."},{"label":"C","text":"Ciento noventa millones","isCorrect":false,"rationale":"Este error confunde la posición de la decena de millón con la de centena de millón."},{"label":"D","text":"Diecinueve millones","isCorrect":true,"rationale":"En el sistema decimal, el séptimo dígito de derecha a izquierda representa la unidad de millón."}]},{"question":"En el número $245.000$, ¿cuál es el valor posicional del dígito $4$?","hint":"Cuenta las posiciones desde la derecha: unidades, decenas, centenas, unidades de mil...","options":[{"label":"A","text":"Decenas","isCorrect":false,"rationale":"Las decenas simples se encuentran en la segunda posición desde la derecha, que aquí es un cero."},{"label":"B","text":"Centenas de mil","isCorrect":false,"rationale":"La centena de mil es la sexta posición, ocupada en este caso por el dígito $2$."},{"label":"C","text":"Decenas de mil","isCorrect":true,"rationale":"Al contar desde la derecha, la quinta posición corresponde a las decenas de mil, valiendo este dígito $40.000$."},{"label":"D","text":"Unidades de mil","isCorrect":false,"rationale":"El dígito $5$ es el que ocupa la posición de las unidades de mil en este número."}]},{"question":"¿Cuál es la descomposición aditiva correcta de $1.245.000$?","hint":"Separa el millón, las centenas de mil, las decenas de mil y las unidades de mil.","options":[{"label":"A","text":"$1.000.000 + 245.000$","isCorrect":false,"rationale":"Aunque la suma es correcta, no es una descomposición posicional completa de todos sus dígitos significativos."},{"label":"B","text":"$100.000 + 20.000 + 4.000 + 5.000$","isCorrect":false,"rationale":"En esta opción falta el valor correspondiente a la unidad de millón."},{"label":"C","text":"$1.000.000 + 200.000 + 40.000 + 5.000$","isCorrect":true,"rationale":"Cada término representa el valor real de cada dígito según su posición en el número original."},{"label":"D","text":"$1.000.000 + 20.000 + 4.000 + 500$","isCorrect":false,"rationale":"Esta opción reduce significativamente el valor de las centenas y decenas de mil."}]},{"question":"Si sumamos $1.000.000 + 200.000 + 30.000$, ¿qué número se compone?","hint":"Ubica cada cifra en su lugar correspondiente dentro de la tabla de valor posicional.","options":[{"label":"A","text":"$12.300.000$","isCorrect":false,"rationale":"Esta cifra es diez veces mayor al resultado real de la composición."},{"label":"B","text":"$1.230.000$","isCorrect":true,"rationale":"Se integran un millón, dos centenas de mil y tres decenas de mil, manteniendo los ceros en las posiciones restantes."},{"label":"C","text":"$1.203 .000$","isCorrect":false,"rationale":"Aquí se ha omitido el valor de la decena de mil al posicionar el número $3$."},{"label":"D","text":"$1.023.000$","isCorrect":false,"rationale":"Este error coloca la centena de mil en la posición de la decena de mil."}]},{"question":"Al comparar los números $2.450 .000$ y $2.405 .000$, ¿cuál es mayor y por qué?","hint":"Compara cifra por cifra empezando desde la izquierda (millones, luego centenas de mil...).","options":[{"label":"A","text":"$2.405 .000$ porque el cero hace que el número sea más grande.","isCorrect":false,"rationale":"El cero representa la ausencia de cantidad en esa posición, por lo que no aporta valor mayor que $5$."},{"label":"B","text":"Son iguales porque tienen los mismos dígitos.","isCorrect":false,"rationale":"Aunque los dígitos sean iguales, su valor cambia drásticamente según la posición que ocupan."},{"label":"C","text":"$2.405 .000$ porque el $5$ está al final.","isCorrect":false,"rationale":"La posición del dígito hacia la derecha disminuye su valor, no lo aumenta."},{"label":"D","text":"$2.450 .000$ porque tiene un $5$ en las decenas de mil.","isCorrect":true,"rationale":"Al comparar de izquierda a derecha, la primera diferencia ocurre en la decena de mil, donde $5 > 0$."}]},{"question":"En una recta numérica, ¿entre qué decenas de millón se ubica el número $75.000.000$?","hint":"Fíjate en el dígito que ocupa la decena de millón para encontrar los límites.","options":[{"label":"A","text":"Entre $70.000.000$ y $80.000.000$","isCorrect":true,"rationale":"El número tiene $7$ decenas de millón y está a mitad de camino hacia la octava decena de millón."},{"label":"B","text":"Entre $74.000 .000$ y $76.000 .000$","isCorrect":false,"rationale":"Estas son unidades de millón, no decenas de millón como solicita la pregunta."},{"label":"C","text":"Entre $50.000.000$ y $100.000.000$","isCorrect":false,"rationale":"Aunque es cierto, este rango se refiere a cincuentenas de millón, no a las decenas de millón más cercanas."},{"label":"D","text":"Entre $7.000.000$ y $8.000.000$","isCorrect":false,"rationale":"Este rango corresponde a unidades de millón, siendo diez veces más pequeño que el valor real."}]},{"question":"¿Cuál de estos números está más cerca de $1.000.000$ en la recta numérica?","hint":"Calcula la diferencia restando cada número de $1.000.000$.","options":[{"label":"A","text":"$900.000$","isCorrect":true,"rationale":"La distancia entre $900.000$ y un millón es de $100.000$ unidades."},{"label":"B","text":"$1.200 .000$","isCorrect":false,"rationale":"La distancia es de $200.000$ unidades, que es el doble de la distancia que hay desde $900.000$."},{"label":"C","text":"$1.500 .000$","isCorrect":false,"rationale":"Se aleja medio millón de unidades de la meta propuesta."},{"label":"D","text":"$500.000$","isCorrect":false,"rationale":"Este número se encuentra exactamente en la mitad del camino entre $0$ y un millón."}]},{"question":"Si aproximamos el número $678.000$ a la centena de mil más cercana, ¿cuál es el resultado?","hint":"Observa el dígito de las decenas de mil; si es $5$ o más, la centena de mil sube.","options":[{"label":"A","text":"$680.000$","isCorrect":false,"rationale":"Esta es una aproximación a la decena de mil, no a la centena de mil."},{"label":"B","text":"$700.000$","isCorrect":true,"rationale":"Como el dígito siguiente a la centena de mil es $7$ (mayor o igual a $5$), se debe redondear hacia arriba."},{"label":"C","text":"$600.000$","isCorrect":false,"rationale":"Este redondeo es incorrecto porque el dígito de la decena de mil es mayor a $5$."},{"label":"D","text":"$1.000.000$","isCorrect":false,"rationale":"Esta aproximación salta a la unidad de millón, perdiendo demasiada precisión."}]},{"question":"Un estudiante estima que $23 \\times 14$ es aproximadamente $280$. ¿Qué estrategia utilizó?","hint":"Piensa qué multiplicación simple con un número terminado en cero daría $280$.","options":[{"label":"A","text":"Redondeó ambos números a la decena ($20 \\times 10$).","isCorrect":false,"rationale":"Esa estrategia daría como resultado $200$, que está lejos de $280$."},{"label":"B","text":"Multiplicó $23 \\times 10$ y luego sumó $4$.","isCorrect":false,"rationale":"Este es un error conceptual, ya que el $4$ debe multiplicar también al $23$."},{"label":"C","text":"Sumó $23 + 14$ y luego multiplicó por $10$.","isCorrect":false,"rationale":"Sumar antes de multiplicar altera completamente el proceso de estimación del producto."},{"label":"D","text":"Redondeó $23$ a $20$ y mantuvo el $14$ ($20 \\times 14$).","isCorrect":true,"rationale":"Multiplicar $2 \\times 14$ da $28$, y agregar el cero del $20$ resulta en $280$."}]},{"question":"En el algoritmo de la multiplicación $15 \\times 12$, ¿qué cálculo representa el número $30$ que se escribe en la primera fila?","hint":"El primer valor que anotamos viene de multiplicar la unidad del número de abajo por el de arriba.","options":[{"label":"A","text":"$2 \\times 5$","isCorrect":false,"rationale":"Este es solo una parte del primer paso; falta multiplicar el $2$ por la decena del $15$."},{"label":"B","text":"$10 \\times 15$","isCorrect":false,"rationale":"Ese cálculo corresponde a la segunda parte del algoritmo y su resultado es $150$."},{"label":"C","text":"$2 \\times 15$","isCorrect":true,"rationale":"El primer paso del algoritmo consiste en multiplicar la unidad del multiplicador ($2$) por el multiplicando completo ($15$)."},{"label":"D","text":"$15 + 15$","isCorrect":false,"rationale":"Aunque la suma da $30$, el algoritmo se basa en la multiplicación de la unidad por el número superior."}]},{"question":"¿Por qué en el algoritmo de multiplicación se debe dejar un espacio o añadir un cero al comenzar a multiplicar por el segundo dígito?","hint":"Recuerda que el segundo dígito (de derecha a izquierda) no vale solo su número, sino grupos de diez.","options":[{"label":"A","text":"Porque el resultado siempre debe terminar en cero.","isCorrect":false,"rationale":"El resultado final no siempre termina en cero, solo el producto parcial de las decenas."},{"label":"B","text":"Es solo una regla de orden para que los números no se amontonen.","isCorrect":false,"rationale":"No es una regla estética, sino una necesidad matemática basada en el valor posicional."},{"label":"C","text":"Porque estamos restando el valor de las unidades.","isCorrect":false,"rationale":"La multiplicación algorítmica suma productos parciales, nunca resta."},{"label":"D","text":"Porque ese dígito representa decenas y su valor es diez veces mayor.","isCorrect":true,"rationale":"Al multiplicar por la decena, el resultado debe comenzar en la columna de las decenas."}]},{"question":"Si una caja de lápices cuesta $\\$ 24$ y compras $18$ cajas, ¿cuál es el planteamiento correcto para hallar el total?","hint":"Buscas el total de un valor que se repite muchas veces.","options":[{"label":"A","text":"$24 \\div 18$","isCorrect":false,"rationale":"La división repartiría el precio entre las cajas, lo cual es opuesto a buscar un total de compra."},{"label":"B","text":"$24 + 18$","isCorrect":false,"rationale":"La suma solo añadiría las unidades de las cajas al precio, lo cual no tiene sentido lógico."},{"label":"C","text":"$24 - 18$","isCorrect":false,"rationale":"La resta se usa para quitar cantidades, no para acumular el costo de varios productos."},{"label":"D","text":"$24 \\times 18$","isCorrect":true,"rationale":"La multiplicación permite sumar repetidamente el precio de una caja ($24$) tantas veces como cajas haya ($18$)."}]},{"question":"Al usar una matriz de puntos para resolver $12 \\times 15$, ¿en cuántas partes principales se divide el cálculo según la descomposición de ambos números?","hint":"Piensa en descomponer el $12$ en $10+2$ y el $15$ en $10+5$.","options":[{"label":"A","text":"En $10$ partes.","isCorrect":false,"rationale":"Sería una división excesiva que no simplifica el uso del valor posicional."},{"label":"B","text":"En $4$ partes.","isCorrect":true,"rationale":"Se generan áreas para: $10 \\times 10$, $10 \\times 5$, $2 \\times 10$ y $2 \\times 5$."},{"label":"C","text":"No se divide, se cuenta uno a uno.","isCorrect":false,"rationale":"Contar uno a uno no es una estrategia de descomposición eficiente para números de dos dígitos."},{"label":"D","text":"En $2$ partes.","isCorrect":false,"rationale":"Esto ocurriría si solo descompusiéramos uno de los dos números."}]},{"question":"Un estudiante dice que $150.000.000$ es menor que $384.000$. ¿Cuál es su error?","hint":"Cuenta cuántas cifras tiene cada número antes de mirar los dígitos individuales.","options":[{"label":"A","text":"Se fijó en que el $3$ es más grande que el $1$.","isCorrect":false,"rationale":"Comparar solo el primer dígito sin ver su valor posicional es un error común pero no justifica que $384.000$ sea mayor."},{"label":"B","text":"No comparó la cantidad de dígitos.","isCorrect":true,"rationale":"El primer número tiene nueve dígitos (millones) y el segundo solo seis (miles)."},{"label":"C","text":"Sumó los números en lugar de compararlos.","isCorrect":false,"rationale":"Sumarlos daría un número aún mayor, no explicaría por qué cree que uno es menor."},{"label":"D","text":"Confundió la derecha con la izquierda.","isCorrect":false,"rationale":"Aunque es un error de orientación, el problema matemático real es el valor de las posiciones."}]},{"question":"¿Qué número es exactamente $10$ veces más grande que $1.000.000$?","hint":"Al multiplicar por $10$, todos los dígitos se corren un lugar hacia la izquierda.","options":[{"label":"A","text":"$100.000.000$","isCorrect":false,"rationale":"Este número es $100$ veces más grande que un millón."},{"label":"B","text":"$10.000.000$","isCorrect":true,"rationale":"Multiplicar por $10$ desplaza cada dígito una posición a la izquierda, convirtiendo la unidad de millón en decena de millón."},{"label":"C","text":"$2.000.000$","isCorrect":false,"rationale":"Esto es el doble ($2$ veces), no diez veces la cantidad inicial."},{"label":"D","text":"$1.000.010$","isCorrect":false,"rationale":"Esto es sumar $10$, no multiplicar por $10$."}]},{"question":"Si en un sector VIP hay $73$ personas, ¿cuál es la mejor aproximación a la decena?","hint":"Mira la unidad: ¿está el $73$ más cerca del $70$ o del $80$?","options":[{"label":"A","text":"$100$","isCorrect":false,"rationale":"Esta es una aproximación a la centena, no a la decena."},{"label":"B","text":"$80$","isCorrect":false,"rationale":"Se redondea hacia arriba solo si la unidad es $5$ o mayor."},{"label":"C","text":"$75$","isCorrect":false,"rationale":"Aproximar a la decena significa terminar en un número que sea múltiplo de diez (terminado en $0$)."},{"label":"D","text":"$70$","isCorrect":true,"rationale":"Como el $3$ es menor que $5$, el número se mantiene en la decena actual al aproximar."}]},{"question":"En la multiplicación $32 \\times 11$, ¿cuál es el resultado exacto?","hint":"Puedes multiplicar $32 \\times 10$ y sumarle $32$ una vez más.","options":[{"label":"A","text":"$320$","isCorrect":false,"rationale":"Este resultado solo considera la multiplicación por la decena ($10$), olvidando la unidad."},{"label":"B","text":"$352$","isCorrect":true,"rationale":"$32 \\times 10 = 320$ y $32 \\times 1 = 32$; al sumar $320 + 32$ obtenemos $352$."},{"label":"C","text":"$331$","isCorrect":false,"rationale":"Este error proviene de multiplicar dígito a dígito de forma vertical sin considerar el valor posicional."},{"label":"D","text":"$432$","isCorrect":false,"rationale":"Es un error común al sumar incorrectamente los productos parciales en el algoritmo."}]},{"question":"Si aproximamos $1.245.678$ a la unidad de millón más cercana, el resultado es:","hint":"Mira el dígito de las centenas de mil para decidir si el '1' se queda igual o sube a '2'.","options":[{"label":"A","text":"$1.300 .000$","isCorrect":false,"rationale":"Redondear hacia arriba en la centena de mil sería incorrecto basándose en el dígito de las decenas de mil."},{"label":"B","text":"$1.000.000$","isCorrect":true,"rationale":"La centena de mil es $2$, que es menor que $5$, por lo que la unidad de millón no aumenta."},{"label":"C","text":"$2.000.000$","isCorrect":false,"rationale":"Solo subiría a dos millones si la centena de mil fuera $5$ o superior."},{"label":"D","text":"$1.200.000$","isCorrect":false,"rationale":"Esta es una aproximación a la centena de mil, no a la unidad de millón."}]},{"question":"¿Cuál es la función principal de 'estimar' un resultado antes de calcularlo exactamente?","hint":"Piensa en qué pasaría si cometes un error enorme y no tienes una idea aproximada de la respuesta.","options":[{"label":"A","text":"Anticipar si el resultado final es razonable o tiene sentido.","isCorrect":true,"rationale":"Permite detectar errores groseros; si mi estimación es $300$ y mi cálculo da $9.000$, sé que algo falló."},{"label":"B","text":"Ahorrar papel al no escribir números largos.","isCorrect":false,"rationale":"La estimación es una herramienta cognitiva de control, no un ahorro de materiales."},{"label":"C","text":"Sustituir para siempre el cálculo exacto.","isCorrect":false,"rationale":"Hay situaciones (como pagos de dinero) donde la precisión exacta es indispensable."},{"label":"D","text":"Hacer que las matemáticas parezcan más difíciles.","isCorrect":false,"rationale":"Al contrario, estimar simplifica la comprensión inicial de un problema complejo."}]},{"question":"En el número $1.234.567$, ¿qué valor representa el dígito $3$?","hint":"Identifica la posición del $3$: unidades, decenas, centenas, unidades de mil, decenas de mil...","options":[{"label":"A","text":"$300$","isCorrect":false,"rationale":"Es el valor de las centenas simples, lugar que ocupa el dígito $5$."},{"label":"B","text":"$3.000$","isCorrect":false,"rationale":"Esa es la posición de las unidades de mil, donde actualmente se encuentra el $4$."},{"label":"C","text":"$300.000$","isCorrect":false,"rationale":"Ese valor correspondería si el $3$ estuviera una posición más a la izquierda."},{"label":"D","text":"$30.000$","isCorrect":true,"rationale":"El $3$ está en la posición de las decenas de mil, por lo tanto representa $3$ grupos de diez mil."}]},{"question":"¿Qué sucede con el valor de un número si movemos un dígito una posición hacia la izquierda?","hint":"Compara cuánto vale un $1$ en la decena versus un $1$ en la centena.","options":[{"label":"A","text":"Su valor se mantiene igual.","isCorrect":false,"rationale":"El valor relativo depende totalmente de la posición; si esta cambia, el valor también."},{"label":"B","text":"Su valor aumenta diez veces.","isCorrect":true,"rationale":"En nuestro sistema decimal, cada posición a la izquierda vale diez veces más que la anterior."},{"label":"C","text":"Se le suman $100$ unidades automáticamente.","isCorrect":false,"rationale":"No se suma una cantidad fija, sino que se multiplica el valor de la cifra por la base diez."},{"label":"D","text":"Su valor disminuye a la mitad.","isCorrect":false,"rationale":"El sistema decimal no se basa en potencias de dos, sino de diez."}]},{"question":"Para ordenar de menor a mayor los números $245.000$, $2.450 .000$ y $24.500$, ¿cuál debe ir primero?","hint":"El número con menos cantidad de cifras totales siempre será el más pequeño.","options":[{"label":"A","text":"$245.000$","isCorrect":false,"rationale":"Este número tiene seis dígitos, hay uno con menos dígitos que es menor."},{"label":"B","text":"$24.500$","isCorrect":true,"rationale":"Es el menor porque solo tiene cinco dígitos (llega hasta decena de mil), mientras los otros llegan a centena de mil y millón."},{"label":"C","text":"Cualquiera, porque todos tienen $2$, $4$ y $5$.","isCorrect":false,"rationale":"El orden matemático depende de la magnitud total, no de los dígitos que se repiten."},{"label":"D","text":"$2.450 .000$","isCorrect":false,"rationale":"Este es el mayor de los tres porque llega a la unidad de millón."}]},{"question":"En la recta numérica, si un número $A$ está a la derecha de un número $B$, podemos afirmar que:","hint":"Recuerda hacia qué lado apuntan los números más grandes en una regla o termómetro.","options":[{"label":"A","text":"$A$ es mayor que $B$.","isCorrect":true,"rationale":"La convención de la recta numérica sitúa los valores crecientes hacia la derecha."},{"label":"B","text":"Ambos números son iguales.","isCorrect":false,"rationale":"Si estuvieran en la misma posición serían iguales, pero uno está desplazado respecto al otro."},{"label":"C","text":"$A$ es menor que $B$.","isCorrect":false,"rationale":"Hacia la derecha los valores siempre aumentan en la recta numérica convencional."},{"label":"D","text":"No se puede saber sin calcular.","isCorrect":false,"rationale":"La posición visual en la recta ya nos da una relación de orden directa."}]},{"question":"Si aproximamos $489.000$ a la centena de mil, ¿por qué el resultado es $500.000$?","hint":"Fíjate en el número que está justo a la derecha del que quieres aproximar.","options":[{"label":"A","text":"Porque tiene muchos ceros al final.","isCorrect":false,"rationale":"Los ceros finales son la consecuencia de aproximar, no la causa de subir o bajar."},{"label":"B","text":"Porque el dígito siguiente (decena de mil) es $8$, que es mayor que $5$.","isCorrect":true,"rationale":"Al ser $8$ mayor que $5$, se debe aumentar en uno la posición que estamos aproximando."},{"label":"C","text":"Porque siempre se redondea al número más grande posible.","isCorrect":false,"rationale":"Existen reglas específicas de redondeo; no siempre se sube."},{"label":"D","text":"Porque el dígito de las centenas de mil es $4$.","isCorrect":false,"rationale":"El $4$ por sí solo no indica subir, es el dígito siguiente el que manda."}]},{"question":"¿Cuál es el resultado de componer: $2 \\times 1.000.000 + 4 \\times 10.000 + 5 \\times 100$?","hint":"Ten cuidado con las posiciones que no tienen número (como la centena de mil); esas llevan un cero.","options":[{"label":"A","text":"$2.400 .500$","isCorrect":false,"rationale":"Este error asume que el $4$ está en la centena de mil, pero la instrucción dice diez mil."},{"label":"B","text":"$2.004 .500$","isCorrect":false,"rationale":"Aquí el $4$ se posicionó en la unidad de mil en lugar de la decena de mil."},{"label":"C","text":"$2.040 .500$","isCorrect":true,"rationale":"Representa correctamente $2$ millones, $4$ decenas de mil y $5$ centenas, con ceros en los espacios vacíos."},{"label":"D","text":"$245.000$","isCorrect":false,"rationale":"Esta cifra no alcanza el rango de los millones solicitado en la operación."}]},{"question":"En el contexto de un concierto, si se informa que asistieron 'cerca de $250.000$ personas', esto es una:","hint":"Piensa si es posible contar uno a uno a tanta gente en un solo instante.","options":[{"label":"A","text":"Cuenta exacta.","isCorrect":false,"rationale":"Las cuentas exactas no usan palabras como 'cerca de' o 'aproximadamente'."},{"label":"B","text":"Descomposición aditiva.","isCorrect":false,"rationale":"La descomposición separa el número en sus partes, no lo resume en un valor cercano."},{"label":"C","text":"Estimación o aproximación.","isCorrect":true,"rationale":"Se utiliza un número redondo cercano a la realidad para facilitar la comunicación y toma de decisiones."},{"label":"D","text":"Multiplicación incorrecta.","isCorrect":false,"rationale":"No es un error de cálculo, sino una estrategia válida de manejo de grandes volúmenes de datos."}]}];
+const tr = {"correct":"¡Correcto!","incorrect":"Incorrecto","next":"Siguiente pregunta →","seeResults":"Ver resultados","complete":"¡Cuestionario completado!","scoreText":"Obtuviste {correct} de {total} correctas","tryAgain":"Intentar de nuevo","rightAnswer":"Respuesta correcta","notQuite":"No del todo"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
