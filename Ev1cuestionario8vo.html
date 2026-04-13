@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matemática Cuestionario</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Matemática Cuestionario</h1>
+    <div class="meta">26 questions</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">Question 1</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una Pyme comienza su jornada en la recta numérica en el punto <span class="math">+2</span> y realiza un movimiento de <span class="math">-5</span> unidades debido a un gasto, ¿en qué posición queda?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Imagina que estás en el <span class="math">+2</span> y das cinco pasos hacia la izquierda.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Al partir de $+2$ y retroceder $5$ unidades, se pasa por el cero y se llega a tres unidades a la izquierda del origen.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">-3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al partir de <span class="math">+2</span> y retroceder <span class="math">5</span> unidades, se pasa por el cero y se llega a tres unidades a la izquierda del origen.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error ocurre si se confunde la dirección del movimiento negativo con un avance hacia la derecha.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">+3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se confunde la dirección del movimiento negativo con un avance hacia la derecha.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Es posible que se considere solo el valor del movimiento sin tomar en cuenta el punto de partida original.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">-5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es posible que se considere solo el valor del movimiento sin tomar en cuenta el punto de partida original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este resultado se obtiene si se restan los valores absolutos incorrectamente o se parte desde un número negativo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">-7</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado se obtiene si se restan los valores absolutos incorrectamente o se parte desde un número negativo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">Question 2</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la transformación correcta a suma de la operación <span class="math">(+7) - (-3)</span> siguiendo la regla del inverso aditivo?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que restar un negativo se convierte en una acción positiva.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Restar un número es equivalente a sumar su opuesto; el opuesto de $-3$ es $+3$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">(+7) + (+3)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Restar un número es equivalente a sumar su opuesto; el opuesto de <span class="math">-3</span> es <span class="math">+3</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Simplemente se cambió el signo del sustraendo sin transformar la resta en una adición.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">(+7) - (+3)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Simplemente se cambió el signo del sustraendo sin transformar la resta en una adición.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aquí se cambió el signo de la operación pero no el del segundo número, lo cual es un error procedimental común.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">(+7) + (-3)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí se cambió el signo de la operación pero no el del segundo número, lo cual es un error procedimental común.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se cambió el signo del primer número innecesariamente, lo que altera el valor inicial de la operación.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">(-7) + (-3)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se cambió el signo del primer número innecesariamente, lo que altera el valor inicial de la operación.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">Question 3</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Al resolver <span class="math">(-10) + (-4)</span>, ¿cuál es el procedimiento y resultado correcto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en esto como tener una deuda y luego adquirir otra deuda adicional.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Cuando dos números tienen el mismo signo, se suman sus valores absolutos y se conserva el signo común.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Se suman los valores y se mantiene el signo negativo, dando <span class="math">-14</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cuando dos números tienen el mismo signo, se suman sus valores absolutos y se conserva el signo común.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este es un error conceptual básico donde se concatenan números en lugar de realizar la operación aritmética.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">El resultado es <span class="math">-104</span> por la unión de las cifras.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error conceptual básico donde se concatenan números en lugar de realizar la operación aritmética.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Sumar dos deudas o números negativos no puede resultar en una ganancia o número positivo.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Se suman los valores y el resultado es positivo, dando <span class="math">+14</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sumar dos deudas o números negativos no puede resultar en una ganancia o número positivo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este procedimiento solo se aplica cuando los números tienen signos distintos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Se restan los valores y se conserva el signo del mayor, dando <span class="math">-6</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este procedimiento solo se aplica cuando los números tienen signos distintos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">Question 4</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Una tienda tiene un balance de <span class="math">+5.000</span>. Si se le aplica un gasto representado por <span class="math">(-8.000)</span>, ¿cuál es su nuevo estado financiero?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Determina si el dinero que tiene la tienda alcanza para cubrir todo el gasto.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Como el valor absoluto de la pérdida es mayor que la ganancia, el saldo final debe ser negativo tras restar los valores.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">-3.000</span> (Pérdida)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como el valor absoluto de la pérdida es mayor que la ganancia, el saldo final debe ser negativo tras restar los valores.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este resultado se obtendría si ambos valores fueran negativos, sumando deudas en lugar de compensar un ingreso.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">-13.000</span> (Deuda total)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado se obtendría si ambos valores fueran negativos, sumando deudas en lugar de compensar un ingreso.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error ocurre si se ignora que el gasto es mayor que el ingreso inicial.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">+3.000</span> (Ganancia)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se ignora que el gasto es mayor que el ingreso inicial.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Para llegar a cero, el gasto tendría que haber sido exactamente igual al ingreso inicial.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0</span> (Equilibrio)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para llegar a cero, el gasto tendría que haber sido exactamente igual al ingreso inicial.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">Question 5</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué significa matemáticamente calcular 'un tercio de un cuarto' (<span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">3</span></span> · <span class="frac"><span class="frac-num">1</span><span class="frac-den">4</span></span></span>)?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Visualiza un chocolate dividido en 4 y luego divide uno de esos trozos en 3.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="La multiplicación de fracciones propias siempre resulta en una parte más pequeña que las originales, no mayor.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Sumar un tercio y un cuarto para obtener una cantidad mayor.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La multiplicación de fracciones propias siempre resulta en una parte más pequeña que las originales, no mayor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La resta no se relaciona directamente con el concepto de 'parte de una parte' en este contexto multiplicativo.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Restar un tercio a un entero para ver cuánto sobra.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La resta no se relaciona directamente con el concepto de 'parte de una parte' en este contexto multiplicativo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Eso representaría la operación $3 \cdot \frac{1}{4}$, lo cual es distinto a calcular la fracción de una fracción.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Repetir tres veces la cantidad de un cuarto.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Eso representaría la operación <span class="math">3 · <span class="frac"><span class="frac-num">1</span><span class="frac-den">4</span></span></span>, lo cual es distinto a calcular la fracción de una fracción.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La multiplicación de fracciones representa tomar una parte de otra parte ya existente.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Dividir una cuarta parte en tres trozos iguales y tomar uno.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La multiplicación de fracciones representa tomar una parte de otra parte ya existente.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">Question 6</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si transformamos el número decimal <span class="math">0,2</span> a su forma de fracción, ¿cuál es el resultado correcto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Fíjate en cuántos lugares hay después de la coma para decidir si usas <span class="math">10, 100</span> o <span class="math">1000</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este denominador se usaría si el número fuera $0,02$ (centésimos).">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">2</span><span class="frac-den">100</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este denominador se usaría si el número fuera <span class="math">0,02</span> (centésimos).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Como el decimal tiene una sola cifra después de la coma, representa 'décimos', por lo que el denominador es $10$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">2</span><span class="frac-den">10</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como el decimal tiene una sola cifra después de la coma, representa 'décimos', por lo que el denominador es <span class="math">10</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esto representaría el número entero $2$, no el decimal $0,2$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">20</span><span class="frac-den">10</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto representaría el número entero <span class="math">2</span>, no el decimal <span class="math">0,2</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es un error común de confusión visual; $0,5$ es $\frac{1}{2}$, pero $0,2$ no lo es.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error común de confusión visual; <span class="math">0,5</span> es <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span>, pero <span class="math">0,2</span> no lo es.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">Question 7</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Al multiplicar <span class="math">0,5 × 0,3</span>, ¿cuál es el resultado decimal correcto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Multiplica <span class="math">5 × 3</span> y luego ajusta la coma contando los decimales de ambos números.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se agregaron demasiados ceros decimales, posiblemente por una confusión al contar las posiciones de los factores.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0,015</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se agregaron demasiados ceros decimales, posiblemente por una confusión al contar las posiciones de los factores.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se multiplicaron los números pero se ubicó mal la coma, olvidando que el resultado debe tener dos decimales.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1,5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se multiplicaron los números pero se ubicó mal la coma, olvidando que el resultado debe tener dos decimales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al multiplicar $\frac{5}{10} \times \frac{3}{10}$ obtenemos $\frac{15}{100}$, lo que equivale a $0,15$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar <span class="math"><span class="frac"><span class="frac-num">5</span><span class="frac-den">10</span></span> × <span class="frac"><span class="frac-num">3</span><span class="frac-den">10</span></span></span> obtenemos <span class="math"><span class="frac"><span class="frac-num">15</span><span class="frac-den">100</span></span></span>, lo que equivale a <span class="math">0,15</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error surge de sumar los decimales ($0,5 + 0,3$) en lugar de multiplicarlos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,8</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error surge de sumar los decimales (<span class="math">0,5 + 0,3</span>) en lugar de multiplicarlos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">Question 8</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En un balance de una Pyme, se registra: <span class="math">(+10) + (-4) + (-7)</span>. ¿Cuál es el resultado final?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Agrupa primero todas las pérdidas y luego compáralas con lo que ganaste.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Primero sumamos los gastos $(-11)$ y luego los comparamos con el ingreso $(+10)$, resultando en una pérdida de $1$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">-1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Primero sumamos los gastos <span class="math">(-11)</span> y luego los comparamos con el ingreso <span class="math">(+10)</span>, resultando en una pérdida de <span class="math">1</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se pudo haber cometido un error en la resta final o al sumar los números negativos.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">+1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se pudo haber cometido un error en la resta final o al sumar los números negativos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado ignora los signos negativos y suma todos los valores como si fueran ingresos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">+21</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado ignora los signos negativos y suma todos los valores como si fueran ingresos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se calculó solo la suma de los gastos pero se olvidó integrar el ingreso inicial de $+10$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">-11</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se calculó solo la suma de los gastos pero se olvidó integrar el ingreso inicial de <span class="math">+10</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">Question 9</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si la temperatura inicial es de <span class="math">-3<sup>°</sup>C</span> y baja <span class="math">4<sup>°</sup>C</span> más, ¿cuál es la temperatura final?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Si ya hace frío y la temperatura baja, hará todavía más frío.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se ignoraron los signos negativos originales y se realizó una suma de valores absolutos.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">+7<sup>°</sup>C</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ignoraron los signos negativos originales y se realizó una suma de valores absolutos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Es un error común al pensar que 'bajar' desde un negativo acerca el número al cero.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">-1<sup>°</sup>C</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es un error común al pensar que 'bajar' desde un negativo acerca el número al cero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Bajar la temperatura implica restar o sumar un número negativo, alejándose más del cero hacia la izquierda.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">-7<sup>°</sup>C</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Bajar la temperatura implica restar o sumar un número negativo, alejándose más del cero hacia la izquierda.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se restaron los valores absolutos de forma incorrecta, tratando la 'bajada' como un aumento.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">+1<sup>°</sup>C</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se restaron los valores absolutos de forma incorrecta, tratando la 'bajada' como un aumento.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">Question 10</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el inverso aditivo de <span class="math">-12</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca el número que esté a la misma distancia del cero pero en el lado opuesto.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es el mismo número; el inverso debe tener el signo opuesto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">-12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el mismo número; el inverso debe tener el signo opuesto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Cero es el resultado de sumar un número con su inverso, pero no es el inverso en sí mismo.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cero es el resultado de sumar un número con su inverso, pero no es el inverso en sí mismo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="No existe relación conceptual directa entre el inverso aditivo y el número uno.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No existe relación conceptual directa entre el inverso aditivo y el número uno.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El inverso aditivo es el número que, al sumarse con el original, da como resultado cero.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">+12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El inverso aditivo es el número que, al sumarse con el original, da como resultado cero.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">Question 11</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Al representar <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span> × <span class="frac"><span class="frac-num">2</span><span class="frac-den">3</span></span></span> en un dibujo, ¿qué fracción del total queda sombreada tras la intersección?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Multiplica el de arriba por el de arriba y el de abajo por el de abajo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Multiplicando numeradores ($1 \times 2$) y denominadores ($2 \times 3$) obtenemos dos sextos.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">2</span><span class="frac-den">6</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicando numeradores (<span class="math">1 × 2</span>) y denominadores (<span class="math">2 × 3</span>) obtenemos dos sextos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se sumaron numeradores y denominadores, lo cual es un error grave en la multiplicación de fracciones.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">3</span><span class="frac-den">5</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se sumaron numeradores y denominadores, lo cual es un error grave en la multiplicación de fracciones.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se mantuvo el valor de una de las fracciones sin realizar la operación de 'parte de una parte'.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">2</span><span class="frac-den">3</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se mantuvo el valor de una de las fracciones sin realizar la operación de 'parte de una parte'.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque es la forma simplificada, el dibujo original muestra $2$ de $6$ partes antes de simplificar.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">3</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es la forma simplificada, el dibujo original muestra <span class="math">2</span> de <span class="math">6</span> partes antes de simplificar.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">Question 12</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la forma correcta de escribir <span class="math">0,125</span> como fracción según su valor posicional?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta cuántos números hay después de la coma para saber cuántos ceros lleva el denominador.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este denominador representaría el número $12,5$, no $0,125$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">125</span><span class="frac-den">10</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este denominador representaría el número <span class="math">12,5</span>, no <span class="math">0,125</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Al tener tres cifras decimales (décimos, centésimos, milésimos), el denominador debe ser $1000$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">125</span><span class="frac-den">1000</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al tener tres cifras decimales (décimos, centésimos, milésimos), el denominador debe ser <span class="math">1000</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="No se deben mezclar decimales y fracciones en la representación final de transformación.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">1,25</span><span class="frac-den">10</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No se deben mezclar decimales y fracciones en la representación final de transformación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este denominador solo se usa para dos cifras decimales (centésimos).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">125</span><span class="frac-den">100</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este denominador solo se usa para dos cifras decimales (centésimos).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="12">
+          <div class="q-header">
+            <span class="q-number">Question 13</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el análisis de errores, un estudiante afirma que <span class="math">(-5) - (+2) = -3</span>. ¿Cuál es el error cometido?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Aplica la regla de 'restar es sumar el opuesto' y mira si da <span class="math">-3</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Si hubiera sumado, el resultado habría sido $7$, no $3$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Sumó los números correctamente pero se equivocó en el signo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si hubiera sumado, el resultado habría sido <span class="math">7</span>, no <span class="math">3</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El signo del resultado depende del valor mayor tras la transformación, y en este caso ambos terminarían siendo negativos.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">El resultado debería ser positivo porque el número mayor es <span class="math">5</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El signo del resultado depende del valor mayor tras la transformación, y en este caso ambos terminarían siendo negativos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Existe un error procedimental ya que restar un positivo es lo mismo que sumar un negativo.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">No hay error, el resultado es <span class="math">-3</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Existe un error procedimental ya que restar un positivo es lo mismo que sumar un negativo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La operación debió ser $(-5) + (-2) = -7$, pero el estudiante restó $5 - 2$ ignorando el signo del primer número.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">No transformó la resta en suma del opuesto, simplemente restó los valores.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La operación debió ser <span class="math">(-5) + (-2) = -7</span>, pero el estudiante restó <span class="math">5 - 2</span> ignorando el signo del primer número.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="13">
+          <div class="q-header">
+            <span class="q-number">Question 14</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si tienes <span class="math">1</span> kg de harina y lo divides en porciones de <span class="math">0,25</span> kg, ¿cuántas porciones obtienes?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa cuántas monedas de <span class="math">25</span> centavos necesitas para completar un peso.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error surge de confundir el valor decimal con una división por un número mayor.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">25</span> porciones</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error surge de confundir el valor decimal con una división por un número mayor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esto ocurriría si dividieras por $0,5$ (la mitad), no por $0,25$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">2</span> porciones</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto ocurriría si dividieras por <span class="math">0,5</span> (la mitad), no por <span class="math">0,25</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Como $0,25$ es $\frac{1}{4}$, dividir $1$ entero en cuartos resulta en $4$ partes iguales.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">4</span> porciones</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como <span class="math">0,25</span> es <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">4</span></span></span>, dividir <span class="math">1</span> entero en cuartos resulta en <span class="math">4</span> partes iguales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="No se puede obtener una porción menor que uno si estás repartiendo un entero en partes más pequeñas.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,25</span> porciones</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No se puede obtener una porción menor que uno si estás repartiendo un entero en partes más pequeñas.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="14">
+          <div class="q-header">
+            <span class="q-number">Question 15</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En una Pyme, si un producto cuesta <span class="math">\</span>0,5<span class="math"> y un cliente compra </span>0,4$ unidades de ese producto, ¿cuánto paga?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que multiplicar por <span class="math">0,5</span> es lo mismo que calcular la mitad de un número.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se multiplicó $5 \times 4$ pero se ignoró la posición de la coma decimal completamente.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>2,0$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se multiplicó <span class="math">5 × 4</span> pero se ignoró la posición de la coma decimal completamente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Multiplicar $0,5 \times 0,4$ es equivalente a calcular la mitad de $0,4$ o $\frac{5}{10} \times \frac{4}{10} = \frac{20}{100}$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>0,2$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar <span class="math">0,5 × 0,4</span> es equivalente a calcular la mitad de <span class="math">0,4</span> o <span class="math"><span class="frac"><span class="frac-num">5</span><span class="frac-den">10</span></span> × <span class="frac"><span class="frac-num">4</span><span class="frac-den">10</span></span> = <span class="frac"><span class="frac-num">20</span><span class="frac-den">100</span></span></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se colocó mal la coma decimal, agregando un cero extra que disminuye el valor real.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>0,02$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se colocó mal la coma decimal, agregando un cero extra que disminuye el valor real.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se sumaron el precio y la cantidad en lugar de multiplicarlos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>0,9$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se sumaron el precio y la cantidad en lugar de multiplicarlos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="15">
+          <div class="q-header">
+            <span class="q-number">Question 16</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué ocurre en la recta numérica cuando sumamos un número negativo a cualquier otro número?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Asocia los números negativos con 'perder' o 'retroceder'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Solo sumar el número cero mantiene la posición inalterada.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Nos quedamos en la misma posición.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Solo sumar el número cero mantiene la posición inalterada.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El movimiento es gradual y depende de la magnitud del número negativo sumado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Saltamos directamente al lado positivo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El movimiento es gradual y depende de la magnitud del número negativo sumado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Moverse a la derecha es la representación de sumar números positivos o aumentar valor.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Nos movemos hacia la derecha.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Moverse a la derecha es la representación de sumar números positivos o aumentar valor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Sumar un valor negativo representa una disminución o retroceso en la recta numérica.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Nos movemos hacia la izquierda.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sumar un valor negativo representa una disminución o retroceso en la recta numérica.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="16">
+          <div class="q-header">
+            <span class="q-number">Question 17</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el resultado de la operación combinada <span class="math">(+4) - (-2) + (-5)</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Primero cambia la resta por una suma y luego resuelve de izquierda a derecha.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Transformamos la resta: $(+4) + (+2) = +6$. Luego sumamos el negativo: $(+6) + (-5) = +1$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">+1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Transformamos la resta: <span class="math">(+4) + (+2) = +6</span>. Luego sumamos el negativo: <span class="math">(+6) + (-5) = +1</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error puede venir de no transformar el $-(-2)$ en $+2$ antes de operar.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">-3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error puede venir de no transformar el <span class="math">-(-2)</span> en <span class="math">+2</span> antes de operar.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se pudo haber cometido un error de cálculo al final de la operación tras la transformación correcta.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">-1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se pudo haber cometido un error de cálculo al final de la operación tras la transformación correcta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se ignoraron los signos negativos y se sumaron todos los valores absolutos ($4+2+5$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">+11</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ignoraron los signos negativos y se sumaron todos los valores absolutos (<span class="math">4+2+5</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="17">
+          <div class="q-header">
+            <span class="q-number">Question 18</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si multiplicamos <span class="math"><span class="frac"><span class="frac-num">2</span><span class="frac-den">3</span></span> × <span class="frac"><span class="frac-num">3</span><span class="frac-den">4</span></span></span>, ¿cuál es el resultado simplificado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Obtén el resultado de <span class="math">2 × 3</span> y <span class="math">3 × 4</span>, y luego reduce la fracción.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aunque es el resultado correcto de la multiplicación, no es la forma simplificada solicitada.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">6</span><span class="frac-den">12</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es el resultado correcto de la multiplicación, no es la forma simplificada solicitada.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Error común de sumar numeradores y denominadores en lugar de multiplicar.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">5</span><span class="frac-den">7</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error común de sumar numeradores y denominadores en lugar de multiplicar.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La multiplicación da $\frac{6}{12}$, que al simplificarse por $6$ resulta en un medio.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La multiplicación da <span class="math"><span class="frac"><span class="frac-num">6</span><span class="frac-den">12</span></span></span>, que al simplificarse por <span class="math">6</span> resulta en un medio.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error proviene de multiplicar de forma cruzada, lo cual se usa para la división, no la multiplicación.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">8</span><span class="frac-den">9</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error proviene de multiplicar de forma cruzada, lo cual se usa para la división, no la multiplicación.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="18">
+          <div class="q-header">
+            <span class="q-number">Question 19</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el contexto de una Pyme, ¿cómo se registraría 'perdonar una deuda de <span class="math">3.000</span>' usando números enteros?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Quitar algo malo (una deuda) resulta en algo bueno para tu saldo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esto representaría adquirir una nueva deuda, no eliminar una ya existente.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">+(-3.000)</span> o sumar una deuda.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto representaría adquirir una nueva deuda, no eliminar una ya existente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor representa la deuda en sí, pero no la acción de perdonarla o eliminarla.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">-3.000</span> solamente.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor representa la deuda en sí, pero no la acción de perdonarla o eliminarla.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aunque el saldo de la deuda quede en cero, la operación de perdonar implica un cambio positivo en el balance.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque el saldo de la deuda quede en cero, la operación de perdonar implica un cambio positivo en el balance.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Perdonar una deuda es eliminar un valor negativo, lo que financieramente actúa como un ingreso o ahorro.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">-(-3.000)</span> o restar una pérdida.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Perdonar una deuda es eliminar un valor negativo, lo que financieramente actúa como un ingreso o ahorro.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="19">
+          <div class="q-header">
+            <span class="q-number">Question 20</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la regla para decidir el signo al sumar dos números enteros con signos distintos?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en qué 'fuerza' es más grande: ¿la positiva o la negativa?</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esa es la regla para la multiplicación, no para la adición de enteros.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Se utiliza la regla de 'más por menos es menos'.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa es la regla para la multiplicación, no para la adición de enteros.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="En la suma de opuestos parciales, predomina el signo de la cantidad que es numéricamente más grande.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Se conserva el signo del número que tiene mayor valor absoluto.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En la suma de opuestos parciales, predomina el signo de la cantidad que es numéricamente más grande.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esto es falso; si el número positivo es mayor, el resultado será positivo.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">El resultado siempre es negativo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto es falso; si el número positivo es mayor, el resultado será positivo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Falso; si la deuda o número negativo es mayor, el resultado será negativo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">El resultado siempre es positivo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Falso; si la deuda o número negativo es mayor, el resultado será negativo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="20">
+          <div class="q-header">
+            <span class="q-number">Question 21</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una Pyme tiene <span class="math">+15</span> de ingresos y <span class="math">-20</span> de gastos, ¿cuál es la decisión financiera más lógica según el balance?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula el saldo final y decide si la empresa está ganando o perdiendo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="No se pueden repartir ganancias si después de pagar los gastos el saldo es negativo.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Repartir ganancias, porque <span class="math">+15</span> es un número alto.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No se pueden repartir ganancias si después de pagar los gastos el saldo es negativo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El balance negativo indica que la empresa está perdiendo dinero y requiere ajustes para ser sostenible.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Reducir gastos o subir precios, porque hay una pérdida de <span class="math">-5</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El balance negativo indica que la empresa está perdiendo dinero y requiere ajustes para ser sostenible.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El resultado no es cero; los gastos superan a los ingresos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Mantener todo igual, porque el resultado es cero.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El resultado no es cero; los gastos superan a los ingresos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El balance no es positivo; $+15 - 20 = -5$, por lo que no hay excedente para invertir.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Invertir más dinero, porque el balance es positivo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El balance no es positivo; <span class="math">+15 - 20 = -5</span>, por lo que no hay excedente para invertir.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="21">
+          <div class="q-header">
+            <span class="q-number">Question 22</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué número decimal es equivalente a la fracción <span class="math"><span class="frac"><span class="frac-num">3</span><span class="frac-den">4</span></span></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en el valor decimal de tres monedas de <span class="math">25</span> centavos.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Dividir $3$ en $4$ partes da $0,75$, que también se puede ver como $\frac{75}{100}$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0,75</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dividir <span class="math">3</span> en <span class="math">4</span> partes da <span class="math">0,75</span>, que también se puede ver como <span class="math"><span class="frac"><span class="frac-num">75</span><span class="frac-den">100</span></span></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se tomó solo el numerador como parte decimal, ignorando el valor real de la división.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se tomó solo el numerador como parte decimal, ignorando el valor real de la división.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se tomó solo el denominador como parte decimal.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,4</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se tomó solo el denominador como parte decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es un error de asociar directamente los dígitos de la fracción con el decimal.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,34</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error de asociar directamente los dígitos de la fracción con el decimal.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="22">
+          <div class="q-header">
+            <span class="q-number">Question 23</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Al resolver <span class="math">(-7) - (-10)</span>, ¿cuál es el resultado final?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Aplica 'cambio la resta por suma y cambio el signo del segundo número'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se sumaron ambos números negativos ignorando que la resta de un negativo se vuelve suma.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">-17</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se sumaron ambos números negativos ignorando que la resta de un negativo se vuelve suma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se ignoraron todos los signos negativos y se realizó una suma simple.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">+17</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ignoraron todos los signos negativos y se realizó una suma simple.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se restaron los valores pero se mantuvo el signo del primer número de forma incorrecta tras la transformación.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">-3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se restaron los valores pero se mantuvo el signo del primer número de forma incorrecta tras la transformación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Transformando a suma obtenemos $(-7) + (+10)$, y como el $10$ es mayor, el resultado es positivo $3$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">+3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Transformando a suma obtenemos <span class="math">(-7) + (+10)</span>, y como el <span class="math">10</span> es mayor, el resultado es positivo <span class="math">3</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="23">
+          <div class="q-header">
+            <span class="q-number">Question 24</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la representación pictórica correcta para la multiplicación de <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span> × <span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca la imagen que represente 'la mitad de una mitad'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esto representa simplemente la fracción $\frac{1}{2}$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Un círculo dividido en dos partes iguales.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto representa simplemente la fracción <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Eso representaría el entero ($1$), no una fracción del mismo.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Un cuadrado completamente pintado.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Eso representaría el entero (<span class="math">1</span>), no una fracción del mismo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La mitad de una mitad es un cuarto del total original.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Un cuadrado dividido en 4 partes donde solo una está doblemente sombreada.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La mitad de una mitad es un cuarto del total original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esto representaría dos mitades por separado, no la multiplicación (parte de una parte).">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Un cuadrado con la mitad izquierda pintada de un color y la mitad derecha de otro.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto representaría dos mitades por separado, no la multiplicación (parte de una parte).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="24">
+          <div class="q-header">
+            <span class="q-number">Question 25</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si multiplicas un número decimal por <span class="math">100</span>, ¿qué ocurre con la coma decimal?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en cómo cambia <span class="math">0,25</span> al multiplicarlo por <span class="math">100</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Mover la coma a la izquierda es propio de la división por potencias de $10$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Se desplaza dos lugares hacia la izquierda.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Mover la coma a la izquierda es propio de la división por potencias de <span class="math">10</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La coma solo 'desaparece' si el número se convierte en un entero exacto, pero sigue existiendo implícitamente.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Desaparece el número decimal.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La coma solo 'desaparece' si el número se convierte en un entero exacto, pero sigue existiendo implícitamente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Multiplicar por potencias de $10$ aumenta el valor del número, moviendo la coma hacia la derecha según el número de ceros.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Se desplaza dos lugares hacia la derecha.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar por potencias de <span class="math">10</span> aumenta el valor del número, moviendo la coma hacia la derecha según el número de ceros.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Eso solo ocurriría si se multiplicara por $10$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Se desplaza un solo lugar.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Eso solo ocurriría si se multiplicara por <span class="math">10</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      
+        <div class="question" data-index="25">
+          <div class="q-header">
+            <span class="q-number">Question 26</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En la resolución de problemas, ¿qué indica un saldo final de <span class="math">0</span> en una Pyme?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda el concepto de 'pares neutros' con las fichas de colores.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="La quiebra suele asociarse con balances negativos persistentes, no necesariamente con el cero absoluto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Que la empresa quebró definitivamente.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La quiebra suele asociarse con balances negativos persistentes, no necesariamente con el cero absoluto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El cero representa el punto de equilibrio donde no hay ni ganancia ni pérdida.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Que los ingresos fueron exactamente iguales a los gastos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El cero representa el punto de equilibrio donde no hay ni ganancia ni pérdida.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Un saldo de cero es un resultado matemático válido y posible en la realidad financiera.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Que hubo un error en el cálculo contable.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Un saldo de cero es un resultado matemático válido y posible en la realidad financiera.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Puede haber realizado muchas operaciones que al sumarse y restarse se cancelaron entre sí.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Que la empresa no realizó ninguna operación.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Puede haber realizado muchas operaciones que al sumarse y restarse se cancelaron entre sí.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Next Question →</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>Quiz Complete!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Try Again</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"Si una Pyme comienza su jornada en la recta numérica en el punto $+2$ y realiza un movimiento de $-5$ unidades debido a un gasto, ¿en qué posición queda?","hint":"Imagina que estás en el $+2$ y das cinco pasos hacia la izquierda.","options":[{"label":"A","text":"$-3$","isCorrect":true,"rationale":"Al partir de $+2$ y retroceder $5$ unidades, se pasa por el cero y se llega a tres unidades a la izquierda del origen."},{"label":"B","text":"$+3$","isCorrect":false,"rationale":"Este error ocurre si se confunde la dirección del movimiento negativo con un avance hacia la derecha."},{"label":"C","text":"$-5$","isCorrect":false,"rationale":"Es posible que se considere solo el valor del movimiento sin tomar en cuenta el punto de partida original."},{"label":"D","text":"$-7$","isCorrect":false,"rationale":"Este resultado se obtiene si se restan los valores absolutos incorrectamente o se parte desde un número negativo."}]},{"question":"¿Cuál es la transformación correcta a suma de la operación $(+7) - (-3)$ siguiendo la regla del inverso aditivo?","hint":"Recuerda que restar un negativo se convierte en una acción positiva.","options":[{"label":"A","text":"$(+7) + (+3)$","isCorrect":true,"rationale":"Restar un número es equivalente a sumar su opuesto; el opuesto de $-3$ es $+3$."},{"label":"B","text":"$(+7) - (+3)$","isCorrect":false,"rationale":"Simplemente se cambió el signo del sustraendo sin transformar la resta en una adición."},{"label":"C","text":"$(+7) + (-3)$","isCorrect":false,"rationale":"Aquí se cambió el signo de la operación pero no el del segundo número, lo cual es un error procedimental común."},{"label":"D","text":"$(-7) + (-3)$","isCorrect":false,"rationale":"Se cambió el signo del primer número innecesariamente, lo que altera el valor inicial de la operación."}]},{"question":"Al resolver $(-10) + (-4)$, ¿cuál es el procedimiento y resultado correcto?","hint":"Piensa en esto como tener una deuda y luego adquirir otra deuda adicional.","options":[{"label":"A","text":"Se suman los valores y se mantiene el signo negativo, dando $-14$.","isCorrect":true,"rationale":"Cuando dos números tienen el mismo signo, se suman sus valores absolutos y se conserva el signo común."},{"label":"B","text":"El resultado es $-104$ por la unión de las cifras.","isCorrect":false,"rationale":"Este es un error conceptual básico donde se concatenan números en lugar de realizar la operación aritmética."},{"label":"C","text":"Se suman los valores y el resultado es positivo, dando $+14$.","isCorrect":false,"rationale":"Sumar dos deudas o números negativos no puede resultar en una ganancia o número positivo."},{"label":"D","text":"Se restan los valores y se conserva el signo del mayor, dando $-6$.","isCorrect":false,"rationale":"Este procedimiento solo se aplica cuando los números tienen signos distintos."}]},{"question":"Una tienda tiene un balance de $+5.000$. Si se le aplica un gasto representado por $(-8.000)$, ¿cuál es su nuevo estado financiero?","hint":"Determina si el dinero que tiene la tienda alcanza para cubrir todo el gasto.","options":[{"label":"A","text":"$-3.000$ (Pérdida)","isCorrect":true,"rationale":"Como el valor absoluto de la pérdida es mayor que la ganancia, el saldo final debe ser negativo tras restar los valores."},{"label":"B","text":"$-13.000$ (Deuda total)","isCorrect":false,"rationale":"Este resultado se obtendría si ambos valores fueran negativos, sumando deudas en lugar de compensar un ingreso."},{"label":"C","text":"$+3.000$ (Ganancia)","isCorrect":false,"rationale":"Este error ocurre si se ignora que el gasto es mayor que el ingreso inicial."},{"label":"D","text":"$0$ (Equilibrio)","isCorrect":false,"rationale":"Para llegar a cero, el gasto tendría que haber sido exactamente igual al ingreso inicial."}]},{"question":"¿Qué significa matemáticamente calcular 'un tercio de un cuarto' ($\\frac{1}{3} \\cdot \\frac{1}{4}$)?","hint":"Visualiza un chocolate dividido en 4 y luego divide uno de esos trozos en 3.","options":[{"label":"A","text":"Sumar un tercio y un cuarto para obtener una cantidad mayor.","isCorrect":false,"rationale":"La multiplicación de fracciones propias siempre resulta en una parte más pequeña que las originales, no mayor."},{"label":"B","text":"Restar un tercio a un entero para ver cuánto sobra.","isCorrect":false,"rationale":"La resta no se relaciona directamente con el concepto de 'parte de una parte' en este contexto multiplicativo."},{"label":"C","text":"Repetir tres veces la cantidad de un cuarto.","isCorrect":false,"rationale":"Eso representaría la operación $3 \\cdot \\frac{1}{4}$, lo cual es distinto a calcular la fracción de una fracción."},{"label":"D","text":"Dividir una cuarta parte en tres trozos iguales y tomar uno.","isCorrect":true,"rationale":"La multiplicación de fracciones representa tomar una parte de otra parte ya existente."}]},{"question":"Si transformamos el número decimal $0,2$ a su forma de fracción, ¿cuál es el resultado correcto?","hint":"Fíjate en cuántos lugares hay después de la coma para decidir si usas $10, 100$ o $1000$.","options":[{"label":"A","text":"$\\frac{2}{100}$","isCorrect":false,"rationale":"Este denominador se usaría si el número fuera $0,02$ (centésimos)."},{"label":"B","text":"$\\frac{2}{10}$","isCorrect":true,"rationale":"Como el decimal tiene una sola cifra después de la coma, representa 'décimos', por lo que el denominador es $10$."},{"label":"C","text":"$\\frac{20}{10}$","isCorrect":false,"rationale":"Esto representaría el número entero $2$, no el decimal $0,2$."},{"label":"D","text":"$\\frac{1}{2}$","isCorrect":false,"rationale":"Este es un error común de confusión visual; $0,5$ es $\\frac{1}{2}$, pero $0,2$ no lo es."}]},{"question":"Al multiplicar $0,5 \\times 0,3$, ¿cuál es el resultado decimal correcto?","hint":"Multiplica $5 \\times 3$ y luego ajusta la coma contando los decimales de ambos números.","options":[{"label":"A","text":"$0,015$","isCorrect":false,"rationale":"Se agregaron demasiados ceros decimales, posiblemente por una confusión al contar las posiciones de los factores."},{"label":"B","text":"$1,5$","isCorrect":false,"rationale":"Se multiplicaron los números pero se ubicó mal la coma, olvidando que el resultado debe tener dos decimales."},{"label":"C","text":"$0,15$","isCorrect":true,"rationale":"Al multiplicar $\\frac{5}{10} \\times \\frac{3}{10}$ obtenemos $\\frac{15}{100}$, lo que equivale a $0,15$."},{"label":"D","text":"$0,8$","isCorrect":false,"rationale":"Este error surge de sumar los decimales ($0,5 + 0,3$) en lugar de multiplicarlos."}]},{"question":"En un balance de una Pyme, se registra: $(+10) + (-4) + (-7)$. ¿Cuál es el resultado final?","hint":"Agrupa primero todas las pérdidas y luego compáralas con lo que ganaste.","options":[{"label":"A","text":"$-1$","isCorrect":true,"rationale":"Primero sumamos los gastos $(-11)$ y luego los comparamos con el ingreso $(+10)$, resultando en una pérdida de $1$."},{"label":"B","text":"$+1$","isCorrect":false,"rationale":"Se pudo haber cometido un error en la resta final o al sumar los números negativos."},{"label":"C","text":"$+21$","isCorrect":false,"rationale":"Este resultado ignora los signos negativos y suma todos los valores como si fueran ingresos."},{"label":"D","text":"$-11$","isCorrect":false,"rationale":"Se calculó solo la suma de los gastos pero se olvidó integrar el ingreso inicial de $+10$."}]},{"question":"Si la temperatura inicial es de $-3^{\\circ}C$ y baja $4^{\\circ}C$ más, ¿cuál es la temperatura final?","hint":"Si ya hace frío y la temperatura baja, hará todavía más frío.","options":[{"label":"A","text":"$+7^{\\circ}C$","isCorrect":false,"rationale":"Se ignoraron los signos negativos originales y se realizó una suma de valores absolutos."},{"label":"B","text":"$-1^{\\circ}C$","isCorrect":false,"rationale":"Es un error común al pensar que 'bajar' desde un negativo acerca el número al cero."},{"label":"C","text":"$-7^{\\circ}C$","isCorrect":true,"rationale":"Bajar la temperatura implica restar o sumar un número negativo, alejándose más del cero hacia la izquierda."},{"label":"D","text":"$+1^{\\circ}C$","isCorrect":false,"rationale":"Se restaron los valores absolutos de forma incorrecta, tratando la 'bajada' como un aumento."}]},{"question":"¿Cuál es el inverso aditivo de $-12$?","hint":"Busca el número que esté a la misma distancia del cero pero en el lado opuesto.","options":[{"label":"A","text":"$-12$","isCorrect":false,"rationale":"Este es el mismo número; el inverso debe tener el signo opuesto."},{"label":"B","text":"$0$","isCorrect":false,"rationale":"Cero es el resultado de sumar un número con su inverso, pero no es el inverso en sí mismo."},{"label":"C","text":"$1$","isCorrect":false,"rationale":"No existe relación conceptual directa entre el inverso aditivo y el número uno."},{"label":"D","text":"$+12$","isCorrect":true,"rationale":"El inverso aditivo es el número que, al sumarse con el original, da como resultado cero."}]},{"question":"Al representar $\\frac{1}{2} \\times \\frac{2}{3}$ en un dibujo, ¿qué fracción del total queda sombreada tras la intersección?","hint":"Multiplica el de arriba por el de arriba y el de abajo por el de abajo.","options":[{"label":"A","text":"$\\frac{2}{6}$","isCorrect":true,"rationale":"Multiplicando numeradores ($1 \\times 2$) y denominadores ($2 \\times 3$) obtenemos dos sextos."},{"label":"B","text":"$\\frac{3}{5}$","isCorrect":false,"rationale":"Se sumaron numeradores y denominadores, lo cual es un error grave en la multiplicación de fracciones."},{"label":"C","text":"$\\frac{2}{3}$","isCorrect":false,"rationale":"Se mantuvo el valor de una de las fracciones sin realizar la operación de 'parte de una parte'."},{"label":"D","text":"$\\frac{1}{3}$","isCorrect":false,"rationale":"Aunque es la forma simplificada, el dibujo original muestra $2$ de $6$ partes antes de simplificar."}]},{"question":"¿Cuál es la forma correcta de escribir $0,125$ como fracción según su valor posicional?","hint":"Cuenta cuántos números hay después de la coma para saber cuántos ceros lleva el denominador.","options":[{"label":"A","text":"$\\frac{125}{10}$","isCorrect":false,"rationale":"Este denominador representaría el número $12,5$, no $0,125$."},{"label":"B","text":"$\\frac{125}{1000}$","isCorrect":true,"rationale":"Al tener tres cifras decimales (décimos, centésimos, milésimos), el denominador debe ser $1000$."},{"label":"C","text":"$\\frac{1,25}{10}$","isCorrect":false,"rationale":"No se deben mezclar decimales y fracciones en la representación final de transformación."},{"label":"D","text":"$\\frac{125}{100}$","isCorrect":false,"rationale":"Este denominador solo se usa para dos cifras decimales (centésimos)."}]},{"question":"En el análisis de errores, un estudiante afirma que $(-5) - (+2) = -3$. ¿Cuál es el error cometido?","hint":"Aplica la regla de 'restar es sumar el opuesto' y mira si da $-3$.","options":[{"label":"A","text":"Sumó los números correctamente pero se equivocó en el signo.","isCorrect":false,"rationale":"Si hubiera sumado, el resultado habría sido $7$, no $3$."},{"label":"B","text":"El resultado debería ser positivo porque el número mayor es $5$.","isCorrect":false,"rationale":"El signo del resultado depende del valor mayor tras la transformación, y en este caso ambos terminarían siendo negativos."},{"label":"C","text":"No hay error, el resultado es $-3$.","isCorrect":false,"rationale":"Existe un error procedimental ya que restar un positivo es lo mismo que sumar un negativo."},{"label":"D","text":"No transformó la resta en suma del opuesto, simplemente restó los valores.","isCorrect":true,"rationale":"La operación debió ser $(-5) + (-2) = -7$, pero el estudiante restó $5 - 2$ ignorando el signo del primer número."}]},{"question":"Si tienes $1$ kg de harina y lo divides en porciones de $0,25$ kg, ¿cuántas porciones obtienes?","hint":"Piensa cuántas monedas de $25$ centavos necesitas para completar un peso.","options":[{"label":"A","text":"$25$ porciones","isCorrect":false,"rationale":"Este error surge de confundir el valor decimal con una división por un número mayor."},{"label":"B","text":"$2$ porciones","isCorrect":false,"rationale":"Esto ocurriría si dividieras por $0,5$ (la mitad), no por $0,25$."},{"label":"C","text":"$4$ porciones","isCorrect":true,"rationale":"Como $0,25$ es $\\frac{1}{4}$, dividir $1$ entero en cuartos resulta en $4$ partes iguales."},{"label":"D","text":"$0,25$ porciones","isCorrect":false,"rationale":"No se puede obtener una porción menor que uno si estás repartiendo un entero en partes más pequeñas."}]},{"question":"En una Pyme, si un producto cuesta $\\$0,5$ y un cliente compra $0,4$ unidades de ese producto, ¿cuánto paga?","hint":"Recuerda que multiplicar por $0,5$ es lo mismo que calcular la mitad de un número.","options":[{"label":"A","text":"$\\$2,0$","isCorrect":false,"rationale":"Se multiplicó $5 \\times 4$ pero se ignoró la posición de la coma decimal completamente."},{"label":"B","text":"$\\$0,2$","isCorrect":true,"rationale":"Multiplicar $0,5 \\times 0,4$ es equivalente a calcular la mitad de $0,4$ o $\\frac{5}{10} \\times \\frac{4}{10} = \\frac{20}{100}$."},{"label":"C","text":"$\\$0,02$","isCorrect":false,"rationale":"Se colocó mal la coma decimal, agregando un cero extra que disminuye el valor real."},{"label":"D","text":"$\\$0,9$","isCorrect":false,"rationale":"Se sumaron el precio y la cantidad en lugar de multiplicarlos."}]},{"question":"¿Qué ocurre en la recta numérica cuando sumamos un número negativo a cualquier otro número?","hint":"Asocia los números negativos con 'perder' o 'retroceder'.","options":[{"label":"A","text":"Nos quedamos en la misma posición.","isCorrect":false,"rationale":"Solo sumar el número cero mantiene la posición inalterada."},{"label":"B","text":"Saltamos directamente al lado positivo.","isCorrect":false,"rationale":"El movimiento es gradual y depende de la magnitud del número negativo sumado."},{"label":"C","text":"Nos movemos hacia la derecha.","isCorrect":false,"rationale":"Moverse a la derecha es la representación de sumar números positivos o aumentar valor."},{"label":"D","text":"Nos movemos hacia la izquierda.","isCorrect":true,"rationale":"Sumar un valor negativo representa una disminución o retroceso en la recta numérica."}]},{"question":"¿Cuál es el resultado de la operación combinada $(+4) - (-2) + (-5)$?","hint":"Primero cambia la resta por una suma y luego resuelve de izquierda a derecha.","options":[{"label":"A","text":"$+1$","isCorrect":true,"rationale":"Transformamos la resta: $(+4) + (+2) = +6$. Luego sumamos el negativo: $(+6) + (-5) = +1$."},{"label":"B","text":"$-3$","isCorrect":false,"rationale":"Este error puede venir de no transformar el $-(-2)$ en $+2$ antes de operar."},{"label":"C","text":"$-1$","isCorrect":false,"rationale":"Se pudo haber cometido un error de cálculo al final de la operación tras la transformación correcta."},{"label":"D","text":"$+11$","isCorrect":false,"rationale":"Se ignoraron los signos negativos y se sumaron todos los valores absolutos ($4+2+5$)."}]},{"question":"Si multiplicamos $\\frac{2}{3} \\times \\frac{3}{4}$, ¿cuál es el resultado simplificado?","hint":"Obtén el resultado de $2 \\times 3$ y $3 \\times 4$, y luego reduce la fracción.","options":[{"label":"A","text":"$\\frac{6}{12}$","isCorrect":false,"rationale":"Aunque es el resultado correcto de la multiplicación, no es la forma simplificada solicitada."},{"label":"B","text":"$\\frac{5}{7}$","isCorrect":false,"rationale":"Error común de sumar numeradores y denominadores en lugar de multiplicar."},{"label":"C","text":"$\\frac{1}{2}$","isCorrect":true,"rationale":"La multiplicación da $\\frac{6}{12}$, que al simplificarse por $6$ resulta en un medio."},{"label":"D","text":"$\\frac{8}{9}$","isCorrect":false,"rationale":"Este error proviene de multiplicar de forma cruzada, lo cual se usa para la división, no la multiplicación."}]},{"question":"En el contexto de una Pyme, ¿cómo se registraría 'perdonar una deuda de $3.000$' usando números enteros?","hint":"Quitar algo malo (una deuda) resulta en algo bueno para tu saldo.","options":[{"label":"A","text":"$+(-3.000)$ o sumar una deuda.","isCorrect":false,"rationale":"Esto representaría adquirir una nueva deuda, no eliminar una ya existente."},{"label":"B","text":"$-3.000$ solamente.","isCorrect":false,"rationale":"Este valor representa la deuda en sí, pero no la acción de perdonarla o eliminarla."},{"label":"C","text":"$0$","isCorrect":false,"rationale":"Aunque el saldo de la deuda quede en cero, la operación de perdonar implica un cambio positivo en el balance."},{"label":"D","text":"$-(-3.000)$ o restar una pérdida.","isCorrect":true,"rationale":"Perdonar una deuda es eliminar un valor negativo, lo que financieramente actúa como un ingreso o ahorro."}]},{"question":"¿Cuál es la regla para decidir el signo al sumar dos números enteros con signos distintos?","hint":"Piensa en qué 'fuerza' es más grande: ¿la positiva o la negativa?","options":[{"label":"A","text":"Se utiliza la regla de 'más por menos es menos'.","isCorrect":false,"rationale":"Esa es la regla para la multiplicación, no para la adición de enteros."},{"label":"B","text":"Se conserva el signo del número que tiene mayor valor absoluto.","isCorrect":true,"rationale":"En la suma de opuestos parciales, predomina el signo de la cantidad que es numéricamente más grande."},{"label":"C","text":"El resultado siempre es negativo.","isCorrect":false,"rationale":"Esto es falso; si el número positivo es mayor, el resultado será positivo."},{"label":"D","text":"El resultado siempre es positivo.","isCorrect":false,"rationale":"Falso; si la deuda o número negativo es mayor, el resultado será negativo."}]},{"question":"Si una Pyme tiene $+15$ de ingresos y $-20$ de gastos, ¿cuál es la decisión financiera más lógica según el balance?","hint":"Calcula el saldo final y decide si la empresa está ganando o perdiendo.","options":[{"label":"A","text":"Repartir ganancias, porque $+15$ es un número alto.","isCorrect":false,"rationale":"No se pueden repartir ganancias si después de pagar los gastos el saldo es negativo."},{"label":"B","text":"Reducir gastos o subir precios, porque hay una pérdida de $-5$.","isCorrect":true,"rationale":"El balance negativo indica que la empresa está perdiendo dinero y requiere ajustes para ser sostenible."},{"label":"C","text":"Mantener todo igual, porque el resultado es cero.","isCorrect":false,"rationale":"El resultado no es cero; los gastos superan a los ingresos."},{"label":"D","text":"Invertir más dinero, porque el balance es positivo.","isCorrect":false,"rationale":"El balance no es positivo; $+15 - 20 = -5$, por lo que no hay excedente para invertir."}]},{"question":"¿Qué número decimal es equivalente a la fracción $\\frac{3}{4}$?","hint":"Piensa en el valor decimal de tres monedas de $25$ centavos.","options":[{"label":"A","text":"$0,75$","isCorrect":true,"rationale":"Dividir $3$ en $4$ partes da $0,75$, que también se puede ver como $\\frac{75}{100}$."},{"label":"B","text":"$0,3$","isCorrect":false,"rationale":"Se tomó solo el numerador como parte decimal, ignorando el valor real de la división."},{"label":"C","text":"$0,4$","isCorrect":false,"rationale":"Se tomó solo el denominador como parte decimal."},{"label":"D","text":"$0,34$","isCorrect":false,"rationale":"Este es un error de asociar directamente los dígitos de la fracción con el decimal."}]},{"question":"Al resolver $(-7) - (-10)$, ¿cuál es el resultado final?","hint":"Aplica 'cambio la resta por suma y cambio el signo del segundo número'.","options":[{"label":"A","text":"$-17$","isCorrect":false,"rationale":"Se sumaron ambos números negativos ignorando que la resta de un negativo se vuelve suma."},{"label":"B","text":"$+17$","isCorrect":false,"rationale":"Se ignoraron todos los signos negativos y se realizó una suma simple."},{"label":"C","text":"$-3$","isCorrect":false,"rationale":"Se restaron los valores pero se mantuvo el signo del primer número de forma incorrecta tras la transformación."},{"label":"D","text":"$+3$","isCorrect":true,"rationale":"Transformando a suma obtenemos $(-7) + (+10)$, y como el $10$ es mayor, el resultado es positivo $3$."}]},{"question":"¿Cuál es la representación pictórica correcta para la multiplicación de $\\frac{1}{2} \\times \\frac{1}{2}$?","hint":"Busca la imagen que represente 'la mitad de una mitad'.","options":[{"label":"A","text":"Un círculo dividido en dos partes iguales.","isCorrect":false,"rationale":"Esto representa simplemente la fracción $\\frac{1}{2}$."},{"label":"B","text":"Un cuadrado completamente pintado.","isCorrect":false,"rationale":"Eso representaría el entero ($1$), no una fracción del mismo."},{"label":"C","text":"Un cuadrado dividido en 4 partes donde solo una está doblemente sombreada.","isCorrect":true,"rationale":"La mitad de una mitad es un cuarto del total original."},{"label":"D","text":"Un cuadrado con la mitad izquierda pintada de un color y la mitad derecha de otro.","isCorrect":false,"rationale":"Esto representaría dos mitades por separado, no la multiplicación (parte de una parte)."}]},{"question":"Si multiplicas un número decimal por $100$, ¿qué ocurre con la coma decimal?","hint":"Piensa en cómo cambia $0,25$ al multiplicarlo por $100$.","options":[{"label":"A","text":"Se desplaza dos lugares hacia la izquierda.","isCorrect":false,"rationale":"Mover la coma a la izquierda es propio de la división por potencias de $10$."},{"label":"B","text":"Desaparece el número decimal.","isCorrect":false,"rationale":"La coma solo 'desaparece' si el número se convierte en un entero exacto, pero sigue existiendo implícitamente."},{"label":"C","text":"Se desplaza dos lugares hacia la derecha.","isCorrect":true,"rationale":"Multiplicar por potencias de $10$ aumenta el valor del número, moviendo la coma hacia la derecha según el número de ceros."},{"label":"D","text":"Se desplaza un solo lugar.","isCorrect":false,"rationale":"Eso solo ocurriría si se multiplicara por $10$."}]},{"question":"En la resolución de problemas, ¿qué indica un saldo final de $0$ en una Pyme?","hint":"Recuerda el concepto de 'pares neutros' con las fichas de colores.","options":[{"label":"A","text":"Que la empresa quebró definitivamente.","isCorrect":false,"rationale":"La quiebra suele asociarse con balances negativos persistentes, no necesariamente con el cero absoluto."},{"label":"B","text":"Que los ingresos fueron exactamente iguales a los gastos.","isCorrect":true,"rationale":"El cero representa el punto de equilibrio donde no hay ni ganancia ni pérdida."},{"label":"C","text":"Que hubo un error en el cálculo contable.","isCorrect":false,"rationale":"Un saldo de cero es un resultado matemático válido y posible en la realidad financiera."},{"label":"D","text":"Que la empresa no realizó ninguna operación.","isCorrect":false,"rationale":"Puede haber realizado muchas operaciones que al sumarse y restarse se cancelaron entre sí."}]}];
+const tr = {"correct":"Correct!","incorrect":"Incorrect","next":"Next Question →","seeResults":"See Results","complete":"Quiz Complete!","scoreText":"You got {correct} out of {total} correct","tryAgain":"Try Again","rightAnswer":"Right answer","notQuite":"Not quite"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
