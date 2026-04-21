@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preparación ev. 1</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Preparación ev. 1</h1>
+    <div class="meta">26 preguntas</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">Pregunta 1</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una vitrina del supermercado tiene <span class="math">18</span> productos, ¿cuál de las siguientes combinaciones de filas y columnas es posible para organizarlos de forma exacta?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que los factores son números que multiplicados entre sí dan el total exacto.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Dado que $3 \times 6 = 18$, el número $3$ es un factor de $18$ y permite una organización rectangular perfecta.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">3</span> filas y <span class="math">6</span> columnas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dado que <span class="math">3 × 6 = 18</span>, el número <span class="math">3</span> es un factor de <span class="math">18</span> y permite una organización rectangular perfecta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El producto de $5 \times 3$ es $15$, por lo que faltarían espacios para completar los $18$ productos iniciales.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">5</span> filas y <span class="math">3</span> columnas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El producto de <span class="math">5 × 3</span> es <span class="math">15</span>, por lo que faltarían espacios para completar los <span class="math">18</span> productos iniciales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esta combinación da un total de $14$ espacios, lo cual no coincide con la cantidad de productos requerida.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">7</span> filas y <span class="math">2</span> columnas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta combinación da un total de <span class="math">14</span> espacios, lo cual no coincide con la cantidad de productos requerida.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Multiplicar $4 \times 4$ resulta en $16$, lo que dejaría productos fuera de la organización de la vitrina.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">4</span> filas y <span class="math">4</span> columnas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar <span class="math">4 × 4</span> resulta en <span class="math">16</span>, lo que dejaría productos fuera de la organización de la vitrina.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">Pregunta 2</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Por qué el número <span class="math">27</span> se clasifica como un número compuesto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Revisa si puedes encontrar otros números que multiplicados den <span class="math">27</span> además de <span class="math">1 × 27</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Ser impar no determina si un número es compuesto o primo; por ejemplo, el $13$ es impar pero es primo.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque es un número impar de dos dígitos</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ser impar no determina si un número es compuesto o primo; por ejemplo, el <span class="math">13</span> es impar pero es primo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Si esto fuera cierto, sería un número primo, pero el $27$ también puede dividirse por $3$ y $9$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque solo se puede dividir por <span class="math">1</span> y por <span class="math">27</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si esto fuera cierto, sería un número primo, pero el <span class="math">27</span> también puede dividirse por <span class="math">3</span> y <span class="math">9</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Un número compuesto se define por tener más de dos divisores, y $27$ es divisible por varios números además del $1$ y de sí mismo.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque tiene más de dos factores, como <span class="math">1</span>, <span class="math">3</span>, <span class="math">9</span> y <span class="math">27</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Un número compuesto se define por tener más de dos divisores, y <span class="math">27</span> es divisible por varios números además del <span class="math">1</span> y de sí mismo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="La terminación de un número no define su clasificación como primo o compuesto.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque termina en el dígito <span class="math">7</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La terminación de un número no define su clasificación como primo o compuesto.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">Pregunta 3</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un camión de lácteos pasa cada <span class="math">4</span> horas y uno de abarrotes cada <span class="math">6</span> horas. Si ambos coincidieron a las <span class="math">12:00</span>, ¿en cuántas horas volverán a encontrarse?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Debes buscar el número más pequeño que esté en la tabla del <span class="math">4</span> y en la tabla del <span class="math">6</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor es la suma de los tiempos, pero no representa un múltiplo común de ambos ciclos.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10</span> horas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es la suma de los tiempos, pero no representa un múltiplo común de ambos ciclos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El mínimo común múltiplo (MCM) de $4$ y $6$ es $12$, que es el menor múltiplo que ambos números comparten.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">12</span> horas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El mínimo común múltiplo (MCM) de <span class="math">4</span> y <span class="math">6</span> es <span class="math">12</span>, que es el menor múltiplo que ambos números comparten.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el máximo común divisor, no el mínimo común múltiplo que se necesita para ciclos de encuentro.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2</span> horas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el máximo común divisor, no el mínimo común múltiplo que se necesita para ciclos de encuentro.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque es un múltiplo común, no es el mínimo, por lo que se encontrarían antes de este tiempo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">24</span> horas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es un múltiplo común, no es el mínimo, por lo que se encontrarían antes de este tiempo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">Pregunta 4</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Aplica la regla PAPOMUDAS para resolver la siguiente operación: <span class="math">20 + 5 × 4</span></div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que la multiplicación tiene prioridad sobre la suma en la jerarquía PAPOMUDAS.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor no corresponde a una aplicación lógica de las operaciones presentadas.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">29</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor no corresponde a una aplicación lógica de las operaciones presentadas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este resultado se obtiene sumando primero ($20 + 5 = 25$) y luego multiplicando, lo cual ignora la jerarquía correcta.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">100</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado se obtiene sumando primero (<span class="math">20 + 5 = 25</span>) y luego multiplicando, lo cual ignora la jerarquía correcta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado podría provenir de un error de cálculo en las tablas de multiplicar o en la suma final.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">60</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado podría provenir de un error de cálculo en las tablas de multiplicar o en la suma final.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Según la jerarquía de operaciones, la multiplicación ($5 \times 4 = 20$) se realiza antes que la adición ($20 + 20 = 40$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">40</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Según la jerarquía de operaciones, la multiplicación (<span class="math">5 × 4 = 20</span>) se realiza antes que la adición (<span class="math">20 + 20 = 40</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">Pregunta 5</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En una promoción de &quot;<span class="math">3</span> jugos por <span class="math">2</span> snacks&quot;, ¿cuál de las siguientes razones es equivalente si decidimos aumentar la cantidad de productos manteniendo la oferta?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Para encontrar una razón equivalente, multiplica ambos números por la misma cifra.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aquí se sumó la misma cantidad a ambos lados en lugar de multiplicar, lo que altera la relación original.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">6</span> jugos por <span class="math">5</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí se sumó la misma cantidad a ambos lados en lugar de multiplicar, lo que altera la relación original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta razón no mantiene la proporción de $3$ a $2$ necesaria para que sea equivalente.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">5</span> jugos por <span class="math">4</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta razón no mantiene la proporción de <span class="math">3</span> a <span class="math">2</span> necesaria para que sea equivalente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al triplicar ambas cantidades ($3 \times 3$ y $2 \times 3$), se mantiene la proporción original de la promoción.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">9</span> jugos por <span class="math">6</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al triplicar ambas cantidades (<span class="math">3 × 3</span> y <span class="math">2 × 3</span>), se mantiene la proporción original de la promoción.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque se aumentaron las cantidades, la relación resultante no simplifica a $3:2$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">12</span> jugos por <span class="math">10</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque se aumentaron las cantidades, la relación resultante no simplifica a <span class="math">3:2</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">Pregunta 6</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cómo se representa la fracción impropia <span class="math"><span class="frac"><span class="frac-num">11</span><span class="frac-den">4</span></span></span> como un número mixto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Divide el numerador por el denominador para saber cuántos enteros completos hay.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aunque la suma es correcta, un número mixto debe tener una fracción propia, y $\frac{7}{4}$ sigue siendo impropia.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1 <span class="frac"><span class="frac-num">7</span><span class="frac-den">4</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque la suma es correcta, un número mixto debe tener una fracción propia, y <span class="math"><span class="frac"><span class="frac-num">7</span><span class="frac-den">4</span></span></span> sigue siendo impropia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Al dividir $11$ entre $4$, el cociente es $2$ (enteros) y el residuo es $3$, que se mantiene sobre el denominador original.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">2 <span class="frac"><span class="frac-num">3</span><span class="frac-den">4</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al dividir <span class="math">11</span> entre <span class="math">4</span>, el cociente es <span class="math">2</span> (enteros) y el residuo es <span class="math">3</span>, que se mantiene sobre el denominador original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esto equivaldría a $\frac{13}{4}$, ya que $3 \times 4 + 1 = 13$, superando la cantidad inicial.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">3 <span class="frac"><span class="frac-num">1</span><span class="frac-den">4</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto equivaldría a <span class="math"><span class="frac"><span class="frac-num">13</span><span class="frac-den">4</span></span></span>, ya que <span class="math">3 × 4 + 1 = 13</span>, superando la cantidad inicial.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor representa $\frac{9}{4}$, por lo que faltarían partes para llegar a $\frac{11}{4}$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">2 <span class="frac"><span class="frac-num">1</span><span class="frac-den">4</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor representa <span class="math"><span class="frac"><span class="frac-num">9</span><span class="frac-den">4</span></span></span>, por lo que faltarían partes para llegar a <span class="math"><span class="frac"><span class="frac-num">11</span><span class="frac-den">4</span></span></span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">Pregunta 7</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un cliente en el pasillo de fiambrería compra <span class="math">1 <span class="frac"><span class="frac-num">2</span><span class="frac-den">5</span></span></span> kg de queso y luego decide llevar <span class="math">2 <span class="frac"><span class="frac-num">1</span><span class="frac-den">5</span></span></span> kg adicionales. ¿Cuál es el peso total de su compra?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Suma primero los enteros y luego las fracciones que tienen el mismo denominador.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado indica un error en la suma de las partes enteras del problema.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">4 <span class="frac"><span class="frac-num">3</span><span class="frac-den">5</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado indica un error en la suma de las partes enteras del problema.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aquí se ignoraron completamente las fracciones, considerando solo los pesos enteros.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">3</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí se ignoraron completamente las fracciones, considerando solo los pesos enteros.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Se suman las partes enteras ($1 + 2 = 3$) y las fracciones con el mismo denominador ($\frac{2}{5} + \frac{1}{5} = \frac{3}{5}$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">3 <span class="frac"><span class="frac-num">3</span><span class="frac-den">5</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se suman las partes enteras (<span class="math">1 + 2 = 3</span>) y las fracciones con el mismo denominador (<span class="math"><span class="frac"><span class="frac-num">2</span><span class="frac-den">5</span></span> + <span class="frac"><span class="frac-num">1</span><span class="frac-den">5</span></span> = <span class="frac"><span class="frac-num">3</span><span class="frac-den">5</span></span></span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Un error común es sumar los denominadores, pero estos deben permanecer iguales al sumar fracciones del mismo tipo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">3 <span class="frac"><span class="frac-num">3</span><span class="frac-den">10</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Un error común es sumar los denominadores, pero estos deben permanecer iguales al sumar fracciones del mismo tipo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">Pregunta 8</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una caja de chocolates tiene un código marcado con el número <span class="math">13</span>, ¿qué se puede afirmar sobre este número en términos de logística de vitrinas?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Intenta encontrar si el <span class="math">13</span> aparece en alguna tabla de multiplicar que no sea la del <span class="math">1</span> o la del <span class="math">13</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El $13$ no es múltiplo de $3$, por lo que no se puede dividir en grupos de tres de forma exacta.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Es divisible por <span class="math">3</span>, permitiendo filas de tres productos</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">13</span> no es múltiplo de <span class="math">3</span>, por lo que no se puede dividir en grupos de tres de forma exacta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aunque matemáticamente sobra uno, los factores deben dividir la cantidad de forma exacta y sin residuos.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Se puede organizar en una vitrina de <span class="math">3 × 4</span> con un producto sobrando</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque matemáticamente sobra uno, los factores deben dividir la cantidad de forma exacta y sin residuos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El $13$ no tiene otros factores aparte del $1$ y de sí mismo, por lo que no es compuesto.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Es compuesto, permitiendo múltiples formas de organización rectangular</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">13</span> no tiene otros factores aparte del <span class="math">1</span> y de sí mismo, por lo que no es compuesto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Los números primos solo tienen dos factores, lo que limita sus posibilidades de organización rectangular a una sola fila o columna.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Es primo, por lo que solo se puede organizar en una matriz de <span class="math">1 × 13</span> o <span class="math">13 × 1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Los números primos solo tienen dos factores, lo que limita sus posibilidades de organización rectangular a una sola fila o columna.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">Pregunta 9</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el resultado de la siguiente operación combinada aplicada a una boleta de supermercado: <span class="math">(10.000 - 2.000) × 2</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">La sigla PAPOMUDAS indica que lo que está dentro de los paréntesis se resuelve siempre en primer lugar.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Podría ser el resultado de un error en la resta inicial dentro del paréntesis.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">12.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Podría ser el resultado de un error en la resta inicial dentro del paréntesis.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error ocurre si se multiplica $2.000 \times 2$ primero y luego se resta de $10.000$, ignorando los paréntesis.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">6.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se multiplica <span class="math">2.000 × 2</span> primero y luego se resta de <span class="math">10.000</span>, ignorando los paréntesis.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Los paréntesis indican que primero se debe realizar la resta ($8.000$) y luego multiplicar por $2$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">16.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Los paréntesis indican que primero se debe realizar la resta (<span class="math">8.000</span>) y luego multiplicar por <span class="math">2</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor no se obtiene siguiendo ninguno de los pasos lógicos de la operación planteada.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">20.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor no se obtiene siguiendo ninguno de los pasos lógicos de la operación planteada.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">Pregunta 10</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En una tabla de valores de razones, si la relación es de <span class="math">4</span> manzanas por cada <span class="math">1</span> yogur, ¿cuántas manzanas habrá si el reponedor coloca <span class="math">5</span> yogures?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Si por cada yogur hay <span class="math">4</span> manzanas, debes multiplicar esa cantidad por el número total de yogures.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Manteniendo la razón $4:1$, si se multiplica el antecedente y el consecuente por $5$, se obtiene $20$ manzanas.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">20</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Manteniendo la razón <span class="math">4:1</span>, si se multiplica el antecedente y el consecuente por <span class="math">5</span>, se obtiene <span class="math">20</span> manzanas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error proviene de sumar los valores ($4 + 5$) en lugar de aplicar la multiplicación proporcional.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">9</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error proviene de sumar los valores (<span class="math">4 + 5</span>) en lugar de aplicar la multiplicación proporcional.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esto solo representaría la cantidad para un único yogur, no para los cinco solicitados.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">4</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto solo representaría la cantidad para un único yogur, no para los cinco solicitados.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor no corresponde a la progresión aritmética ni geométrica de la razón dada.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor no corresponde a la progresión aritmética ni geométrica de la razón dada.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">Pregunta 11</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Para encontrar los números primos hasta el <span class="math">30</span> usando la Criba de Eratóstenes, ¿cuál es el primer paso correcto después de tachar el número <span class="math">1</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca el primer número después del <span class="math">1</span> que solo se puede dividir por sí mismo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Solo se deben tachar los múltiplos de $5$ que sean mayores que $5$; el $5$ en sí mismo es primo.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Tachar todos los números que terminan en <span class="math">5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Solo se deben tachar los múltiplos de <span class="math">5</span> que sean mayores que <span class="math">5</span>; el <span class="math">5</span> en sí mismo es primo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se deben tachar todos los múltiplos de $3$ que no hayan sido tachados antes, no solo algunos seleccionados.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Encerrar el <span class="math">3</span> y tachar solo el <span class="math">9</span> y el <span class="math">21</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se deben tachar todos los múltiplos de <span class="math">3</span> que no hayan sido tachados antes, no solo algunos seleccionados.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="El $2$ es el primer número primo y la técnica consiste en eliminar a sus múltiplos por ser compuestos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Encerrar el <span class="math">2</span> y tachar todos sus múltiplos</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">2</span> es el primer número primo y la técnica consiste en eliminar a sus múltiplos por ser compuestos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El $10$ es un número compuesto y debe ser tachado como múltiplo de $2$ y $5$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Tachar todos los números pares excepto el <span class="math">10</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">10</span> es un número compuesto y debe ser tachado como múltiplo de <span class="math">2</span> y <span class="math">5</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">Pregunta 12</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Tres camiones de reparto salen de la central: el Camión A cada <span class="math">2</span> días, el Camión B cada <span class="math">3</span> días y el Camión C cada <span class="math">4</span> días. ¿Cada cuántos días coincidirán los tres camiones?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Escribe los múltiplos de cada número y busca el primero que aparezca en las tres listas.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El número $9$ es múltiplo de $3$, pero no es divisible de forma exacta por $2$ ni por $4$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">9</span> días</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número <span class="math">9</span> es múltiplo de <span class="math">3</span>, pero no es divisible de forma exacta por <span class="math">2</span> ni por <span class="math">4</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El MCM de $2$, $3$ y $4$ es $12$, ya que es el número más pequeño divisible por los tres simultáneamente.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">12</span> días</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El MCM de <span class="math">2</span>, <span class="math">3</span> y <span class="math">4</span> es <span class="math">12</span>, ya que es el número más pequeño divisible por los tres simultáneamente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El $6$ es múltiplo de $2$ y $3$, pero el camión C (cada $4$ días) no pasaría en ese momento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">6</span> días</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">6</span> es múltiplo de <span class="math">2</span> y <span class="math">3</span>, pero el camión C (cada <span class="math">4</span> días) no pasaría en ese momento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque los tres coinciden en el día $24$, no es la primera vez que ocurre (el mínimo).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">24</span> días</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque los tres coinciden en el día <span class="math">24</span>, no es la primera vez que ocurre (el mínimo).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="12">
+          <div class="q-header">
+            <span class="q-number">Pregunta 13</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Resuelve la siguiente expresión considerando el orden de operaciones: <span class="math">8 + (12 ÷ 3) × 2</span></div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Sigue el orden: Paréntesis, luego Multiplicación/División, y al final Suma/Resta.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error ocurre si se suma primero el $8$ con el resultado del paréntesis antes de multiplicar.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se suma primero el <span class="math">8</span> con el resultado del paréntesis antes de multiplicar.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Primero se resuelve el paréntesis ($12 \div 3 = 4$), luego la multiplicación ($4 \times 2 = 8$) y finalmente la suma ($8 + 8 = 16$).">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">16</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Primero se resuelve el paréntesis (<span class="math">12 ÷ 3 = 4</span>), luego la multiplicación (<span class="math">4 × 2 = 8</span>) y finalmente la suma (<span class="math">8 + 8 = 16</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado no sigue la lógica de los números enteros ni la jerarquía de las operaciones planteadas.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">13.3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado no sigue la lógica de los números enteros ni la jerarquía de las operaciones planteadas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor se obtiene sumando $8 + 12$ primero, lo cual rompe las reglas de paréntesis y prioridad.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">40</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor se obtiene sumando <span class="math">8 + 12</span> primero, lo cual rompe las reglas de paréntesis y prioridad.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="13">
+          <div class="q-header">
+            <span class="q-number">Pregunta 14</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un paquete de galletas pesa <span class="math"><span class="frac"><span class="frac-num">3</span><span class="frac-den">4</span></span></span> kg y otro pesa <span class="math"><span class="frac"><span class="frac-num">2</span><span class="frac-den">4</span></span></span> kg. ¿Cuál es el peso total expresado como número mixto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Suma las fracciones primero y luego fíjate cuántas veces cabe el <span class="math">4</span> en el resultado.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esto equivaldría a $\frac{7}{4}$, lo cual es mayor que la suma de los pesos originales.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1 <span class="frac"><span class="frac-num">3</span><span class="frac-den">4</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto equivaldría a <span class="math"><span class="frac"><span class="frac-num">7</span><span class="frac-den">4</span></span></span>, lo cual es mayor que la suma de los pesos originales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor es igual a $\frac{6}{4}$, pero la suma correcta de las fracciones dadas es $\frac{5}{4}$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1 <span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es igual a <span class="math"><span class="frac"><span class="frac-num">6</span><span class="frac-den">4</span></span></span>, pero la suma correcta de las fracciones dadas es <span class="math"><span class="frac"><span class="frac-num">5</span><span class="frac-den">4</span></span></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La suma es $\frac{5}{4}$. Al convertir a mixto, $5 \div 4$ da $1$ entero con un residuo de $1$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1 <span class="frac"><span class="frac-num">1</span><span class="frac-den">4</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La suma es <span class="math"><span class="frac"><span class="frac-num">5</span><span class="frac-den">4</span></span></span>. Al convertir a mixto, <span class="math">5 ÷ 4</span> da <span class="math">1</span> entero con un residuo de <span class="math">1</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es un error común donde se suman los numeradores y los denominadores indebidamente.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">5</span><span class="frac-den">8</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error común donde se suman los numeradores y los denominadores indebidamente.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="14">
+          <div class="q-header">
+            <span class="q-number">Pregunta 15</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una razón compara <span class="math">2</span> bebidas por cada <span class="math">5</span> snacks, ¿qué significa esto en el contexto de un inventario?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en la razón como una regla de 'armado de paquetes' iguales.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El total de $7$ solo aplica al nivel más básico de la razón, pero puede haber múltiplos (como $14$, $21$, etc.).">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Que siempre habrá <span class="math">7</span> productos en total en cada estante</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El total de <span class="math">7</span> solo aplica al nivel más básico de la razón, pero puede haber múltiplos (como <span class="math">14</span>, <span class="math">21</span>, etc.).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La razón indica una proporción, no necesariamente la diferencia total o resta de cantidades.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Que hay <span class="math">3</span> snacks más que bebidas en total en el supermercado</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La razón indica una proporción, no necesariamente la diferencia total o resta de cantidades.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Una razón establece una comparación constante entre dos magnitudes diferentes de un conjunto.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Que por cada grupo de <span class="math">5</span> snacks que haya, deben existir <span class="math">2</span> bebidas para mantener la relación</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Una razón establece una comparación constante entre dos magnitudes diferentes de un conjunto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="La razón compara cantidades de productos, no proporciona información sobre sus precios.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Que las bebidas son más caras que los snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La razón compara cantidades de productos, no proporciona información sobre sus precios.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="15">
+          <div class="q-header">
+            <span class="q-number">Pregunta 16</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En la recta numérica de un pasillo de supermercado que va del <span class="math">0</span> al <span class="math">2</span>, ¿dónde se ubicaría el número mixto <span class="math">1 <span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca el número entero '1' y luego avanza media unidad más hacia la derecha.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Cualquier número con un entero '1' debe estar ubicado a la derecha del $1$, no antes.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Justo antes del número <span class="math">1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cualquier número con un entero '1' debe estar ubicado a la derecha del <span class="math">1</span>, no antes.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El número $2$ equivaldría a $1 \frac{2}{2}$ o simplemente $2$ unidades completas.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Exactamente sobre la marca del número <span class="math">2</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número <span class="math">2</span> equivaldría a <span class="math">1 <span class="frac"><span class="frac-num">2</span><span class="frac-den">2</span></span></span> o simplemente <span class="math">2</span> unidades completas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esa ubicación corresponde a la fracción $\frac{1}{2}$, pero el número solicitado incluye un entero completo.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">En la mitad entre el <span class="math">0</span> y el <span class="math">1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa ubicación corresponde a la fracción <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span>, pero el número solicitado incluye un entero completo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El entero $1$ marca el inicio de la segunda unidad, y la fracción $\frac{1}{2}$ indica la mitad del camino hacia el $2$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Exactamente en la mitad entre el <span class="math">1</span> y el <span class="math">2</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El entero <span class="math">1</span> marca el inicio de la segunda unidad, y la fracción <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span> indica la mitad del camino hacia el <span class="math">2</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="16">
+          <div class="q-header">
+            <span class="q-number">Pregunta 17</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el mínimo común múltiplo (MCM) entre <span class="math">8</span> y <span class="math">12</span> para coordinar la llegada de productos?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Haz una lista de los múltiplos de <span class="math">8</span> y de <span class="math">12</span> y busca el primer número que se repita.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Es un múltiplo común, pero no es el más pequeño (mínimo) entre ambos.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">48</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es un múltiplo común, pero no es el más pequeño (mínimo) entre ambos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor es el máximo común divisor (MCD), no el mínimo común múltiplo solicitado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">4</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es el máximo común divisor (MCD), no el mínimo común múltiplo solicitado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="$24$ es el primer número que aparece tanto en los múltiplos de $8$ ($8, 16, 24$) como en los de $12$ ($12, 24$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale"><span class="math">24</span> es el primer número que aparece tanto en los múltiplos de <span class="math">8</span> (<span class="math">8, 16, 24</span>) como en los de <span class="math">12</span> (<span class="math">12, 24</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El $16$ es múltiplo de $8$, pero no es divisible de forma exacta por el número $12$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">16</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">16</span> es múltiplo de <span class="math">8</span>, pero no es divisible de forma exacta por el número <span class="math">12</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="17">
+          <div class="q-header">
+            <span class="q-number">Pregunta 18</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Al organizar una vitrina con <span class="math">24</span> productos, ¿cuáles son todos los factores posibles que el diseñador puede considerar?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca todos los pares de números que multiplicados den como resultado <span class="math">24</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Faltan factores importantes como el $3$ y el $6$ ($3 \times 8 = 24$ y $4 \times 6 = 24$), y el $16$ no divide a $24$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1, 2, 4, 8, 16, 24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Faltan factores importantes como el <span class="math">3</span> y el <span class="math">6</span> (<span class="math">3 × 8 = 24</span> y <span class="math">4 × 6 = 24</span>), y el <span class="math">16</span> no divide a <span class="math">24</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El número $10$ no es un factor de $24$ y faltan los factores extremos como el $1$ y el $24$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">2, 4, 6, 8, 10, 12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número <span class="math">10</span> no es un factor de <span class="math">24</span> y faltan los factores extremos como el <span class="math">1</span> y el <span class="math">24</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Varios números de esta lista son múltiplos, pero no dividen al $24$ de forma exacta.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">3, 6, 9, 12, 15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Varios números de esta lista son múltiplos, pero no dividen al <span class="math">24</span> de forma exacta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Estos son todos los números que dividen a $24$ de forma exacta, permitiendo diversas configuraciones de filas y columnas.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1, 2, 3, 4, 6, 8, 12, 24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Estos son todos los números que dividen a <span class="math">24</span> de forma exacta, permitiendo diversas configuraciones de filas y columnas.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="18">
+          <div class="q-header">
+            <span class="q-number">Pregunta 19</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una operación en la caja registradora es <span class="math">5.000 + 3 × 2.000 - 1.000</span>, ¿cuál es el total correcto a pagar?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Empieza resolviendo la multiplicación antes que cualquier suma o resta.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado ignora la prioridad de la multiplicación, sumando el $5.000$ con el $3$ al principio.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">15.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado ignora la prioridad de la multiplicación, sumando el <span class="math">5.000</span> con el <span class="math">3</span> al principio.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Primero se multiplica ($3 \times 2.000 = 6.000$), luego se suma ($5.000 + 6.000 = 11.000$) y finalmente se resta ($11.000 - 1.000 = 10.000$).">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Primero se multiplica (<span class="math">3 × 2.000 = 6.000</span>), luego se suma (<span class="math">5.000 + 6.000 = 11.000</span>) y finalmente se resta (<span class="math">11.000 - 1.000 = 10.000</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error ocurre si se realiza la resta antes que la suma, aunque en este caso el orden de suma/resta es de izquierda a derecha.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">8.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se realiza la resta antes que la suma, aunque en este caso el orden de suma/resta es de izquierda a derecha.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor podría ser el resultado de un error en el paso final de la sustracción.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">9.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor podría ser el resultado de un error en el paso final de la sustracción.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="19">
+          <div class="q-header">
+            <span class="q-number">Pregunta 20</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Determina el resultado de la sustracción de números mixtos: <span class="math">5 <span class="frac"><span class="frac-num">4</span><span class="frac-den">7</span></span> - 2 <span class="frac"><span class="frac-num">1</span><span class="frac-den">7</span></span></span></div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Resta los números grandes por un lado y las fracciones por otro.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Los denominadores nunca deben restarse; la unidad de medida del fraccionamiento se mantiene constante.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">3 <span class="frac"><span class="frac-num">3</span><span class="frac-den">0</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Los denominadores nunca deben restarse; la unidad de medida del fraccionamiento se mantiene constante.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor es el resultado de sumar las cantidades en lugar de restarlas.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">7 <span class="frac"><span class="frac-num">5</span><span class="frac-den">7</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es el resultado de sumar las cantidades en lugar de restarlas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Se restan los enteros ($5 - 2 = 3$) y luego las fracciones con igual denominador ($\frac{4}{7} - \frac{1}{7} = \frac{3}{7}$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">3 <span class="frac"><span class="frac-num">3</span><span class="frac-den">7</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se restan los enteros (<span class="math">5 - 2 = 3</span>) y luego las fracciones con igual denominador (<span class="math"><span class="frac"><span class="frac-num">4</span><span class="frac-den">7</span></span> - <span class="frac"><span class="frac-num">1</span><span class="frac-den">7</span></span> = <span class="frac"><span class="frac-num">3</span><span class="frac-den">7</span></span></span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este resultado ignora la parte fraccionaria que queda después de la resta.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">3</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado ignora la parte fraccionaria que queda después de la resta.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="20">
+          <div class="q-header">
+            <span class="q-number">Pregunta 21</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué número primo se encuentra entre el <span class="math">20</span> y el <span class="math">30</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca un número en ese rango que no aparezca en las tablas del <span class="math">2, 3, 5</span> o <span class="math">7</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="El $23$ solo tiene como factores al $1$ y al $23$, lo que cumple con la definición de número primo.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">23</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">23</span> solo tiene como factores al <span class="math">1</span> y al <span class="math">23</span>, lo que cumple con la definición de número primo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este número es compuesto porque es divisible por $3$ y por $9$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">27</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este número es compuesto porque es divisible por <span class="math">3</span> y por <span class="math">9</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El $21$ es compuesto porque se puede obtener multiplicando $3 \times 7$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">21</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">21</span> es compuesto porque se puede obtener multiplicando <span class="math">3 × 7</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El $25$ es un número compuesto ya que es el resultado de $5 \times 5$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">25</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">25</span> es un número compuesto ya que es el resultado de <span class="math">5 × 5</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="21">
+          <div class="q-header">
+            <span class="q-number">Pregunta 22</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En un almacén hay una relación de &quot;<span class="math">2</span> bebidas por cada <span class="math">3</span> snacks&quot;. Si el gerente decide triplicar el stock manteniendo la razón, ¿cuántas bebidas y snacks habrá?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que 'triplicar' significa multiplicar cada cantidad original por <span class="math">3</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aquí solo se multiplicó el primer término, dejando el segundo sin el aumento proporcional.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">6</span> bebidas y <span class="math">3</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí solo se multiplicó el primer término, dejando el segundo sin el aumento proporcional.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta sería la respuesta si se hubiese duplicado la razón inicial, no triplicado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">4</span> bebidas y <span class="math">6</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta sería la respuesta si se hubiese duplicado la razón inicial, no triplicado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al multiplicar ambos términos de la razón $2:3$ por el factor $3$, obtenemos la razón equivalente $6:9$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">6</span> bebidas y <span class="math">9</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar ambos términos de la razón <span class="math">2:3</span> por el factor <span class="math">3</span>, obtenemos la razón equivalente <span class="math">6:9</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este resultado proviene de sumar $3$ a cada término en lugar de multiplicarlos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">5</span> bebidas y <span class="math">6</span> snacks</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado proviene de sumar <span class="math">3</span> a cada término en lugar de multiplicarlos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="22">
+          <div class="q-header">
+            <span class="q-number">Pregunta 23</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la característica principal de una fracción impropia?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Fíjate en la relación de tamaño entre el número de arriba y el de abajo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Por definición, si el numerador supera al denominador, la cantidad total es mayor que un entero.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Su numerador es mayor o igual que el denominador, representando más de una unidad</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Por definición, si el numerador supera al denominador, la cantidad total es mayor que un entero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta es la descripción de una fracción propia, no de una impropia.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Su denominador es mayor que el numerador, representando menos de una unidad</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta es la descripción de una fracción propia, no de una impropia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esa es la estructura de un número mixto, aunque sea equivalente a una fracción impropia.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Siempre tiene un número entero acompañado de una fracción pequeña</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa es la estructura de un número mixto, aunque sea equivalente a una fracción impropia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Las fracciones se pueden representar con cualquier figura geométrica dividida en partes iguales o en la recta numérica.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Solo se puede representar con dibujos de círculos</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Las fracciones se pueden representar con cualquier figura geométrica dividida en partes iguales o en la recta numérica.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="23">
+          <div class="q-header">
+            <span class="q-number">Pregunta 24</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una boleta indica la operación <span class="math">(4.000 × 2 + 3.000) × 2</span>, ¿cuál es el procedimiento correcto según PAPOMUDAS?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Lo que está dentro del paréntesis manda, pero adentro también debes multiplicar antes de sumar.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="No se pueden combinar factores externos con internos sin antes resolver el contenido del paréntesis.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Multiplicar los dos doses del final primero</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No se pueden combinar factores externos con internos sin antes resolver el contenido del paréntesis.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La posición física no determina la prioridad; se deben seguir las reglas de paréntesis y multiplicación.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Sumar <span class="math">2 + 3.000</span> primero porque está en el centro de la operación</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La posición física no determina la prioridad; se deben seguir las reglas de paréntesis y multiplicación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Las operaciones se resuelven generalmente de izquierda a derecha una vez respetada la jerarquía.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Resolver de derecha a izquierda empezando por la multiplicación final</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Las operaciones se resuelven generalmente de izquierda a derecha una vez respetada la jerarquía.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Se debe resolver lo interno del paréntesis primero (respetando la multiplicación interna) y luego lo externo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Multiplicar <span class="math">4.000 × 2</span>, sumar <span class="math">3.000</span> y luego multiplicar todo el resultado por <span class="math">2</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se debe resolver lo interno del paréntesis primero (respetando la multiplicación interna) y luego lo externo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="24">
+          <div class="q-header">
+            <span class="q-number">Pregunta 25</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el sistema de la Criba de Eratóstenes, ¿por qué el número <span class="math">9</span> termina siendo tachado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en qué tabla de multiplicar aparece el número <span class="math">9</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Al ser divisible por $3$ (además de $1$ y $9$), deja de ser primo y se marca como compuesto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque es un múltiplo de <span class="math">3</span> y por lo tanto es un número compuesto</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al ser divisible por <span class="math">3</span> (además de <span class="math">1</span> y <span class="math">9</span>), deja de ser primo y se marca como compuesto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La suma de otros números no es un criterio para tachar en la criba.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque es la suma de <span class="math">4 + 5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La suma de otros números no es un criterio para tachar en la criba.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El criterio de la criba se basa en la divisibilidad y los factores, no en el último dígito.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque termina en un dígito que no es primo</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El criterio de la criba se basa en la divisibilidad y los factores, no en el último dígito.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="No todos los impares se tachan; por ejemplo, el $7$ y el $11$ se mantienen como primos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque es un número impar mayor que <span class="math">5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No todos los impares se tachan; por ejemplo, el <span class="math">7</span> y el <span class="math">11</span> se mantienen como primos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="25">
+          <div class="q-header">
+            <span class="q-number">Pregunta 26</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un cliente quiere comprar <span class="math"><span class="frac"><span class="frac-num">9</span><span class="frac-den">2</span></span></span> kg de harina. ¿A cuántos kg enteros y medio kg equivale esto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">¿Cuántas veces cabe el número <span class="math">2</span> dentro del <span class="math">9</span>?</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Al dividir $9$ entre $2$, el resultado es $4$ con un residuo de $1$, lo que forma el número mixto $4 \frac{1}{2}$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">4</span> enteros y <span class="math"><span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al dividir <span class="math">9</span> entre <span class="math">2</span>, el resultado es <span class="math">4</span> con un residuo de <span class="math">1</span>, lo que forma el número mixto <span class="math">4 <span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esto equivaldría a $\frac{10}{2}$ kg, lo cual es más de lo que el cliente solicita.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">5</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto equivaldría a <span class="math"><span class="frac"><span class="frac-num">10</span><span class="frac-den">2</span></span></span> kg, lo cual es más de lo que el cliente solicita.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor representa $\frac{7}{2}$ kg, por lo que faltaría harina para completar el pedido.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">3 <span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span></span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor representa <span class="math"><span class="frac"><span class="frac-num">7</span><span class="frac-den">2</span></span></span> kg, por lo que faltaría harina para completar el pedido.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esto confundiría los términos de la fracción con cantidades enteras independientes.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">9</span> enteros y <span class="math">2</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto confundiría los términos de la fracción con cantidades enteras independientes.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>¡Cuestionario completado!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Intentar de nuevo</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"Si una vitrina del supermercado tiene $18$ productos, ¿cuál de las siguientes combinaciones de filas y columnas es posible para organizarlos de forma exacta?","hint":"Recuerda que los factores son números que multiplicados entre sí dan el total exacto.","options":[{"label":"A","text":"$3$ filas y $6$ columnas","isCorrect":true,"rationale":"Dado que $3 \\times 6 = 18$, el número $3$ es un factor de $18$ y permite una organización rectangular perfecta."},{"label":"B","text":"$5$ filas y $3$ columnas","isCorrect":false,"rationale":"El producto de $5 \\times 3$ es $15$, por lo que faltarían espacios para completar los $18$ productos iniciales."},{"label":"C","text":"$7$ filas y $2$ columnas","isCorrect":false,"rationale":"Esta combinación da un total de $14$ espacios, lo cual no coincide con la cantidad de productos requerida."},{"label":"D","text":"$4$ filas y $4$ columnas","isCorrect":false,"rationale":"Multiplicar $4 \\times 4$ resulta en $16$, lo que dejaría productos fuera de la organización de la vitrina."}]},{"question":"¿Por qué el número $27$ se clasifica como un número compuesto?","hint":"Revisa si puedes encontrar otros números que multiplicados den $27$ además de $1 \\times 27$.","options":[{"label":"A","text":"Porque es un número impar de dos dígitos","isCorrect":false,"rationale":"Ser impar no determina si un número es compuesto o primo; por ejemplo, el $13$ es impar pero es primo."},{"label":"B","text":"Porque solo se puede dividir por $1$ y por $27$","isCorrect":false,"rationale":"Si esto fuera cierto, sería un número primo, pero el $27$ también puede dividirse por $3$ y $9$."},{"label":"C","text":"Porque tiene más de dos factores, como $1$, $3$, $9$ y $27$","isCorrect":true,"rationale":"Un número compuesto se define por tener más de dos divisores, y $27$ es divisible por varios números además del $1$ y de sí mismo."},{"label":"D","text":"Porque termina en el dígito $7$","isCorrect":false,"rationale":"La terminación de un número no define su clasificación como primo o compuesto."}]},{"question":"Un camión de lácteos pasa cada $4$ horas y uno de abarrotes cada $6$ horas. Si ambos coincidieron a las $12:00$, ¿en cuántas horas volverán a encontrarse?","hint":"Debes buscar el número más pequeño que esté en la tabla del $4$ y en la tabla del $6$.","options":[{"label":"A","text":"$10$ horas","isCorrect":false,"rationale":"Este valor es la suma de los tiempos, pero no representa un múltiplo común de ambos ciclos."},{"label":"B","text":"$12$ horas","isCorrect":true,"rationale":"El mínimo común múltiplo (MCM) de $4$ y $6$ es $12$, que es el menor múltiplo que ambos números comparten."},{"label":"C","text":"$2$ horas","isCorrect":false,"rationale":"Este es el máximo común divisor, no el mínimo común múltiplo que se necesita para ciclos de encuentro."},{"label":"D","text":"$24$ horas","isCorrect":false,"rationale":"Aunque es un múltiplo común, no es el mínimo, por lo que se encontrarían antes de este tiempo."}]},{"question":"Aplica la regla PAPOMUDAS para resolver la siguiente operación: $20 + 5 \\times 4$","hint":"Recuerda que la multiplicación tiene prioridad sobre la suma en la jerarquía PAPOMUDAS.","options":[{"label":"A","text":"$29$","isCorrect":false,"rationale":"Este valor no corresponde a una aplicación lógica de las operaciones presentadas."},{"label":"B","text":"$100$","isCorrect":false,"rationale":"Este resultado se obtiene sumando primero ($20 + 5 = 25$) y luego multiplicando, lo cual ignora la jerarquía correcta."},{"label":"C","text":"$60$","isCorrect":false,"rationale":"Este resultado podría provenir de un error de cálculo en las tablas de multiplicar o en la suma final."},{"label":"D","text":"$40$","isCorrect":true,"rationale":"Según la jerarquía de operaciones, la multiplicación ($5 \\times 4 = 20$) se realiza antes que la adición ($20 + 20 = 40$)."}]},{"question":"En una promoción de \"$3$ jugos por $2$ snacks\", ¿cuál de las siguientes razones es equivalente si decidimos aumentar la cantidad de productos manteniendo la oferta?","hint":"Para encontrar una razón equivalente, multiplica ambos números por la misma cifra.","options":[{"label":"A","text":"$6$ jugos por $5$ snacks","isCorrect":false,"rationale":"Aquí se sumó la misma cantidad a ambos lados en lugar de multiplicar, lo que altera la relación original."},{"label":"B","text":"$5$ jugos por $4$ snacks","isCorrect":false,"rationale":"Esta razón no mantiene la proporción de $3$ a $2$ necesaria para que sea equivalente."},{"label":"C","text":"$9$ jugos por $6$ snacks","isCorrect":true,"rationale":"Al triplicar ambas cantidades ($3 \\times 3$ y $2 \\times 3$), se mantiene la proporción original de la promoción."},{"label":"D","text":"$12$ jugos por $10$ snacks","isCorrect":false,"rationale":"Aunque se aumentaron las cantidades, la relación resultante no simplifica a $3:2$."}]},{"question":"¿Cómo se representa la fracción impropia $\\frac{11}{4}$ como un número mixto?","hint":"Divide el numerador por el denominador para saber cuántos enteros completos hay.","options":[{"label":"A","text":"$1 \\frac{7}{4}$","isCorrect":false,"rationale":"Aunque la suma es correcta, un número mixto debe tener una fracción propia, y $\\frac{7}{4}$ sigue siendo impropia."},{"label":"B","text":"$2 \\frac{3}{4}$","isCorrect":true,"rationale":"Al dividir $11$ entre $4$, el cociente es $2$ (enteros) y el residuo es $3$, que se mantiene sobre el denominador original."},{"label":"C","text":"$3 \\frac{1}{4}$","isCorrect":false,"rationale":"Esto equivaldría a $\\frac{13}{4}$, ya que $3 \\times 4 + 1 = 13$, superando la cantidad inicial."},{"label":"D","text":"$2 \\frac{1}{4}$","isCorrect":false,"rationale":"Este valor representa $\\frac{9}{4}$, por lo que faltarían partes para llegar a $\\frac{11}{4}$."}]},{"question":"Un cliente en el pasillo de fiambrería compra $1 \\frac{2}{5}$ kg de queso y luego decide llevar $2 \\frac{1}{5}$ kg adicionales. ¿Cuál es el peso total de su compra?","hint":"Suma primero los enteros y luego las fracciones que tienen el mismo denominador.","options":[{"label":"A","text":"$4 \\frac{3}{5}$ kg","isCorrect":false,"rationale":"Este resultado indica un error en la suma de las partes enteras del problema."},{"label":"B","text":"$3$ kg","isCorrect":false,"rationale":"Aquí se ignoraron completamente las fracciones, considerando solo los pesos enteros."},{"label":"C","text":"$3 \\frac{3}{5}$ kg","isCorrect":true,"rationale":"Se suman las partes enteras ($1 + 2 = 3$) y las fracciones con el mismo denominador ($\\frac{2}{5} + \\frac{1}{5} = \\frac{3}{5}$)."},{"label":"D","text":"$3 \\frac{3}{10}$ kg","isCorrect":false,"rationale":"Un error común es sumar los denominadores, pero estos deben permanecer iguales al sumar fracciones del mismo tipo."}]},{"question":"Si una caja de chocolates tiene un código marcado con el número $13$, ¿qué se puede afirmar sobre este número en términos de logística de vitrinas?","hint":"Intenta encontrar si el $13$ aparece en alguna tabla de multiplicar que no sea la del $1$ o la del $13$.","options":[{"label":"A","text":"Es divisible por $3$, permitiendo filas de tres productos","isCorrect":false,"rationale":"El $13$ no es múltiplo de $3$, por lo que no se puede dividir en grupos de tres de forma exacta."},{"label":"B","text":"Se puede organizar en una vitrina de $3 \\times 4$ con un producto sobrando","isCorrect":false,"rationale":"Aunque matemáticamente sobra uno, los factores deben dividir la cantidad de forma exacta y sin residuos."},{"label":"C","text":"Es compuesto, permitiendo múltiples formas de organización rectangular","isCorrect":false,"rationale":"El $13$ no tiene otros factores aparte del $1$ y de sí mismo, por lo que no es compuesto."},{"label":"D","text":"Es primo, por lo que solo se puede organizar en una matriz de $1 \\times 13$ o $13 \\times 1$","isCorrect":true,"rationale":"Los números primos solo tienen dos factores, lo que limita sus posibilidades de organización rectangular a una sola fila o columna."}]},{"question":"¿Cuál es el resultado de la siguiente operación combinada aplicada a una boleta de supermercado: $(10.000 - 2.000) \\times 2$?","hint":"La sigla PAPOMUDAS indica que lo que está dentro de los paréntesis se resuelve siempre en primer lugar.","options":[{"label":"A","text":"$12.000$","isCorrect":false,"rationale":"Podría ser el resultado de un error en la resta inicial dentro del paréntesis."},{"label":"B","text":"$6.000$","isCorrect":false,"rationale":"Este error ocurre si se multiplica $2.000 \\times 2$ primero y luego se resta de $10.000$, ignorando los paréntesis."},{"label":"C","text":"$16.000$","isCorrect":true,"rationale":"Los paréntesis indican que primero se debe realizar la resta ($8.000$) y luego multiplicar por $2$."},{"label":"D","text":"$20.000$","isCorrect":false,"rationale":"Este valor no se obtiene siguiendo ninguno de los pasos lógicos de la operación planteada."}]},{"question":"En una tabla de valores de razones, si la relación es de $4$ manzanas por cada $1$ yogur, ¿cuántas manzanas habrá si el reponedor coloca $5$ yogures?","hint":"Si por cada yogur hay $4$ manzanas, debes multiplicar esa cantidad por el número total de yogures.","options":[{"label":"A","text":"$20$","isCorrect":true,"rationale":"Manteniendo la razón $4:1$, si se multiplica el antecedente y el consecuente por $5$, se obtiene $20$ manzanas."},{"label":"B","text":"$9$","isCorrect":false,"rationale":"Este error proviene de sumar los valores ($4 + 5$) en lugar de aplicar la multiplicación proporcional."},{"label":"C","text":"$4$","isCorrect":false,"rationale":"Esto solo representaría la cantidad para un único yogur, no para los cinco solicitados."},{"label":"D","text":"$10$","isCorrect":false,"rationale":"Este valor no corresponde a la progresión aritmética ni geométrica de la razón dada."}]},{"question":"Para encontrar los números primos hasta el $30$ usando la Criba de Eratóstenes, ¿cuál es el primer paso correcto después de tachar el número $1$?","hint":"Busca el primer número después del $1$ que solo se puede dividir por sí mismo.","options":[{"label":"A","text":"Tachar todos los números que terminan en $5$","isCorrect":false,"rationale":"Solo se deben tachar los múltiplos de $5$ que sean mayores que $5$; el $5$ en sí mismo es primo."},{"label":"B","text":"Encerrar el $3$ y tachar solo el $9$ y el $21$","isCorrect":false,"rationale":"Se deben tachar todos los múltiplos de $3$ que no hayan sido tachados antes, no solo algunos seleccionados."},{"label":"C","text":"Encerrar el $2$ y tachar todos sus múltiplos","isCorrect":true,"rationale":"El $2$ es el primer número primo y la técnica consiste en eliminar a sus múltiplos por ser compuestos."},{"label":"D","text":"Tachar todos los números pares excepto el $10$","isCorrect":false,"rationale":"El $10$ es un número compuesto y debe ser tachado como múltiplo de $2$ y $5$."}]},{"question":"Tres camiones de reparto salen de la central: el Camión A cada $2$ días, el Camión B cada $3$ días y el Camión C cada $4$ días. ¿Cada cuántos días coincidirán los tres camiones?","hint":"Escribe los múltiplos de cada número y busca el primero que aparezca en las tres listas.","options":[{"label":"A","text":"$9$ días","isCorrect":false,"rationale":"El número $9$ es múltiplo de $3$, pero no es divisible de forma exacta por $2$ ni por $4$."},{"label":"B","text":"$12$ días","isCorrect":true,"rationale":"El MCM de $2$, $3$ y $4$ es $12$, ya que es el número más pequeño divisible por los tres simultáneamente."},{"label":"C","text":"$6$ días","isCorrect":false,"rationale":"El $6$ es múltiplo de $2$ y $3$, pero el camión C (cada $4$ días) no pasaría en ese momento."},{"label":"D","text":"$24$ días","isCorrect":false,"rationale":"Aunque los tres coinciden en el día $24$, no es la primera vez que ocurre (el mínimo)."}]},{"question":"Resuelve la siguiente expresión considerando el orden de operaciones: $8 + (12 \\div 3) \\times 2$","hint":"Sigue el orden: Paréntesis, luego Multiplicación/División, y al final Suma/Resta.","options":[{"label":"A","text":"$24$","isCorrect":false,"rationale":"Este error ocurre si se suma primero el $8$ con el resultado del paréntesis antes de multiplicar."},{"label":"B","text":"$16$","isCorrect":true,"rationale":"Primero se resuelve el paréntesis ($12 \\div 3 = 4$), luego la multiplicación ($4 \\times 2 = 8$) y finalmente la suma ($8 + 8 = 16$)."},{"label":"C","text":"$13.3$","isCorrect":false,"rationale":"Este resultado no sigue la lógica de los números enteros ni la jerarquía de las operaciones planteadas."},{"label":"D","text":"$40$","isCorrect":false,"rationale":"Este valor se obtiene sumando $8 + 12$ primero, lo cual rompe las reglas de paréntesis y prioridad."}]},{"question":"Un paquete de galletas pesa $\\frac{3}{4}$ kg y otro pesa $\\frac{2}{4}$ kg. ¿Cuál es el peso total expresado como número mixto?","hint":"Suma las fracciones primero y luego fíjate cuántas veces cabe el $4$ en el resultado.","options":[{"label":"A","text":"$1 \\frac{3}{4}$ kg","isCorrect":false,"rationale":"Esto equivaldría a $\\frac{7}{4}$, lo cual es mayor que la suma de los pesos originales."},{"label":"B","text":"$1 \\frac{1}{2}$ kg","isCorrect":false,"rationale":"Este valor es igual a $\\frac{6}{4}$, pero la suma correcta de las fracciones dadas es $\\frac{5}{4}$."},{"label":"C","text":"$1 \\frac{1}{4}$ kg","isCorrect":true,"rationale":"La suma es $\\frac{5}{4}$. Al convertir a mixto, $5 \\div 4$ da $1$ entero con un residuo de $1$."},{"label":"D","text":"$\\frac{5}{8}$ kg","isCorrect":false,"rationale":"Este es un error común donde se suman los numeradores y los denominadores indebidamente."}]},{"question":"Si una razón compara $2$ bebidas por cada $5$ snacks, ¿qué significa esto en el contexto de un inventario?","hint":"Piensa en la razón como una regla de 'armado de paquetes' iguales.","options":[{"label":"A","text":"Que siempre habrá $7$ productos en total en cada estante","isCorrect":false,"rationale":"El total de $7$ solo aplica al nivel más básico de la razón, pero puede haber múltiplos (como $14$, $21$, etc.)."},{"label":"B","text":"Que hay $3$ snacks más que bebidas en total en el supermercado","isCorrect":false,"rationale":"La razón indica una proporción, no necesariamente la diferencia total o resta de cantidades."},{"label":"C","text":"Que por cada grupo de $5$ snacks que haya, deben existir $2$ bebidas para mantener la relación","isCorrect":true,"rationale":"Una razón establece una comparación constante entre dos magnitudes diferentes de un conjunto."},{"label":"D","text":"Que las bebidas son más caras que los snacks","isCorrect":false,"rationale":"La razón compara cantidades de productos, no proporciona información sobre sus precios."}]},{"question":"En la recta numérica de un pasillo de supermercado que va del $0$ al $2$, ¿dónde se ubicaría el número mixto $1 \\frac{1}{2}$?","hint":"Busca el número entero '1' y luego avanza media unidad más hacia la derecha.","options":[{"label":"A","text":"Justo antes del número $1$","isCorrect":false,"rationale":"Cualquier número con un entero '1' debe estar ubicado a la derecha del $1$, no antes."},{"label":"B","text":"Exactamente sobre la marca del número $2$","isCorrect":false,"rationale":"El número $2$ equivaldría a $1 \\frac{2}{2}$ o simplemente $2$ unidades completas."},{"label":"C","text":"En la mitad entre el $0$ y el $1$","isCorrect":false,"rationale":"Esa ubicación corresponde a la fracción $\\frac{1}{2}$, pero el número solicitado incluye un entero completo."},{"label":"D","text":"Exactamente en la mitad entre el $1$ y el $2$","isCorrect":true,"rationale":"El entero $1$ marca el inicio de la segunda unidad, y la fracción $\\frac{1}{2}$ indica la mitad del camino hacia el $2$."}]},{"question":"¿Cuál es el mínimo común múltiplo (MCM) entre $8$ y $12$ para coordinar la llegada de productos?","hint":"Haz una lista de los múltiplos de $8$ y de $12$ y busca el primer número que se repita.","options":[{"label":"A","text":"$48$","isCorrect":false,"rationale":"Es un múltiplo común, pero no es el más pequeño (mínimo) entre ambos."},{"label":"B","text":"$4$","isCorrect":false,"rationale":"Este valor es el máximo común divisor (MCD), no el mínimo común múltiplo solicitado."},{"label":"C","text":"$24$","isCorrect":true,"rationale":"$24$ es el primer número que aparece tanto en los múltiplos de $8$ ($8, 16, 24$) como en los de $12$ ($12, 24$)."},{"label":"D","text":"$16$","isCorrect":false,"rationale":"El $16$ es múltiplo de $8$, pero no es divisible de forma exacta por el número $12$."}]},{"question":"Al organizar una vitrina con $24$ productos, ¿cuáles son todos los factores posibles que el diseñador puede considerar?","hint":"Busca todos los pares de números que multiplicados den como resultado $24$.","options":[{"label":"A","text":"$1, 2, 4, 8, 16, 24$","isCorrect":false,"rationale":"Faltan factores importantes como el $3$ y el $6$ ($3 \\times 8 = 24$ y $4 \\times 6 = 24$), y el $16$ no divide a $24$."},{"label":"B","text":"$2, 4, 6, 8, 10, 12$","isCorrect":false,"rationale":"El número $10$ no es un factor de $24$ y faltan los factores extremos como el $1$ y el $24$."},{"label":"C","text":"$3, 6, 9, 12, 15$","isCorrect":false,"rationale":"Varios números de esta lista son múltiplos, pero no dividen al $24$ de forma exacta."},{"label":"D","text":"$1, 2, 3, 4, 6, 8, 12, 24$","isCorrect":true,"rationale":"Estos son todos los números que dividen a $24$ de forma exacta, permitiendo diversas configuraciones de filas y columnas."}]},{"question":"Si una operación en la caja registradora es $5.000 + 3 \\times 2.000 - 1.000$, ¿cuál es el total correcto a pagar?","hint":"Empieza resolviendo la multiplicación antes que cualquier suma o resta.","options":[{"label":"A","text":"$15.000$","isCorrect":false,"rationale":"Este resultado ignora la prioridad de la multiplicación, sumando el $5.000$ con el $3$ al principio."},{"label":"B","text":"$10.000$","isCorrect":true,"rationale":"Primero se multiplica ($3 \\times 2.000 = 6.000$), luego se suma ($5.000 + 6.000 = 11.000$) y finalmente se resta ($11.000 - 1.000 = 10.000$)."},{"label":"C","text":"$8.000$","isCorrect":false,"rationale":"Este error ocurre si se realiza la resta antes que la suma, aunque en este caso el orden de suma/resta es de izquierda a derecha."},{"label":"D","text":"$9.000$","isCorrect":false,"rationale":"Este valor podría ser el resultado de un error en el paso final de la sustracción."}]},{"question":"Determina el resultado de la sustracción de números mixtos: $5 \\frac{4}{7} - 2 \\frac{1}{7}$","hint":"Resta los números grandes por un lado y las fracciones por otro.","options":[{"label":"A","text":"$3 \\frac{3}{0}$","isCorrect":false,"rationale":"Los denominadores nunca deben restarse; la unidad de medida del fraccionamiento se mantiene constante."},{"label":"B","text":"$7 \\frac{5}{7}$","isCorrect":false,"rationale":"Este valor es el resultado de sumar las cantidades en lugar de restarlas."},{"label":"C","text":"$3 \\frac{3}{7}$","isCorrect":true,"rationale":"Se restan los enteros ($5 - 2 = 3$) y luego las fracciones con igual denominador ($\\frac{4}{7} - \\frac{1}{7} = \\frac{3}{7}$)."},{"label":"D","text":"$3$ kg","isCorrect":false,"rationale":"Este resultado ignora la parte fraccionaria que queda después de la resta."}]},{"question":"¿Qué número primo se encuentra entre el $20$ y el $30$?","hint":"Busca un número en ese rango que no aparezca en las tablas del $2, 3, 5$ o $7$.","options":[{"label":"A","text":"$23$","isCorrect":true,"rationale":"El $23$ solo tiene como factores al $1$ y al $23$, lo que cumple con la definición de número primo."},{"label":"B","text":"$27$","isCorrect":false,"rationale":"Este número es compuesto porque es divisible por $3$ y por $9$."},{"label":"C","text":"$21$","isCorrect":false,"rationale":"El $21$ es compuesto porque se puede obtener multiplicando $3 \\times 7$."},{"label":"D","text":"$25$","isCorrect":false,"rationale":"El $25$ es un número compuesto ya que es el resultado de $5 \\times 5$."}]},{"question":"En un almacén hay una relación de \"$2$ bebidas por cada $3$ snacks\". Si el gerente decide triplicar el stock manteniendo la razón, ¿cuántas bebidas y snacks habrá?","hint":"Recuerda que 'triplicar' significa multiplicar cada cantidad original por $3$.","options":[{"label":"A","text":"$6$ bebidas y $3$ snacks","isCorrect":false,"rationale":"Aquí solo se multiplicó el primer término, dejando el segundo sin el aumento proporcional."},{"label":"B","text":"$4$ bebidas y $6$ snacks","isCorrect":false,"rationale":"Esta sería la respuesta si se hubiese duplicado la razón inicial, no triplicado."},{"label":"C","text":"$6$ bebidas y $9$ snacks","isCorrect":true,"rationale":"Al multiplicar ambos términos de la razón $2:3$ por el factor $3$, obtenemos la razón equivalente $6:9$."},{"label":"D","text":"$5$ bebidas y $6$ snacks","isCorrect":false,"rationale":"Este resultado proviene de sumar $3$ a cada término en lugar de multiplicarlos."}]},{"question":"¿Cuál es la característica principal de una fracción impropia?","hint":"Fíjate en la relación de tamaño entre el número de arriba y el de abajo.","options":[{"label":"A","text":"Su numerador es mayor o igual que el denominador, representando más de una unidad","isCorrect":true,"rationale":"Por definición, si el numerador supera al denominador, la cantidad total es mayor que un entero."},{"label":"B","text":"Su denominador es mayor que el numerador, representando menos de una unidad","isCorrect":false,"rationale":"Esta es la descripción de una fracción propia, no de una impropia."},{"label":"C","text":"Siempre tiene un número entero acompañado de una fracción pequeña","isCorrect":false,"rationale":"Esa es la estructura de un número mixto, aunque sea equivalente a una fracción impropia."},{"label":"D","text":"Solo se puede representar con dibujos de círculos","isCorrect":false,"rationale":"Las fracciones se pueden representar con cualquier figura geométrica dividida en partes iguales o en la recta numérica."}]},{"question":"Si una boleta indica la operación $(4.000 \\times 2 + 3.000) \\times 2$, ¿cuál es el procedimiento correcto según PAPOMUDAS?","hint":"Lo que está dentro del paréntesis manda, pero adentro también debes multiplicar antes de sumar.","options":[{"label":"A","text":"Multiplicar los dos doses del final primero","isCorrect":false,"rationale":"No se pueden combinar factores externos con internos sin antes resolver el contenido del paréntesis."},{"label":"B","text":"Sumar $2 + 3.000$ primero porque está en el centro de la operación","isCorrect":false,"rationale":"La posición física no determina la prioridad; se deben seguir las reglas de paréntesis y multiplicación."},{"label":"C","text":"Resolver de derecha a izquierda empezando por la multiplicación final","isCorrect":false,"rationale":"Las operaciones se resuelven generalmente de izquierda a derecha una vez respetada la jerarquía."},{"label":"D","text":"Multiplicar $4.000 \\times 2$, sumar $3.000$ y luego multiplicar todo el resultado por $2$","isCorrect":true,"rationale":"Se debe resolver lo interno del paréntesis primero (respetando la multiplicación interna) y luego lo externo."}]},{"question":"En el sistema de la Criba de Eratóstenes, ¿por qué el número $9$ termina siendo tachado?","hint":"Piensa en qué tabla de multiplicar aparece el número $9$.","options":[{"label":"A","text":"Porque es un múltiplo de $3$ y por lo tanto es un número compuesto","isCorrect":true,"rationale":"Al ser divisible por $3$ (además de $1$ y $9$), deja de ser primo y se marca como compuesto."},{"label":"B","text":"Porque es la suma de $4 + 5$","isCorrect":false,"rationale":"La suma de otros números no es un criterio para tachar en la criba."},{"label":"C","text":"Porque termina en un dígito que no es primo","isCorrect":false,"rationale":"El criterio de la criba se basa en la divisibilidad y los factores, no en el último dígito."},{"label":"D","text":"Porque es un número impar mayor que $5$","isCorrect":false,"rationale":"No todos los impares se tachan; por ejemplo, el $7$ y el $11$ se mantienen como primos."}]},{"question":"Un cliente quiere comprar $\\frac{9}{2}$ kg de harina. ¿A cuántos kg enteros y medio kg equivale esto?","hint":"¿Cuántas veces cabe el número $2$ dentro del $9$?","options":[{"label":"A","text":"$4$ enteros y $\\frac{1}{2}$ kg","isCorrect":true,"rationale":"Al dividir $9$ entre $2$, el resultado es $4$ con un residuo de $1$, lo que forma el número mixto $4 \\frac{1}{2}$."},{"label":"B","text":"$5$ kg","isCorrect":false,"rationale":"Esto equivaldría a $\\frac{10}{2}$ kg, lo cual es más de lo que el cliente solicita."},{"label":"C","text":"$3 \\frac{1}{2}$ kg","isCorrect":false,"rationale":"Este valor representa $\\frac{7}{2}$ kg, por lo que faltaría harina para completar el pedido."},{"label":"D","text":"$9$ enteros y $2$ kg","isCorrect":false,"rationale":"Esto confundiría los términos de la fracción con cantidades enteras independientes."}]}];
+const tr = {"correct":"¡Correcto!","incorrect":"Incorrecto","next":"Siguiente pregunta →","seeResults":"Ver resultados","complete":"¡Cuestionario completado!","scoreText":"Obtuviste {correct} de {total} correctas","tryAgain":"Intentar de nuevo","rightAnswer":"Respuesta correcta","notQuite":"No del todo"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
