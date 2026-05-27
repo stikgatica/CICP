@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Potencias base 10 y notación científica</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Potencias base 10 y notación científica</h1>
+    <div class="meta">26 preguntas</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">Pregunta 1</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el valor numérico de la potencia <span class="math">10<sup>7</sup></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda la relación directa entre el número del exponente y la cantidad de ceros.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor confunde el exponente con el primer dígito del número resultante.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">7.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor confunde el exponente con el primer dígito del número resultante.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este es un error común donde se multiplica la base por el exponente en lugar de realizar una multiplicación repetida.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">70</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error común donde se multiplica la base por el exponente en lugar de realizar una multiplicación repetida.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="En una potencia de base 10, el exponente indica la cantidad de ceros que acompañan a la unidad.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En una potencia de base 10, el exponente indica la cantidad de ceros que acompañan a la unidad.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor corresponde a $10^{6}$, lo que indica que se contó un cero menos de lo requerido por el exponente.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde a <span class="math">10<sup>6</sup></span>, lo que indica que se contó un cero menos de lo requerido por el exponente.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">Pregunta 2</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una empresa de K-Pop tiene <span class="math">10 × 10 × 10 × 10 × 10 × 10</span> seguidores, ¿cómo se expresa esta cantidad como potencia?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta cuántas veces aparece el número 10 en la operación.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se han intercambiado los roles de la base y el exponente.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">6<sup>10</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se han intercambiado los roles de la base y el exponente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El exponente representa cuántas veces se repite la base en la multiplicación.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10<sup>6</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El exponente representa cuántas veces se repite la base en la multiplicación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se sumaron los dieces o se multiplicó la base por la cantidad de repeticiones de forma lineal.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">60</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se sumaron los dieces o se multiplicó la base por la cantidad de repeticiones de forma lineal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se ha contado un factor menos de los seis que aparecen en la multiplicación repetida.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10<sup>5</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ha contado un factor menos de los seis que aparecen en la multiplicación repetida.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">Pregunta 3</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el valor de <span class="math">10<sup>0</sup></span> según el patrón de potencias descendentes?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en qué sucede cuando divides <span class="math">10<sup>1</sup></span> por la base 10.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Siguiendo el patrón de dividir por 10 en cada nivel descendente, $10 \div 10$ resulta en 1.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Siguiendo el patrón de dividir por 10 en cada nivel descendente, <span class="math">10 ÷ 10</span> resulta en 1.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor correspondería a un exponente negativo, no al exponente cero.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor correspondería a un exponente negativo, no al exponente cero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el valor de $10^{1}$, no de $10^{0}$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el valor de <span class="math">10<sup>1</sup></span>, no de <span class="math">10<sup>0</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Es una confusión común pensar que un exponente cero anula el valor de la base.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es una confusión común pensar que un exponente cero anula el valor de la base.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">Pregunta 4</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En la descomposición del número <span class="math">5.020.401</span>, ¿qué potencia de base 10 acompaña al dígito <span class="math">2</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Identifica la posición decimal del dígito 2 empezando desde las unidades (<span class="math">10<sup>0</sup></span>).</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esa potencia corresponde a las centenas de mil, una posición a la izquierda del dígito 2.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10<sup>5</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las centenas de mil, una posición a la izquierda del dígito 2.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esa potencia corresponde a las centenas, dos posiciones a la derecha del dígito 2.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las centenas, dos posiciones a la derecha del dígito 2.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esa potencia corresponde a las unidades de mil, donde en este caso hay un cero.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10<sup>3</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las unidades de mil, donde en este caso hay un cero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El dígito 2 ocupa la posición de las decenas de mil, que corresponde a $10^{4}$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10<sup>4</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El dígito 2 ocupa la posición de las decenas de mil, que corresponde a <span class="math">10<sup>4</sup></span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">Pregunta 5</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cómo se escribe el número <span class="math">250.000.000</span> en notación científica?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">La coma debe quedar justo después del primer dígito distinto de cero.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El primer factor debe ser mayor o igual a 1 para cumplir con la regla de la notación científica.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0,25 × 10<sup>9</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El primer factor debe ser mayor o igual a 1 para cumplir con la regla de la notación científica.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aunque el valor es equivalente, la notación científica requiere que el primer factor sea menor que 10.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">25 × 10<sup>7</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque el valor es equivalente, la notación científica requiere que el primer factor sea menor que 10.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se contaron incorrectamente los espacios al mover la coma decimal.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2,5 × 10<sup>7</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se contaron incorrectamente los espacios al mover la coma decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Se mueve la coma 8 lugares hacia la izquierda para dejar un número entre 1 y 10.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">2,5 × 10<sup>8</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se mueve la coma 8 lugares hacia la izquierda para dejar un número entre 1 y 10.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">Pregunta 6</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué número se forma con la expresión <span class="math">(4 · 10<sup>6</sup>) + (8 · 10<sup>3</sup>) + (5 · 10<sup>0</sup>)</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Asegúrate de colocar ceros en las potencias faltantes como <span class="math">10<sup>5</sup></span>, <span class="math">10<sup>4</sup></span>, <span class="math">10<sup>2</sup></span> y <span class="math">10<sup>1</sup></span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se ubicaron los dígitos en posiciones incorrectas de la tabla decimal.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">4.080.500</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ubicaron los dígitos en posiciones incorrectas de la tabla decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se asumió que los dígitos seguían un orden consecutivo sin verificar el exponente de cada potencia.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">4.850.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se asumió que los dígitos seguían un orden consecutivo sin verificar el exponente de cada potencia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Se deben completar con ceros las posiciones de centenas de mil, decenas de mil, centenas y decenas que no aparecen en la suma.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">4.008.005</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se deben completar con ceros las posiciones de centenas de mil, decenas de mil, centenas y decenas que no aparecen en la suma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se ignoró el valor posicional real de cada potencia, simplemente uniendo los dígitos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">4.805</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ignoró el valor posicional real de cada potencia, simplemente uniendo los dígitos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">Pregunta 7</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un estudiante afirma que <span class="math">10<sup>3</sup> = 30</span>. ¿Cuál es el error conceptual en esta afirmación?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en la diferencia entre <span class="math">10 × 3</span> y <span class="math">10 × 10 × 10</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aunque es un error, la descripción técnica correcta es que confundió la potencia con una multiplicación lineal.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Confundió la base con el número de veces que se suma el 10.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es un error, la descripción técnica correcta es que confundió la potencia con una multiplicación lineal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="La potencia indica una multiplicación repetida ($10 \times 10 \times 10$), no una multiplicación simple entre sus componentes.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Multiplicó la base por el exponente en lugar de multiplicar la base por sí misma.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La potencia indica una multiplicación repetida (<span class="math">10 × 10 × 10</span>), no una multiplicación simple entre sus componentes.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado también es incorrecto y no explica el error en el razonamiento del estudiante.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">El resultado debería ser 300.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado también es incorrecto y no explica el error en el razonamiento del estudiante.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Las potencias no se resuelven sumando ceros, sino mediante el producto de factores iguales.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Olvidó sumar los ceros correctamente.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Las potencias no se resuelven sumando ceros, sino mediante el producto de factores iguales.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">Pregunta 8</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál de estas opciones NO representa correctamente el número <span class="math">3.400</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta cuántos lugares se debe mover la coma en <span class="math">3,4</span> para llegar a <span class="math">3.400</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Es la descomposición posicional correcta del número.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">(3 · 10<sup>3</sup>) + (4 · 10<sup>2</sup>)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es la descomposición posicional correcta del número.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Esta expresión equivale a 340, ya que solo mueve la coma dos lugares; para 3.400 se necesita $10^{3}$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">3,4 × 10<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta expresión equivale a 340, ya que solo mueve la coma dos lugares; para 3.400 se necesita <span class="math">10<sup>3</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Es la representación correcta en notación científica del número 3.400.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">3,4 × 10<sup>3</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es la representación correcta en notación científica del número 3.400.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Es una forma válida de representación numérica, aunque no sea notación científica estricta.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">34 × 10<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es una forma válida de representación numérica, aunque no sea notación científica estricta.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">Pregunta 9</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué potencia de base 10 representa la posición de las 'Centenas de mil'?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Escribe el número cien mil y cuenta sus ceros.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esa potencia corresponde a las unidades de millón.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10<sup>6</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las unidades de millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esa potencia corresponde a las decenas de mil.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10<sup>4</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las decenas de mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Las centenas de mil equivalen a $100.000$, que tiene 5 ceros.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10<sup>5</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Las centenas de mil equivalen a <span class="math">100.000</span>, que tiene 5 ceros.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esa potencia corresponde a las unidades de mil.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10<sup>3</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las unidades de mil.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">Pregunta 10</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el contexto de 'Pets', si una ciudad tiene <span class="math">1,2 × 10<sup>7</sup></span> mascotas, ¿cuántas mascotas hay en total?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Mueve la coma de <span class="math">1,2</span> siete lugares hacia la derecha.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor correspondería a $1,2 \times 10^{8}$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">120.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor correspondería a <span class="math">1,2 × 10<sup>8</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor es demasiado bajo y no considera el exponente 7.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">12.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es demasiado bajo y no considera el exponente 7.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al multiplicar $1,2$ por $10.000.000$, la coma se desplaza 7 lugares a la derecha.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">12.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar <span class="math">1,2</span> por <span class="math">10.000.000</span>, la coma se desplaza 7 lugares a la derecha.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor correspondería a $1,2 \times 10^{6}$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.200.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor correspondería a <span class="math">1,2 × 10<sup>6</sup></span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">Pregunta 11</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Por qué es importante el dígito <span class="math">0</span> en una descomposición como <span class="math">6 · 10<sup>3</sup> + 0 · 10<sup>2</sup> + 5 · 10<sup>1</sup> + 2 · 10<sup>0</sup></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en la diferencia entre el número 652 y el número 6.052.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="La base 10 existe en todas las posiciones del sistema decimal, lo que cambia es el dígito multiplicador.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque indica que la base 10 no existe en esa posición.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La base 10 existe en todas las posiciones del sistema decimal, lo que cambia es el dígito multiplicador.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El cero no altera la suma, pero su ausencia en la escritura del número cambiaría su valor.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque el cero siempre debe sumarse en las potencias.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El cero no altera la suma, pero su ausencia en la escritura del número cambiaría su valor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aunque ayuda a visualizar las cifras, su función matemática principal es el valor posicional.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Para que el número tenga siempre cuatro cifras.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque ayuda a visualizar las cifras, su función matemática principal es el valor posicional.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El cero actúa como un marcador de posición que asegura que el 6 represente miles y no cientos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque permite mantener el valor posicional correcto de los demás dígitos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El cero actúa como un marcador de posición que asegura que el 6 represente miles y no cientos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">Pregunta 12</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál de los siguientes números es el mayor?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">A mayor exponente en base 10, mayor es el valor del número.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Representa cien mil, que es menor que un millón.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10<sup>5</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representa cien mil, que es menor que un millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Representa diez mil.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10<sup>4</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representa diez mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Representa simplemente diez.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10<sup>1</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representa simplemente diez.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Representa un millón, que es superior a cien mil o diez mil.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10<sup>6</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representa un millón, que es superior a cien mil o diez mil.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="12">
+          <div class="q-header">
+            <span class="q-number">Pregunta 13</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si descomponemos el número <span class="math">9.004</span>, ¿cuál es la expresión correcta?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Asegúrate de que la potencia del primer dígito coincida con su posición de 'miles'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Incluye todas las posiciones desde las unidades de mil hasta las unidades.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">(9 · 10<sup>3</sup>) + (0 · 10<sup>2</sup>) + (0 · 10<sup>1</sup>) + (4 · 10<sup>0</sup>)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Incluye todas las posiciones desde las unidades de mil hasta las unidades.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El exponente 1 colocaría al 4 en las decenas, no en las unidades.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">(9 · 10<sup>3</sup>) + (4 · 10<sup>1</sup>)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El exponente 1 colocaría al 4 en las decenas, no en las unidades.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El exponente 4 colocaría al 9 en las decenas de mil, no en las unidades de mil.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">(9 · 10<sup>4</sup>) + (4 · 10<sup>0</sup>)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El exponente 4 colocaría al 9 en las decenas de mil, no en las unidades de mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El exponente 2 colocaría al 9 en las centenas.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">(9 · 10<sup>2</sup>) + (4 · 10<sup>0</sup>)</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El exponente 2 colocaría al 9 en las centenas.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="13">
+          <div class="q-header">
+            <span class="q-number">Pregunta 14</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el primer paso correcto para convertir <span class="math">48.500</span> a notación científica?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca que el número resultante sea mayor o igual a 1 pero menor que 10.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="El primer factor debe ser un número entre 1 y 10, en este caso 4,85.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Ubicar la coma decimal después del dígito 4.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El primer factor debe ser un número entre 1 y 10, en este caso 4,85.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Multiplicar por una potencia cambiaría el valor original del número en lugar de representarlo en otro formato.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Multiplicar el número por <span class="math">10<sup>3</sup></span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar por una potencia cambiaría el valor original del número en lugar de representarlo en otro formato.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Eso daría 48,5, que es mayor que 10 y no cumple con la regla de la notación científica.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Ubicar la coma decimal después del dígito 8.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Eso daría 48,5, que es mayor que 10 y no cumple con la regla de la notación científica.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Contar ceros no es suficiente si el número termina en otros dígitos o para determinar el exponente exacto.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Contar cuántos ceros tiene el número.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Contar ceros no es suficiente si el número termina en otros dígitos o para determinar el exponente exacto.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="14">
+          <div class="q-header">
+            <span class="q-number">Pregunta 15</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En la expresión <span class="math">a × 10<sup>n</sup></span>, ¿qué condición debe cumplir siempre el valor de '<span class="math">a</span>'?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda el rango permitido para el número que precede a la potencia de 10.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Un valor menor que 1 requeriría mover la coma hacia la derecha, no es el formato estándar inicial.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0 &lt; a &lt; 1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Un valor menor que 1 requeriría mover la coma hacia la derecha, no es el formato estándar inicial.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Si es mayor que 10, la coma todavía se puede mover un lugar más hacia la izquierda.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">a &gt; 10</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si es mayor que 10, la coma todavía se puede mover un lugar más hacia la izquierda.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Esta es la regla fundamental para que un número esté correctamente expresado en notación científica.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1 ≤ a &lt; 10</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta es la regla fundamental para que un número esté correctamente expresado en notación científica.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El valor de 'a' suele ser un decimal (ej. 3,45) para capturar la precisión del número original.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">a</span> debe ser un número entero.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El valor de 'a' suele ser un decimal (ej. 3,45) para capturar la precisión del número original.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="15">
+          <div class="q-header">
+            <span class="q-number">Pregunta 16</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué ocurre con el valor de la potencia si el exponente disminuye en una unidad (por ejemplo de <span class="math">10<sup>4</sup></span> a <span class="math">10<sup>3</sup></span>)?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Compara los valores de <span class="math">10.000</span> y <span class="math">1.000</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Cada reducción del exponente en una unidad equivale a una división por la base en el sistema decimal.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">El valor se divide por <span class="math">10</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cada reducción del exponente en una unidad equivale a una división por la base en el sistema decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Eso ocurriría si el exponente aumentara, no si disminuyera.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">El valor se multiplica por <span class="math">10</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Eso ocurriría si el exponente aumentara, no si disminuyera.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Las potencias se rigen por relaciones multiplicativas, no aditivas.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">El valor se resta en <span class="math">10</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Las potencias se rigen por relaciones multiplicativas, no aditivas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Solo pierde un cero por cada nivel que desciende el exponente.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">El valor pierde todos sus ceros.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Solo pierde un cero por cada nivel que desciende el exponente.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="16">
+          <div class="q-header">
+            <span class="q-number">Pregunta 17</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si un videoclip de las Guerreras K-Pop tiene <span class="math">10<sup>1</sup></span> visualizaciones y luego sube a <span class="math">10<sup>2</sup></span>, ¿cuántas visualizaciones ganó?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Resta el valor de diez al valor de cien.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error asume que solo se sumó el valor del exponente o un nivel base.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10</span> visualizaciones.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error asume que solo se sumó el valor del exponente o un nivel base.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="$10^{2} = 100$ y $10^{1} = 10$. La diferencia es $100 - 10 = 90$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">90</span> visualizaciones.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale"><span class="math">10<sup>2</sup> = 100</span> y <span class="math">10<sup>1</sup> = 10</span>. La diferencia es <span class="math">100 - 10 = 90</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el valor total final, no la cantidad que se incrementó.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">100</span> visualizaciones.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el valor total final, no la cantidad que se incrementó.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Confunde la potencia con una multiplicación de la base por el exponente.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">20</span> visualizaciones.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Confunde la potencia con una multiplicación de la base por el exponente.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="17">
+          <div class="q-header">
+            <span class="q-number">Pregunta 18</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la potencia que corresponde a las 'Decenas' en el sistema decimal?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en cuántos ceros tiene el número diez.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Es una potencia extremadamente grande que no tiene relación con el concepto de decena básica.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10<sup>10</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es una potencia extremadamente grande que no tiene relación con el concepto de decena básica.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Una decena es igual a 10, lo que se representa como la base elevada a 1.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10<sup>1</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Una decena es igual a 10, lo que se representa como la base elevada a 1.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esa potencia corresponde a las centenas.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las centenas.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esa potencia corresponde a las unidades.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10<sup>0</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esa potencia corresponde a las unidades.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="18">
+          <div class="q-header">
+            <span class="q-number">Pregunta 19</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cómo se representa el número <span class="math">1.000.000.000</span> (mil millones) como potencia de 10?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta cuidadosamente los ceros en el número <span class="math">1.000.000.000</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Ese valor corresponde a un millón.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10<sup>6</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ese valor corresponde a un millón.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El número mil millones tiene 9 ceros en su escritura estándar.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10<sup>9</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número mil millones tiene 9 ceros en su escritura estándar.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se ha omitido un cero en el conteo de la magnitud de mil millones.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10<sup>8</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ha omitido un cero en el conteo de la magnitud de mil millones.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Ese valor corresponde a un billón.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10<sup>12</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ese valor corresponde a un billón.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="19">
+          <div class="q-header">
+            <span class="q-number">Pregunta 20</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un aprendiz escribe que <span class="math">10<sup>4</sup> = 10 + 10 + 10 + 10</span>. ¿Por qué es incorrecto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda qué operación matemática define a una potencia.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El exponente sí indica el número de dieces, pero como factores multiplicativos, no como sumandos.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque el exponente indica el número de ceros, no de dieces.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El exponente sí indica el número de dieces, pero como factores multiplicativos, no como sumandos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Ninguna cantidad de dieces sumados representará correctamente una potencia de base 10.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque faltan más dieces en la suma.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ninguna cantidad de dieces sumados representará correctamente una potencia de base 10.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aunque la suma da 40, el error principal es usar la operación equivocada para una potencia.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque el resultado debería ser <span class="math">40</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque la suma da 40, el error principal es usar la operación equivocada para una potencia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El exponente indica cuántas veces la base actúa como factor en un producto.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque una potencia es una multiplicación repetida, no una suma.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El exponente indica cuántas veces la base actúa como factor en un producto.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="20">
+          <div class="q-header">
+            <span class="q-number">Pregunta 21</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la notación científica de <span class="math">905.000</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">No ignores el cero que está entre el 9 y el 5 al mover la coma.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El número 90,5 no cumple con ser menor que 10.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">90,5 × 10<sup>4</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número 90,5 no cumple con ser menor que 10.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se eliminó incorrectamente el cero que forma parte del valor del número.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">9,5 × 10<sup>5</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se eliminó incorrectamente el cero que forma parte del valor del número.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La coma se mueve 5 lugares para quedar después del 9, manteniendo los dígitos significativos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">9,05 × 10<sup>5</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La coma se mueve 5 lugares para quedar después del 9, manteniendo los dígitos significativos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se contaron mal los saltos de la coma decimal.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">9,05 × 10<sup>3</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se contaron mal los saltos de la coma decimal.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="21">
+          <div class="q-header">
+            <span class="q-number">Pregunta 22</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si un número tiene un dígito <span class="math">7</span> en la posición de <span class="math">10<sup>5</sup></span>, ¿cuál es su valor real en el número?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula el valor de la potencia <span class="math">10<sup>5</sup></span> y multiplícalo por 7.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor correspondería a $10^{4}$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">70.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor correspondería a <span class="math">10<sup>4</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor ignora la magnitud real del exponente 5.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">700</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor ignora la magnitud real del exponente 5.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="$10^{5}$ es cien mil, por lo tanto $7 \times 100.000 = 700.000$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">700.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale"><span class="math">10<sup>5</sup></span> es cien mil, por lo tanto <span class="math">7 × 100.000 = 700.000</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor correspondería a $10^{6}$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">7.000.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor correspondería a <span class="math">10<sup>6</sup></span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="22">
+          <div class="q-header">
+            <span class="q-number">Pregunta 23</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué número es equivalente a <span class="math">5,4 × 10<sup>3</sup></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Desplaza la coma tres posiciones hacia la derecha, rellenando con ceros si es necesario.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Al mover la coma tres lugares a la derecha desde 5,4 se obtiene 5.400.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">5.400</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al mover la coma tres lugares a la derecha desde 5,4 se obtiene 5.400.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esto equivale a $10^{2}$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">540</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto equivale a <span class="math">10<sup>2</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esto equivale a $10^{4}$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">54.000</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto equivale a <span class="math">10<sup>4</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se interpretó erróneamente la potencia como una instrucción de colocar ceros entre los dígitos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">5.004</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se interpretó erróneamente la potencia como una instrucción de colocar ceros entre los dígitos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="23">
+          <div class="q-header">
+            <span class="q-number">Pregunta 24</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En la tabla posicional millonaria, ¿qué posición sigue inmediatamente a las 'Centenas de mil' al subir de nivel?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en qué posición decimal le corresponde a la potencia <span class="math">10<sup>6</sup></span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esta posición está tres niveles por encima.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Centena de millón</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta posición está tres niveles por encima.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta posición está dos niveles por encima de las centenas de mil.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Decena de millón</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta posición está dos niveles por encima de las centenas de mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esta posición está por debajo de las centenas de mil.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Unidad de mil</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta posición está por debajo de las centenas de mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Después de las centenas de mil ($10^{5}$) vienen las unidades de millón ($10^{6}$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Unidad de millón</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Después de las centenas de mil (<span class="math">10<sup>5</sup></span>) vienen las unidades de millón (<span class="math">10<sup>6</sup></span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="24">
+          <div class="q-header">
+            <span class="q-number">Pregunta 25</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la forma correcta de expresar <span class="math">3 × 10<sup>0</sup></span> como número natural?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda el valor de cualquier potencia con exponente cero.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se asumió erróneamente que multiplicar por algo con exponente cero resulta en cero.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se asumió erróneamente que multiplicar por algo con exponente cero resulta en cero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Como $10^{0} = 1$, entonces $3 \times 1 = 3$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como <span class="math">10<sup>0</sup> = 1</span>, entonces <span class="math">3 × 1 = 3</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Solo se consideró el valor de la potencia, ignorando el dígito multiplicador 3.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Solo se consideró el valor de la potencia, ignorando el dígito multiplicador 3.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se multiplicó por $10^{1}$ en lugar de $10^{0}$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">30</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se multiplicó por <span class="math">10<sup>1</sup></span> en lugar de <span class="math">10<sup>0</sup></span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="25">
+          <div class="q-header">
+            <span class="q-number">Pregunta 26</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Ordena de menor a mayor las siguientes potencias: <span class="math">10<sup>4</sup>, 10<sup>0</sup>, 10<sup>2</sup>, 10<sup>1</sup></span>.</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Fíjate únicamente en los exponentes y ordénalos de forma normal.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se colocó erróneamente $10^{0}$ al final, posiblemente confundiéndolo con un valor mayor que las demás.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10<sup>1</sup>, 10<sup>2</sup>, 10<sup>4</sup>, 10<sup>0</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se colocó erróneamente <span class="math">10<sup>0</sup></span> al final, posiblemente confundiéndolo con un valor mayor que las demás.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este es un orden decreciente (de mayor a menor).">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">10<sup>4</sup>, 10<sup>2</sup>, 10<sup>1</sup>, 10<sup>0</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un orden decreciente (de mayor a menor).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se intercambiaron los lugares de $10^{1}$ y $10^{2}$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10<sup>0</sup>, 10<sup>2</sup>, 10<sup>1</sup>, 10<sup>4</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se intercambiaron los lugares de <span class="math">10<sup>1</sup></span> y <span class="math">10<sup>2</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El orden creciente de los exponentes determina el orden creciente del valor de la potencia.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">10<sup>0</sup>, 10<sup>1</sup>, 10<sup>2</sup>, 10<sup>4</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El orden creciente de los exponentes determina el orden creciente del valor de la potencia.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>¡Cuestionario completado!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Intentar de nuevo</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"¿Cuál es el valor numérico de la potencia $10^{7}$?","hint":"Recuerda la relación directa entre el número del exponente y la cantidad de ceros.","options":[{"label":"A","text":"$7.000.000$","isCorrect":false,"rationale":"Este valor confunde el exponente con el primer dígito del número resultante."},{"label":"B","text":"$70$","isCorrect":false,"rationale":"Este es un error común donde se multiplica la base por el exponente en lugar de realizar una multiplicación repetida."},{"label":"C","text":"$10.000.000$","isCorrect":true,"rationale":"En una potencia de base 10, el exponente indica la cantidad de ceros que acompañan a la unidad."},{"label":"D","text":"$1.000.000$","isCorrect":false,"rationale":"Este valor corresponde a $10^{6}$, lo que indica que se contó un cero menos de lo requerido por el exponente."}]},{"question":"Si una empresa de K-Pop tiene $10 \\times 10 \\times 10 \\times 10 \\times 10 \\times 10$ seguidores, ¿cómo se expresa esta cantidad como potencia?","hint":"Cuenta cuántas veces aparece el número 10 en la operación.","options":[{"label":"A","text":"$6^{10}$","isCorrect":false,"rationale":"Se han intercambiado los roles de la base y el exponente."},{"label":"B","text":"$10^{6}$","isCorrect":true,"rationale":"El exponente representa cuántas veces se repite la base en la multiplicación."},{"label":"C","text":"$60$","isCorrect":false,"rationale":"Se sumaron los dieces o se multiplicó la base por la cantidad de repeticiones de forma lineal."},{"label":"D","text":"$10^{5}$","isCorrect":false,"rationale":"Se ha contado un factor menos de los seis que aparecen en la multiplicación repetida."}]},{"question":"¿Cuál es el valor de $10^{0}$ según el patrón de potencias descendentes?","hint":"Piensa en qué sucede cuando divides $10^{1}$ por la base 10.","options":[{"label":"A","text":"$1$","isCorrect":true,"rationale":"Siguiendo el patrón de dividir por 10 en cada nivel descendente, $10 \\div 10$ resulta en 1."},{"label":"B","text":"$0,1$","isCorrect":false,"rationale":"Este valor correspondería a un exponente negativo, no al exponente cero."},{"label":"C","text":"$10$","isCorrect":false,"rationale":"Este es el valor de $10^{1}$, no de $10^{0}$."},{"label":"D","text":"$0$","isCorrect":false,"rationale":"Es una confusión común pensar que un exponente cero anula el valor de la base."}]},{"question":"En la descomposición del número $5.020.401$, ¿qué potencia de base 10 acompaña al dígito $2$?","hint":"Identifica la posición decimal del dígito 2 empezando desde las unidades ($10^{0}$).","options":[{"label":"A","text":"$10^{5}$","isCorrect":false,"rationale":"Esa potencia corresponde a las centenas de mil, una posición a la izquierda del dígito 2."},{"label":"B","text":"$10^{2}$","isCorrect":false,"rationale":"Esa potencia corresponde a las centenas, dos posiciones a la derecha del dígito 2."},{"label":"C","text":"$10^{3}$","isCorrect":false,"rationale":"Esa potencia corresponde a las unidades de mil, donde en este caso hay un cero."},{"label":"D","text":"$10^{4}$","isCorrect":true,"rationale":"El dígito 2 ocupa la posición de las decenas de mil, que corresponde a $10^{4}$."}]},{"question":"¿Cómo se escribe el número $250.000.000$ en notación científica?","hint":"La coma debe quedar justo después del primer dígito distinto de cero.","options":[{"label":"A","text":"$0,25 \\times 10^{9}$","isCorrect":false,"rationale":"El primer factor debe ser mayor o igual a 1 para cumplir con la regla de la notación científica."},{"label":"B","text":"$25 \\times 10^{7}$","isCorrect":false,"rationale":"Aunque el valor es equivalente, la notación científica requiere que el primer factor sea menor que 10."},{"label":"C","text":"$2,5 \\times 10^{7}$","isCorrect":false,"rationale":"Se contaron incorrectamente los espacios al mover la coma decimal."},{"label":"D","text":"$2,5 \\times 10^{8}$","isCorrect":true,"rationale":"Se mueve la coma 8 lugares hacia la izquierda para dejar un número entre 1 y 10."}]},{"question":"¿Qué número se forma con la expresión $(4 \\cdot 10^{6}) + (8 \\cdot 10^{3}) + (5 \\cdot 10^{0})$?","hint":"Asegúrate de colocar ceros en las potencias faltantes como $10^{5}$, $10^{4}$, $10^{2}$ y $10^{1}$.","options":[{"label":"A","text":"$4.080.500$","isCorrect":false,"rationale":"Se ubicaron los dígitos en posiciones incorrectas de la tabla decimal."},{"label":"B","text":"$4.850.000$","isCorrect":false,"rationale":"Se asumió que los dígitos seguían un orden consecutivo sin verificar el exponente de cada potencia."},{"label":"C","text":"$4.008.005$","isCorrect":true,"rationale":"Se deben completar con ceros las posiciones de centenas de mil, decenas de mil, centenas y decenas que no aparecen en la suma."},{"label":"D","text":"$4.805$","isCorrect":false,"rationale":"Se ignoró el valor posicional real de cada potencia, simplemente uniendo los dígitos."}]},{"question":"Un estudiante afirma que $10^{3} = 30$. ¿Cuál es el error conceptual en esta afirmación?","hint":"Piensa en la diferencia entre $10 \\times 3$ y $10 \\times 10 \\times 10$.","options":[{"label":"A","text":"Confundió la base con el número de veces que se suma el 10.","isCorrect":false,"rationale":"Aunque es un error, la descripción técnica correcta es que confundió la potencia con una multiplicación lineal."},{"label":"B","text":"Multiplicó la base por el exponente en lugar de multiplicar la base por sí misma.","isCorrect":true,"rationale":"La potencia indica una multiplicación repetida ($10 \\times 10 \\times 10$), no una multiplicación simple entre sus componentes."},{"label":"C","text":"El resultado debería ser 300.","isCorrect":false,"rationale":"Este resultado también es incorrecto y no explica el error en el razonamiento del estudiante."},{"label":"D","text":"Olvidó sumar los ceros correctamente.","isCorrect":false,"rationale":"Las potencias no se resuelven sumando ceros, sino mediante el producto de factores iguales."}]},{"question":"¿Cuál de estas opciones NO representa correctamente el número $3.400$?","hint":"Cuenta cuántos lugares se debe mover la coma en $3,4$ para llegar a $3.400$.","options":[{"label":"A","text":"$(3 \\cdot 10^{3}) + (4 \\cdot 10^{2})$","isCorrect":false,"rationale":"Es la descomposición posicional correcta del número."},{"label":"B","text":"$3,4 \\times 10^{2}$","isCorrect":true,"rationale":"Esta expresión equivale a 340, ya que solo mueve la coma dos lugares; para 3.400 se necesita $10^{3}$."},{"label":"C","text":"$3,4 \\times 10^{3}$","isCorrect":false,"rationale":"Es la representación correcta en notación científica del número 3.400."},{"label":"D","text":"$34 \\times 10^{2}$","isCorrect":false,"rationale":"Es una forma válida de representación numérica, aunque no sea notación científica estricta."}]},{"question":"¿Qué potencia de base 10 representa la posición de las 'Centenas de mil'?","hint":"Escribe el número cien mil y cuenta sus ceros.","options":[{"label":"A","text":"$10^{6}$","isCorrect":false,"rationale":"Esa potencia corresponde a las unidades de millón."},{"label":"B","text":"$10^{4}$","isCorrect":false,"rationale":"Esa potencia corresponde a las decenas de mil."},{"label":"C","text":"$10^{5}$","isCorrect":true,"rationale":"Las centenas de mil equivalen a $100.000$, que tiene 5 ceros."},{"label":"D","text":"$10^{3}$","isCorrect":false,"rationale":"Esa potencia corresponde a las unidades de mil."}]},{"question":"En el contexto de 'Pets', si una ciudad tiene $1,2 \\times 10^{7}$ mascotas, ¿cuántas mascotas hay en total?","hint":"Mueve la coma de $1,2$ siete lugares hacia la derecha.","options":[{"label":"A","text":"$120.000.000$","isCorrect":false,"rationale":"Este valor correspondería a $1,2 \\times 10^{8}$."},{"label":"B","text":"$12.000$","isCorrect":false,"rationale":"Este valor es demasiado bajo y no considera el exponente 7."},{"label":"C","text":"$12.000.000$","isCorrect":true,"rationale":"Al multiplicar $1,2$ por $10.000.000$, la coma se desplaza 7 lugares a la derecha."},{"label":"D","text":"$1.200.000$","isCorrect":false,"rationale":"Este valor correspondería a $1,2 \\times 10^{6}$."}]},{"question":"¿Por qué es importante el dígito $0$ en una descomposición como $6 \\cdot 10^{3} + 0 \\cdot 10^{2} + 5 \\cdot 10^{1} + 2 \\cdot 10^{0}$?","hint":"Piensa en la diferencia entre el número 652 y el número 6.052.","options":[{"label":"A","text":"Porque indica que la base 10 no existe en esa posición.","isCorrect":false,"rationale":"La base 10 existe en todas las posiciones del sistema decimal, lo que cambia es el dígito multiplicador."},{"label":"B","text":"Porque el cero siempre debe sumarse en las potencias.","isCorrect":false,"rationale":"El cero no altera la suma, pero su ausencia en la escritura del número cambiaría su valor."},{"label":"C","text":"Para que el número tenga siempre cuatro cifras.","isCorrect":false,"rationale":"Aunque ayuda a visualizar las cifras, su función matemática principal es el valor posicional."},{"label":"D","text":"Porque permite mantener el valor posicional correcto de los demás dígitos.","isCorrect":true,"rationale":"El cero actúa como un marcador de posición que asegura que el 6 represente miles y no cientos."}]},{"question":"¿Cuál de los siguientes números es el mayor?","hint":"A mayor exponente en base 10, mayor es el valor del número.","options":[{"label":"A","text":"$10^{5}$","isCorrect":false,"rationale":"Representa cien mil, que es menor que un millón."},{"label":"B","text":"$10^{4}$","isCorrect":false,"rationale":"Representa diez mil."},{"label":"C","text":"$10^{1}$","isCorrect":false,"rationale":"Representa simplemente diez."},{"label":"D","text":"$10^{6}$","isCorrect":true,"rationale":"Representa un millón, que es superior a cien mil o diez mil."}]},{"question":"Si descomponemos el número $9.004$, ¿cuál es la expresión correcta?","hint":"Asegúrate de que la potencia del primer dígito coincida con su posición de 'miles'.","options":[{"label":"A","text":"$(9 \\cdot 10^{3}) + (0 \\cdot 10^{2}) + (0 \\cdot 10^{1}) + (4 \\cdot 10^{0})$","isCorrect":true,"rationale":"Incluye todas las posiciones desde las unidades de mil hasta las unidades."},{"label":"B","text":"$(9 \\cdot 10^{3}) + (4 \\cdot 10^{1})$","isCorrect":false,"rationale":"El exponente 1 colocaría al 4 en las decenas, no en las unidades."},{"label":"C","text":"$(9 \\cdot 10^{4}) + (4 \\cdot 10^{0})$","isCorrect":false,"rationale":"El exponente 4 colocaría al 9 en las decenas de mil, no en las unidades de mil."},{"label":"D","text":"$(9 \\cdot 10^{2}) + (4 \\cdot 10^{0})$","isCorrect":false,"rationale":"El exponente 2 colocaría al 9 en las centenas."}]},{"question":"¿Cuál es el primer paso correcto para convertir $48.500$ a notación científica?","hint":"Busca que el número resultante sea mayor o igual a 1 pero menor que 10.","options":[{"label":"A","text":"Ubicar la coma decimal después del dígito 4.","isCorrect":true,"rationale":"El primer factor debe ser un número entre 1 y 10, en este caso 4,85."},{"label":"B","text":"Multiplicar el número por $10^{3}$.","isCorrect":false,"rationale":"Multiplicar por una potencia cambiaría el valor original del número en lugar de representarlo en otro formato."},{"label":"C","text":"Ubicar la coma decimal después del dígito 8.","isCorrect":false,"rationale":"Eso daría 48,5, que es mayor que 10 y no cumple con la regla de la notación científica."},{"label":"D","text":"Contar cuántos ceros tiene el número.","isCorrect":false,"rationale":"Contar ceros no es suficiente si el número termina en otros dígitos o para determinar el exponente exacto."}]},{"question":"En la expresión $a \\times 10^{n}$, ¿qué condición debe cumplir siempre el valor de '$a$'?","hint":"Recuerda el rango permitido para el número que precede a la potencia de 10.","options":[{"label":"A","text":"$0 < a < 1$","isCorrect":false,"rationale":"Un valor menor que 1 requeriría mover la coma hacia la derecha, no es el formato estándar inicial."},{"label":"B","text":"$a > 10$","isCorrect":false,"rationale":"Si es mayor que 10, la coma todavía se puede mover un lugar más hacia la izquierda."},{"label":"C","text":"$1 \\le a < 10$","isCorrect":true,"rationale":"Esta es la regla fundamental para que un número esté correctamente expresado en notación científica."},{"label":"D","text":"$a$ debe ser un número entero.","isCorrect":false,"rationale":"El valor de 'a' suele ser un decimal (ej. 3,45) para capturar la precisión del número original."}]},{"question":"¿Qué ocurre con el valor de la potencia si el exponente disminuye en una unidad (por ejemplo de $10^{4}$ a $10^{3}$)?","hint":"Compara los valores de $10.000$ y $1.000$.","options":[{"label":"A","text":"El valor se divide por $10$.","isCorrect":true,"rationale":"Cada reducción del exponente en una unidad equivale a una división por la base en el sistema decimal."},{"label":"B","text":"El valor se multiplica por $10$.","isCorrect":false,"rationale":"Eso ocurriría si el exponente aumentara, no si disminuyera."},{"label":"C","text":"El valor se resta en $10$.","isCorrect":false,"rationale":"Las potencias se rigen por relaciones multiplicativas, no aditivas."},{"label":"D","text":"El valor pierde todos sus ceros.","isCorrect":false,"rationale":"Solo pierde un cero por cada nivel que desciende el exponente."}]},{"question":"Si un videoclip de las Guerreras K-Pop tiene $10^{1}$ visualizaciones y luego sube a $10^{2}$, ¿cuántas visualizaciones ganó?","hint":"Resta el valor de diez al valor de cien.","options":[{"label":"A","text":"$10$ visualizaciones.","isCorrect":false,"rationale":"Este error asume que solo se sumó el valor del exponente o un nivel base."},{"label":"B","text":"$90$ visualizaciones.","isCorrect":true,"rationale":"$10^{2} = 100$ y $10^{1} = 10$. La diferencia es $100 - 10 = 90$."},{"label":"C","text":"$100$ visualizaciones.","isCorrect":false,"rationale":"Este es el valor total final, no la cantidad que se incrementó."},{"label":"D","text":"$20$ visualizaciones.","isCorrect":false,"rationale":"Confunde la potencia con una multiplicación de la base por el exponente."}]},{"question":"¿Cuál es la potencia que corresponde a las 'Decenas' en el sistema decimal?","hint":"Piensa en cuántos ceros tiene el número diez.","options":[{"label":"A","text":"$10^{10}$","isCorrect":false,"rationale":"Es una potencia extremadamente grande que no tiene relación con el concepto de decena básica."},{"label":"B","text":"$10^{1}$","isCorrect":true,"rationale":"Una decena es igual a 10, lo que se representa como la base elevada a 1."},{"label":"C","text":"$10^{2}$","isCorrect":false,"rationale":"Esa potencia corresponde a las centenas."},{"label":"D","text":"$10^{0}$","isCorrect":false,"rationale":"Esa potencia corresponde a las unidades."}]},{"question":"¿Cómo se representa el número $1.000.000.000$ (mil millones) como potencia de 10?","hint":"Cuenta cuidadosamente los ceros en el número $1.000.000.000$.","options":[{"label":"A","text":"$10^{6}$","isCorrect":false,"rationale":"Ese valor corresponde a un millón."},{"label":"B","text":"$10^{9}$","isCorrect":true,"rationale":"El número mil millones tiene 9 ceros en su escritura estándar."},{"label":"C","text":"$10^{8}$","isCorrect":false,"rationale":"Se ha omitido un cero en el conteo de la magnitud de mil millones."},{"label":"D","text":"$10^{12}$","isCorrect":false,"rationale":"Ese valor corresponde a un billón."}]},{"question":"Un aprendiz escribe que $10^{4} = 10 + 10 + 10 + 10$. ¿Por qué es incorrecto?","hint":"Recuerda qué operación matemática define a una potencia.","options":[{"label":"A","text":"Porque el exponente indica el número de ceros, no de dieces.","isCorrect":false,"rationale":"El exponente sí indica el número de dieces, pero como factores multiplicativos, no como sumandos."},{"label":"B","text":"Porque faltan más dieces en la suma.","isCorrect":false,"rationale":"Ninguna cantidad de dieces sumados representará correctamente una potencia de base 10."},{"label":"C","text":"Porque el resultado debería ser $40$.","isCorrect":false,"rationale":"Aunque la suma da 40, el error principal es usar la operación equivocada para una potencia."},{"label":"D","text":"Porque una potencia es una multiplicación repetida, no una suma.","isCorrect":true,"rationale":"El exponente indica cuántas veces la base actúa como factor en un producto."}]},{"question":"¿Cuál es la notación científica de $905.000$?","hint":"No ignores el cero que está entre el 9 y el 5 al mover la coma.","options":[{"label":"A","text":"$90,5 \\times 10^{4}$","isCorrect":false,"rationale":"El número 90,5 no cumple con ser menor que 10."},{"label":"B","text":"$9,5 \\times 10^{5}$","isCorrect":false,"rationale":"Se eliminó incorrectamente el cero que forma parte del valor del número."},{"label":"C","text":"$9,05 \\times 10^{5}$","isCorrect":true,"rationale":"La coma se mueve 5 lugares para quedar después del 9, manteniendo los dígitos significativos."},{"label":"D","text":"$9,05 \\times 10^{3}$","isCorrect":false,"rationale":"Se contaron mal los saltos de la coma decimal."}]},{"question":"Si un número tiene un dígito $7$ en la posición de $10^{5}$, ¿cuál es su valor real en el número?","hint":"Calcula el valor de la potencia $10^{5}$ y multiplícalo por 7.","options":[{"label":"A","text":"$70.000$","isCorrect":false,"rationale":"Este valor correspondería a $10^{4}$."},{"label":"B","text":"$700$","isCorrect":false,"rationale":"Este valor ignora la magnitud real del exponente 5."},{"label":"C","text":"$700.000$","isCorrect":true,"rationale":"$10^{5}$ es cien mil, por lo tanto $7 \\times 100.000 = 700.000$."},{"label":"D","text":"$7.000.000$","isCorrect":false,"rationale":"Este valor correspondería a $10^{6}$."}]},{"question":"¿Qué número es equivalente a $5,4 \\times 10^{3}$?","hint":"Desplaza la coma tres posiciones hacia la derecha, rellenando con ceros si es necesario.","options":[{"label":"A","text":"$5.400$","isCorrect":true,"rationale":"Al mover la coma tres lugares a la derecha desde 5,4 se obtiene 5.400."},{"label":"B","text":"$540$","isCorrect":false,"rationale":"Esto equivale a $10^{2}$."},{"label":"C","text":"$54.000$","isCorrect":false,"rationale":"Esto equivale a $10^{4}$."},{"label":"D","text":"$5.004$","isCorrect":false,"rationale":"Se interpretó erróneamente la potencia como una instrucción de colocar ceros entre los dígitos."}]},{"question":"En la tabla posicional millonaria, ¿qué posición sigue inmediatamente a las 'Centenas de mil' al subir de nivel?","hint":"Piensa en qué posición decimal le corresponde a la potencia $10^{6}$.","options":[{"label":"A","text":"Centena de millón","isCorrect":false,"rationale":"Esta posición está tres niveles por encima."},{"label":"B","text":"Decena de millón","isCorrect":false,"rationale":"Esta posición está dos niveles por encima de las centenas de mil."},{"label":"C","text":"Unidad de mil","isCorrect":false,"rationale":"Esta posición está por debajo de las centenas de mil."},{"label":"D","text":"Unidad de millón","isCorrect":true,"rationale":"Después de las centenas de mil ($10^{5}$) vienen las unidades de millón ($10^{6}$)."}]},{"question":"¿Cuál es la forma correcta de expresar $3 \\times 10^{0}$ como número natural?","hint":"Recuerda el valor de cualquier potencia con exponente cero.","options":[{"label":"A","text":"$0$","isCorrect":false,"rationale":"Se asumió erróneamente que multiplicar por algo con exponente cero resulta en cero."},{"label":"B","text":"$3$","isCorrect":true,"rationale":"Como $10^{0} = 1$, entonces $3 \\times 1 = 3$."},{"label":"C","text":"$1$","isCorrect":false,"rationale":"Solo se consideró el valor de la potencia, ignorando el dígito multiplicador 3."},{"label":"D","text":"$30$","isCorrect":false,"rationale":"Se multiplicó por $10^{1}$ en lugar de $10^{0}$."}]},{"question":"Ordena de menor a mayor las siguientes potencias: $10^{4}, 10^{0}, 10^{2}, 10^{1}$.","hint":"Fíjate únicamente en los exponentes y ordénalos de forma normal.","options":[{"label":"A","text":"$10^{1}, 10^{2}, 10^{4}, 10^{0}$","isCorrect":false,"rationale":"Se colocó erróneamente $10^{0}$ al final, posiblemente confundiéndolo con un valor mayor que las demás."},{"label":"B","text":"$10^{4}, 10^{2}, 10^{1}, 10^{0}$","isCorrect":false,"rationale":"Este es un orden decreciente (de mayor a menor)."},{"label":"C","text":"$10^{0}, 10^{2}, 10^{1}, 10^{4}$","isCorrect":false,"rationale":"Se intercambiaron los lugares de $10^{1}$ y $10^{2}$."},{"label":"D","text":"$10^{0}, 10^{1}, 10^{2}, 10^{4}$","isCorrect":true,"rationale":"El orden creciente de los exponentes determina el orden creciente del valor de la potencia."}]}];
+const tr = {"correct":"¡Correcto!","incorrect":"Incorrecto","next":"Siguiente pregunta →","seeResults":"Ver resultados","complete":"¡Cuestionario completado!","scoreText":"Obtuviste {correct} de {total} correctas","tryAgain":"Intentar de nuevo","rightAnswer":"Respuesta correcta","notQuite":"No del todo"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
