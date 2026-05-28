@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raíz cuadrada y variaciones porcentuales</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Raíz cuadrada y variaciones porcentuales</h1>
+    <div class="meta">26 preguntas</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">Pregunta 1</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el valor exacto de <span class="math"><span class="sqrt">√<span class="sqrt-content">225</span></span></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca un número que multiplicado por sí mismo termine en <span class="math">5</span> y esté entre <span class="math">10</span> y <span class="math">20</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Se produce al intentar dividir el número por $10$, lo cual no tiene relación con el concepto de raíz cuadrada.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">22,5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se produce al intentar dividir el número por <span class="math">10</span>, lo cual no tiene relación con el concepto de raíz cuadrada.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El número $15$ multiplicado por sí mismo ($15 \times 15$) resulta en $225$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número <span class="math">15</span> multiplicado por sí mismo (<span class="math">15 × 15</span>) resulta en <span class="math">225</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es un error común al confundir la raíz con un número que termina en $5$; $25 \times 25$ es $625$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">25</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error común al confundir la raíz con un número que termina en <span class="math">5</span>; <span class="math">25 × 25</span> es <span class="math">625</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este resultado proviene de dividir el número por $2$, una de las confusiones más frecuentes al calcular raíces cuadradas.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">112,5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado proviene de dividir el número por <span class="math">2</span>, una de las confusiones más frecuentes al calcular raíces cuadradas.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">Pregunta 2</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una pizzería oscura tiene un piso cuadrado con un área total de <span class="math">64</span> metros cuadrados, ¿cuánto mide cada lado del piso?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que el área de un cuadrado se calcula multiplicando lado por lado.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Dividir el área por $2$ es un error procedimental que confunde la raíz con la mitad del valor.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">32</span> metros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dividir el área por <span class="math">2</span> es un error procedimental que confunde la raíz con la mitad del valor.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor surge de dividir erróneamente por $4$ o confundir el proceso con el cálculo del perímetro.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">16</span> metros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor surge de dividir erróneamente por <span class="math">4</span> o confundir el proceso con el cálculo del perímetro.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Es un error decimal común al intentar estimar sin realizar la multiplicación correspondiente.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">6,4</span> metros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es un error decimal común al intentar estimar sin realizar la multiplicación correspondiente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La raíz cuadrada de $64$ representa la longitud del lado de un cuadrado cuya área es precisamente $64$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">8</span> metros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La raíz cuadrada de <span class="math">64</span> representa la longitud del lado de un cuadrado cuya área es precisamente <span class="math">64</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">Pregunta 3</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un estudiante afirma que <span class="math"><span class="sqrt">√<span class="sqrt-content">50</span></span></span> es exactamente <span class="math">25</span>. ¿Por qué esta afirmación es incorrecta?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Analiza si multiplicar <span class="math">25 × 25</span> realmente da como resultado <span class="math">50</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El cálculo es incorrecto, pues $25 \times 25$ es $625$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque <span class="math">25 × 25</span> es igual a <span class="math">500</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El cálculo es incorrecto, pues <span class="math">25 × 25</span> es <span class="math">625</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La raíz de un número mayor a $1$ siempre es menor que el número original.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque la raíz cuadrada de <span class="math">50</span> debe ser mayor a <span class="math">25</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La raíz de un número mayor a <span class="math">1</span> siempre es menor que el número original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Cualquier número natural tiene una raíz cuadrada, aunque no siempre sea un número entero exacto.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque no existen raíces de números que terminan en cero.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cualquier número natural tiene una raíz cuadrada, aunque no siempre sea un número entero exacto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La raíz cuadrada de $50$ es un número irracional cercano a $7,07$, ya que $7 \times 7 = 49$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque calculó la mitad del número en lugar de buscar un número que multiplicado por sí mismo de <span class="math">50</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La raíz cuadrada de <span class="math">50</span> es un número irracional cercano a <span class="math">7,07</span>, ya que <span class="math">7 × 7 = 49</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">Pregunta 4</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Entre qué números naturales consecutivos se encuentra el valor de <span class="math"><span class="sqrt">√<span class="sqrt-content">18</span></span></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en los cuadrados perfectos más cercanos al número <span class="math">18</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este rango cubriría números con raíces entre $9$ y $16$, pero $18$ es mayor que $16$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Entre <span class="math">3</span> y <span class="math">4</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este rango cubriría números con raíces entre <span class="math">9</span> y <span class="math">16</span>, pero <span class="math">18</span> es mayor que <span class="math">16</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este rango corresponde a raíces entre $4$ y $9$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Entre <span class="math">2</span> y <span class="math">3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este rango corresponde a raíces entre <span class="math">4</span> y <span class="math">9</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es un error común de estimación al dividir el número aproximadamente por $2$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Entre <span class="math">8</span> y <span class="math">9</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error común de estimación al dividir el número aproximadamente por <span class="math">2</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Como $4^2 = 16$ y $5^2 = 25$, y el $18$ está entre $16$ y $25$, su raíz está entre $4$ y $5$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Entre <span class="math">4</span> y <span class="math">5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como <span class="math">4<sup>2</sup> = 16</span> y <span class="math">5<sup>2</sup> = 25</span>, y el <span class="math">18</span> está entre <span class="math">16</span> y <span class="math">25</span>, su raíz está entre <span class="math">4</span> y <span class="math">5</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">Pregunta 5</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un escenario de K-Pop cuadrado tiene un perímetro de <span class="math">32</span> metros. ¿Cuál es el área total de dicho escenario?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Primero encuentra cuánto mide un solo lado dividiendo el perímetro por cuatro.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error ocurre si se confunde el lado con la mitad del perímetro o si se toma el valor $4$ como lado.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">16 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se confunde el lado con la mitad del perímetro o si se toma el valor <span class="math">4</span> como lado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Surge de multiplicar erróneamente el perímetro por $4$ en lugar de obtener primero el lado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">128 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Surge de multiplicar erróneamente el perímetro por <span class="math">4</span> en lugar de obtener primero el lado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Si el perímetro es $32$, cada lado mide $8$ metros ($32 \div 4$); por lo tanto, el área es $8 \times 8 = 64$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">64 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si el perímetro es <span class="math">32</span>, cada lado mide <span class="math">8</span> metros (<span class="math">32 ÷ 4</span>); por lo tanto, el área es <span class="math">8 × 8 = 64</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Es el resultado de elevar al cuadrado el perímetro total sin dividirlo por sus cuatro lados iguales.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">1.024 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es el resultado de elevar al cuadrado el perímetro total sin dividirlo por sus cuatro lados iguales.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">Pregunta 6</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si el área de una zona VIP es de <span class="math">196 text m<sup>2</sup></span>, ¿cuál es el perímetro que se debe cercar?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula la raíz cuadrada del área para obtener el lado y luego multiplica por cuatro.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor representa solo la medida de un lado, no el perímetro total solicitado.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">14 text metros</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor representa solo la medida de un lado, no el perímetro total solicitado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="La raíz de $196$ es $14$ (lado), y el perímetro de un cuadrado es lado multiplicado por $4$ ($14 \times 4 = 56$).">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">56 text metros</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La raíz de <span class="math">196</span> es <span class="math">14</span> (lado), y el perímetro de un cuadrado es lado multiplicado por <span class="math">4</span> (<span class="math">14 × 4 = 56</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error proviene de calcular mal la raíz cuadrada, confundiéndola con la de $144$, que es $12$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">48 text metros</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error proviene de calcular mal la raíz cuadrada, confundiéndola con la de <span class="math">144</span>, que es <span class="math">12</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Resulta de dividir el área por $2$ en lugar de extraer la raíz cuadrada.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">98 text metros</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Resulta de dividir el área por <span class="math">2</span> en lugar de extraer la raíz cuadrada.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">Pregunta 7</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué significa conceptualmente un descuento del <span class="math">25%</span> aplicado al precio de un producto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Relaciona el porcentaje con una fracción simplificada de cien.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Eso describiría un descuento del $75\%$, donde solo queda el $25\%$ restante.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Que el precio final será una cuarta parte del original.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Eso describiría un descuento del <span class="math">75%</span>, donde solo queda el <span class="math">25%</span> restante.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Restar la mitad corresponde a un descuento del $50\%$, no del $25\%$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Que se resta la mitad del precio original.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Restar la mitad corresponde a un descuento del <span class="math">50%</span>, no del <span class="math">25%</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El porcentaje es 'por cada $100$', por lo que $25\%$ serían $250$ por cada $1000$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Que se pagan <span class="math">25</span> pesos por cada <span class="math">1000</span> de valor.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El porcentaje es 'por cada <span class="math">100</span>', por lo que <span class="math">25%</span> serían <span class="math">250</span> por cada <span class="math">1000</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El $25\%$ equivale a la cuarta parte ($25/100 = 1/4$), por lo que restarlo es quitar una de esas partes.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Que el total se divide en <span class="math">4</span> partes iguales y se elimina una de ellas.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">25%</span> equivale a la cuarta parte (<span class="math">25/100 = 1/4</span>), por lo que restarlo es quitar una de esas partes.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">Pregunta 8</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un cargamento de Thomas cuesta <span class="math">\</span>800<span class="math"> y recibe un aumento del </span>15\%$. ¿Cuál es el nuevo precio?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula el <span class="math">10%</span> y el <span class="math">5%</span> de <span class="math">800</span> para encontrar el aumento total.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado corresponde a un descuento del $15\%$ en lugar de un aumento.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>680$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado corresponde a un descuento del <span class="math">15%</span> en lugar de un aumento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Suele ocurrir al calcular incorrectamente el $15\%$ como si fuera un aumento mayor o aproximado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>950$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Suele ocurrir al calcular incorrectamente el <span class="math">15%</span> como si fuera un aumento mayor o aproximado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Error común de sumar directamente el valor del porcentaje al precio como si fueran unidades monetarias.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>815$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error común de sumar directamente el valor del porcentaje al precio como si fueran unidades monetarias.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El $15\%$ de $800$ es $120$ ($800 \times 0,15$), y al sumarlo al precio inicial resulta en $920$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>920$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">15%</span> de <span class="math">800</span> es <span class="math">120</span> (<span class="math">800 × 0,15</span>), y al sumarlo al precio inicial resulta en <span class="math">920</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">Pregunta 9</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si Jack Skellington aplica un aumento del <span class="math">20%</span> a un objeto de <span class="math">\</span>1.200<span class="math"> y luego un descuento del </span>20\%$ al nuevo valor, ¿qué sucede con el precio final?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que el segundo porcentaje se calcula sobre el resultado del primer paso, no sobre el original.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esto solo ocurriría si el porcentaje de aumento fuera significativamente mayor al de descuento.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">El precio final es mayor al inicial.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto solo ocurriría si el porcentaje de aumento fuera significativamente mayor al de descuento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error surge de sumar los porcentajes sin considerar que uno es resta y otro es suma.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">El precio aumenta en total un <span class="math">40%</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error surge de sumar los porcentajes sin considerar que uno es resta y otro es suma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al aplicar el descuento sobre un valor ya aumentado, la base es mayor, por lo que se resta más de lo que se sumó.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">El precio final es menor a el inicial (<span class="math">\</span>1.152$).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al aplicar el descuento sobre un valor ya aumentado, la base es mayor, por lo que se resta más de lo que se sumó.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Es una idea errónea pensar que porcentajes iguales de aumento y descuento se anulan, ya que se aplican sobre bases distintas.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">El precio vuelve a ser exactamente <span class="math">\</span>1.200$.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es una idea errónea pensar que porcentajes iguales de aumento y descuento se anulan, ya que se aplican sobre bases distintas.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">Pregunta 10</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la principal diferencia entre el interés simple y el interés compuesto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en qué sucede con la ganancia de cada año: ¿se queda aparte o se suma al total para ganar más?</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Incluso con el mismo porcentaje, la base de cálculo cambia en el compuesto, variando el resultado.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">No hay diferencia si el porcentaje es el mismo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Incluso con el mismo porcentaje, la base de cálculo cambia en el compuesto, variando el resultado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Al contrario, el compuesto se recalcula en cada intervalo de tiempo sobre el saldo acumulado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">El interés compuesto se calcula solo una vez al final del periodo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al contrario, el compuesto se recalcula en cada intervalo de tiempo sobre el saldo acumulado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="El interés compuesto se capitaliza, sumándose al monto inicial para el siguiente cálculo, lo que acelera el crecimiento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">En el simple el interés es constante, mientras que en el compuesto el interés genera nuevos intereses.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El interés compuesto se capitaliza, sumándose al monto inicial para el siguiente cálculo, lo que acelera el crecimiento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="A largo plazo, el interés compuesto siempre superará al simple debido al crecimiento exponencial.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">El interés simple siempre da más dinero al final del tiempo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">A largo plazo, el interés compuesto siempre superará al simple debido al crecimiento exponencial.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">Pregunta 11</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Jack invierte <span class="math">\</span>3.000<span class="math"> a una tasa de interés simple del </span>10\%<span class="math"> anual por </span>3$ años. ¿Cuál es el interés total ganado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula el interés de un año y multiplícalo por la cantidad de años.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="En el interés simple, se gana lo mismo cada año: $300$ ($10\%$ de $3000$) multiplicado por $3$ años.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>900$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En el interés simple, se gana lo mismo cada año: <span class="math">300</span> (<span class="math">10%</span> de <span class="math">3000</span>) multiplicado por <span class="math">3</span> años.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este es el interés ganado únicamente en el primer año, no el total del periodo.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>300$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el interés ganado únicamente en el primer año, no el total del periodo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor representa el monto total acumulado, no solo el interés ganado solicitado.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>3.900$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor representa el monto total acumulado, no solo el interés ganado solicitado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este sería el resultado aproximado si se aplicara interés compuesto en lugar de simple.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>993$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este sería el resultado aproximado si se aplicara interés compuesto en lugar de simple.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">Pregunta 12</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si una consola en el mundo de Mario Bros sube un <span class="math">10%</span> y luego otro <span class="math">10%</span>, ¿por qué factor total se debe multiplicar el precio original?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Multiplica los factores de crecimiento correspondientes a cada aumento.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Representaría un aumento del $100\%$, confundiendo el porcentaje con una duplicación.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Por <span class="math">2,00</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representaría un aumento del <span class="math">100%</span>, confundiendo el porcentaje con una duplicación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Es un error de cálculo decimal al intentar combinar los factores de forma aditiva.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Por <span class="math">1,11</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es un error de cálculo decimal al intentar combinar los factores de forma aditiva.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este factor asume erróneamente que los porcentajes se suman ($10\% + 10\% = 20\%$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Por <span class="math">1,20</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este factor asume erróneamente que los porcentajes se suman (<span class="math">10% + 10% = 20%</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Los aumentos sucesivos se multiplican: $1,10 \times 1,10 = 1,21$, lo que representa un aumento total del $21\%$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Por <span class="math">1,21</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Los aumentos sucesivos se multiplican: <span class="math">1,10 × 1,10 = 1,21</span>, lo que representa un aumento total del <span class="math">21%</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="12">
+          <div class="q-header">
+            <span class="q-number">Pregunta 13</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el resultado de aplicar un descuento sucesivo del <span class="math">20%</span> y luego del <span class="math">10%</span> a un producto de <span class="math">\</span>500$?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Aplica el primer descuento, obtén un nuevo precio, y a ese nuevo precio aplícale el segundo descuento.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor solo considera el primer descuento del $20\%$ ignorando el segundo paso.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>400$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor solo considera el primer descuento del <span class="math">20%</span> ignorando el segundo paso.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Resultado de aplicar solo el $10\%$ de descuento sobre el valor original.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>450$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Resultado de aplicar solo el <span class="math">10%</span> de descuento sobre el valor original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Primero se reduce al $80\%$ ($500 \times 0,8 = 400$) y luego ese valor al $90\%$ ($400 \times 0,9 = 360$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>360$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Primero se reduce al <span class="math">80%</span> (<span class="math">500 × 0,8 = 400</span>) y luego ese valor al <span class="math">90%</span> (<span class="math">400 × 0,9 = 360</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Error de sumar los porcentajes ($30\%$) y aplicarlos directamente sobre el valor inicial.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>350$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error de sumar los porcentajes (<span class="math">30%</span>) y aplicarlos directamente sobre el valor inicial.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="13">
+          <div class="q-header">
+            <span class="q-number">Pregunta 14</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un estudiante dice que <span class="math"><span class="sqrt">√<span class="sqrt-content">100</span></span> = 50</span>. ¿Qué concepto está confundiendo?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Pregúntate: ¿Es <span class="math">50 × 50</span> igual a <span class="math">100</span>?</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El perímetro sería $40$ si el lado fuera $10$, no tiene relación directa con el valor $50$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Confunde la raíz con el perímetro del cuadrado.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El perímetro sería <span class="math">40</span> si el lado fuera <span class="math">10</span>, no tiene relación directa con el valor <span class="math">50</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La potencia de $100^2$ sería $10.000$, un error en la dirección opuesta.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Confunde la raíz con la potencia al cuadrado.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La potencia de <span class="math">100<sup>2</sup></span> sería <span class="math">10.000</span>, un error en la dirección opuesta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El volumen no se ha tratado en estas lecciones y requiere tres dimensiones.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Confunde el área con el volumen.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El volumen no se ha tratado en estas lecciones y requiere tres dimensiones.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La raíz cuadrada busca un número que al multiplicarse por sí mismo dé el original, no la mitad del mismo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Confunde la raíz cuadrada con la división por dos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La raíz cuadrada busca un número que al multiplicarse por sí mismo dé el original, no la mitad del mismo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="14">
+          <div class="q-header">
+            <span class="q-number">Pregunta 15</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Para estimar <span class="math"><span class="sqrt">√<span class="sqrt-content">75</span></span></span>, ¿cuáles son los cuadrados perfectos más cercanos?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca los resultados de <span class="math">8 × 8</span> y <span class="math">9 × 9</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Estos no son cuadrados perfectos (números que resultan de un entero por sí mismo).">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">70</span> y <span class="math">80</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Estos no son cuadrados perfectos (números que resultan de un entero por sí mismo).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El número $75$ es menor que $81$, por lo que este rango es demasiado alto.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">81</span> y <span class="math">100</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número <span class="math">75</span> es menor que <span class="math">81</span>, por lo que este rango es demasiado alto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Como $8^2=64$ y $9^2=81$, la raíz de $75$ debe estar entre $8$ y $9$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">64</span> y <span class="math">81</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como <span class="math">8<sup>2</sup>=64</span> y <span class="math">9<sup>2</sup>=81</span>, la raíz de <span class="math">75</span> debe estar entre <span class="math">8</span> y <span class="math">9</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque son cuadrados perfectos, el número $75$ no se encuentra entre ellos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">49</span> y <span class="math">64</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque son cuadrados perfectos, el número <span class="math">75</span> no se encuentra entre ellos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="15">
+          <div class="q-header">
+            <span class="q-number">Pregunta 16</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el valor de un producto de <span class="math">\</span>200<span class="math"> después de un descuento del </span>50\%<span class="math"> y un aumento posterior del </span>50\%$?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Primero calcula la mitad, y a esa mitad súmale su propia mitad.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Ocurre si se aplica el aumento sobre el valor original y luego se descuenta de forma errónea.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>250$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ocurre si se aplica el aumento sobre el valor original y luego se descuenta de forma errónea.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Representa solo el primer paso del descuento sin aplicar el aumento final.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>100$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representa solo el primer paso del descuento sin aplicar el aumento final.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="El $50\%$ de $200$ es $100$; el $50\%$ de aumento sobre $100$ es $50$, sumando un total de $150$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>150$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">50%</span> de <span class="math">200</span> es <span class="math">100</span>; el <span class="math">50%</span> de aumento sobre <span class="math">100</span> es <span class="math">50</span>, sumando un total de <span class="math">150</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Es el error de pensar que las variaciones porcentuales opuestas e iguales mantienen el precio original.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>200$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es el error de pensar que las variaciones porcentuales opuestas e iguales mantienen el precio original.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="16">
+          <div class="q-header">
+            <span class="q-number">Pregunta 17</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En el interés compuesto, si Jack ahorra <span class="math">\</span>1.000<span class="math"> al </span>10\%$ anual, ¿cuánto dinero tendrá al finalizar el segundo año?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula el <span class="math">10%</span> del total acumulado tras el primer año y súmalo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este sería el resultado con interés simple, donde el interés no genera nuevos intereses.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>1.200$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este sería el resultado con interés simple, donde el interés no genera nuevos intereses.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Año 1: $1000 + 100 = 1100$. Año 2: $1100 + 110 (10\% \text{ de } 1100) = 1210$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>1.210$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Año 1: <span class="math">1000 + 100 = 1100</span>. Año 2: <span class="math">1100 + 110 (10% text de  1100) = 1210</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el saldo al final del primer año únicamente.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>1.100$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el saldo al final del primer año únicamente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este sería el saldo al finalizar el tercer año, no el segundo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>1.331$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este sería el saldo al finalizar el tercer año, no el segundo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="17">
+          <div class="q-header">
+            <span class="q-number">Pregunta 18</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si el área de un cuadrado se cuadruplica (se multiplica por <span class="math">4</span>), ¿qué sucede con la medida de su lado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en un cuadrado de área <span class="math">1</span> (lado <span class="math">1</span>) y uno de área <span class="math">4</span> (lado ?).</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Es imposible cambiar el área sin modificar la longitud de los lados.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">El lado se mantiene igual.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es imposible cambiar el área sin modificar la longitud de los lados.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El aumento del lado es proporcional (multiplicativo), no simplemente aditivo.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">El lado aumenta en <span class="math">4</span> unidades.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El aumento del lado es proporcional (multiplicativo), no simplemente aditivo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Como el área es lado al cuadrado, si el lado es $2L$, el área es $(2L)^2 = 4L^2$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">El lado se duplica (se multiplica por <span class="math">2</span>).</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como el área es lado al cuadrado, si el lado es <span class="math">2L</span>, el área es <span class="math">(2L)<sup>2</sup> = 4L<sup>2</sup></span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Si el lado se cuadruplica, el área aumentaría $16$ veces ($4^2$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text">El lado también se cuadruplica.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si el lado se cuadruplica, el área aumentaría <span class="math">16</span> veces (<span class="math">4<sup>2</sup></span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="18">
+          <div class="q-header">
+            <span class="q-number">Pregunta 19</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué número multiplicado por sí mismo da como resultado <span class="math">1,44</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Relaciona este número con la raíz cuadrada de <span class="math">144</span> y ajusta la coma.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Al multiplicar $0,12 \times 0,12$ el resultado sería $0,0144$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0,12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar <span class="math">0,12 × 0,12</span> el resultado sería <span class="math">0,0144</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Sabiendo que $12 \times 12 = 144$, se deduce que $1,2 \times 1,2 = 1,44$ por el manejo de decimales.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1,2</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sabiendo que <span class="math">12 × 12 = 144</span>, se deduce que <span class="math">1,2 × 1,2 = 1,44</span> por el manejo de decimales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Nuevamente, este es el error de dividir el número por dos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,72</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Nuevamente, este es el error de dividir el número por dos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se ignora la posición de la coma decimal; $12 \times 12$ es $144$, no $1,44$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ignora la posición de la coma decimal; <span class="math">12 × 12</span> es <span class="math">144</span>, no <span class="math">1,44</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="19">
+          <div class="q-header">
+            <span class="q-number">Pregunta 20</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un escenario tiene un área de <span class="math">100 text m<sup>2</sup></span>. Si se decide ampliar el lado al doble, ¿cuál será la nueva área?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula el lado original, duplícalo y luego obtén el área de ese nuevo cuadrado.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Es el resultado de elevar al cuadrado el área original en lugar del nuevo lado.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">10.000 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Es el resultado de elevar al cuadrado el área original en lugar del nuevo lado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Error común de pensar que si el lado se duplica, el área también se duplica.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">200 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error común de pensar que si el lado se duplica, el área también se duplica.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se produce al multiplicar el área original por el nuevo lado o por diez.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">1.000 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se produce al multiplicar el área original por el nuevo lado o por diez.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El lado original es $10$. Al duplicarlo a $20$, la nueva área es $20 \times 20 = 400$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">400 text m<sup>2</sup></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El lado original es <span class="math">10</span>. Al duplicarlo a <span class="math">20</span>, la nueva área es <span class="math">20 × 20 = 400</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="20">
+          <div class="q-header">
+            <span class="q-number">Pregunta 21</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es el multiplicador decimal para aplicar un descuento del <span class="math">12%</span> de forma directa?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Resta el porcentaje de descuento al <span class="math">100%</span> y conviértelo a decimal.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este multiplicador se utiliza para un aumento del $12\%$, no para un descuento.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1,12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este multiplicador se utiliza para un aumento del <span class="math">12%</span>, no para un descuento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Representa el $88\%$ restante después de quitar el $12\%$ ($1,00 - 0,12 = 0,88$).">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,88</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Representa el <span class="math">88%</span> restante después de quitar el <span class="math">12%</span> (<span class="math">1,00 - 0,12 = 0,88</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este factor sirve para calcular cuánto es el descuento, pero no el precio final directamente.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este factor sirve para calcular cuánto es el descuento, pero no el precio final directamente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Error de resta al calcular el complemento de $100$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,82</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error de resta al calcular el complemento de <span class="math">100</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="21">
+          <div class="q-header">
+            <span class="q-number">Pregunta 22</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">En un problema de porcentajes sucesivos, ¿por qué no se pueden sumar los porcentajes directamente?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en qué número usas como 'el total' después del primer cambio.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="No está prohibido, pero en este contexto financiero es conceptualmente incorrecto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque las matemáticas prohíben sumar porcentajes.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No está prohibido, pero en este contexto financiero es conceptualmente incorrecto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El tipo de número resultante no es la razón de la regla financiera.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque el resultado siempre debe ser un número decimal.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El tipo de número resultante no es la razón de la regla financiera.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La base de cálculo del segundo paso incluye el aumento o disminución del primero, alterando el resultado final.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque el segundo porcentaje se aplica sobre un valor que ya cambió.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La base de cálculo del segundo paso incluye el aumento o disminución del primero, alterando el resultado final.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="No existe tal regla; la magnitud depende de los porcentajes elegidos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque los descuentos siempre son mayores que los aumentos.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No existe tal regla; la magnitud depende de los porcentajes elegidos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="22">
+          <div class="q-header">
+            <span class="q-number">Pregunta 23</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Qué raíz cuadrada exacta es la más cercana a <span class="math"><span class="sqrt">√<span class="sqrt-content">40</span></span></span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Compara las distancias entre <span class="math">40</span> y los cuadrados perfectos <span class="math">36</span> y <span class="math">49</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="El cuadrado de $6$ es $36$ y el de $7$ es $49$. El $40$ está a solo $4$ unidades de $36$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">6</span> (ya que <span class="math"><span class="sqrt">√<span class="sqrt-content">36</span></span></span> está muy cerca)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El cuadrado de <span class="math">6</span> es <span class="math">36</span> y el de <span class="math">7</span> es <span class="math">49</span>. El <span class="math">40</span> está a solo <span class="math">4</span> unidades de <span class="math">36</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aunque es una buena estimación decimal, la pregunta pide la raíz exacta (entera) más cercana.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">6,5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es una buena estimación decimal, la pregunta pide la raíz exacta (entera) más cercana.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aunque es una cota válida, $40$ está más lejos de $49$ (distancia $9$) que de $36$ (distancia $4$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">7</span> (ya que <span class="math"><span class="sqrt">√<span class="sqrt-content">49</span></span></span> es la siguiente)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es una cota válida, <span class="math">40</span> está más lejos de <span class="math">49</span> (distancia <span class="math">9</span>) que de <span class="math">36</span> (distancia <span class="math">4</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Confusión recurrente entre raíz cuadrada y división por dos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">20</span> (ya que es la mitad)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Confusión recurrente entre raíz cuadrada y división por dos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="23">
+          <div class="q-header">
+            <span class="q-number">Pregunta 24</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Si el interés compuesto de un año se calcula mensualmente en lugar de anualmente, ¿qué se puede predecir sobre el saldo final?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Más periodos de suma de intereses significan una base de cálculo que crece más seguido.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aunque el porcentaje por periodo sea menor, el efecto acumulativo compensa y supera el cálculo anual único.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Será menor, porque el porcentaje mensual es más pequeño.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque el porcentaje por periodo sea menor, el efecto acumulativo compensa y supera el cálculo anual único.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El interés simple nunca cambia su base, por lo que cualquier capitalización compuesta lo superará.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Será igual al interés simple.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El interés simple nunca cambia su base, por lo que cualquier capitalización compuesta lo superará.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al sumar los intereses cada mes, la base sobre la cual se calcula el siguiente interés aumenta más rápido.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Será mayor, ya que el interés se capitaliza con más frecuencia.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al sumar los intereses cada mes, la base sobre la cual se calcula el siguiente interés aumenta más rápido.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="La frecuencia de capitalización es un factor clave que altera el monto final en el interés compuesto.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Será exactamente el mismo.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La frecuencia de capitalización es un factor clave que altera el monto final en el interés compuesto.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="24">
+          <div class="q-header">
+            <span class="q-number">Pregunta 25</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">Un producto cuesta <span class="math">\</span>400<span class="math">. Baja un </span>25\%<span class="math"> y luego sube un </span>25\%$. ¿Cuál es el precio final?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula cuánto queda tras el descuento y luego suma el <span class="math">25%</span> de esa nueva cantidad.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Error de concepto al asumir que variaciones iguales se anulan.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>400$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error de concepto al asumir que variaciones iguales se anulan.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Se olvida aplicar el segundo paso del aumento.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>300$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se olvida aplicar el segundo paso del aumento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Paso 1: $400 - 100 (25\%) = 300$. Paso 2: $300 + 75 (25\% \text{ de } 300) = 375$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>375$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Paso 1: <span class="math">400 - 100 (25%) = 300</span>. Paso 2: <span class="math">300 + 75 (25% text de  300) = 375</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Resultado de un cálculo erróneo del segundo porcentaje sobre la base original.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>425$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Resultado de un cálculo erróneo del segundo porcentaje sobre la base original.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="25">
+          <div class="q-header">
+            <span class="q-number">Pregunta 26</span>
+            <span class="q-of">/ 26</span>
+          </div>
+          <div class="q-text">¿Cuál es la raíz cuadrada de <span class="math">0,09</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa qué número decimal multiplicado por sí mismo da nueve centésimas.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Error de ignorar los decimales; $3 \times 3 = 9$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error de ignorar los decimales; <span class="math">3 × 3 = 9</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Si multiplicas $0,03 \times 0,03$ obtendrías $0,0009$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,03</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si multiplicas <span class="math">0,03 × 0,03</span> obtendrías <span class="math">0,0009</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Nuevamente, error de dividir el número por dos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,45</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Nuevamente, error de dividir el número por dos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Al multiplicar $0,3 \times 0,3$ se obtiene $0,09$, ya que hay dos cifras decimales en el producto.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar <span class="math">0,3 × 0,3</span> se obtiene <span class="math">0,09</span>, ya que hay dos cifras decimales en el producto.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>¡Cuestionario completado!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Intentar de nuevo</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"¿Cuál es el valor exacto de $\\sqrt{225}$?","hint":"Busca un número que multiplicado por sí mismo termine en $5$ y esté entre $10$ y $20$.","options":[{"label":"A","text":"$22,5$","isCorrect":false,"rationale":"Se produce al intentar dividir el número por $10$, lo cual no tiene relación con el concepto de raíz cuadrada."},{"label":"B","text":"$15$","isCorrect":true,"rationale":"El número $15$ multiplicado por sí mismo ($15 \\times 15$) resulta en $225$."},{"label":"C","text":"$25$","isCorrect":false,"rationale":"Este es un error común al confundir la raíz con un número que termina en $5$; $25 \\times 25$ es $625$."},{"label":"D","text":"$112,5$","isCorrect":false,"rationale":"Este resultado proviene de dividir el número por $2$, una de las confusiones más frecuentes al calcular raíces cuadradas."}]},{"question":"Si una pizzería oscura tiene un piso cuadrado con un área total de $64$ metros cuadrados, ¿cuánto mide cada lado del piso?","hint":"Recuerda que el área de un cuadrado se calcula multiplicando lado por lado.","options":[{"label":"A","text":"$32$ metros","isCorrect":false,"rationale":"Dividir el área por $2$ es un error procedimental que confunde la raíz con la mitad del valor."},{"label":"B","text":"$16$ metros","isCorrect":false,"rationale":"Este valor surge de dividir erróneamente por $4$ o confundir el proceso con el cálculo del perímetro."},{"label":"C","text":"$6,4$ metros","isCorrect":false,"rationale":"Es un error decimal común al intentar estimar sin realizar la multiplicación correspondiente."},{"label":"D","text":"$8$ metros","isCorrect":true,"rationale":"La raíz cuadrada de $64$ representa la longitud del lado de un cuadrado cuya área es precisamente $64$."}]},{"question":"Un estudiante afirma que $\\sqrt{50}$ es exactamente $25$. ¿Por qué esta afirmación es incorrecta?","hint":"Analiza si multiplicar $25 \\times 25$ realmente da como resultado $50$.","options":[{"label":"A","text":"Porque $25 \\times 25$ es igual a $500$.","isCorrect":false,"rationale":"El cálculo es incorrecto, pues $25 \\times 25$ es $625$."},{"label":"B","text":"Porque la raíz cuadrada de $50$ debe ser mayor a $25$.","isCorrect":false,"rationale":"La raíz de un número mayor a $1$ siempre es menor que el número original."},{"label":"C","text":"Porque no existen raíces de números que terminan en cero.","isCorrect":false,"rationale":"Cualquier número natural tiene una raíz cuadrada, aunque no siempre sea un número entero exacto."},{"label":"D","text":"Porque calculó la mitad del número en lugar de buscar un número que multiplicado por sí mismo de $50$.","isCorrect":true,"rationale":"La raíz cuadrada de $50$ es un número irracional cercano a $7,07$, ya que $7 \\times 7 = 49$."}]},{"question":"¿Entre qué números naturales consecutivos se encuentra el valor de $\\sqrt{18}$?","hint":"Piensa en los cuadrados perfectos más cercanos al número $18$.","options":[{"label":"A","text":"Entre $3$ y $4$","isCorrect":false,"rationale":"Este rango cubriría números con raíces entre $9$ y $16$, pero $18$ es mayor que $16$."},{"label":"B","text":"Entre $2$ y $3$","isCorrect":false,"rationale":"Este rango corresponde a raíces entre $4$ y $9$."},{"label":"C","text":"Entre $8$ y $9$","isCorrect":false,"rationale":"Este es un error común de estimación al dividir el número aproximadamente por $2$."},{"label":"D","text":"Entre $4$ y $5$","isCorrect":true,"rationale":"Como $4^2 = 16$ y $5^2 = 25$, y el $18$ está entre $16$ y $25$, su raíz está entre $4$ y $5$."}]},{"question":"Un escenario de K-Pop cuadrado tiene un perímetro de $32$ metros. ¿Cuál es el área total de dicho escenario?","hint":"Primero encuentra cuánto mide un solo lado dividiendo el perímetro por cuatro.","options":[{"label":"A","text":"$16 \\text{ m}^2$","isCorrect":false,"rationale":"Este error ocurre si se confunde el lado con la mitad del perímetro o si se toma el valor $4$ como lado."},{"label":"B","text":"$128 \\text{ m}^2$","isCorrect":false,"rationale":"Surge de multiplicar erróneamente el perímetro por $4$ en lugar de obtener primero el lado."},{"label":"C","text":"$64 \\text{ m}^2$","isCorrect":true,"rationale":"Si el perímetro es $32$, cada lado mide $8$ metros ($32 \\div 4$); por lo tanto, el área es $8 \\times 8 = 64$."},{"label":"D","text":"$1.024 \\text{ m}^2$","isCorrect":false,"rationale":"Es el resultado de elevar al cuadrado el perímetro total sin dividirlo por sus cuatro lados iguales."}]},{"question":"Si el área de una zona VIP es de $196 \\text{ m}^2$, ¿cuál es el perímetro que se debe cercar?","hint":"Calcula la raíz cuadrada del área para obtener el lado y luego multiplica por cuatro.","options":[{"label":"A","text":"$14 \\text{ metros}$","isCorrect":false,"rationale":"Este valor representa solo la medida de un lado, no el perímetro total solicitado."},{"label":"B","text":"$56 \\text{ metros}$","isCorrect":true,"rationale":"La raíz de $196$ es $14$ (lado), y el perímetro de un cuadrado es lado multiplicado por $4$ ($14 \\times 4 = 56$)."},{"label":"C","text":"$48 \\text{ metros}$","isCorrect":false,"rationale":"Este error proviene de calcular mal la raíz cuadrada, confundiéndola con la de $144$, que es $12$."},{"label":"D","text":"$98 \\text{ metros}$","isCorrect":false,"rationale":"Resulta de dividir el área por $2$ en lugar de extraer la raíz cuadrada."}]},{"question":"¿Qué significa conceptualmente un descuento del $25\\%$ aplicado al precio de un producto?","hint":"Relaciona el porcentaje con una fracción simplificada de cien.","options":[{"label":"A","text":"Que el precio final será una cuarta parte del original.","isCorrect":false,"rationale":"Eso describiría un descuento del $75\\%$, donde solo queda el $25\\%$ restante."},{"label":"B","text":"Que se resta la mitad del precio original.","isCorrect":false,"rationale":"Restar la mitad corresponde a un descuento del $50\\%$, no del $25\\%$."},{"label":"C","text":"Que se pagan $25$ pesos por cada $1000$ de valor.","isCorrect":false,"rationale":"El porcentaje es 'por cada $100$', por lo que $25\\%$ serían $250$ por cada $1000$."},{"label":"D","text":"Que el total se divide en $4$ partes iguales y se elimina una de ellas.","isCorrect":true,"rationale":"El $25\\%$ equivale a la cuarta parte ($25/100 = 1/4$), por lo que restarlo es quitar una de esas partes."}]},{"question":"Un cargamento de Thomas cuesta $\\$800$ y recibe un aumento del $15\\%$. ¿Cuál es el nuevo precio?","hint":"Calcula el $10\\%$ y el $5\\%$ de $800$ para encontrar el aumento total.","options":[{"label":"A","text":"$\\$680$","isCorrect":false,"rationale":"Este resultado corresponde a un descuento del $15\\%$ en lugar de un aumento."},{"label":"B","text":"$\\$950$","isCorrect":false,"rationale":"Suele ocurrir al calcular incorrectamente el $15\\%$ como si fuera un aumento mayor o aproximado."},{"label":"C","text":"$\\$815$","isCorrect":false,"rationale":"Error común de sumar directamente el valor del porcentaje al precio como si fueran unidades monetarias."},{"label":"D","text":"$\\$920$","isCorrect":true,"rationale":"El $15\\%$ de $800$ es $120$ ($800 \\times 0,15$), y al sumarlo al precio inicial resulta en $920$."}]},{"question":"Si Jack Skellington aplica un aumento del $20\\%$ a un objeto de $\\$1.200$ y luego un descuento del $20\\%$ al nuevo valor, ¿qué sucede con el precio final?","hint":"Recuerda que el segundo porcentaje se calcula sobre el resultado del primer paso, no sobre el original.","options":[{"label":"A","text":"El precio final es mayor al inicial.","isCorrect":false,"rationale":"Esto solo ocurriría si el porcentaje de aumento fuera significativamente mayor al de descuento."},{"label":"B","text":"El precio aumenta en total un $40\\%$.","isCorrect":false,"rationale":"Este error surge de sumar los porcentajes sin considerar que uno es resta y otro es suma."},{"label":"C","text":"El precio final es menor a el inicial ($\\$1.152$).","isCorrect":true,"rationale":"Al aplicar el descuento sobre un valor ya aumentado, la base es mayor, por lo que se resta más de lo que se sumó."},{"label":"D","text":"El precio vuelve a ser exactamente $\\$1.200$.","isCorrect":false,"rationale":"Es una idea errónea pensar que porcentajes iguales de aumento y descuento se anulan, ya que se aplican sobre bases distintas."}]},{"question":"¿Cuál es la principal diferencia entre el interés simple y el interés compuesto?","hint":"Piensa en qué sucede con la ganancia de cada año: ¿se queda aparte o se suma al total para ganar más?","options":[{"label":"A","text":"No hay diferencia si el porcentaje es el mismo.","isCorrect":false,"rationale":"Incluso con el mismo porcentaje, la base de cálculo cambia en el compuesto, variando el resultado."},{"label":"B","text":"El interés compuesto se calcula solo una vez al final del periodo.","isCorrect":false,"rationale":"Al contrario, el compuesto se recalcula en cada intervalo de tiempo sobre el saldo acumulado."},{"label":"C","text":"En el simple el interés es constante, mientras que en el compuesto el interés genera nuevos intereses.","isCorrect":true,"rationale":"El interés compuesto se capitaliza, sumándose al monto inicial para el siguiente cálculo, lo que acelera el crecimiento."},{"label":"D","text":"El interés simple siempre da más dinero al final del tiempo.","isCorrect":false,"rationale":"A largo plazo, el interés compuesto siempre superará al simple debido al crecimiento exponencial."}]},{"question":"Jack invierte $\\$3.000$ a una tasa de interés simple del $10\\%$ anual por $3$ años. ¿Cuál es el interés total ganado?","hint":"Calcula el interés de un año y multiplícalo por la cantidad de años.","options":[{"label":"A","text":"$\\$900$","isCorrect":true,"rationale":"En el interés simple, se gana lo mismo cada año: $300$ ($10\\%$ de $3000$) multiplicado por $3$ años."},{"label":"B","text":"$\\$300$","isCorrect":false,"rationale":"Este es el interés ganado únicamente en el primer año, no el total del periodo."},{"label":"C","text":"$\\$3.900$","isCorrect":false,"rationale":"Este valor representa el monto total acumulado, no solo el interés ganado solicitado."},{"label":"D","text":"$\\$993$","isCorrect":false,"rationale":"Este sería el resultado aproximado si se aplicara interés compuesto en lugar de simple."}]},{"question":"Si una consola en el mundo de Mario Bros sube un $10\\%$ y luego otro $10\\%$, ¿por qué factor total se debe multiplicar el precio original?","hint":"Multiplica los factores de crecimiento correspondientes a cada aumento.","options":[{"label":"A","text":"Por $2,00$","isCorrect":false,"rationale":"Representaría un aumento del $100\\%$, confundiendo el porcentaje con una duplicación."},{"label":"B","text":"Por $1,11$","isCorrect":false,"rationale":"Es un error de cálculo decimal al intentar combinar los factores de forma aditiva."},{"label":"C","text":"Por $1,20$","isCorrect":false,"rationale":"Este factor asume erróneamente que los porcentajes se suman ($10\\% + 10\\% = 20\\%$)."},{"label":"D","text":"Por $1,21$","isCorrect":true,"rationale":"Los aumentos sucesivos se multiplican: $1,10 \\times 1,10 = 1,21$, lo que representa un aumento total del $21\\%$."}]},{"question":"¿Cuál es el resultado de aplicar un descuento sucesivo del $20\\%$ y luego del $10\\%$ a un producto de $\\$500$?","hint":"Aplica el primer descuento, obtén un nuevo precio, y a ese nuevo precio aplícale el segundo descuento.","options":[{"label":"A","text":"$\\$400$","isCorrect":false,"rationale":"Este valor solo considera el primer descuento del $20\\%$ ignorando el segundo paso."},{"label":"B","text":"$\\$450$","isCorrect":false,"rationale":"Resultado de aplicar solo el $10\\%$ de descuento sobre el valor original."},{"label":"C","text":"$\\$360$","isCorrect":true,"rationale":"Primero se reduce al $80\\%$ ($500 \\times 0,8 = 400$) y luego ese valor al $90\\%$ ($400 \\times 0,9 = 360$)."},{"label":"D","text":"$\\$350$","isCorrect":false,"rationale":"Error de sumar los porcentajes ($30\\%$) y aplicarlos directamente sobre el valor inicial."}]},{"question":"Un estudiante dice que $\\sqrt{100} = 50$. ¿Qué concepto está confundiendo?","hint":"Pregúntate: ¿Es $50 \\times 50$ igual a $100$?","options":[{"label":"A","text":"Confunde la raíz con el perímetro del cuadrado.","isCorrect":false,"rationale":"El perímetro sería $40$ si el lado fuera $10$, no tiene relación directa con el valor $50$."},{"label":"B","text":"Confunde la raíz con la potencia al cuadrado.","isCorrect":false,"rationale":"La potencia de $100^2$ sería $10.000$, un error en la dirección opuesta."},{"label":"C","text":"Confunde el área con el volumen.","isCorrect":false,"rationale":"El volumen no se ha tratado en estas lecciones y requiere tres dimensiones."},{"label":"D","text":"Confunde la raíz cuadrada con la división por dos.","isCorrect":true,"rationale":"La raíz cuadrada busca un número que al multiplicarse por sí mismo dé el original, no la mitad del mismo."}]},{"question":"Para estimar $\\sqrt{75}$, ¿cuáles son los cuadrados perfectos más cercanos?","hint":"Busca los resultados de $8 \\times 8$ y $9 \\times 9$.","options":[{"label":"A","text":"$70$ y $80$","isCorrect":false,"rationale":"Estos no son cuadrados perfectos (números que resultan de un entero por sí mismo)."},{"label":"B","text":"$81$ y $100$","isCorrect":false,"rationale":"El número $75$ es menor que $81$, por lo que este rango es demasiado alto."},{"label":"C","text":"$64$ y $81$","isCorrect":true,"rationale":"Como $8^2=64$ y $9^2=81$, la raíz de $75$ debe estar entre $8$ y $9$."},{"label":"D","text":"$49$ y $64$","isCorrect":false,"rationale":"Aunque son cuadrados perfectos, el número $75$ no se encuentra entre ellos."}]},{"question":"¿Cuál es el valor de un producto de $\\$200$ después de un descuento del $50\\%$ y un aumento posterior del $50\\%$?","hint":"Primero calcula la mitad, y a esa mitad súmale su propia mitad.","options":[{"label":"A","text":"$\\$250$","isCorrect":false,"rationale":"Ocurre si se aplica el aumento sobre el valor original y luego se descuenta de forma errónea."},{"label":"B","text":"$\\$100$","isCorrect":false,"rationale":"Representa solo el primer paso del descuento sin aplicar el aumento final."},{"label":"C","text":"$\\$150$","isCorrect":true,"rationale":"El $50\\%$ de $200$ es $100$; el $50\\%$ de aumento sobre $100$ es $50$, sumando un total de $150$."},{"label":"D","text":"$\\$200$","isCorrect":false,"rationale":"Es el error de pensar que las variaciones porcentuales opuestas e iguales mantienen el precio original."}]},{"question":"En el interés compuesto, si Jack ahorra $\\$1.000$ al $10\\%$ anual, ¿cuánto dinero tendrá al finalizar el segundo año?","hint":"Calcula el $10\\%$ del total acumulado tras el primer año y súmalo.","options":[{"label":"A","text":"$\\$1.200$","isCorrect":false,"rationale":"Este sería el resultado con interés simple, donde el interés no genera nuevos intereses."},{"label":"B","text":"$\\$1.210$","isCorrect":true,"rationale":"Año 1: $1000 + 100 = 1100$. Año 2: $1100 + 110 (10\\% \\text{ de } 1100) = 1210$."},{"label":"C","text":"$\\$1.100$","isCorrect":false,"rationale":"Este es el saldo al final del primer año únicamente."},{"label":"D","text":"$\\$1.331$","isCorrect":false,"rationale":"Este sería el saldo al finalizar el tercer año, no el segundo."}]},{"question":"Si el área de un cuadrado se cuadruplica (se multiplica por $4$), ¿qué sucede con la medida de su lado?","hint":"Piensa en un cuadrado de área $1$ (lado $1$) y uno de área $4$ (lado ?).","options":[{"label":"A","text":"El lado se mantiene igual.","isCorrect":false,"rationale":"Es imposible cambiar el área sin modificar la longitud de los lados."},{"label":"B","text":"El lado aumenta en $4$ unidades.","isCorrect":false,"rationale":"El aumento del lado es proporcional (multiplicativo), no simplemente aditivo."},{"label":"C","text":"El lado se duplica (se multiplica por $2$).","isCorrect":true,"rationale":"Como el área es lado al cuadrado, si el lado es $2L$, el área es $(2L)^2 = 4L^2$."},{"label":"D","text":"El lado también se cuadruplica.","isCorrect":false,"rationale":"Si el lado se cuadruplica, el área aumentaría $16$ veces ($4^2$)."}]},{"question":"¿Qué número multiplicado por sí mismo da como resultado $1,44$?","hint":"Relaciona este número con la raíz cuadrada de $144$ y ajusta la coma.","options":[{"label":"A","text":"$0,12$","isCorrect":false,"rationale":"Al multiplicar $0,12 \\times 0,12$ el resultado sería $0,0144$."},{"label":"B","text":"$1,2$","isCorrect":true,"rationale":"Sabiendo que $12 \\times 12 = 144$, se deduce que $1,2 \\times 1,2 = 1,44$ por el manejo de decimales."},{"label":"C","text":"$0,72$","isCorrect":false,"rationale":"Nuevamente, este es el error de dividir el número por dos."},{"label":"D","text":"$12$","isCorrect":false,"rationale":"Se ignora la posición de la coma decimal; $12 \\times 12$ es $144$, no $1,44$."}]},{"question":"Un escenario tiene un área de $100 \\text{ m}^2$. Si se decide ampliar el lado al doble, ¿cuál será la nueva área?","hint":"Calcula el lado original, duplícalo y luego obtén el área de ese nuevo cuadrado.","options":[{"label":"A","text":"$10.000 \\text{ m}^2$","isCorrect":false,"rationale":"Es el resultado de elevar al cuadrado el área original en lugar del nuevo lado."},{"label":"B","text":"$200 \\text{ m}^2$","isCorrect":false,"rationale":"Error común de pensar que si el lado se duplica, el área también se duplica."},{"label":"C","text":"$1.000 \\text{ m}^2$","isCorrect":false,"rationale":"Se produce al multiplicar el área original por el nuevo lado o por diez."},{"label":"D","text":"$400 \\text{ m}^2$","isCorrect":true,"rationale":"El lado original es $10$. Al duplicarlo a $20$, la nueva área es $20 \\times 20 = 400$."}]},{"question":"¿Cuál es el multiplicador decimal para aplicar un descuento del $12\\%$ de forma directa?","hint":"Resta el porcentaje de descuento al $100\\%$ y conviértelo a decimal.","options":[{"label":"A","text":"$1,12$","isCorrect":false,"rationale":"Este multiplicador se utiliza para un aumento del $12\\%$, no para un descuento."},{"label":"B","text":"$0,88$","isCorrect":true,"rationale":"Representa el $88\\%$ restante después de quitar el $12\\%$ ($1,00 - 0,12 = 0,88$)."},{"label":"C","text":"$0,12$","isCorrect":false,"rationale":"Este factor sirve para calcular cuánto es el descuento, pero no el precio final directamente."},{"label":"D","text":"$0,82$","isCorrect":false,"rationale":"Error de resta al calcular el complemento de $100$."}]},{"question":"En un problema de porcentajes sucesivos, ¿por qué no se pueden sumar los porcentajes directamente?","hint":"Piensa en qué número usas como 'el total' después del primer cambio.","options":[{"label":"A","text":"Porque las matemáticas prohíben sumar porcentajes.","isCorrect":false,"rationale":"No está prohibido, pero en este contexto financiero es conceptualmente incorrecto."},{"label":"B","text":"Porque el resultado siempre debe ser un número decimal.","isCorrect":false,"rationale":"El tipo de número resultante no es la razón de la regla financiera."},{"label":"C","text":"Porque el segundo porcentaje se aplica sobre un valor que ya cambió.","isCorrect":true,"rationale":"La base de cálculo del segundo paso incluye el aumento o disminución del primero, alterando el resultado final."},{"label":"D","text":"Porque los descuentos siempre son mayores que los aumentos.","isCorrect":false,"rationale":"No existe tal regla; la magnitud depende de los porcentajes elegidos."}]},{"question":"¿Qué raíz cuadrada exacta es la más cercana a $\\sqrt{40}$?","hint":"Compara las distancias entre $40$ y los cuadrados perfectos $36$ y $49$.","options":[{"label":"A","text":"$6$ (ya que $\\sqrt{36}$ está muy cerca)","isCorrect":true,"rationale":"El cuadrado de $6$ es $36$ y el de $7$ es $49$. El $40$ está a solo $4$ unidades de $36$."},{"label":"B","text":"$6,5$","isCorrect":false,"rationale":"Aunque es una buena estimación decimal, la pregunta pide la raíz exacta (entera) más cercana."},{"label":"C","text":"$7$ (ya que $\\sqrt{49}$ es la siguiente)","isCorrect":false,"rationale":"Aunque es una cota válida, $40$ está más lejos de $49$ (distancia $9$) que de $36$ (distancia $4$)."},{"label":"D","text":"$20$ (ya que es la mitad)","isCorrect":false,"rationale":"Confusión recurrente entre raíz cuadrada y división por dos."}]},{"question":"Si el interés compuesto de un año se calcula mensualmente en lugar de anualmente, ¿qué se puede predecir sobre el saldo final?","hint":"Más periodos de suma de intereses significan una base de cálculo que crece más seguido.","options":[{"label":"A","text":"Será menor, porque el porcentaje mensual es más pequeño.","isCorrect":false,"rationale":"Aunque el porcentaje por periodo sea menor, el efecto acumulativo compensa y supera el cálculo anual único."},{"label":"B","text":"Será igual al interés simple.","isCorrect":false,"rationale":"El interés simple nunca cambia su base, por lo que cualquier capitalización compuesta lo superará."},{"label":"C","text":"Será mayor, ya que el interés se capitaliza con más frecuencia.","isCorrect":true,"rationale":"Al sumar los intereses cada mes, la base sobre la cual se calcula el siguiente interés aumenta más rápido."},{"label":"D","text":"Será exactamente el mismo.","isCorrect":false,"rationale":"La frecuencia de capitalización es un factor clave que altera el monto final en el interés compuesto."}]},{"question":"Un producto cuesta $\\$400$. Baja un $25\\%$ y luego sube un $25\\%$. ¿Cuál es el precio final?","hint":"Calcula cuánto queda tras el descuento y luego suma el $25\\%$ de esa nueva cantidad.","options":[{"label":"A","text":"$\\$400$","isCorrect":false,"rationale":"Error de concepto al asumir que variaciones iguales se anulan."},{"label":"B","text":"$\\$300$","isCorrect":false,"rationale":"Se olvida aplicar el segundo paso del aumento."},{"label":"C","text":"$\\$375$","isCorrect":true,"rationale":"Paso 1: $400 - 100 (25\\%) = 300$. Paso 2: $300 + 75 (25\\% \\text{ de } 300) = 375$."},{"label":"D","text":"$\\$425$","isCorrect":false,"rationale":"Resultado de un cálculo erróneo del segundo porcentaje sobre la base original."}]},{"question":"¿Cuál es la raíz cuadrada de $0,09$?","hint":"Piensa qué número decimal multiplicado por sí mismo da nueve centésimas.","options":[{"label":"A","text":"$3$","isCorrect":false,"rationale":"Error de ignorar los decimales; $3 \\times 3 = 9$."},{"label":"B","text":"$0,03$","isCorrect":false,"rationale":"Si multiplicas $0,03 \\times 0,03$ obtendrías $0,0009$."},{"label":"C","text":"$0,45$","isCorrect":false,"rationale":"Nuevamente, error de dividir el número por dos."},{"label":"D","text":"$0,3$","isCorrect":true,"rationale":"Al multiplicar $0,3 \\times 0,3$ se obtiene $0,09$, ya que hay dos cifras decimales en el producto."}]}];
+const tr = {"correct":"¡Correcto!","incorrect":"Incorrecto","next":"Siguiente pregunta →","seeResults":"Ver resultados","complete":"¡Cuestionario completado!","scoreText":"Obtuviste {correct} de {total} correctas","tryAgain":"Intentar de nuevo","rightAnswer":"Respuesta correcta","notQuite":"No del todo"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
