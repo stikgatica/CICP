@@ -1,0 +1,2130 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sucesiones, patrones y ecuaciones</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Sucesiones, patrones y ecuaciones</h1>
+    <div class="meta">30 preguntas</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">Pregunta 1</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Observa la siguiente sucesión: <span class="math">92, 85, 78, 71, …</span> ¿Cuál es la regla de formación?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Compara la diferencia entre el primer y el segundo número para ver si aumenta o disminuye.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Restar $8$ a $92$ resultaría en $84$, lo cual no coincide con el segundo término de la sucesión proporcionada.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Restar <span class="math">8</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Restar <span class="math">8</span> a <span class="math">92</span> resultaría en <span class="math">84</span>, lo cual no coincide con el segundo término de la sucesión proporcionada.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Al comparar términos consecutivos ($92 - 85 = 7$ y $85 - 78 = 7$), se observa que la diferencia constante es una disminución de $7$ unidades.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Restar <span class="math">7</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al comparar términos consecutivos (<span class="math">92 - 85 = 7</span> y <span class="math">85 - 78 = 7</span>), se observa que la diferencia constante es una disminución de <span class="math">7</span> unidades.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="La sucesión va en descenso, por lo que la operación debe ser una resta y no una suma.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Sumar <span class="math">7</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La sucesión va en descenso, por lo que la operación debe ser una resta y no una suma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="La diferencia entre los números no es proporcional a una división, sino que es una resta constante de unidades.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Dividir por <span class="math">2</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La diferencia entre los números no es proporcional a una división, sino que es una resta constante de unidades.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">Pregunta 2</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Si una sucesión numérica sigue la regla de multiplicar por <span class="math">3</span> y el primer término es <span class="math">2</span>, ¿cuál es el cuarto término?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Aplica la multiplicación paso a paso empezando desde el número <span class="math">2</span> hasta llegar a la cuarta posición.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor corresponde al tercer término de la sucesión, no al cuarto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">18</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde al tercer término de la sucesión, no al cuarto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor corresponde al quinto término de la sucesión, habiendo calculado un paso extra.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">162</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde al quinto término de la sucesión, habiendo calculado un paso extra.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Siguiendo la regla: Término $1 = 2$; Término $2 = 2 \cdot 3 = 6$; Término $3 = 6 \cdot 3 = 18$; Término $4 = 18 \cdot 3 = 54$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">54</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Siguiendo la regla: Término <span class="math">1 = 2</span>; Término <span class="math">2 = 2 · 3 = 6</span>; Término <span class="math">3 = 6 · 3 = 18</span>; Término <span class="math">4 = 18 · 3 = 54</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error ocurre si se confunde la multiplicación por $3$ con sumar $6$ repetidamente o un error en el cálculo de $18 \cdot 3$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se confunde la multiplicación por <span class="math">3</span> con sumar <span class="math">6</span> repetidamente o un error en el cálculo de <span class="math">18 · 3</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">Pregunta 3</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Cuál es el valor de <span class="math">x</span> en la ecuación <span class="math">x + 19 = 45</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Usa la operación inversa a la suma para encontrar el número que falta.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Para despejar la incógnita en una suma, se resta el valor conocido al total: $45 - 19 = 26$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">26</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para despejar la incógnita en una suma, se resta el valor conocido al total: <span class="math">45 - 19 = 26</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor es el resultado de un error común en la resta de las decenas al no considerar el canje necesario de las unidades.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">36</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es el resultado de un error común en la resta de las decenas al no considerar el canje necesario de las unidades.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error proviene de una resta incorrecta de las unidades al calcular $15 - 9$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error proviene de una resta incorrecta de las unidades al calcular <span class="math">15 - 9</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este resultado se obtiene al sumar $45 + 19$ en lugar de restar para encontrar el sumando faltante.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">64</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado se obtiene al sumar <span class="math">45 + 19</span> en lugar de restar para encontrar el sumando faltante.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">Pregunta 4</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Dada la inecuación <span class="math">x + 7 &lt; 12</span>, ¿cuál de los siguientes conjuntos de números representa valores posibles para <span class="math">x</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca números que al sumarlos con <span class="math">7</span> den un resultado más pequeño que <span class="math">12</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Al restar $7$ a ambos lados, obtenemos $x &lt; 5$; por lo tanto, cualquier número natural menor a $5$ es una solución válida.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1, 2, 3, 4</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al restar <span class="math">7</span> a ambos lados, obtenemos <span class="math">x &lt; 5</span>; por lo tanto, cualquier número natural menor a <span class="math">5</span> es una solución válida.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Una inecuación suele tener múltiples soluciones y, en este caso, $5$ específicamente no es solución porque $12$ no es menor que $12$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Solo el número <span class="math">5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Una inecuación suele tener múltiples soluciones y, en este caso, <span class="math">5</span> específicamente no es solución porque <span class="math">12</span> no es menor que <span class="math">12</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Estos valores harían que el lado izquierdo sea mucho mayor que $12$, lo cual contradice el signo 'menor que'.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">12, 13, 14</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Estos valores harían que el lado izquierdo sea mucho mayor que <span class="math">12</span>, lo cual contradice el signo 'menor que'.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Si $x = 5$, entonces $5 + 7 = 12$, lo cual no es menor que $12$. Estos valores no cumplen la desigualdad estricta.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">5, 6, 7</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si <span class="math">x = 5</span>, entonces <span class="math">5 + 7 = 12</span>, lo cual no es menor que <span class="math">12</span>. Estos valores no cumplen la desigualdad estricta.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">Pregunta 5</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">En la sucesión <span class="math">4, 12, 20, 28, …</span>, ¿qué valor tendrá el término número <span class="math">7</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Descubre la regla de suma y continúa la lista hasta la séptima posición.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor correspondería al término número $8$, habiendo avanzado una posición de más.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">60</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor correspondería al término número <span class="math">8</span>, habiendo avanzado una posición de más.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="La regla es sumar $8$. Término $5 = 36$, Término $6 = 44$, Término $7 = 52$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">52</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La regla es sumar <span class="math">8</span>. Término <span class="math">5 = 36</span>, Término <span class="math">6 = 44</span>, Término <span class="math">7 = 52</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el término número $6$ de la secuencia.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">44</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el término número <span class="math">6</span> de la secuencia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error ocurre si se intenta multiplicar el número de término por la regla sin considerar que la sucesión no empieza en $8$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">48</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se intenta multiplicar el número de término por la regla sin considerar que la sucesión no empieza en <span class="math">8</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">Pregunta 6</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Traduce la siguiente frase a lenguaje algebraico: 'A un número le quito <span class="math">15</span> y el resultado es <span class="math">30</span>'.</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Identifica qué operación matemática se asocia con la palabra 'quitar'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="La frase 'le quito' representa una sustracción ($-$) y 'el resultado es' representa la igualdad ($=$).">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">x - 15 = 30</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La frase 'le quito' representa una sustracción (<span class="math">-</span>) y 'el resultado es' representa la igualdad (<span class="math">=</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="En esta expresión se le está quitando la incógnita al número $15$, lo cual cambia el sentido del problema original.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">15 - x = 30</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En esta expresión se le está quitando la incógnita al número <span class="math">15</span>, lo cual cambia el sentido del problema original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se utilizó el signo de suma en lugar de resta, lo cual indicaría agregar en lugar de quitar.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">x + 15 = 30</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se utilizó el signo de suma en lugar de resta, lo cual indicaría agregar en lugar de quitar.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Se intercambiaron los valores de la sustracción y el resultado total de la ecuación.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">x - 30 = 15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se intercambiaron los valores de la sustracción y el resultado total de la ecuación.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">Pregunta 7</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Cuál es el número incorrecto en esta sucesión que debería aumentar de <span class="math">9</span> en <span class="math">9</span>: <span class="math">18, 27, 36, 44, 54</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Suma <span class="math">9</span> a cada término y verifica cuál no cumple con el resultado esperado.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Siguiendo la regla de sumar $9$, después de $36$ debería seguir $36 + 9 = 45$, no $44$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">44</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Siguiendo la regla de sumar <span class="math">9</span>, después de <span class="math">36</span> debería seguir <span class="math">36 + 9 = 45</span>, no <span class="math">44</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El número $36$ es correcto porque $27 + 9 = 36$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">36</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número <span class="math">36</span> es correcto porque <span class="math">27 + 9 = 36</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este término es correcto ya que $18 + 9 = 27$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">27</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este término es correcto ya que <span class="math">18 + 9 = 27</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aunque es el término siguiente al error, el error inicial y principal que rompe el patrón es el $44$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">54</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque es el término siguiente al error, el error inicial y principal que rompe el patrón es el <span class="math">44</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">Pregunta 8</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">En una balanza en equilibrio, el lado izquierdo tiene una caja <span class="math">x</span> y <span class="math">12</span> cubos. El lado derecho tiene <span class="math">35</span> cubos. ¿Cuál es el valor de <span class="math">x</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que para mantener el equilibrio, debes quitar la misma cantidad de cubos en ambos lados.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error ocurre al sumar los pesos de ambos lados ($35 + 12$) en lugar de encontrar la diferencia.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">47</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre al sumar los pesos de ambos lados (<span class="math">35 + 12</span>) en lugar de encontrar la diferencia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor ignora los $12$ cubos que ya acompañan a la caja $x$ en el plato izquierdo.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">35</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor ignora los <span class="math">12</span> cubos que ya acompañan a la caja <span class="math">x</span> en el plato izquierdo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La balanza en equilibrio se representa como $x + 12 = 35$. Al restar $12$ a $35$, obtenemos $23$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">23</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La balanza en equilibrio se representa como <span class="math">x + 12 = 35</span>. Al restar <span class="math">12</span> a <span class="math">35</span>, obtenemos <span class="math">23</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este resultado es producto de un error de cálculo común al restar las unidades ($5 - 2$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">25</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado es producto de un error de cálculo común al restar las unidades (<span class="math">5 - 2</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">Pregunta 9</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Un estudiante afirma que en la sucesión <span class="math">3, 6, 12, …</span>, el siguiente número puede ser <span class="math">21</span> o <span class="math">24</span>. ¿Es esto posible?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda lo que aprendimos sobre las reglas múltiples y la justificación lógica.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="No se trata de un error, sino de la existencia de diferentes patrones lógicos que encajan con los mismos números iniciales.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Sí, pero solo si el estudiante se equivocó al calcular</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No se trata de un error, sino de la existencia de diferentes patrones lógicos que encajan con los mismos números iniciales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La pertenencia a una sucesión no depende de ser múltiplo del término anterior, sino de seguir la regla establecida.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">No, porque <span class="math">21</span> no es múltiplo de <span class="math">12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La pertenencia a una sucesión no depende de ser múltiplo del término anterior, sino de seguir la regla establecida.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esta es una concepción errónea frecuente; si se justifica lógicamente, una secuencia puede admitir diferentes patrones.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">No, en matemáticas una sucesión solo puede tener un único número correcto</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta es una concepción errónea frecuente; si se justifica lógicamente, una secuencia puede admitir diferentes patrones.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Como se vio en el material de los Minions, una sucesión puede tener múltiples reglas lógicas; $24$ sigue la regla de duplicar y $21$ podría seguir una regla de sumas crecientes ($+3, +6, +9$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Sí, porque depende de la regla que se justifique (sumar números que aumentan o multiplicar por <span class="math">2</span>)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como se vio en el material de los Minions, una sucesión puede tener múltiples reglas lógicas; <span class="math">24</span> sigue la regla de duplicar y <span class="math">21</span> podría seguir una regla de sumas crecientes (<span class="math">+3, +6, +9</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">Pregunta 10</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Para resolver la ecuación <span class="math">x - 24 = 50</span>, ¿qué operación se debe realizar?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Si a un número le quitaron algo, para saber cuánto había al principio debes devolver esa cantidad.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Restar $24$ a $50$ sería la operación correcta si la ecuación fuera $x + 24 = 50$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Restar <span class="math">50 - 24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Restar <span class="math">24</span> a <span class="math">50</span> sería la operación correcta si la ecuación fuera <span class="math">x + 24 = 50</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La multiplicación no es la operación inversa de la resta.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Multiplicar <span class="math">50 · 24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La multiplicación no es la operación inversa de la resta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Dividir no ayuda a despejar una incógnita que está siendo disminuida por una resta.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Dividir <span class="math">50 / 2</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dividir no ayuda a despejar una incógnita que está siendo disminuida por una resta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Para deshacer una resta y encontrar el valor inicial ($x$), se debe aplicar la operación inversa, que es la suma.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Sumar <span class="math">50 + 24</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para deshacer una resta y encontrar el valor inicial (<span class="math">x</span>), se debe aplicar la operación inversa, que es la suma.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">Pregunta 11</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Cuál es el término número <span class="math">8</span> de una sucesión que comienza en <span class="math">10</span> y cuya regla es sumar <span class="math">11</span> cada vez?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Puedes hacer una tabla o ir sumando <span class="math">11</span> paso a paso partiendo desde el <span class="math">10</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor corresponde al noveno término de la sucesión.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">98</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde al noveno término de la sucesión.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error es común si se multiplica $11 \cdot 8$ directamente sin considerar que el primer término es $10$ y no $11$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">88</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error es común si se multiplica <span class="math">11 · 8</span> directamente sin considerar que el primer término es <span class="math">10</span> y no <span class="math">11</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Términos: $10, 21, 32, 43, 54, 65, 76, 87$. El octavo término es $87$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">87</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Términos: <span class="math">10, 21, 32, 43, 54, 65, 76, 87</span>. El octavo término es <span class="math">87</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor corresponde al séptimo término de la sucesión.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">76</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde al séptimo término de la sucesión.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">Pregunta 12</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">En una inecuación de la forma <span class="math">x + 5 &gt; 20</span>, ¿cuál es el menor número natural que puede tomar <span class="math">x</span> para que la expresión sea verdadera?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Prueba con números cercanos al resultado de <span class="math">20 - 5</span> y verifica el signo de la desigualdad.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Si $x = 15$, $15 + 5 = 20$ (no es mayor). Por lo tanto, el primer número que hace la expresión verdadera es $16$, ya que $16 + 5 = 21 &gt; 20$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">16</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si <span class="math">x = 15</span>, <span class="math">15 + 5 = 20</span> (no es mayor). Por lo tanto, el primer número que hace la expresión verdadera es <span class="math">16</span>, ya que <span class="math">16 + 5 = 21 &gt; 20</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aunque $21$ funciona, no es el menor valor posible que cumple la condición.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">21</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque <span class="math">21</span> funciona, no es el menor valor posible que cumple la condición.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Con $15$ el resultado es exactamente $20$, pero la inecuación pide que sea 'mayor que' $20$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Con <span class="math">15</span> el resultado es exactamente <span class="math">20</span>, pero la inecuación pide que sea 'mayor que' <span class="math">20</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Con $14$ el resultado es $19$, lo cual es menor que $20$ y no cumple la inecuación.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">14</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Con <span class="math">14</span> el resultado es <span class="math">19</span>, lo cual es menor que <span class="math">20</span> y no cumple la inecuación.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="12">
+          <div class="q-header">
+            <span class="q-number">Pregunta 13</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Observa el siguiente patrón de figuras:
+Figura 1: <span class="math">5</span> estrellas
+Figura 2: <span class="math">9</span> estrellas
+Figura 3: <span class="math">13</span> estrellas
+¿Cuál es la regla de esta sucesión pictórica?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula cuántas estrellas nuevas se agregan al pasar de una figura a la siguiente.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="La diferencia entre las figuras consecutivas es constante: $9 - 5 = 4$ y $13 - 9 = 4$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Sumar <span class="math">4</span> estrellas en cada figura</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La diferencia entre las figuras consecutivas es constante: <span class="math">9 - 5 = 4</span> y <span class="math">13 - 9 = 4</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Si se multiplicara por $2$, la Figura 2 debería tener $10$ estrellas ($5 \cdot 2$) y la Figura 3 debería tener $20$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Multiplicar por <span class="math">2</span> las estrellas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si se multiplicara por <span class="math">2</span>, la Figura 2 debería tener <span class="math">10</span> estrellas (<span class="math">5 · 2</span>) y la Figura 3 debería tener <span class="math">20</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Sumar $5$ a la Figura 1 resultaría en $10$, lo que no coincide con la Figura 2 dada.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Sumar <span class="math">5</span> estrellas en cada figura</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sumar <span class="math">5</span> a la Figura 1 resultaría en <span class="math">10</span>, lo que no coincide con la Figura 2 dada.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="La cantidad de estrellas está aumentando, no disminuyendo.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Restar <span class="math">4</span> estrellas cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La cantidad de estrellas está aumentando, no disminuyendo.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="13">
+          <div class="q-header">
+            <span class="q-number">Pregunta 14</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Kuromi tiene algunos lápices. Si regala <span class="math">8</span> y le quedan <span class="math">15</span>, ¿cuántos tenía al principio? Indica la ecuación correcta.</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Considera que 'regalar' implica que la cantidad inicial disminuye.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="La acción de regalar se asocia con restar de la cantidad inicial ($x$) para llegar al remanente ($15$).">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">x - 8 = 15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La acción de regalar se asocia con restar de la cantidad inicial (<span class="math">x</span>) para llegar al remanente (<span class="math">15</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Aunque matemáticamente daría el mismo valor de $x$, no representa fielmente la estructura del problema planteado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">x - 15 = 8</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque matemáticamente daría el mismo valor de <span class="math">x</span>, no representa fielmente la estructura del problema planteado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esto calcularía cuántos lápices le sobran si a $15$ le quita $8$, no el total inicial.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">15 - 8 = x</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto calcularía cuántos lápices le sobran si a <span class="math">15</span> le quita <span class="math">8</span>, no el total inicial.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esta ecuación diría que al recibir $8$ lápices llegó a $15$, lo cual contradice el problema.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">x + 8 = 15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta ecuación diría que al recibir <span class="math">8</span> lápices llegó a <span class="math">15</span>, lo cual contradice el problema.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="14">
+          <div class="q-header">
+            <span class="q-number">Pregunta 15</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">En la sucesión <span class="math">2, 6, 18, 54, …</span> ¿Cuál es el quinto término?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Identifica si la regla es de suma o multiplicación observando cómo crece el número.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado proviene de multiplicar $54$ por $4$ en lugar de seguir la regla de multiplicar por $3$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">216</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado proviene de multiplicar <span class="math">54</span> por <span class="math">4</span> en lugar de seguir la regla de multiplicar por <span class="math">3</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error ocurre al multiplicar por $2$ en lugar de multiplicar por $3$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">108</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre al multiplicar por <span class="math">2</span> en lugar de multiplicar por <span class="math">3</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error puede ocurrir si se intenta sumar una cantidad incorrecta en lugar de mantener la multiplicación.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">72</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error puede ocurrir si se intenta sumar una cantidad incorrecta en lugar de mantener la multiplicación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La regla es multiplicar por $3$. Por lo tanto, el siguiente término es $54 \cdot 3 = 162$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">162</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La regla es multiplicar por <span class="math">3</span>. Por lo tanto, el siguiente término es <span class="math">54 · 3 = 162</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="15">
+          <div class="q-header">
+            <span class="q-number">Pregunta 16</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Qué significa el signo '=' en una ecuación según el modelo de la balanza?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en lo que sucede con una balanza cuando pones exactamente lo mismo en ambos lados.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="La incógnita puede estar en cualquier lado de la igualdad mientras se mantenga el equilibrio.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Que la incógnita <span class="math">x</span> siempre debe estar a la derecha</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La incógnita puede estar en cualquier lado de la igualdad mientras se mantenga el equilibrio.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="En álgebra, el signo igual es una relación de equivalencia entre dos expresiones, no solo un indicador de respuesta.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Que la operación ya terminó y hay que escribir el resultado</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En álgebra, el signo igual es una relación de equivalencia entre dos expresiones, no solo un indicador de respuesta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Tal como explican los Minions, la igualdad representa el equilibrio perfecto entre dos cantidades.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Que ambos platos de la balanza tienen el mismo peso y están en equilibrio</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Tal como explican los Minions, la igualdad representa el equilibrio perfecto entre dos cantidades.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Eso representaría una inecuación ($&lt;$ o $&gt;$), no una ecuación.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Que un plato es más pesado que el otro</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Eso representaría una inecuación (<span class="math">&lt;</span> o <span class="math">&gt;</span>), no una ecuación.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="16">
+          <div class="q-header">
+            <span class="q-number">Pregunta 17</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Si una sucesión decreciente empieza en <span class="math">100</span> y su regla es restar <span class="math">12</span> cada vez, ¿cuál es el tercer término?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Resta <span class="math">12</span> al primer término para obtener el segundo, y luego resta <span class="math">12</span> de nuevo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Término $1 = 100$; Término $2 = 100 - 12 = 88$; Término $3 = 88 - 12 = 76$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">76</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Término <span class="math">1 = 100</span>; Término <span class="math">2 = 100 - 12 = 88</span>; Término <span class="math">3 = 88 - 12 = 76</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor corresponde al cuarto término de la sucesión.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">64</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde al cuarto término de la sucesión.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor corresponde al segundo término, no al tercero.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">88</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde al segundo término, no al tercero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es un error común de cálculo en la sustracción de las unidades al restar $12$ de $88$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">74</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error común de cálculo en la sustracción de las unidades al restar <span class="math">12</span> de <span class="math">88</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="17">
+          <div class="q-header">
+            <span class="q-number">Pregunta 18</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Para la ecuación <span class="math">x + 14 = 30</span>, ¿cuál es la comprobación correcta?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Sustituye el valor que encontraste para <span class="math">x</span> en la suma original y mira si el total es correcto.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Aunque la operación es correcta, la forma estándar de comprobar es sustituir el valor de $x$ en la expresión inicial.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">30 - 16 = 14</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque la operación es correcta, la forma estándar de comprobar es sustituir el valor de <span class="math">x</span> en la expresión inicial.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="La comprobación debe usar la operación y los números originales de la ecuación.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">16 - 14 = 2</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La comprobación debe usar la operación y los números originales de la ecuación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Si $x = 16$, al sustituirlo en la ecuación original, se verifica que la suma da efectivamente $30$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">16 + 14 = 30</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si <span class="math">x = 16</span>, al sustituirlo en la ecuación original, se verifica que la suma da efectivamente <span class="math">30</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esto no es una comprobación, sino una operación adicional que no verifica el valor de $x$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">30 + 14 = 44</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esto no es una comprobación, sino una operación adicional que no verifica el valor de <span class="math">x</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="18">
+          <div class="q-header">
+            <span class="q-number">Pregunta 19</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Cuál es la diferencia principal entre una ecuación y una inecuación?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda el modelo de la balanza: una está nivelada y la otra está inclinada.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Tanto ecuaciones como inecuaciones pueden involucrar cualquier operación aritmética.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Las ecuaciones son siempre de suma y las inecuaciones de resta</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Tanto ecuaciones como inecuaciones pueden involucrar cualquier operación aritmética.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Ambas utilizan incógnitas para representar valores desconocidos.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">La inecuación no tiene incógnitas <span class="math">x</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ambas utilizan incógnitas para representar valores desconocidos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Una ecuación es una igualdad fija, mientras que una inecuación define un rango de valores que cumplen una condición de comparación.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">La ecuación busca un valor exacto, mientras que la inecuación puede tener varios valores posibles</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Una ecuación es una igualdad fija, mientras que una inecuación define un rango de valores que cumplen una condición de comparación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Ambas pueden representarse de forma pictórica (balanzas) o simbólica.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">La ecuación usa dibujos y la inecuación solo usa números</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Ambas pueden representarse de forma pictórica (balanzas) o simbólica.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="19">
+          <div class="q-header">
+            <span class="q-number">Pregunta 20</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">En la sucesión <span class="math">1, 3, 6, 10, …</span>, ¿cuál es la regla lógica que permite obtener el <span class="math">15</span> como siguiente término?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Fíjate cuánto se le suma al primer número para llegar al segundo, y luego al segundo para llegar al tercero.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esta regla no se cumple desde el inicio de la sucesión ($1 + 5$ no es $3$).">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Sumar <span class="math">5</span> a cada número</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta regla no se cumple desde el inicio de la sucesión (<span class="math">1 + 5</span> no es <span class="math">3</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="La diferencia entre términos es creciente: $3-1=2$; $6-3=3$; $10-6=4$. El siguiente paso es sumar $5$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Sumar números que aumentan de uno en uno (<span class="math">+2, +3, +4, +5</span>)</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La diferencia entre términos es creciente: <span class="math">3-1=2</span>; <span class="math">6-3=3</span>; <span class="math">10-6=4</span>. El siguiente paso es sumar <span class="math">5</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esta regla funciona para el segundo término ($1 \cdot 2 + 1 = 3$), pero falla en el tercero ($3 \cdot 2 + 1 = 7 \neq 6$).">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Multiplicar por <span class="math">2</span> y restar <span class="math">1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta regla funciona para el segundo término (<span class="math">1 · 2 + 1 = 3</span>), pero falla en el tercero (<span class="math">3 · 2 + 1 = 7 ≠ 6</span>).</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Si se multiplicara por $3$, el segundo término sería $3$, pero el tercero debería ser $9$, no $6$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Multiplicar por <span class="math">3</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si se multiplicara por <span class="math">3</span>, el segundo término sería <span class="math">3</span>, pero el tercero debería ser <span class="math">9</span>, no <span class="math">6</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="20">
+          <div class="q-header">
+            <span class="q-number">Pregunta 21</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Resuelve el siguiente problema: 'Bob tenía algunas bananas. Encontró <span class="math">12</span> más y ahora tiene <span class="math">30</span>. ¿Cuántas tenía al principio?'</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Plantea una ecuación donde la cantidad inicial sea <span class="math">x</span> y le sumas las que encontró.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es el valor de lo que Bob encontró, no de lo que tenía al principio.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el valor de lo que Bob encontró, no de lo que tenía al principio.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="La ecuación es $x + 12 = 30$. Restando $12$ de $30$, obtenemos que Bob tenía $18$ bananas inicialmente.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">18</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La ecuación es <span class="math">x + 12 = 30</span>. Restando <span class="math">12</span> de <span class="math">30</span>, obtenemos que Bob tenía <span class="math">18</span> bananas inicialmente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se sumaron las cantidades en lugar de restar para encontrar el valor inicial.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">42</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se sumaron las cantidades en lugar de restar para encontrar el valor inicial.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Error de cálculo al restar las decenas o unidades.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">22</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error de cálculo al restar las decenas o unidades.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="21">
+          <div class="q-header">
+            <span class="q-number">Pregunta 22</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Qué número completa correctamente la tabla de predicción para la sucesión <span class="math">7, 14, 21, 28, …</span> en el término <span class="math">6</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Puedes multiplicar el número de la posición por la regla de la sucesión.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es el quinto término de la sucesión.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">35</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el quinto término de la sucesión.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="La regla es sumar $7$ (o la tabla del $7$). El sexto término es $7 \cdot 6 = 42$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">42</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La regla es sumar <span class="math">7</span> (o la tabla del <span class="math">7</span>). El sexto término es <span class="math">7 · 6 = 42</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el séptimo término de la sucesión.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">49</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el séptimo término de la sucesión.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Error de cálculo al sumar $7$ al término anterior ($35 + 7$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">44</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Error de cálculo al sumar <span class="math">7</span> al término anterior (<span class="math">35 + 7</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="22">
+          <div class="q-header">
+            <span class="q-number">Pregunta 23</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">En la inecuación <span class="math">x - 10 &gt; 5</span>, ¿cuál de los siguientes valores NO puede ser una solución?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Sustituye cada opción en la inecuación y mira cuál de ellas da un resultado menor o igual a <span class="math">5</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="$16 - 10 = 6$, y $6 &gt; 5$. Este valor sí es una solución.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">16</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale"><span class="math">16 - 10 = 6</span>, y <span class="math">6 &gt; 5</span>. Este valor sí es una solución.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Si $x = 12$, entonces $12 - 10 = 2$. Como $2$ no es mayor que $5$, el $12$ no es una solución válida.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si <span class="math">x = 12</span>, entonces <span class="math">12 - 10 = 2</span>. Como <span class="math">2</span> no es mayor que <span class="math">5</span>, el <span class="math">12</span> no es una solución válida.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Cualquier número grande hará que la resta sea mayor que $5$, por lo que sí es solución.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">100</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cualquier número grande hará que la resta sea mayor que <span class="math">5</span>, por lo que sí es solución.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="$20 - 10 = 10$, y $10 &gt; 5$. Este valor sí es una solución.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">20</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale"><span class="math">20 - 10 = 10</span>, y <span class="math">10 &gt; 5</span>. Este valor sí es una solución.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="23">
+          <div class="q-header">
+            <span class="q-number">Pregunta 24</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Cómo se escribe en lenguaje común la ecuación <span class="math">x + 12 = 40</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca palabras que signifiquen 'sumar' para representar el signo <span class="math">+</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="'Aumentado' es un sinónimo de sumar, lo cual describe correctamente la operación de la ecuación.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Un número aumentado en <span class="math">12</span> es igual a <span class="math">40</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">'Aumentado' es un sinónimo de sumar, lo cual describe correctamente la operación de la ecuación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta frase describiría la ecuación $x - 40 = 12$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Un número disminuido en <span class="math">40</span> es <span class="math">12</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta frase describiría la ecuación <span class="math">x - 40 = 12</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esta frase describiría la ecuación $x - 12 = 40$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">A un número le quito <span class="math">12</span> y quedan <span class="math">40</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta frase describiría la ecuación <span class="math">x - 12 = 40</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Esta frase describiría la operación $12 + 40 = x$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">El total de <span class="math">12</span> y <span class="math">40</span> es un número</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta frase describiría la operación <span class="math">12 + 40 = x</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="24">
+          <div class="q-header">
+            <span class="q-number">Pregunta 25</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Si una sucesión tiene los términos <span class="math">…, 45, 55, 65</span> y la regla es sumar <span class="math">10</span>, ¿cuál fue el primer término de la sucesión si el <span class="math">45</span> es el cuarto término?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Para encontrar términos anteriores, debes aplicar la operación inversa a la regla (restar <span class="math">10</span>).</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es el tercer término de la sucesión.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">35</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el tercer término de la sucesión.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Si el término $4$ es $45$, retrocedemos restando $10$: Término $3 = 35$, Término $2 = 25$, Término $1 = 15$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si el término <span class="math">4</span> es <span class="math">45</span>, retrocedemos restando <span class="math">10</span>: Término <span class="math">3 = 35</span>, Término <span class="math">2 = 25</span>, Término <span class="math">1 = 15</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error ocurre si se retroceden cinco pasos en lugar de tres para llegar al primero.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se retroceden cinco pasos en lugar de tres para llegar al primero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es el segundo término de la sucesión.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">25</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el segundo término de la sucesión.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="25">
+          <div class="q-header">
+            <span class="q-number">Pregunta 26</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Cuál es la 'regla de oro' para resolver ecuaciones según el material de los Minions?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda cómo los Minions mantenían la balanza equilibrada quitando o poniendo lo mismo en ambos platos.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El valor de $x$ es variable y depende totalmente de los otros números en la ecuación.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">La <span class="math">x</span> siempre debe valer <span class="math">10</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El valor de <span class="math">x</span> es variable y depende totalmente de los otros números en la ecuación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El orden no depende del tipo de operación, sino de la necesidad de dejar sola a la incógnita.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Primero se resuelven las restas y luego las sumas</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El orden no depende del tipo de operación, sino de la necesidad de dejar sola a la incógnita.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="No siempre se suma; si el número está sumando, se debe restar para despejar la incógnita.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Siempre hay que sumar el número que está junto a la <span class="math">x</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No siempre se suma; si el número está sumando, se debe restar para despejar la incógnita.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Esta regla garantiza que se mantenga el equilibrio (la igualdad) durante todo el proceso de resolución.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Lo que hago a un lado de la balanza, también debo hacerlo al otro lado</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta regla garantiza que se mantenga el equilibrio (la igualdad) durante todo el proceso de resolución.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="26">
+          <div class="q-header">
+            <span class="q-number">Pregunta 27</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Observa esta sucesión: <span class="math">3, 7, 11, 15, …</span>. ¿Cuál será el término número <span class="math">10</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Encuentra la regla de suma y aplícala repetidamente o usa una tabla hasta la posición <span class="math">10</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="La regla es sumar $4$. Término $10 = 3 + (9 \cdot 4) = 3 + 36 = 39$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">39</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La regla es sumar <span class="math">4</span>. Término <span class="math">10 = 3 + (9 · 4) = 3 + 36 = 39</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este es el término número $9$ de la secuencia.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">35</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el término número <span class="math">9</span> de la secuencia.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor corresponde al término número $11$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">43</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor corresponde al término número <span class="math">11</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error ocurre al multiplicar directamente $4 \cdot 10$ sin ajustar según el primer término.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">40</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre al multiplicar directamente <span class="math">4 · 10</span> sin ajustar según el primer término.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="27">
+          <div class="q-header">
+            <span class="q-number">Pregunta 28</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">Un estudiante resolvió <span class="math">x + 6 = 14</span> y dijo que <span class="math">x = 20</span>. ¿Cuál fue su error?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Comprueba si <span class="math">20 + 6</span> realmente da como resultado <span class="math">14</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Si $x=20$, entonces $20+6=26$, lo cual no es igual a $14$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">No cometió error, el resultado es correcto</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Si <span class="math">x=20</span>, entonces <span class="math">20+6=26</span>, lo cual no es igual a <span class="math">14</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="No hay evidencia de esa confusión; el error es claramente de aplicación de operación inversa.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Confundió la <span class="math">x</span> con el número <span class="math">0</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">No hay evidencia de esa confusión; el error es claramente de aplicación de operación inversa.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Al sumar $14 + 6$ obtuvo $20$, olvidando que en una ecuación de suma se usa la resta para despejar $x$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Sumó los números en lugar de restar para encontrar el sumando que falta</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al sumar <span class="math">14 + 6</span> obtuvo <span class="math">20</span>, olvidando que en una ecuación de suma se usa la resta para despejar <span class="math">x</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="El error no fue de cálculo en la resta, sino de elegir la operación equivocada (suma).">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Restó de forma incorrecta</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El error no fue de cálculo en la resta, sino de elegir la operación equivocada (suma).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="28">
+          <div class="q-header">
+            <span class="q-number">Pregunta 29</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">¿Cuál es la regla de una sucesión que empieza en <span class="math">50</span> y el siguiente número es <span class="math">45</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Mira cuánto espacio hay entre el <span class="math">50</span> y el <span class="math">45</span> y si el número se achica o se agranda.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="La sucesión está disminuyendo, por lo que la regla no puede ser una suma.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Sumar <span class="math">5</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La sucesión está disminuyendo, por lo que la regla no puede ser una suma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Restar $10$ a $50$ daría $40$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Restar <span class="math">10</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Restar <span class="math">10</span> a <span class="math">50</span> daría <span class="math">40</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La diferencia entre $50$ y $45$ es $5$, y al ser el segundo número menor, la regla es una sustracción.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Restar <span class="math">5</span> cada vez</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La diferencia entre <span class="math">50</span> y <span class="math">45</span> es <span class="math">5</span>, y al ser el segundo número menor, la regla es una sustracción.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Dividir $50$ por $10$ daría $5$, no $45$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Dividir por <span class="math">10</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dividir <span class="math">50</span> por <span class="math">10</span> daría <span class="math">5</span>, no <span class="math">45</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="29">
+          <div class="q-header">
+            <span class="q-number">Pregunta 30</span>
+            <span class="q-of">/ 30</span>
+          </div>
+          <div class="q-text">En el contexto de las sucesiones, ¿qué significa 'predecir' un término?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda lo que Kirby hacía con su 'máquina del futuro' y las tablas de términos.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="La predicción matemática se basa en reglas y lógica, no en el azar o gustos personales.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Adivinar cualquier número que nos parezca bonito</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La predicción matemática se basa en reglas y lógica, no en el azar o gustos personales.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Predecir implica usar el patrón lógico para determinar valores lejanos de forma precisa.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Encontrar un número futuro en la secuencia usando la regla sin tener que escribir todos los números intermedios</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Predecir implica usar el patrón lógico para determinar valores lejanos de forma precisa.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Aunque contar funciona, la predicción busca métodos más eficientes como el uso de tablas o cálculos directos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Contar de uno en uno hasta llegar al final del cuaderno</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aunque contar funciona, la predicción busca métodos más eficientes como el uso de tablas o cálculos directos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Para que una predicción sea válida, la regla debe mantenerse constante.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Cambiar la regla de la sucesión a la mitad</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para que una predicción sea válida, la regla debe mantenerse constante.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>¡Cuestionario completado!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Intentar de nuevo</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"Observa la siguiente sucesión: $92, 85, 78, 71, \\dots$ ¿Cuál es la regla de formación?","hint":"Compara la diferencia entre el primer y el segundo número para ver si aumenta o disminuye.","options":[{"label":"A","text":"Restar $8$ cada vez","isCorrect":false,"rationale":"Restar $8$ a $92$ resultaría en $84$, lo cual no coincide con el segundo término de la sucesión proporcionada."},{"label":"B","text":"Restar $7$ cada vez","isCorrect":true,"rationale":"Al comparar términos consecutivos ($92 - 85 = 7$ y $85 - 78 = 7$), se observa que la diferencia constante es una disminución de $7$ unidades."},{"label":"C","text":"Sumar $7$ cada vez","isCorrect":false,"rationale":"La sucesión va en descenso, por lo que la operación debe ser una resta y no una suma."},{"label":"D","text":"Dividir por $2$ cada vez","isCorrect":false,"rationale":"La diferencia entre los números no es proporcional a una división, sino que es una resta constante de unidades."}]},{"question":"Si una sucesión numérica sigue la regla de multiplicar por $3$ y el primer término es $2$, ¿cuál es el cuarto término?","hint":"Aplica la multiplicación paso a paso empezando desde el número $2$ hasta llegar a la cuarta posición.","options":[{"label":"A","text":"$18$","isCorrect":false,"rationale":"Este valor corresponde al tercer término de la sucesión, no al cuarto."},{"label":"B","text":"$162$","isCorrect":false,"rationale":"Este valor corresponde al quinto término de la sucesión, habiendo calculado un paso extra."},{"label":"C","text":"$54$","isCorrect":true,"rationale":"Siguiendo la regla: Término $1 = 2$; Término $2 = 2 \\cdot 3 = 6$; Término $3 = 6 \\cdot 3 = 18$; Término $4 = 18 \\cdot 3 = 54$."},{"label":"D","text":"$24$","isCorrect":false,"rationale":"Este error ocurre si se confunde la multiplicación por $3$ con sumar $6$ repetidamente o un error en el cálculo de $18 \\cdot 3$."}]},{"question":"¿Cuál es el valor de $x$ en la ecuación $x + 19 = 45$?","hint":"Usa la operación inversa a la suma para encontrar el número que falta.","options":[{"label":"A","text":"$26$","isCorrect":true,"rationale":"Para despejar la incógnita en una suma, se resta el valor conocido al total: $45 - 19 = 26$."},{"label":"B","text":"$36$","isCorrect":false,"rationale":"Este valor es el resultado de un error común en la resta de las decenas al no considerar el canje necesario de las unidades."},{"label":"C","text":"$24$","isCorrect":false,"rationale":"Este error proviene de una resta incorrecta de las unidades al calcular $15 - 9$."},{"label":"D","text":"$64$","isCorrect":false,"rationale":"Este resultado se obtiene al sumar $45 + 19$ en lugar de restar para encontrar el sumando faltante."}]},{"question":"Dada la inecuación $x + 7 < 12$, ¿cuál de los siguientes conjuntos de números representa valores posibles para $x$?","hint":"Busca números que al sumarlos con $7$ den un resultado más pequeño que $12$.","options":[{"label":"A","text":"$1, 2, 3, 4$","isCorrect":true,"rationale":"Al restar $7$ a ambos lados, obtenemos $x < 5$; por lo tanto, cualquier número natural menor a $5$ es una solución válida."},{"label":"B","text":"Solo el número $5$","isCorrect":false,"rationale":"Una inecuación suele tener múltiples soluciones y, en este caso, $5$ específicamente no es solución porque $12$ no es menor que $12$."},{"label":"C","text":"$12, 13, 14$","isCorrect":false,"rationale":"Estos valores harían que el lado izquierdo sea mucho mayor que $12$, lo cual contradice el signo 'menor que'."},{"label":"D","text":"$5, 6, 7$","isCorrect":false,"rationale":"Si $x = 5$, entonces $5 + 7 = 12$, lo cual no es menor que $12$. Estos valores no cumplen la desigualdad estricta."}]},{"question":"En la sucesión $4, 12, 20, 28, \\dots$, ¿qué valor tendrá el término número $7$?","hint":"Descubre la regla de suma y continúa la lista hasta la séptima posición.","options":[{"label":"A","text":"$60$","isCorrect":false,"rationale":"Este valor correspondería al término número $8$, habiendo avanzado una posición de más."},{"label":"B","text":"$52$","isCorrect":true,"rationale":"La regla es sumar $8$. Término $5 = 36$, Término $6 = 44$, Término $7 = 52$."},{"label":"C","text":"$44$","isCorrect":false,"rationale":"Este es el término número $6$ de la secuencia."},{"label":"D","text":"$48$","isCorrect":false,"rationale":"Este error ocurre si se intenta multiplicar el número de término por la regla sin considerar que la sucesión no empieza en $8$."}]},{"question":"Traduce la siguiente frase a lenguaje algebraico: 'A un número le quito $15$ y el resultado es $30$'.","hint":"Identifica qué operación matemática se asocia con la palabra 'quitar'.","options":[{"label":"A","text":"$x - 15 = 30$","isCorrect":true,"rationale":"La frase 'le quito' representa una sustracción ($-$) y 'el resultado es' representa la igualdad ($=$)."},{"label":"B","text":"$15 - x = 30$","isCorrect":false,"rationale":"En esta expresión se le está quitando la incógnita al número $15$, lo cual cambia el sentido del problema original."},{"label":"C","text":"$x + 15 = 30$","isCorrect":false,"rationale":"Se utilizó el signo de suma en lugar de resta, lo cual indicaría agregar en lugar de quitar."},{"label":"D","text":"$x - 30 = 15$","isCorrect":false,"rationale":"Se intercambiaron los valores de la sustracción y el resultado total de la ecuación."}]},{"question":"¿Cuál es el número incorrecto en esta sucesión que debería aumentar de $9$ en $9$: $18, 27, 36, 44, 54$?","hint":"Suma $9$ a cada término y verifica cuál no cumple con el resultado esperado.","options":[{"label":"A","text":"$44$","isCorrect":true,"rationale":"Siguiendo la regla de sumar $9$, después de $36$ debería seguir $36 + 9 = 45$, no $44$."},{"label":"B","text":"$36$","isCorrect":false,"rationale":"El número $36$ es correcto porque $27 + 9 = 36$."},{"label":"C","text":"$27$","isCorrect":false,"rationale":"Este término es correcto ya que $18 + 9 = 27$."},{"label":"D","text":"$54$","isCorrect":false,"rationale":"Aunque es el término siguiente al error, el error inicial y principal que rompe el patrón es el $44$."}]},{"question":"En una balanza en equilibrio, el lado izquierdo tiene una caja $x$ y $12$ cubos. El lado derecho tiene $35$ cubos. ¿Cuál es el valor de $x$?","hint":"Recuerda que para mantener el equilibrio, debes quitar la misma cantidad de cubos en ambos lados.","options":[{"label":"A","text":"$47$","isCorrect":false,"rationale":"Este error ocurre al sumar los pesos de ambos lados ($35 + 12$) en lugar de encontrar la diferencia."},{"label":"B","text":"$35$","isCorrect":false,"rationale":"Este valor ignora los $12$ cubos que ya acompañan a la caja $x$ en el plato izquierdo."},{"label":"C","text":"$23$","isCorrect":true,"rationale":"La balanza en equilibrio se representa como $x + 12 = 35$. Al restar $12$ a $35$, obtenemos $23$."},{"label":"D","text":"$25$","isCorrect":false,"rationale":"Este resultado es producto de un error de cálculo común al restar las unidades ($5 - 2$)."}]},{"question":"Un estudiante afirma que en la sucesión $3, 6, 12, \\dots$, el siguiente número puede ser $21$ o $24$. ¿Es esto posible?","hint":"Recuerda lo que aprendimos sobre las reglas múltiples y la justificación lógica.","options":[{"label":"A","text":"Sí, pero solo si el estudiante se equivocó al calcular","isCorrect":false,"rationale":"No se trata de un error, sino de la existencia de diferentes patrones lógicos que encajan con los mismos números iniciales."},{"label":"B","text":"No, porque $21$ no es múltiplo de $12$","isCorrect":false,"rationale":"La pertenencia a una sucesión no depende de ser múltiplo del término anterior, sino de seguir la regla establecida."},{"label":"C","text":"No, en matemáticas una sucesión solo puede tener un único número correcto","isCorrect":false,"rationale":"Esta es una concepción errónea frecuente; si se justifica lógicamente, una secuencia puede admitir diferentes patrones."},{"label":"D","text":"Sí, porque depende de la regla que se justifique (sumar números que aumentan o multiplicar por $2$)","isCorrect":true,"rationale":"Como se vio en el material de los Minions, una sucesión puede tener múltiples reglas lógicas; $24$ sigue la regla de duplicar y $21$ podría seguir una regla de sumas crecientes ($+3, +6, +9$)."}]},{"question":"Para resolver la ecuación $x - 24 = 50$, ¿qué operación se debe realizar?","hint":"Si a un número le quitaron algo, para saber cuánto había al principio debes devolver esa cantidad.","options":[{"label":"A","text":"Restar $50 - 24$","isCorrect":false,"rationale":"Restar $24$ a $50$ sería la operación correcta si la ecuación fuera $x + 24 = 50$."},{"label":"B","text":"Multiplicar $50 \\cdot 24$","isCorrect":false,"rationale":"La multiplicación no es la operación inversa de la resta."},{"label":"C","text":"Dividir $50 / 2$","isCorrect":false,"rationale":"Dividir no ayuda a despejar una incógnita que está siendo disminuida por una resta."},{"label":"D","text":"Sumar $50 + 24$","isCorrect":true,"rationale":"Para deshacer una resta y encontrar el valor inicial ($x$), se debe aplicar la operación inversa, que es la suma."}]},{"question":"¿Cuál es el término número $8$ de una sucesión que comienza en $10$ y cuya regla es sumar $11$ cada vez?","hint":"Puedes hacer una tabla o ir sumando $11$ paso a paso partiendo desde el $10$.","options":[{"label":"A","text":"$98$","isCorrect":false,"rationale":"Este valor corresponde al noveno término de la sucesión."},{"label":"B","text":"$88$","isCorrect":false,"rationale":"Este error es común si se multiplica $11 \\cdot 8$ directamente sin considerar que el primer término es $10$ y no $11$."},{"label":"C","text":"$87$","isCorrect":true,"rationale":"Términos: $10, 21, 32, 43, 54, 65, 76, 87$. El octavo término es $87$."},{"label":"D","text":"$76$","isCorrect":false,"rationale":"Este valor corresponde al séptimo término de la sucesión."}]},{"question":"En una inecuación de la forma $x + 5 > 20$, ¿cuál es el menor número natural que puede tomar $x$ para que la expresión sea verdadera?","hint":"Prueba con números cercanos al resultado de $20 - 5$ y verifica el signo de la desigualdad.","options":[{"label":"A","text":"$16$","isCorrect":true,"rationale":"Si $x = 15$, $15 + 5 = 20$ (no es mayor). Por lo tanto, el primer número que hace la expresión verdadera es $16$, ya que $16 + 5 = 21 > 20$."},{"label":"B","text":"$21$","isCorrect":false,"rationale":"Aunque $21$ funciona, no es el menor valor posible que cumple la condición."},{"label":"C","text":"$15$","isCorrect":false,"rationale":"Con $15$ el resultado es exactamente $20$, pero la inecuación pide que sea 'mayor que' $20$."},{"label":"D","text":"$14$","isCorrect":false,"rationale":"Con $14$ el resultado es $19$, lo cual es menor que $20$ y no cumple la inecuación."}]},{"question":"Observa el siguiente patrón de figuras:\nFigura 1: $5$ estrellas\nFigura 2: $9$ estrellas\nFigura 3: $13$ estrellas\n¿Cuál es la regla de esta sucesión pictórica?","hint":"Calcula cuántas estrellas nuevas se agregan al pasar de una figura a la siguiente.","options":[{"label":"A","text":"Sumar $4$ estrellas en cada figura","isCorrect":true,"rationale":"La diferencia entre las figuras consecutivas es constante: $9 - 5 = 4$ y $13 - 9 = 4$."},{"label":"B","text":"Multiplicar por $2$ las estrellas","isCorrect":false,"rationale":"Si se multiplicara por $2$, la Figura 2 debería tener $10$ estrellas ($5 \\cdot 2$) y la Figura 3 debería tener $20$."},{"label":"C","text":"Sumar $5$ estrellas en cada figura","isCorrect":false,"rationale":"Sumar $5$ a la Figura 1 resultaría en $10$, lo que no coincide con la Figura 2 dada."},{"label":"D","text":"Restar $4$ estrellas cada vez","isCorrect":false,"rationale":"La cantidad de estrellas está aumentando, no disminuyendo."}]},{"question":"Kuromi tiene algunos lápices. Si regala $8$ y le quedan $15$, ¿cuántos tenía al principio? Indica la ecuación correcta.","hint":"Considera que 'regalar' implica que la cantidad inicial disminuye.","options":[{"label":"A","text":"$x - 8 = 15$","isCorrect":true,"rationale":"La acción de regalar se asocia con restar de la cantidad inicial ($x$) para llegar al remanente ($15$)."},{"label":"B","text":"$x - 15 = 8$","isCorrect":false,"rationale":"Aunque matemáticamente daría el mismo valor de $x$, no representa fielmente la estructura del problema planteado."},{"label":"C","text":"$15 - 8 = x$","isCorrect":false,"rationale":"Esto calcularía cuántos lápices le sobran si a $15$ le quita $8$, no el total inicial."},{"label":"D","text":"$x + 8 = 15$","isCorrect":false,"rationale":"Esta ecuación diría que al recibir $8$ lápices llegó a $15$, lo cual contradice el problema."}]},{"question":"En la sucesión $2, 6, 18, 54, \\dots$ ¿Cuál es el quinto término?","hint":"Identifica si la regla es de suma o multiplicación observando cómo crece el número.","options":[{"label":"A","text":"$216$","isCorrect":false,"rationale":"Este resultado proviene de multiplicar $54$ por $4$ en lugar de seguir la regla de multiplicar por $3$."},{"label":"B","text":"$108$","isCorrect":false,"rationale":"Este error ocurre al multiplicar por $2$ en lugar de multiplicar por $3$."},{"label":"C","text":"$72$","isCorrect":false,"rationale":"Este error puede ocurrir si se intenta sumar una cantidad incorrecta en lugar de mantener la multiplicación."},{"label":"D","text":"$162$","isCorrect":true,"rationale":"La regla es multiplicar por $3$. Por lo tanto, el siguiente término es $54 \\cdot 3 = 162$."}]},{"question":"¿Qué significa el signo '=' en una ecuación según el modelo de la balanza?","hint":"Piensa en lo que sucede con una balanza cuando pones exactamente lo mismo en ambos lados.","options":[{"label":"A","text":"Que la incógnita $x$ siempre debe estar a la derecha","isCorrect":false,"rationale":"La incógnita puede estar en cualquier lado de la igualdad mientras se mantenga el equilibrio."},{"label":"B","text":"Que la operación ya terminó y hay que escribir el resultado","isCorrect":false,"rationale":"En álgebra, el signo igual es una relación de equivalencia entre dos expresiones, no solo un indicador de respuesta."},{"label":"C","text":"Que ambos platos de la balanza tienen el mismo peso y están en equilibrio","isCorrect":true,"rationale":"Tal como explican los Minions, la igualdad representa el equilibrio perfecto entre dos cantidades."},{"label":"D","text":"Que un plato es más pesado que el otro","isCorrect":false,"rationale":"Eso representaría una inecuación ($<$ o $>$), no una ecuación."}]},{"question":"Si una sucesión decreciente empieza en $100$ y su regla es restar $12$ cada vez, ¿cuál es el tercer término?","hint":"Resta $12$ al primer término para obtener el segundo, y luego resta $12$ de nuevo.","options":[{"label":"A","text":"$76$","isCorrect":true,"rationale":"Término $1 = 100$; Término $2 = 100 - 12 = 88$; Término $3 = 88 - 12 = 76$."},{"label":"B","text":"$64$","isCorrect":false,"rationale":"Este valor corresponde al cuarto término de la sucesión."},{"label":"C","text":"$88$","isCorrect":false,"rationale":"Este valor corresponde al segundo término, no al tercero."},{"label":"D","text":"$74$","isCorrect":false,"rationale":"Este es un error común de cálculo en la sustracción de las unidades al restar $12$ de $88$."}]},{"question":"Para la ecuación $x + 14 = 30$, ¿cuál es la comprobación correcta?","hint":"Sustituye el valor que encontraste para $x$ en la suma original y mira si el total es correcto.","options":[{"label":"A","text":"$30 - 16 = 14$","isCorrect":false,"rationale":"Aunque la operación es correcta, la forma estándar de comprobar es sustituir el valor de $x$ en la expresión inicial."},{"label":"B","text":"$16 - 14 = 2$","isCorrect":false,"rationale":"La comprobación debe usar la operación y los números originales de la ecuación."},{"label":"C","text":"$16 + 14 = 30$","isCorrect":true,"rationale":"Si $x = 16$, al sustituirlo en la ecuación original, se verifica que la suma da efectivamente $30$."},{"label":"D","text":"$30 + 14 = 44$","isCorrect":false,"rationale":"Esto no es una comprobación, sino una operación adicional que no verifica el valor de $x$."}]},{"question":"¿Cuál es la diferencia principal entre una ecuación y una inecuación?","hint":"Recuerda el modelo de la balanza: una está nivelada y la otra está inclinada.","options":[{"label":"A","text":"Las ecuaciones son siempre de suma y las inecuaciones de resta","isCorrect":false,"rationale":"Tanto ecuaciones como inecuaciones pueden involucrar cualquier operación aritmética."},{"label":"B","text":"La inecuación no tiene incógnitas $x$","isCorrect":false,"rationale":"Ambas utilizan incógnitas para representar valores desconocidos."},{"label":"C","text":"La ecuación busca un valor exacto, mientras que la inecuación puede tener varios valores posibles","isCorrect":true,"rationale":"Una ecuación es una igualdad fija, mientras que una inecuación define un rango de valores que cumplen una condición de comparación."},{"label":"D","text":"La ecuación usa dibujos y la inecuación solo usa números","isCorrect":false,"rationale":"Ambas pueden representarse de forma pictórica (balanzas) o simbólica."}]},{"question":"En la sucesión $1, 3, 6, 10, \\dots$, ¿cuál es la regla lógica que permite obtener el $15$ como siguiente término?","hint":"Fíjate cuánto se le suma al primer número para llegar al segundo, y luego al segundo para llegar al tercero.","options":[{"label":"A","text":"Sumar $5$ a cada número","isCorrect":false,"rationale":"Esta regla no se cumple desde el inicio de la sucesión ($1 + 5$ no es $3$)."},{"label":"B","text":"Sumar números que aumentan de uno en uno ($+2, +3, +4, +5$)","isCorrect":true,"rationale":"La diferencia entre términos es creciente: $3-1=2$; $6-3=3$; $10-6=4$. El siguiente paso es sumar $5$."},{"label":"C","text":"Multiplicar por $2$ y restar $1$","isCorrect":false,"rationale":"Esta regla funciona para el segundo término ($1 \\cdot 2 + 1 = 3$), pero falla en el tercero ($3 \\cdot 2 + 1 = 7 \\neq 6$)."},{"label":"D","text":"Multiplicar por $3$ cada vez","isCorrect":false,"rationale":"Si se multiplicara por $3$, el segundo término sería $3$, pero el tercero debería ser $9$, no $6$."}]},{"question":"Resuelve el siguiente problema: 'Bob tenía algunas bananas. Encontró $12$ más y ahora tiene $30$. ¿Cuántas tenía al principio?'","hint":"Plantea una ecuación donde la cantidad inicial sea $x$ y le sumas las que encontró.","options":[{"label":"A","text":"$12$","isCorrect":false,"rationale":"Este es el valor de lo que Bob encontró, no de lo que tenía al principio."},{"label":"B","text":"$18$","isCorrect":true,"rationale":"La ecuación es $x + 12 = 30$. Restando $12$ de $30$, obtenemos que Bob tenía $18$ bananas inicialmente."},{"label":"C","text":"$42$","isCorrect":false,"rationale":"Se sumaron las cantidades en lugar de restar para encontrar el valor inicial."},{"label":"D","text":"$22$","isCorrect":false,"rationale":"Error de cálculo al restar las decenas o unidades."}]},{"question":"¿Qué número completa correctamente la tabla de predicción para la sucesión $7, 14, 21, 28, \\dots$ en el término $6$?","hint":"Puedes multiplicar el número de la posición por la regla de la sucesión.","options":[{"label":"A","text":"$35$","isCorrect":false,"rationale":"Este es el quinto término de la sucesión."},{"label":"B","text":"$42$","isCorrect":true,"rationale":"La regla es sumar $7$ (o la tabla del $7$). El sexto término es $7 \\cdot 6 = 42$."},{"label":"C","text":"$49$","isCorrect":false,"rationale":"Este es el séptimo término de la sucesión."},{"label":"D","text":"$44$","isCorrect":false,"rationale":"Error de cálculo al sumar $7$ al término anterior ($35 + 7$)."}]},{"question":"En la inecuación $x - 10 > 5$, ¿cuál de los siguientes valores NO puede ser una solución?","hint":"Sustituye cada opción en la inecuación y mira cuál de ellas da un resultado menor o igual a $5$.","options":[{"label":"A","text":"$16$","isCorrect":false,"rationale":"$16 - 10 = 6$, y $6 > 5$. Este valor sí es una solución."},{"label":"B","text":"$12$","isCorrect":true,"rationale":"Si $x = 12$, entonces $12 - 10 = 2$. Como $2$ no es mayor que $5$, el $12$ no es una solución válida."},{"label":"C","text":"$100$","isCorrect":false,"rationale":"Cualquier número grande hará que la resta sea mayor que $5$, por lo que sí es solución."},{"label":"D","text":"$20$","isCorrect":false,"rationale":"$20 - 10 = 10$, y $10 > 5$. Este valor sí es una solución."}]},{"question":"¿Cómo se escribe en lenguaje común la ecuación $x + 12 = 40$?","hint":"Busca palabras que signifiquen 'sumar' para representar el signo $+$.","options":[{"label":"A","text":"Un número aumentado en $12$ es igual a $40$","isCorrect":true,"rationale":"'Aumentado' es un sinónimo de sumar, lo cual describe correctamente la operación de la ecuación."},{"label":"B","text":"Un número disminuido en $40$ es $12$","isCorrect":false,"rationale":"Esta frase describiría la ecuación $x - 40 = 12$."},{"label":"C","text":"A un número le quito $12$ y quedan $40$","isCorrect":false,"rationale":"Esta frase describiría la ecuación $x - 12 = 40$."},{"label":"D","text":"El total de $12$ y $40$ es un número","isCorrect":false,"rationale":"Esta frase describiría la operación $12 + 40 = x$."}]},{"question":"Si una sucesión tiene los términos $\\dots, 45, 55, 65$ y la regla es sumar $10$, ¿cuál fue el primer término de la sucesión si el $45$ es el cuarto término?","hint":"Para encontrar términos anteriores, debes aplicar la operación inversa a la regla (restar $10$).","options":[{"label":"A","text":"$35$","isCorrect":false,"rationale":"Este es el tercer término de la sucesión."},{"label":"B","text":"$15$","isCorrect":true,"rationale":"Si el término $4$ es $45$, retrocedemos restando $10$: Término $3 = 35$, Término $2 = 25$, Término $1 = 15$."},{"label":"C","text":"$5$","isCorrect":false,"rationale":"Este error ocurre si se retroceden cinco pasos en lugar de tres para llegar al primero."},{"label":"D","text":"$25$","isCorrect":false,"rationale":"Este es el segundo término de la sucesión."}]},{"question":"¿Cuál es la 'regla de oro' para resolver ecuaciones según el material de los Minions?","hint":"Recuerda cómo los Minions mantenían la balanza equilibrada quitando o poniendo lo mismo en ambos platos.","options":[{"label":"A","text":"La $x$ siempre debe valer $10$","isCorrect":false,"rationale":"El valor de $x$ es variable y depende totalmente de los otros números en la ecuación."},{"label":"B","text":"Primero se resuelven las restas y luego las sumas","isCorrect":false,"rationale":"El orden no depende del tipo de operación, sino de la necesidad de dejar sola a la incógnita."},{"label":"C","text":"Siempre hay que sumar el número que está junto a la $x$","isCorrect":false,"rationale":"No siempre se suma; si el número está sumando, se debe restar para despejar la incógnita."},{"label":"D","text":"Lo que hago a un lado de la balanza, también debo hacerlo al otro lado","isCorrect":true,"rationale":"Esta regla garantiza que se mantenga el equilibrio (la igualdad) durante todo el proceso de resolución."}]},{"question":"Observa esta sucesión: $3, 7, 11, 15, \\dots$. ¿Cuál será el término número $10$?","hint":"Encuentra la regla de suma y aplícala repetidamente o usa una tabla hasta la posición $10$.","options":[{"label":"A","text":"$39$","isCorrect":true,"rationale":"La regla es sumar $4$. Término $10 = 3 + (9 \\cdot 4) = 3 + 36 = 39$."},{"label":"B","text":"$35$","isCorrect":false,"rationale":"Este es el término número $9$ de la secuencia."},{"label":"C","text":"$43$","isCorrect":false,"rationale":"Este valor corresponde al término número $11$."},{"label":"D","text":"$40$","isCorrect":false,"rationale":"Este error ocurre al multiplicar directamente $4 \\cdot 10$ sin ajustar según el primer término."}]},{"question":"Un estudiante resolvió $x + 6 = 14$ y dijo que $x = 20$. ¿Cuál fue su error?","hint":"Comprueba si $20 + 6$ realmente da como resultado $14$.","options":[{"label":"A","text":"No cometió error, el resultado es correcto","isCorrect":false,"rationale":"Si $x=20$, entonces $20+6=26$, lo cual no es igual a $14$."},{"label":"B","text":"Confundió la $x$ con el número $0$","isCorrect":false,"rationale":"No hay evidencia de esa confusión; el error es claramente de aplicación de operación inversa."},{"label":"C","text":"Sumó los números en lugar de restar para encontrar el sumando que falta","isCorrect":true,"rationale":"Al sumar $14 + 6$ obtuvo $20$, olvidando que en una ecuación de suma se usa la resta para despejar $x$."},{"label":"D","text":"Restó de forma incorrecta","isCorrect":false,"rationale":"El error no fue de cálculo en la resta, sino de elegir la operación equivocada (suma)."}]},{"question":"¿Cuál es la regla de una sucesión que empieza en $50$ y el siguiente número es $45$?","hint":"Mira cuánto espacio hay entre el $50$ y el $45$ y si el número se achica o se agranda.","options":[{"label":"A","text":"Sumar $5$ cada vez","isCorrect":false,"rationale":"La sucesión está disminuyendo, por lo que la regla no puede ser una suma."},{"label":"B","text":"Restar $10$ cada vez","isCorrect":false,"rationale":"Restar $10$ a $50$ daría $40$."},{"label":"C","text":"Restar $5$ cada vez","isCorrect":true,"rationale":"La diferencia entre $50$ y $45$ es $5$, y al ser el segundo número menor, la regla es una sustracción."},{"label":"D","text":"Dividir por $10$","isCorrect":false,"rationale":"Dividir $50$ por $10$ daría $5$, no $45$."}]},{"question":"En el contexto de las sucesiones, ¿qué significa 'predecir' un término?","hint":"Recuerda lo que Kirby hacía con su 'máquina del futuro' y las tablas de términos.","options":[{"label":"A","text":"Adivinar cualquier número que nos parezca bonito","isCorrect":false,"rationale":"La predicción matemática se basa en reglas y lógica, no en el azar o gustos personales."},{"label":"B","text":"Encontrar un número futuro en la secuencia usando la regla sin tener que escribir todos los números intermedios","isCorrect":true,"rationale":"Predecir implica usar el patrón lógico para determinar valores lejanos de forma precisa."},{"label":"C","text":"Contar de uno en uno hasta llegar al final del cuaderno","isCorrect":false,"rationale":"Aunque contar funciona, la predicción busca métodos más eficientes como el uso de tablas o cálculos directos."},{"label":"D","text":"Cambiar la regla de la sucesión a la mitad","isCorrect":false,"rationale":"Para que una predicción sea válida, la regla debe mantenerse constante."}]}];
+const tr = {"correct":"¡Correcto!","incorrect":"Incorrecto","next":"Siguiente pregunta →","seeResults":"Ver resultados","complete":"¡Cuestionario completado!","scoreText":"Obtuviste {correct} de {total} correctas","tryAgain":"Intentar de nuevo","rightAnswer":"Respuesta correcta","notQuite":"No del todo"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
