@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Porcentajes y decimales</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; padding: 20px; color: #333;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.header { text-align: center; color: #fff; padding: 30px 20px; }
+.header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+.header .meta { font-size: 14px; opacity: 0.9; }
+.progress-bar { background: rgba(255,255,255,0.3); border-radius: 10px; height: 8px; margin: 20px 0; overflow: hidden; }
+.progress-fill { background: #fff; height: 100%; width: 0%; transition: width 0.4s ease; border-radius: 10px; }
+.question { background: #fff; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.question.active { display: block; }
+.q-header { display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 13px; color: #888; }
+.q-number { font-weight: 600; color: #667eea; }
+.q-text { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 25px; color: #222; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-wrapper { display: flex; flex-direction: column; }
+.option {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px;
+  border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
+  cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
+}
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
+.option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
+.option.selected { border-color: #667eea; background: #ede9fe; }
+.option.correct { border-color: #22c55e; background: #dcfce7; }
+.option.incorrect { border-color: #ef4444; background: #fee2e2; }
+.option.disabled { cursor: default; }
+.option.show-correct { border-color: #22c55e; background: #dcfce7; }
+.opt-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; background: #e8e8e8;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
+}
+.option.selected .opt-label { background: #667eea; color: #fff; }
+.option.correct .opt-label { background: #22c55e; color: #fff; }
+.option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
+.opt-text { padding-top: 5px; line-height: 1.5; }
+
+/* Individual option feedback */
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+[dir="rtl"] .option-feedback.correct-feedback,
+[dir="rtl"] .option-feedback.incorrect-feedback {
+  border-left: none;
+  border-right: 3px solid;
+}
+[dir="rtl"] .option-feedback.correct-feedback { border-right-color: #22c55e; }
+[dir="rtl"] .option-feedback.incorrect-feedback { border-right-color: #fca5a5; }
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-status.correct { color: #166534; }
+.feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
+/* Hint box */
+.hint-box {
+  margin: 12px 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+.hint-toggle {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #92400e;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hint-toggle:hover { background: #fef3c7; }
+.hint-content {
+  padding: 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s, padding 0.3s;
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+.hint-box.show .hint-content {
+  padding: 0 16px 12px;
+  max-height: 200px;
+}
+
+.next-btn {
+  margin-top: 20px; width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+.hidden { display: none !important; }
+.results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
+.results.active { display: block; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+
+/* Math CSS */
+.math, .math-block { font-family: "Cambria Math", "Times New Roman", Times, serif; font-style: italic; }
+.math-block { display: block; text-align: center; margin: 10px 0; font-size: 110%; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 3px; font-size: 0.9em; }
+.frac-num { border-bottom: 1px solid currentColor; padding: 0 4px 2px; line-height: 1.2; }
+.frac-den { padding: 2px 4px 0; line-height: 1.2; }
+.sqrt { white-space: nowrap; }
+.sqrt-content { border-top: 1px solid currentColor; padding: 0 3px; margin-left: 2px; }
+sup, sub { font-size: 0.75em; }
+sup { vertical-align: super; }
+sub { vertical-align: sub; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Porcentajes y decimales</h1>
+    <div class="meta">28 preguntas</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+  </div>
+  <div id="quiz-container">
+        <div class="question" data-index="0">
+          <div class="q-header">
+            <span class="q-number">Pregunta 1</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">En el mundo de Kirby, una cuadrícula de <span class="math">10 × 10</span> representa el total de un producto. Si Kirby colorea <span class="math">42</span> cuadritos, ¿qué porcentaje del producto ha completado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que el porcentaje indica cuántas partes se toman de un total de <span class="math">100</span>.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Como la cuadrícula tiene $100$ cuadros en total, cada cuadro representa un $1\%$, por lo que $42$ cuadros equivalen directamente al $42\%$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">42%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Como la cuadrícula tiene <span class="math">100</span> cuadros en total, cada cuadro representa un <span class="math">1%</span>, por lo que <span class="math">42</span> cuadros equivalen directamente al <span class="math">42%</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor resultaría de considerar una base de $1000$ o de una división incorrecta por $10$ en lugar de identificar la parte de $100$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">4,2%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor resultaría de considerar una base de <span class="math">1000</span> o de una división incorrecta por <span class="math">10</span> en lugar de identificar la parte de <span class="math">100</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este porcentaje representa la parte de la cuadrícula que quedó sin colorear, no la parte pintada.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">58%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este porcentaje representa la parte de la cuadrícula que quedó sin colorear, no la parte pintada.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor confunde la representación porcentual con la representación decimal de la cifra.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,42%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor confunde la representación porcentual con la representación decimal de la cifra.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="1">
+          <div class="q-header">
+            <span class="q-number">Pregunta 2</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Kirby ve una etiqueta que marca un <span class="math">18%</span> de descuento. ¿Cómo se expresa este porcentaje en forma de número decimal?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en dividir el número dieciocho entre cien.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado se obtiene si se divide por $10$ en lugar de $100$, lo cual es un error común al mover la coma decimal.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1,8</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado se obtiene si se divide por <span class="math">10</span> en lugar de <span class="math">100</span>, lo cual es un error común al mover la coma decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor equivale a un $1,8\%$, habiendo desplazado la coma tres posiciones en lugar de dos.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,018</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor equivale a un <span class="math">1,8%</span>, habiendo desplazado la coma tres posiciones en lugar de dos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Para convertir un porcentaje a decimal, se divide la cifra por $100$, lo que desplaza la coma dos lugares hacia la izquierda.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,18</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para convertir un porcentaje a decimal, se divide la cifra por <span class="math">100</span>, lo que desplaza la coma dos lugares hacia la izquierda.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es el número entero sin realizar la conversión necesaria a su equivalencia decimal de base $100$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">18,0</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el número entero sin realizar la conversión necesaria a su equivalencia decimal de base <span class="math">100</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="2">
+          <div class="q-header">
+            <span class="q-number">Pregunta 3</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">¿Cuál es la fracción correspondiente al <span class="math">45%</span> de descuento en una de las tiendas de Kirby?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">El denominador de la fracción siempre debe representar el total de cuadritos de la cuadrícula base.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="El porcentaje significa 'de cada cien', por lo que el valor porcentual se coloca directamente sobre un denominador $100$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">45</span><span class="frac-den">100</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El porcentaje significa 'de cada cien', por lo que el valor porcentual se coloca directamente sobre un denominador <span class="math">100</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta fracción representaría un valor de $4,5$, excediendo el concepto de porcentaje basado en cien partes.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">45</span><span class="frac-den">10</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta fracción representaría un valor de <span class="math">4,5</span>, excediendo el concepto de porcentaje basado en cien partes.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esta fracción equivale a un $4,5\%$, lo cual no coincide con el valor solicitado.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">4,5</span><span class="frac-den">100</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta fracción equivale a un <span class="math">4,5%</span>, lo cual no coincide con el valor solicitado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="En esta opción se han invertido el numerador y el denominador, lo que no representa una parte del total.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">100</span><span class="frac-den">45</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En esta opción se han invertido el numerador y el denominador, lo que no representa una parte del total.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="3">
+          <div class="q-header">
+            <span class="q-number">Pregunta 4</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Un Minion quiere comprar bananas que cuestan <span class="math">\</span>12.500<span class="math">. Si tienen un </span>10\%$ de descuento, ¿cuánto dinero se le restará al precio original?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Para hallar el <span class="math">10%</span>, puedes simplemente eliminar el último cero del precio total si termina en cero.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Calcular el $10\%$ equivale a dividir el total por $10$, lo que en este caso resulta en mil doscientos cincuenta.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>1.250$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Calcular el <span class="math">10%</span> equivale a dividir el total por <span class="math">10</span>, lo que en este caso resulta en mil doscientos cincuenta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este monto corresponde al $50\%$ del precio, es decir, la mitad, no al diez por ciento solicitado.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>6.250$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este monto corresponde al <span class="math">50%</span> del precio, es decir, la mitad, no al diez por ciento solicitado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el precio final después del descuento, no el valor del descuento en sí mismo.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>11.250$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el precio final después del descuento, no el valor del descuento en sí mismo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor es el $1\%$ del total, obtenido al dividir erróneamente por $100$ en lugar de $10$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>125$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es el <span class="math">1%</span> del total, obtenido al dividir erróneamente por <span class="math">100</span> en lugar de <span class="math">10</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="4">
+          <div class="q-header">
+            <span class="q-number">Pregunta 5</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Si un overol de Minion cuesta <span class="math">\</span>36.000<span class="math"> y tiene el </span>50\%$ de descuento, ¿cuál es el monto del descuento aplicado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que el <span class="math">50%</span> siempre equivale a dividir el total por dos.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este monto equivale al $25\%$, que es la mitad de la mitad, no el cincuenta por ciento total.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>9.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este monto equivale al <span class="math">25%</span>, que es la mitad de la mitad, no el cincuenta por ciento total.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El $50\%$ de cualquier cantidad es exactamente la mitad, y la mitad de treinta y seis mil es dieciocho mil.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>18.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">50%</span> de cualquier cantidad es exactamente la mitad, y la mitad de treinta y seis mil es dieciocho mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor representa el $10\%$ del total, no la mitad requerida por el cincuenta por ciento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>3.600$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor representa el <span class="math">10%</span> del total, no la mitad requerida por el cincuenta por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es un valor arbitrario que no corresponde a una división exacta del total por dos.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>20.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un valor arbitrario que no corresponde a una división exacta del total por dos.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="5">
+          <div class="q-header">
+            <span class="q-number">Pregunta 6</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Un Minion desea calcular el <span class="math">25%</span> de <span class="math">\</span>16.000$ para una oferta. ¿Qué estrategia debería usar?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">El <span class="math">25%</span> es la mitad del <span class="math">50%</span>, o la cuarta parte del total.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Dividir por dos daría como resultado el $50\%$, que es el doble de lo solicitado.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Dividir el total por <span class="math">2</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dividir por dos daría como resultado el <span class="math">50%</span>, que es el doble de lo solicitado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="El porcentaje es una parte proporcional del total, no una resta de un valor fijo entero.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Restar <span class="math">25</span> al precio total.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El porcentaje es una parte proporcional del total, no una resta de un valor fijo entero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Dividir por $10$ sirve para hallar el $10\%$, no la cuarta parte necesaria para el $25\%$.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Dividir por <span class="math">10</span> y luego sumar el resultado.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dividir por <span class="math">10</span> sirve para hallar el <span class="math">10%</span>, no la cuarta parte necesaria para el <span class="math">25%</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El $25\%$ representa la cuarta parte de un entero ($100 \div 4 = 25$), por lo que dividir por cuatro es la estrategia correcta.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Dividir el total por <span class="math">4</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">25%</span> representa la cuarta parte de un entero (<span class="math">100 ÷ 4 = 25</span>), por lo que dividir por cuatro es la estrategia correcta.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="6">
+          <div class="q-header">
+            <span class="q-number">Pregunta 7</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Para calcular el <span class="math">20%</span> de <span class="math">\</span>25.000<span class="math">, un Minion decide usar la estrategia de sumar dos veces el </span>10\%$. ¿Qué resultado obtendrá?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Primero encuentra la décima parte de la cantidad y luego multiplícala por dos.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor representa el $30\%$, no el veinte por ciento solicitado.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>7.500$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor representa el <span class="math">30%</span>, no el veinte por ciento solicitado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El $10\%$ de $25.000$ es $2.500$, y al sumarlo dos veces ($2.500 + 2.500$) se obtiene el veinte por ciento.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>5.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">10%</span> de <span class="math">25.000</span> es <span class="math">2.500</span>, y al sumarlo dos veces (<span class="math">2.500 + 2.500</span>) se obtiene el veinte por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor es solo el $10\%$ del total, olvidando realizar la suma para llegar al veinte por ciento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>2.500$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es solo el <span class="math">10%</span> del total, olvidando realizar la suma para llegar al veinte por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este resultado corresponde al $40\%$ del total, habiendo duplicado el valor correcto del veinte por ciento.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>10.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado corresponde al <span class="math">40%</span> del total, habiendo duplicado el valor correcto del veinte por ciento.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="7">
+          <div class="q-header">
+            <span class="q-number">Pregunta 8</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Un set de herramientas en la tienda cuesta <span class="math">\</span>8.000<span class="math">. Si tiene un </span>75\%$ de descuento, ¿cuánto dinero se descuenta?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Puedes sumar el <span class="math">50%</span> y el <span class="math">25%</span> de la cantidad para obtener el <span class="math">75%</span> de forma rápida.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor confunde el número del porcentaje con el valor monetario absoluto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>7.500$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor confunde el número del porcentaje con el valor monetario absoluto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor es el $25\%$, es decir, lo que el cliente terminaría pagando, no el monto del descuento.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>2.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es el <span class="math">25%</span>, es decir, lo que el cliente terminaría pagando, no el monto del descuento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el $50\%$ del total, faltando aún sumar el otro $25\%$ para completar el descuento del setenta y cinco por ciento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>4.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el <span class="math">50%</span> del total, faltando aún sumar el otro <span class="math">25%</span> para completar el descuento del setenta y cinco por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El $75\%$ se puede calcular sumando el $50\%$ ($\$4.000$) y el $25\%$ ($\$2.000$), lo que da un total de seis mil.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>6.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">75%</span> se puede calcular sumando el <span class="math">50%</span> (<span class="math">\</span>4.000<span class="math">) y el </span>25\%<span class="math"> (</span>\<span class="math">2.000</span>), lo que da un total de seis mil.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="8">
+          <div class="q-header">
+            <span class="q-number">Pregunta 9</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Una consola de videojuegos cuesta <span class="math">\</span>100.000<span class="math"> y tiene un cupón del </span>10\%$ de descuento. ¿Cuál es el precio final que se debe pagar?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Primero calcula el descuento y luego réstalo al precio original de la consola.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es el valor del descuento calculado, no el precio final que resulta tras la resta.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>10.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el valor del descuento calculado, no el precio final que resulta tras la resta.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El $10\%$ de $100.000$ es $10.000$. Al restar el descuento al precio original ($100.000 - 10.000$), queda este saldo.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>90.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">10%</span> de <span class="math">100.000</span> es <span class="math">10.000</span>. Al restar el descuento al precio original (<span class="math">100.000 - 10.000</span>), queda este saldo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="En esta opción se sumó el descuento al precio original en lugar de restarlo.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>110.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En esta opción se sumó el descuento al precio original en lugar de restarlo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error ocurre si se resta el número $10$ o el $1\%$ en lugar del diez por ciento del valor total.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>99.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se resta el número <span class="math">10</span> o el <span class="math">1%</span> en lugar del diez por ciento del valor total.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="9">
+          <div class="q-header">
+            <span class="q-number">Pregunta 10</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Unos zapatos deportivos cuestan <span class="math">\</span>40.000<span class="math"> y tienen un </span>25\%$ de descuento. ¿Cuánto pagará el cliente al final?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Divide el precio por <span class="math">4</span> para saber cuánto te descuentan, y luego resta esa cantidad al total.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="La cuarta parte de $40.000$ es $10.000$. Al restarlo del total ($40.000 - 10.000$), el precio final es el indicado.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>30.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La cuarta parte de <span class="math">40.000</span> es <span class="math">10.000</span>. Al restarlo del total (<span class="math">40.000 - 10.000</span>), el precio final es el indicado.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este resultado se obtendría con un descuento del $50\%$, no del veinticinco por ciento.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>20.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado se obtendría con un descuento del <span class="math">50%</span>, no del veinticinco por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este es el monto del descuento (la cuarta parte), pero no el precio que el cliente paga en caja.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>10.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el monto del descuento (la cuarta parte), pero no el precio que el cliente paga en caja.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error proviene de restar un valor incorrecto o confundir el cálculo del veinticinco por ciento.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>35.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error proviene de restar un valor incorrecto o confundir el cálculo del veinticinco por ciento.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="10">
+          <div class="q-header">
+            <span class="q-number">Pregunta 11</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Peppa Pig compra <span class="math">3</span> bolsas de manzanas. Si cada bolsa pesa exactamente <span class="math">1,25</span> kg, ¿cuál es el peso total de la compra?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Puedes sumar <span class="math">1,25</span> tres veces o multiplicar ignorando la coma y luego colocarla contando dos decimales.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado indica un error en la ubicación de la coma decimal al finalizar la operación.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">37,5</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado indica un error en la ubicación de la coma decimal al finalizar la operación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error surge de sumar el número de bolsas a la parte entera del peso sin realizar la multiplicación.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">3,25</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error surge de sumar el número de bolsas a la parte entera del peso sin realizar la multiplicación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor es una estimación incorrecta que no sigue el algoritmo de la multiplicación decimal.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">4,25</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es una estimación incorrecta que no sigue el algoritmo de la multiplicación decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Multiplicar $1,25 \times 3$ implica triplicar tanto el entero como la parte decimal ($1 \times 3 = 3$ y $0,25 \times 3 = 0,75$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">3,75</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar <span class="math">1,25 × 3</span> implica triplicar tanto el entero como la parte decimal (<span class="math">1 × 3 = 3</span> y <span class="math">0,25 × 3 = 0,75</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="11">
+          <div class="q-header">
+            <span class="q-number">Pregunta 12</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">George Pig compra <span class="math">8</span> zanahorias, y cada una pesa <span class="math">0,4</span> kg. ¿Cuánto pesan todas las zanahorias juntas?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Multiplica <span class="math">8</span> por <span class="math">4</span> y luego asegúrate de que el resultado tenga un solo número después de la coma.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este resultado simplemente combina los dos números del enunciado sin realizar la operación de multiplicación.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">8,4</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado simplemente combina los dos números del enunciado sin realizar la operación de multiplicación.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="En esta opción se colocaron dos decimales en lugar de uno solo, que es lo que corresponde al factor original.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,32</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En esta opción se colocaron dos decimales en lugar de uno solo, que es lo que corresponde al factor original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor ignora por completo la coma decimal, tratando el peso como si fuesen números naturales enteros.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">32</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor ignora por completo la coma decimal, tratando el peso como si fuesen números naturales enteros.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Al multiplicar $4 \times 8$ obtenemos $32$, y como hay un decimal en los factores, el resultado debe tener un decimal.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">3,2</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar <span class="math">4 × 8</span> obtenemos <span class="math">32</span>, y como hay un decimal en los factores, el resultado debe tener un decimal.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="12">
+          <div class="q-header">
+            <span class="q-number">Pregunta 13</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Mamá Pig compra un pack de <span class="math">4</span> quesos. Si cada queso pesa <span class="math">2,5</span> kg, ¿cuál es el peso total del pack?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en cuánto es el doble de <span class="math">2,5</span> y luego duplica ese resultado otra vez.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error se debe a una ubicación incorrecta de la coma, reduciendo el valor real del peso total.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">1,0</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error se debe a una ubicación incorrecta de la coma, reduciendo el valor real del peso total.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este resultado ignora la multiplicación correcta de la parte decimal del peso.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">8,5</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado ignora la multiplicación correcta de la parte decimal del peso.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Multiplicar $2,5 \times 4$ es lo mismo que sumar $2,5$ cuatro veces, lo cual da como resultado diez enteros exactos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">10,0</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Multiplicar <span class="math">2,5 × 4</span> es lo mismo que sumar <span class="math">2,5</span> cuatro veces, lo cual da como resultado diez enteros exactos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aquí se omitió la coma decimal por completo, resultando en un peso físicamente imposible para la situación.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">100</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí se omitió la coma decimal por completo, resultando en un peso físicamente imposible para la situación.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="13">
+          <div class="q-header">
+            <span class="q-number">Pregunta 14</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Un estudiante afirma que <span class="math">1,5 × 2 = 30</span>. ¿Por qué esta afirmación es incorrecta según las reglas de la coma decimal?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta cuántos números hay después de la coma en el problema original para saber dónde ponerla en la respuesta.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El cálculo numérico base es correcto ($15 \times 2 = 30$), el error reside únicamente en la puntuación decimal.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">Porque la multiplicación de <span class="math">15 × 2</span> no es <span class="math">30</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El cálculo numérico base es correcto (<span class="math">15 × 2 = 30</span>), el error reside únicamente en la puntuación decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Al multiplicar $15 \times 2$ da $30$, pero al reponer el decimal del factor original, el resultado correcto es $3,0$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">Porque olvidó colocar la coma decimal en el resultado final.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar <span class="math">15 × 2</span> da <span class="math">30</span>, pero al reponer el decimal del factor original, el resultado correcto es <span class="math">3,0</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El factor original solo tiene un decimal, por lo que el resultado solo requiere una posición decimal.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">Porque el resultado debería tener dos decimales.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El factor original solo tiene un decimal, por lo que el resultado solo requiere una posición decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="La suma repetida de $1,5 + 1,5$ es $3$, no $2,5$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Porque <span class="math">1,5</span> sumado dos veces da como resultado <span class="math">2,5</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La suma repetida de <span class="math">1,5 + 1,5</span> es <span class="math">3</span>, no <span class="math">2,5</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="14">
+          <div class="q-header">
+            <span class="q-number">Pregunta 15</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">En una misión espacial tipo Among Us, se deben repartir <span class="math">12,8</span> kg de combustible entre <span class="math">4</span> tripulantes. ¿Cuánto recibe cada uno?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Divide el doce por cuatro y luego el ocho por cuatro, manteniendo la coma en su lugar.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error ocurre al no bajar la coma al resultado en el momento en que se procesa la parte decimal del dividendo.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">32</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre al no bajar la coma al resultado en el momento en que se procesa la parte decimal del dividendo.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este es un error de cálculo en la división de los decimales, agregando un cero inexistente.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">3,02</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un error de cálculo en la división de los decimales, agregando un cero inexistente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado indica que se movió la coma demasiados lugares hacia la izquierda de forma innecesaria.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,32</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado indica que se movió la coma demasiados lugares hacia la izquierda de forma innecesaria.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Al dividir $12,8 \div 4$, dividimos $12$ entre $4$ (que da $3$) y luego el $8$ decimal entre $4$ (que da $0,2$).">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">3,2</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al dividir <span class="math">12,8 ÷ 4</span>, dividimos <span class="math">12</span> entre <span class="math">4</span> (que da <span class="math">3</span>) y luego el <span class="math">8</span> decimal entre <span class="math">4</span> (que da <span class="math">0,2</span>).</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="15">
+          <div class="q-header">
+            <span class="q-number">Pregunta 16</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">La nave espacial tiene <span class="math">15,3</span> kg de comida para repartir equitativamente entre <span class="math">3</span> zonas. ¿Cuántos kg de comida corresponden a cada zona?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda la regla: 'La coma baja al resultado en el momento en que aparece en el dividendo'.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Nuevamente, este es el error común de ignorar la coma decimal en el proceso de reparto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">51</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Nuevamente, este es el error común de ignorar la coma decimal en el proceso de reparto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Al aplicar el algoritmo, $15$ dividido por $3$ es $5$, y al bajar la coma, $3$ dividido por $3$ es $1$.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">5,1</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al aplicar el algoritmo, <span class="math">15</span> dividido por <span class="math">3</span> es <span class="math">5</span>, y al bajar la coma, <span class="math">3</span> dividido por <span class="math">3</span> es <span class="math">1</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este error se produce al colocar la coma antes de comenzar la división de los enteros.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,51</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error se produce al colocar la coma antes de comenzar la división de los enteros.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Aquí se dividió la parte entera correctamente pero se mantuvo el decimal original sin operar sobre él.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">5,3</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Aquí se dividió la parte entera correctamente pero se mantuvo el decimal original sin operar sobre él.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="16">
+          <div class="q-header">
+            <span class="q-number">Pregunta 17</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Si se tienen <span class="math">20,5</span> litros de agua para <span class="math">5</span> suministros de emergencia, ¿cuántos litros recibe cada suministro?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">¿Cuántas veces cabe el <span class="math">5</span> en el <span class="math">20</span>? Ese es tu primer número antes de la coma.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor es mayor que el total original, lo cual es imposible en una operación de reparto.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">41</span> litros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es mayor que el total original, lo cual es imposible en una operación de reparto.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error sugiere una división incorrecta del residuo decimal tras procesar la parte entera.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">4,5</span> litros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error sugiere una división incorrecta del residuo decimal tras procesar la parte entera.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Se ha desplazado la coma incorrectamente, resultando en una cantidad mucho menor a la lógica del problema.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,41</span> litros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Se ha desplazado la coma incorrectamente, resultando en una cantidad mucho menor a la lógica del problema.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Dividimos $20$ entre $5$ obteniendo $4$, y luego el decimal $5$ entre $5$, lo que resulta en $0,1$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">4,1</span> litros</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dividimos <span class="math">20</span> entre <span class="math">5</span> obteniendo <span class="math">4</span>, y luego el decimal <span class="math">5</span> entre <span class="math">5</span>, lo que resulta en <span class="math">0,1</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="17">
+          <div class="q-header">
+            <span class="q-number">Pregunta 18</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Un impostor dice que <span class="math">7,2 ÷ 6 = 1,2</span>. ¿Es correcto su cálculo para el reparto de oxígeno?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Realiza la división paso a paso: primero el siete, luego baja el dos junto al residuo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error surge de una mala gestión de los residuos durante el proceso de la división decimal.">
+            <span class="opt-label">A</span>
+            <span class="opt-text">No, es incorrecto porque el resultado es <span class="math">1,02</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error surge de una mala gestión de los residuos durante el proceso de la división decimal.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta objeción ignora que el dividendo original tiene una parte decimal que debe reflejarse en el cociente.">
+            <span class="opt-label">B</span>
+            <span class="opt-text">No, es incorrecto porque debería dar <span class="math">12</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta objeción ignora que el dividendo original tiene una parte decimal que debe reflejarse en el cociente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="El número $6$ sí cabe en el $7$ una vez con un residuo de uno.">
+            <span class="opt-label">C</span>
+            <span class="opt-text">No, es incorrecto porque <span class="math">6</span> no cabe en <span class="math">7</span>.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El número <span class="math">6</span> sí cabe en el <span class="math">7</span> una vez con un residuo de uno.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Al dividir $7$ entre $6$ cabe $1$ vez y sobra $1$; al bajar el $2$ decimal se forma $12$, y $12 \div 6$ es $2$. El resultado es $1,2$.">
+            <span class="opt-label">D</span>
+            <span class="opt-text">Sí, es correcto.</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al dividir <span class="math">7</span> entre <span class="math">6</span> cabe <span class="math">1</span> vez y sobra <span class="math">1</span>; al bajar el <span class="math">2</span> decimal se forma <span class="math">12</span>, y <span class="math">12 ÷ 6</span> es <span class="math">2</span>. El resultado es <span class="math">1,2</span>.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="18">
+          <div class="q-header">
+            <span class="q-number">Pregunta 19</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Peppa ayuda a cargar <span class="math">3</span> bolsas de verduras. Cada bolsa tiene un peso de <span class="math">0,8</span> kg. ¿Cuál es el peso total que carga Peppa?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Si una bolsa pesa casi un kilo, tres bolsas deben pesar un poco menos de tres kilos.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este valor implicaría que el peso total es menor que el de una sola bolsa, lo cual no tiene sentido lógico.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0,24</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor implicaría que el peso total es menor que el de una sola bolsa, lo cual no tiene sentido lógico.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este error común surge de sumar los números en lugar de multiplicarlos.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1,1</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error común surge de sumar los números en lugar de multiplicarlos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="La operación es $0,8 \times 3$. Como $8 \times 3 = 24$, y hay un decimal, el resultado debe ser dos coma cuatro.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">2,4</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La operación es <span class="math">0,8 × 3</span>. Como <span class="math">8 × 3 = 24</span>, y hay un decimal, el resultado debe ser dos coma cuatro.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es el resultado si se ignorara que las bolsas pesan menos de un kilogramo cada una.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">24</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el resultado si se ignorara que las bolsas pesan menos de un kilogramo cada una.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="19">
+          <div class="q-header">
+            <span class="q-number">Pregunta 20</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Se deben repartir <span class="math">10,2</span> kg de suministros entre <span class="math">2</span> zonas de la nave. ¿Cuántos kg recibe cada zona?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Busca la mitad exacta de diez y la mitad exacta de dos.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este error ocurre si se divide la parte entera pero se mantiene el decimal original sin dividirlo por dos.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">5,2</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error ocurre si se divide la parte entera pero se mantiene el decimal original sin dividirlo por dos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor es diez veces menor al resultado correcto debido a un mal posicionamiento de la coma.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,51</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es diez veces menor al resultado correcto debido a un mal posicionamiento de la coma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado es incoherente, ya que el reparto no puede generar más cantidad de la que se tenía inicialmente.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">51</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado es incoherente, ya que el reparto no puede generar más cantidad de la que se tenía inicialmente.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="La mitad de $10$ es $5$ y la mitad de $0,2$ es $0,1$, por lo que el reparto equitativo es cinco coma uno.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">5,1</span> kg</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">La mitad de <span class="math">10</span> es <span class="math">5</span> y la mitad de <span class="math">0,2</span> es <span class="math">0,1</span>, por lo que el reparto equitativo es cinco coma uno.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="20">
+          <div class="q-header">
+            <span class="q-number">Pregunta 21</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Si una etiqueta indica un <span class="math">45%</span> de descuento, ¿cuál es su representación en fracción?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">El porcentaje siempre se escribe como el número sobre cien.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Esta es la fracción inversa y no representa la parte proporcional de un descuento.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">100</span><span class="frac-den">45</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta es la fracción inversa y no representa la parte proporcional de un descuento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Esta fracción corresponde a un número decimal de $4,5$, lo cual no equivale al cuarenta y cinco por ciento.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">45</span><span class="frac-den">10</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta fracción corresponde a un número decimal de <span class="math">4,5</span>, lo cual no equivale al cuarenta y cinco por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Esta representación es redundante y errónea, ya que equivale a un cuatro coma cinco por ciento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">4,5</span><span class="frac-den">100</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Esta representación es redundante y errónea, ya que equivale a un cuatro coma cinco por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Todo porcentaje se puede expresar como una fracción con el número del porcentaje como numerador y cien como denominador.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math"><span class="frac"><span class="frac-num">45</span><span class="frac-den">100</span></span></span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Todo porcentaje se puede expresar como una fracción con el número del porcentaje como numerador y cien como denominador.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="21">
+          <div class="q-header">
+            <span class="q-number">Pregunta 22</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">¿A qué porcentaje equivale el número decimal <span class="math">0,07</span> en las etiquetas de la tienda de Kirby?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Multiplica el decimal por cien para descubrir el porcentaje que representa.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="El setenta por ciento se representaría como $0,70$ o $0,7$.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">70%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El setenta por ciento se representaría como <span class="math">0,70</span> o <span class="math">0,7</span>.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este porcentaje equivale a $0,007$, teniendo un cero adicional después de la coma.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,7%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este porcentaje equivale a <span class="math">0,007</span>, teniendo un cero adicional después de la coma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Para pasar de decimal a porcentaje se multiplica por $100$, lo que mueve la coma dos lugares a la derecha.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">7%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para pasar de decimal a porcentaje se multiplica por <span class="math">100</span>, lo que mueve la coma dos lugares a la derecha.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este es un valor sin relación matemática directa con la cifra decimal proporcionada.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">77%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un valor sin relación matemática directa con la cifra decimal proporcionada.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="22">
+          <div class="q-header">
+            <span class="q-number">Pregunta 23</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Si sumamos el <span class="math">25%</span> de un valor más otro <span class="math">25%</span> del mismo valor, ¿qué porcentaje del total tenemos?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Piensa en términos de fracciones: ¿cuánto es un cuarto más un cuarto?</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este sería el resultado de sumar tres veces el veinticinco por ciento.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">75%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este sería el resultado de sumar tres veces el veinticinco por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Sumar dos partes iguales aumenta el porcentaje total, no lo mantiene igual.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">25%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Sumar dos partes iguales aumenta el porcentaje total, no lo mantiene igual.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Para llegar al cien por ciento se necesitarían sumar cuatro partes del veinticinco por ciento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">100%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para llegar al cien por ciento se necesitarían sumar cuatro partes del veinticinco por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Dos cuartas partes ($25\% + 25\%$) equivalen a una mitad, es decir, el cincuenta por ciento.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">50%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Dos cuartas partes (<span class="math">25% + 25%</span>) equivalen a una mitad, es decir, el cincuenta por ciento.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="23">
+          <div class="q-header">
+            <span class="q-number">Pregunta 24</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">En un ejercicio de multiplicación, un estudiante calcula <span class="math">0,15 × 10</span>. ¿Cuál es el resultado correcto?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Mueve la coma decimal un lugar hacia la derecha para multiplicar rápidamente por diez.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este sería el resultado de multiplicar por cien, no por diez.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este sería el resultado de multiplicar por cien, no por diez.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Al multiplicar un decimal por diez, la coma se desplaza un lugar hacia la derecha.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">1,5</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar un decimal por diez, la coma se desplaza un lugar hacia la derecha.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Agregar un cero al final de la parte decimal no cambia el valor del número ni representa la multiplicación por diez.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">0,150</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Agregar un cero al final de la parte decimal no cambia el valor del número ni representa la multiplicación por diez.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Cualquier número multiplicado por diez (excepto el cero) debe cambiar su valor.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,15</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cualquier número multiplicado por diez (excepto el cero) debe cambiar su valor.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="24">
+          <div class="q-header">
+            <span class="q-number">Pregunta 25</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Si dividimos <span class="math">6,3 ÷ 3</span> en el contexto de repartir suministros, ¿cuál es el cociente?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Divide el seis por tres y luego el tres por tres.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="En este caso, se ha colocado la coma en una posición que hace al número diez veces más pequeño de lo debido.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">0,21</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">En este caso, se ha colocado la coma en una posición que hace al número diez veces más pequeño de lo debido.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="El tres cabe dos veces en el seis, se coloca la coma, y luego el tres cabe una vez en el tres.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">2,1</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El tres cabe dos veces en el seis, se coloca la coma, y luego el tres cabe una vez en el tres.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado olvida incluir la coma decimal que separa los enteros de los décimos.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">21</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado olvida incluir la coma decimal que separa los enteros de los décimos.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este error sugiere que se mantuvo el decimal original sin realizar la división correspondiente.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">2,3</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este error sugiere que se mantuvo el decimal original sin realizar la división correspondiente.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="25">
+          <div class="q-header">
+            <span class="q-number">Pregunta 26</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Un Minion ve un descuento del <span class="math">20%</span> sobre un producto de <span class="math">\</span>5.000$. ¿A cuánto equivale ese ahorro?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Calcula primero el diez por ciento (la décima parte) y luego súmalo consigo mismo.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es el $10\%$ del total, faltando duplicar la cifra para alcanzar el veinte por ciento.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">\</span>500$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es el <span class="math">10%</span> del total, faltando duplicar la cifra para alcanzar el veinte por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este valor correspondería al $40\%$ del precio original.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">\</span>2.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor correspondería al <span class="math">40%</span> del precio original.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este valor no tiene una relación proporcional clara con el veinte por ciento de cinco mil.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">\</span>200$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor no tiene una relación proporcional clara con el veinte por ciento de cinco mil.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="El $10\%$ es $500$, por lo tanto, el $20\%$ (que es el doble) es mil.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">\</span>1.000$</span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">El <span class="math">10%</span> es <span class="math">500</span>, por lo tanto, el <span class="math">20%</span> (que es el doble) es mil.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="26">
+          <div class="q-header">
+            <span class="q-number">Pregunta 27</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">En la tabla de equivalencias de Kirby, ¿qué porcentaje representa el número decimal <span class="math">0,36</span>?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Recuerda que los dos primeros lugares después de la coma representan el porcentaje sobre cien.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Al multiplicar el decimal $0,36$ por $100$ para obtener el porcentaje, la coma desaparece y queda el número entero.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">36%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Al multiplicar el decimal <span class="math">0,36</span> por <span class="math">100</span> para obtener el porcentaje, la coma desaparece y queda el número entero.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este porcentaje correspondería al decimal $0,036$, con un cero tras la coma.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">3,6%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este porcentaje correspondería al decimal <span class="math">0,036</span>, con un cero tras la coma.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Este resultado se obtendría al multiplicar por mil en lugar de por cien.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">360%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este resultado se obtendría al multiplicar por mil en lugar de por cien.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Este valor es el mismo decimal pero con el símbolo de porcentaje, lo cual es matemáticamente diferente.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">0,36%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este valor es el mismo decimal pero con el símbolo de porcentaje, lo cual es matemáticamente diferente.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      
+        <div class="question" data-index="27">
+          <div class="q-header">
+            <span class="q-number">Pregunta 28</span>
+            <span class="q-of">/ 28</span>
+          </div>
+          <div class="q-text">Si una cuadrícula de <span class="math">10 × 10</span> tiene solo <span class="math">8</span> cuadros pintados, ¿cuál es el porcentaje representado?</div>
+          
+        <div class="hint-box">
+          <button class="hint-toggle" onclick="this.parentElement.classList.toggle('show')">
+            💡 Hint
+          </button>
+          <div class="hint-content">Cuenta cada cuadro como un uno por ciento.</div>
+        </div>
+      
+          <div class="options">
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Este es un valor inventado que no corresponde a la cantidad de cuadros mencionada.">
+            <span class="opt-label">A</span>
+            <span class="opt-text"><span class="math">8,8%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="A">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este es un valor inventado que no corresponde a la cantidad de cuadros mencionada.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Este porcentaje representaría menos de un solo cuadro completo de la cuadrícula.">
+            <span class="opt-label">B</span>
+            <span class="opt-text"><span class="math">0,8%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="B">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Este porcentaje representaría menos de un solo cuadro completo de la cuadrícula.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Cada cuadrito individual en una red de cien representa un uno por ciento, por lo que ocho cuadritos son el ocho por ciento.">
+            <span class="opt-label">C</span>
+            <span class="opt-text"><span class="math">8%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="C">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Cada cuadrito individual en una red de cien representa un uno por ciento, por lo que ocho cuadritos son el ocho por ciento.</div>
+          </div>
+        </div>
+      
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Para el ochenta por ciento, se necesitarían pintar ocho filas completas de diez cuadros cada una.">
+            <span class="opt-label">D</span>
+            <span class="opt-text"><span class="math">80%</span></span>
+          </button>
+          <div class="option-feedback hidden" data-for="D">
+            <div class="feedback-status"></div>
+            <div class="feedback-rationale">Para el ochenta por ciento, se necesitarían pintar ocho filas completas de diez cuadros cada una.</div>
+          </div>
+        </div>
+      </div>
+          <button class="next-btn hidden">Siguiente pregunta →</button>
+        </div>
+      </div>
+  <div class="results" id="results">
+    <h2>¡Cuestionario completado!</h2>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Intentar de nuevo</button>
+  </div>
+</div>
+<script>
+const quizData = [{"question":"En el mundo de Kirby, una cuadrícula de $10 \\times 10$ representa el total de un producto. Si Kirby colorea $42$ cuadritos, ¿qué porcentaje del producto ha completado?","hint":"Recuerda que el porcentaje indica cuántas partes se toman de un total de $100$.","options":[{"label":"A","text":"$42\\%$","isCorrect":true,"rationale":"Como la cuadrícula tiene $100$ cuadros en total, cada cuadro representa un $1\\%$, por lo que $42$ cuadros equivalen directamente al $42\\%$."},{"label":"B","text":"$4,2\\%$","isCorrect":false,"rationale":"Este valor resultaría de considerar una base de $1000$ o de una división incorrecta por $10$ en lugar de identificar la parte de $100$."},{"label":"C","text":"$58\\%$","isCorrect":false,"rationale":"Este porcentaje representa la parte de la cuadrícula que quedó sin colorear, no la parte pintada."},{"label":"D","text":"$0,42\\%$","isCorrect":false,"rationale":"Este valor confunde la representación porcentual con la representación decimal de la cifra."}]},{"question":"Kirby ve una etiqueta que marca un $18\\%$ de descuento. ¿Cómo se expresa este porcentaje en forma de número decimal?","hint":"Piensa en dividir el número dieciocho entre cien.","options":[{"label":"A","text":"$1,8$","isCorrect":false,"rationale":"Este resultado se obtiene si se divide por $10$ en lugar de $100$, lo cual es un error común al mover la coma decimal."},{"label":"B","text":"$0,018$","isCorrect":false,"rationale":"Este valor equivale a un $1,8\\%$, habiendo desplazado la coma tres posiciones en lugar de dos."},{"label":"C","text":"$0,18$","isCorrect":true,"rationale":"Para convertir un porcentaje a decimal, se divide la cifra por $100$, lo que desplaza la coma dos lugares hacia la izquierda."},{"label":"D","text":"$18,0$","isCorrect":false,"rationale":"Este es el número entero sin realizar la conversión necesaria a su equivalencia decimal de base $100$."}]},{"question":"¿Cuál es la fracción correspondiente al $45\\%$ de descuento en una de las tiendas de Kirby?","hint":"El denominador de la fracción siempre debe representar el total de cuadritos de la cuadrícula base.","options":[{"label":"A","text":"$\\frac{45}{100}$","isCorrect":true,"rationale":"El porcentaje significa 'de cada cien', por lo que el valor porcentual se coloca directamente sobre un denominador $100$."},{"label":"B","text":"$\\frac{45}{10}$","isCorrect":false,"rationale":"Esta fracción representaría un valor de $4,5$, excediendo el concepto de porcentaje basado en cien partes."},{"label":"C","text":"$\\frac{4,5}{100}$","isCorrect":false,"rationale":"Esta fracción equivale a un $4,5\\%$, lo cual no coincide con el valor solicitado."},{"label":"D","text":"$\\frac{100}{45}$","isCorrect":false,"rationale":"En esta opción se han invertido el numerador y el denominador, lo que no representa una parte del total."}]},{"question":"Un Minion quiere comprar bananas que cuestan $\\$12.500$. Si tienen un $10\\%$ de descuento, ¿cuánto dinero se le restará al precio original?","hint":"Para hallar el $10\\%$, puedes simplemente eliminar el último cero del precio total si termina en cero.","options":[{"label":"A","text":"$\\$1.250$","isCorrect":true,"rationale":"Calcular el $10\\%$ equivale a dividir el total por $10$, lo que en este caso resulta en mil doscientos cincuenta."},{"label":"B","text":"$\\$6.250$","isCorrect":false,"rationale":"Este monto corresponde al $50\\%$ del precio, es decir, la mitad, no al diez por ciento solicitado."},{"label":"C","text":"$\\$11.250$","isCorrect":false,"rationale":"Este es el precio final después del descuento, no el valor del descuento en sí mismo."},{"label":"D","text":"$\\$125$","isCorrect":false,"rationale":"Este valor es el $1\\%$ del total, obtenido al dividir erróneamente por $100$ en lugar de $10$."}]},{"question":"Si un overol de Minion cuesta $\\$36.000$ y tiene el $50\\%$ de descuento, ¿cuál es el monto del descuento aplicado?","hint":"Recuerda que el $50\\%$ siempre equivale a dividir el total por dos.","options":[{"label":"A","text":"$\\$9.000$","isCorrect":false,"rationale":"Este monto equivale al $25\\%$, que es la mitad de la mitad, no el cincuenta por ciento total."},{"label":"B","text":"$\\$18.000$","isCorrect":true,"rationale":"El $50\\%$ de cualquier cantidad es exactamente la mitad, y la mitad de treinta y seis mil es dieciocho mil."},{"label":"C","text":"$\\$3.600$","isCorrect":false,"rationale":"Este valor representa el $10\\%$ del total, no la mitad requerida por el cincuenta por ciento."},{"label":"D","text":"$\\$20.000$","isCorrect":false,"rationale":"Este es un valor arbitrario que no corresponde a una división exacta del total por dos."}]},{"question":"Un Minion desea calcular el $25\\%$ de $\\$16.000$ para una oferta. ¿Qué estrategia debería usar?","hint":"El $25\\%$ es la mitad del $50\\%$, o la cuarta parte del total.","options":[{"label":"A","text":"Dividir el total por $2$.","isCorrect":false,"rationale":"Dividir por dos daría como resultado el $50\\%$, que es el doble de lo solicitado."},{"label":"B","text":"Restar $25$ al precio total.","isCorrect":false,"rationale":"El porcentaje es una parte proporcional del total, no una resta de un valor fijo entero."},{"label":"C","text":"Dividir por $10$ y luego sumar el resultado.","isCorrect":false,"rationale":"Dividir por $10$ sirve para hallar el $10\\%$, no la cuarta parte necesaria para el $25\\%$."},{"label":"D","text":"Dividir el total por $4$.","isCorrect":true,"rationale":"El $25\\%$ representa la cuarta parte de un entero ($100 \\div 4 = 25$), por lo que dividir por cuatro es la estrategia correcta."}]},{"question":"Para calcular el $20\\%$ de $\\$25.000$, un Minion decide usar la estrategia de sumar dos veces el $10\\%$. ¿Qué resultado obtendrá?","hint":"Primero encuentra la décima parte de la cantidad y luego multiplícala por dos.","options":[{"label":"A","text":"$\\$7.500$","isCorrect":false,"rationale":"Este valor representa el $30\\%$, no el veinte por ciento solicitado."},{"label":"B","text":"$\\$5.000$","isCorrect":true,"rationale":"El $10\\%$ de $25.000$ es $2.500$, y al sumarlo dos veces ($2.500 + 2.500$) se obtiene el veinte por ciento."},{"label":"C","text":"$\\$2.500$","isCorrect":false,"rationale":"Este valor es solo el $10\\%$ del total, olvidando realizar la suma para llegar al veinte por ciento."},{"label":"D","text":"$\\$10.000$","isCorrect":false,"rationale":"Este resultado corresponde al $40\\%$ del total, habiendo duplicado el valor correcto del veinte por ciento."}]},{"question":"Un set de herramientas en la tienda cuesta $\\$8.000$. Si tiene un $75\\%$ de descuento, ¿cuánto dinero se descuenta?","hint":"Puedes sumar el $50\\%$ y el $25\\%$ de la cantidad para obtener el $75\\%$ de forma rápida.","options":[{"label":"A","text":"$\\$7.500$","isCorrect":false,"rationale":"Este valor confunde el número del porcentaje con el valor monetario absoluto."},{"label":"B","text":"$\\$2.000$","isCorrect":false,"rationale":"Este valor es el $25\\%$, es decir, lo que el cliente terminaría pagando, no el monto del descuento."},{"label":"C","text":"$\\$4.000$","isCorrect":false,"rationale":"Este es el $50\\%$ del total, faltando aún sumar el otro $25\\%$ para completar el descuento del setenta y cinco por ciento."},{"label":"D","text":"$\\$6.000$","isCorrect":true,"rationale":"El $75\\%$ se puede calcular sumando el $50\\%$ ($\\$4.000$) y el $25\\%$ ($\\$2.000$), lo que da un total de seis mil."}]},{"question":"Una consola de videojuegos cuesta $\\$100.000$ y tiene un cupón del $10\\%$ de descuento. ¿Cuál es el precio final que se debe pagar?","hint":"Primero calcula el descuento y luego réstalo al precio original de la consola.","options":[{"label":"A","text":"$\\$10.000$","isCorrect":false,"rationale":"Este es el valor del descuento calculado, no el precio final que resulta tras la resta."},{"label":"B","text":"$\\$90.000$","isCorrect":true,"rationale":"El $10\\%$ de $100.000$ es $10.000$. Al restar el descuento al precio original ($100.000 - 10.000$), queda este saldo."},{"label":"C","text":"$\\$110.000$","isCorrect":false,"rationale":"En esta opción se sumó el descuento al precio original en lugar de restarlo."},{"label":"D","text":"$\\$99.000$","isCorrect":false,"rationale":"Este error ocurre si se resta el número $10$ o el $1\\%$ en lugar del diez por ciento del valor total."}]},{"question":"Unos zapatos deportivos cuestan $\\$40.000$ y tienen un $25\\%$ de descuento. ¿Cuánto pagará el cliente al final?","hint":"Divide el precio por $4$ para saber cuánto te descuentan, y luego resta esa cantidad al total.","options":[{"label":"A","text":"$\\$30.000$","isCorrect":true,"rationale":"La cuarta parte de $40.000$ es $10.000$. Al restarlo del total ($40.000 - 10.000$), el precio final es el indicado."},{"label":"B","text":"$\\$20.000$","isCorrect":false,"rationale":"Este resultado se obtendría con un descuento del $50\\%$, no del veinticinco por ciento."},{"label":"C","text":"$\\$10.000$","isCorrect":false,"rationale":"Este es el monto del descuento (la cuarta parte), pero no el precio que el cliente paga en caja."},{"label":"D","text":"$\\$35.000$","isCorrect":false,"rationale":"Este error proviene de restar un valor incorrecto o confundir el cálculo del veinticinco por ciento."}]},{"question":"Peppa Pig compra $3$ bolsas de manzanas. Si cada bolsa pesa exactamente $1,25$ kg, ¿cuál es el peso total de la compra?","hint":"Puedes sumar $1,25$ tres veces o multiplicar ignorando la coma y luego colocarla contando dos decimales.","options":[{"label":"A","text":"$37,5$ kg","isCorrect":false,"rationale":"Este resultado indica un error en la ubicación de la coma decimal al finalizar la operación."},{"label":"B","text":"$3,25$ kg","isCorrect":false,"rationale":"Este error surge de sumar el número de bolsas a la parte entera del peso sin realizar la multiplicación."},{"label":"C","text":"$4,25$ kg","isCorrect":false,"rationale":"Este valor es una estimación incorrecta que no sigue el algoritmo de la multiplicación decimal."},{"label":"D","text":"$3,75$ kg","isCorrect":true,"rationale":"Multiplicar $1,25 \\times 3$ implica triplicar tanto el entero como la parte decimal ($1 \\times 3 = 3$ y $0,25 \\times 3 = 0,75$)."}]},{"question":"George Pig compra $8$ zanahorias, y cada una pesa $0,4$ kg. ¿Cuánto pesan todas las zanahorias juntas?","hint":"Multiplica $8$ por $4$ y luego asegúrate de que el resultado tenga un solo número después de la coma.","options":[{"label":"A","text":"$8,4$ kg","isCorrect":false,"rationale":"Este resultado simplemente combina los dos números del enunciado sin realizar la operación de multiplicación."},{"label":"B","text":"$0,32$ kg","isCorrect":false,"rationale":"En esta opción se colocaron dos decimales en lugar de uno solo, que es lo que corresponde al factor original."},{"label":"C","text":"$32$ kg","isCorrect":false,"rationale":"Este valor ignora por completo la coma decimal, tratando el peso como si fuesen números naturales enteros."},{"label":"D","text":"$3,2$ kg","isCorrect":true,"rationale":"Al multiplicar $4 \\times 8$ obtenemos $32$, y como hay un decimal en los factores, el resultado debe tener un decimal."}]},{"question":"Mamá Pig compra un pack de $4$ quesos. Si cada queso pesa $2,5$ kg, ¿cuál es el peso total del pack?","hint":"Piensa en cuánto es el doble de $2,5$ y luego duplica ese resultado otra vez.","options":[{"label":"A","text":"$1,0$ kg","isCorrect":false,"rationale":"Este error se debe a una ubicación incorrecta de la coma, reduciendo el valor real del peso total."},{"label":"B","text":"$8,5$ kg","isCorrect":false,"rationale":"Este resultado ignora la multiplicación correcta de la parte decimal del peso."},{"label":"C","text":"$10,0$ kg","isCorrect":true,"rationale":"Multiplicar $2,5 \\times 4$ es lo mismo que sumar $2,5$ cuatro veces, lo cual da como resultado diez enteros exactos."},{"label":"D","text":"$100$ kg","isCorrect":false,"rationale":"Aquí se omitió la coma decimal por completo, resultando en un peso físicamente imposible para la situación."}]},{"question":"Un estudiante afirma que $1,5 \\times 2 = 30$. ¿Por qué esta afirmación es incorrecta según las reglas de la coma decimal?","hint":"Cuenta cuántos números hay después de la coma en el problema original para saber dónde ponerla en la respuesta.","options":[{"label":"A","text":"Porque la multiplicación de $15 \\times 2$ no es $30$.","isCorrect":false,"rationale":"El cálculo numérico base es correcto ($15 \\times 2 = 30$), el error reside únicamente en la puntuación decimal."},{"label":"B","text":"Porque olvidó colocar la coma decimal en el resultado final.","isCorrect":true,"rationale":"Al multiplicar $15 \\times 2$ da $30$, pero al reponer el decimal del factor original, el resultado correcto es $3,0$."},{"label":"C","text":"Porque el resultado debería tener dos decimales.","isCorrect":false,"rationale":"El factor original solo tiene un decimal, por lo que el resultado solo requiere una posición decimal."},{"label":"D","text":"Porque $1,5$ sumado dos veces da como resultado $2,5$.","isCorrect":false,"rationale":"La suma repetida de $1,5 + 1,5$ es $3$, no $2,5$."}]},{"question":"En una misión espacial tipo Among Us, se deben repartir $12,8$ kg de combustible entre $4$ tripulantes. ¿Cuánto recibe cada uno?","hint":"Divide el doce por cuatro y luego el ocho por cuatro, manteniendo la coma en su lugar.","options":[{"label":"A","text":"$32$ kg","isCorrect":false,"rationale":"Este error ocurre al no bajar la coma al resultado en el momento en que se procesa la parte decimal del dividendo."},{"label":"B","text":"$3,02$ kg","isCorrect":false,"rationale":"Este es un error de cálculo en la división de los decimales, agregando un cero inexistente."},{"label":"C","text":"$0,32$ kg","isCorrect":false,"rationale":"Este resultado indica que se movió la coma demasiados lugares hacia la izquierda de forma innecesaria."},{"label":"D","text":"$3,2$ kg","isCorrect":true,"rationale":"Al dividir $12,8 \\div 4$, dividimos $12$ entre $4$ (que da $3$) y luego el $8$ decimal entre $4$ (que da $0,2$)."}]},{"question":"La nave espacial tiene $15,3$ kg de comida para repartir equitativamente entre $3$ zonas. ¿Cuántos kg de comida corresponden a cada zona?","hint":"Recuerda la regla: 'La coma baja al resultado en el momento en que aparece en el dividendo'.","options":[{"label":"A","text":"$51$ kg","isCorrect":false,"rationale":"Nuevamente, este es el error común de ignorar la coma decimal en el proceso de reparto."},{"label":"B","text":"$5,1$ kg","isCorrect":true,"rationale":"Al aplicar el algoritmo, $15$ dividido por $3$ es $5$, y al bajar la coma, $3$ dividido por $3$ es $1$."},{"label":"C","text":"$0,51$ kg","isCorrect":false,"rationale":"Este error se produce al colocar la coma antes de comenzar la división de los enteros."},{"label":"D","text":"$5,3$ kg","isCorrect":false,"rationale":"Aquí se dividió la parte entera correctamente pero se mantuvo el decimal original sin operar sobre él."}]},{"question":"Si se tienen $20,5$ litros de agua para $5$ suministros de emergencia, ¿cuántos litros recibe cada suministro?","hint":"¿Cuántas veces cabe el $5$ en el $20$? Ese es tu primer número antes de la coma.","options":[{"label":"A","text":"$41$ litros","isCorrect":false,"rationale":"Este valor es mayor que el total original, lo cual es imposible en una operación de reparto."},{"label":"B","text":"$4,5$ litros","isCorrect":false,"rationale":"Este error sugiere una división incorrecta del residuo decimal tras procesar la parte entera."},{"label":"C","text":"$0,41$ litros","isCorrect":false,"rationale":"Se ha desplazado la coma incorrectamente, resultando en una cantidad mucho menor a la lógica del problema."},{"label":"D","text":"$4,1$ litros","isCorrect":true,"rationale":"Dividimos $20$ entre $5$ obteniendo $4$, y luego el decimal $5$ entre $5$, lo que resulta en $0,1$."}]},{"question":"Un impostor dice que $7,2 \\div 6 = 1,2$. ¿Es correcto su cálculo para el reparto de oxígeno?","hint":"Realiza la división paso a paso: primero el siete, luego baja el dos junto al residuo.","options":[{"label":"A","text":"No, es incorrecto porque el resultado es $1,02$.","isCorrect":false,"rationale":"Este error surge de una mala gestión de los residuos durante el proceso de la división decimal."},{"label":"B","text":"No, es incorrecto porque debería dar $12$.","isCorrect":false,"rationale":"Esta objeción ignora que el dividendo original tiene una parte decimal que debe reflejarse en el cociente."},{"label":"C","text":"No, es incorrecto porque $6$ no cabe en $7$.","isCorrect":false,"rationale":"El número $6$ sí cabe en el $7$ una vez con un residuo de uno."},{"label":"D","text":"Sí, es correcto.","isCorrect":true,"rationale":"Al dividir $7$ entre $6$ cabe $1$ vez y sobra $1$; al bajar el $2$ decimal se forma $12$, y $12 \\div 6$ es $2$. El resultado es $1,2$."}]},{"question":"Peppa ayuda a cargar $3$ bolsas de verduras. Cada bolsa tiene un peso de $0,8$ kg. ¿Cuál es el peso total que carga Peppa?","hint":"Si una bolsa pesa casi un kilo, tres bolsas deben pesar un poco menos de tres kilos.","options":[{"label":"A","text":"$0,24$ kg","isCorrect":false,"rationale":"Este valor implicaría que el peso total es menor que el de una sola bolsa, lo cual no tiene sentido lógico."},{"label":"B","text":"$1,1$ kg","isCorrect":false,"rationale":"Este error común surge de sumar los números en lugar de multiplicarlos."},{"label":"C","text":"$2,4$ kg","isCorrect":true,"rationale":"La operación es $0,8 \\times 3$. Como $8 \\times 3 = 24$, y hay un decimal, el resultado debe ser dos coma cuatro."},{"label":"D","text":"$24$ kg","isCorrect":false,"rationale":"Este es el resultado si se ignorara que las bolsas pesan menos de un kilogramo cada una."}]},{"question":"Se deben repartir $10,2$ kg de suministros entre $2$ zonas de la nave. ¿Cuántos kg recibe cada zona?","hint":"Busca la mitad exacta de diez y la mitad exacta de dos.","options":[{"label":"A","text":"$5,2$ kg","isCorrect":false,"rationale":"Este error ocurre si se divide la parte entera pero se mantiene el decimal original sin dividirlo por dos."},{"label":"B","text":"$0,51$ kg","isCorrect":false,"rationale":"Este valor es diez veces menor al resultado correcto debido a un mal posicionamiento de la coma."},{"label":"C","text":"$51$ kg","isCorrect":false,"rationale":"Este resultado es incoherente, ya que el reparto no puede generar más cantidad de la que se tenía inicialmente."},{"label":"D","text":"$5,1$ kg","isCorrect":true,"rationale":"La mitad de $10$ es $5$ y la mitad de $0,2$ es $0,1$, por lo que el reparto equitativo es cinco coma uno."}]},{"question":"Si una etiqueta indica un $45\\%$ de descuento, ¿cuál es su representación en fracción?","hint":"El porcentaje siempre se escribe como el número sobre cien.","options":[{"label":"A","text":"$\\frac{100}{45}$","isCorrect":false,"rationale":"Esta es la fracción inversa y no representa la parte proporcional de un descuento."},{"label":"B","text":"$\\frac{45}{10}$","isCorrect":false,"rationale":"Esta fracción corresponde a un número decimal de $4,5$, lo cual no equivale al cuarenta y cinco por ciento."},{"label":"C","text":"$\\frac{4,5}{100}$","isCorrect":false,"rationale":"Esta representación es redundante y errónea, ya que equivale a un cuatro coma cinco por ciento."},{"label":"D","text":"$\\frac{45}{100}$","isCorrect":true,"rationale":"Todo porcentaje se puede expresar como una fracción con el número del porcentaje como numerador y cien como denominador."}]},{"question":"¿A qué porcentaje equivale el número decimal $0,07$ en las etiquetas de la tienda de Kirby?","hint":"Multiplica el decimal por cien para descubrir el porcentaje que representa.","options":[{"label":"A","text":"$70\\%$","isCorrect":false,"rationale":"El setenta por ciento se representaría como $0,70$ o $0,7$."},{"label":"B","text":"$0,7\\%$","isCorrect":false,"rationale":"Este porcentaje equivale a $0,007$, teniendo un cero adicional después de la coma."},{"label":"C","text":"$7\\%$","isCorrect":true,"rationale":"Para pasar de decimal a porcentaje se multiplica por $100$, lo que mueve la coma dos lugares a la derecha."},{"label":"D","text":"$77\\%$","isCorrect":false,"rationale":"Este es un valor sin relación matemática directa con la cifra decimal proporcionada."}]},{"question":"Si sumamos el $25\\%$ de un valor más otro $25\\%$ del mismo valor, ¿qué porcentaje del total tenemos?","hint":"Piensa en términos de fracciones: ¿cuánto es un cuarto más un cuarto?","options":[{"label":"A","text":"$75\\%$","isCorrect":false,"rationale":"Este sería el resultado de sumar tres veces el veinticinco por ciento."},{"label":"B","text":"$25\\%$","isCorrect":false,"rationale":"Sumar dos partes iguales aumenta el porcentaje total, no lo mantiene igual."},{"label":"C","text":"$100\\%$","isCorrect":false,"rationale":"Para llegar al cien por ciento se necesitarían sumar cuatro partes del veinticinco por ciento."},{"label":"D","text":"$50\\%$","isCorrect":true,"rationale":"Dos cuartas partes ($25\\% + 25\\%$) equivalen a una mitad, es decir, el cincuenta por ciento."}]},{"question":"En un ejercicio de multiplicación, un estudiante calcula $0,15 \\times 10$. ¿Cuál es el resultado correcto?","hint":"Mueve la coma decimal un lugar hacia la derecha para multiplicar rápidamente por diez.","options":[{"label":"A","text":"$15$","isCorrect":false,"rationale":"Este sería el resultado de multiplicar por cien, no por diez."},{"label":"B","text":"$1,5$","isCorrect":true,"rationale":"Al multiplicar un decimal por diez, la coma se desplaza un lugar hacia la derecha."},{"label":"C","text":"$0,150$","isCorrect":false,"rationale":"Agregar un cero al final de la parte decimal no cambia el valor del número ni representa la multiplicación por diez."},{"label":"D","text":"$0,15$","isCorrect":false,"rationale":"Cualquier número multiplicado por diez (excepto el cero) debe cambiar su valor."}]},{"question":"Si dividimos $6,3 \\div 3$ en el contexto de repartir suministros, ¿cuál es el cociente?","hint":"Divide el seis por tres y luego el tres por tres.","options":[{"label":"A","text":"$0,21$","isCorrect":false,"rationale":"En este caso, se ha colocado la coma en una posición que hace al número diez veces más pequeño de lo debido."},{"label":"B","text":"$2,1$","isCorrect":true,"rationale":"El tres cabe dos veces en el seis, se coloca la coma, y luego el tres cabe una vez en el tres."},{"label":"C","text":"$21$","isCorrect":false,"rationale":"Este resultado olvida incluir la coma decimal que separa los enteros de los décimos."},{"label":"D","text":"$2,3$","isCorrect":false,"rationale":"Este error sugiere que se mantuvo el decimal original sin realizar la división correspondiente."}]},{"question":"Un Minion ve un descuento del $20\\%$ sobre un producto de $\\$5.000$. ¿A cuánto equivale ese ahorro?","hint":"Calcula primero el diez por ciento (la décima parte) y luego súmalo consigo mismo.","options":[{"label":"A","text":"$\\$500$","isCorrect":false,"rationale":"Este es el $10\\%$ del total, faltando duplicar la cifra para alcanzar el veinte por ciento."},{"label":"B","text":"$\\$2.000$","isCorrect":false,"rationale":"Este valor correspondería al $40\\%$ del precio original."},{"label":"C","text":"$\\$200$","isCorrect":false,"rationale":"Este valor no tiene una relación proporcional clara con el veinte por ciento de cinco mil."},{"label":"D","text":"$\\$1.000$","isCorrect":true,"rationale":"El $10\\%$ es $500$, por lo tanto, el $20\\%$ (que es el doble) es mil."}]},{"question":"En la tabla de equivalencias de Kirby, ¿qué porcentaje representa el número decimal $0,36$?","hint":"Recuerda que los dos primeros lugares después de la coma representan el porcentaje sobre cien.","options":[{"label":"A","text":"$36\\%$","isCorrect":true,"rationale":"Al multiplicar el decimal $0,36$ por $100$ para obtener el porcentaje, la coma desaparece y queda el número entero."},{"label":"B","text":"$3,6\\%$","isCorrect":false,"rationale":"Este porcentaje correspondería al decimal $0,036$, con un cero tras la coma."},{"label":"C","text":"$360\\%$","isCorrect":false,"rationale":"Este resultado se obtendría al multiplicar por mil en lugar de por cien."},{"label":"D","text":"$0,36\\%$","isCorrect":false,"rationale":"Este valor es el mismo decimal pero con el símbolo de porcentaje, lo cual es matemáticamente diferente."}]},{"question":"Si una cuadrícula de $10 \\times 10$ tiene solo $8$ cuadros pintados, ¿cuál es el porcentaje representado?","hint":"Cuenta cada cuadro como un uno por ciento.","options":[{"label":"A","text":"$8,8\\%$","isCorrect":false,"rationale":"Este es un valor inventado que no corresponde a la cantidad de cuadros mencionada."},{"label":"B","text":"$0,8\\%$","isCorrect":false,"rationale":"Este porcentaje representaría menos de un solo cuadro completo de la cuadrícula."},{"label":"C","text":"$8\\%$","isCorrect":true,"rationale":"Cada cuadrito individual en una red de cien representa un uno por ciento, por lo que ocho cuadritos son el ocho por ciento."},{"label":"D","text":"$80\\%$","isCorrect":false,"rationale":"Para el ochenta por ciento, se necesitarían pintar ocho filas completas de diez cuadros cada una."}]}];
+const tr = {"correct":"¡Correcto!","incorrect":"Incorrecto","next":"Siguiente pregunta →","seeResults":"Ver resultados","complete":"¡Cuestionario completado!","scoreText":"Obtuviste {correct} de {total} correctas","tryAgain":"Intentar de nuevo","rightAnswer":"Respuesta correcta","notQuite":"No del todo"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
+}
+
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  // Mark all options as disabled
+  options.forEach(o => o.classList.add('disabled'));
+  
+  // Style selected option
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  // Show feedback for ALL options that have rationale
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
+    
+    if (rationale && rationale.trim()) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect 
+        ? '✓ ' + tr.rightAnswer
+        : '✗ ' + tr.notQuite;
+    }
+  });
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === quizData.length - 1) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= quizData.length) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / quizData.length * 100) + '%';
+}
+
+function showResults() {
+  document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / quizData.length) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', quizData.length);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  currentQ = 0; correctCount = 0; answered = false;
+  document.getElementById('results').classList.remove('active');
+  document.querySelectorAll('.question').forEach((q, i) => {
+    q.classList.toggle('active', i === 0);
+    q.querySelectorAll('.option').forEach(o => o.classList.remove('selected', 'correct', 'incorrect', 'disabled', 'show-correct'));
+    q.querySelectorAll('.option-feedback').forEach(f => {
+      f.classList.add('hidden');
+      f.classList.remove('correct-feedback', 'incorrect-feedback');
+    });
+    const btn = q.querySelector('.next-btn');
+    btn.classList.add('hidden');
+    btn.textContent = tr.next;
+  });
+  updateProgress();
+}
+
+init();
+</script>
+</body>
+</html>
