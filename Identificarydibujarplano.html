@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plano del Tesoro - Coordenadas en el Primer Cuadrante</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --primary:#2563eb;
+      --primary2:#1d4ed8;
+      --ok:#15803d;
+      --bad:#b91c1c;
+      --warn:#f59e0b;
+      --line:#d1d5db;
+      --soft:#e0ecff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(180deg,#eaf2ff 0%, var(--bg) 45%);
+      color:var(--text);
+    }
+    header{
+      padding:22px 18px 14px;
+      text-align:center;
+    }
+    header h1{
+      margin:0;
+      font-size:clamp(24px,4vw,38px);
+      color:#0f172a;
+    }
+    header p{
+      margin:8px auto 0;
+      max-width:920px;
+      color:#374151;
+      font-size:16px;
+      line-height:1.35;
+    }
+    .wrap{
+      max-width:1160px;
+      margin:0 auto;
+      padding:10px 16px 24px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:16px;
+      align-items:start;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      box-shadow:0 10px 25px rgba(15,23,42,.08);
+      padding:16px;
+    }
+    .canvasBox{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .canvasHeader{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:var(--soft);
+      color:#1e40af;
+      font-weight:700;
+      font-size:14px;
+    }
+    canvas{
+      width:100%;
+      max-width:760px;
+      aspect-ratio:1/1;
+      margin:0 auto;
+      display:block;
+      border-radius:16px;
+      background:#fff;
+      border:2px solid #e5e7eb;
+      touch-action:manipulation;
+    }
+    .panel h2{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+    .panel h3{
+      margin:16px 0 8px;
+      font-size:17px;
+    }
+    .small{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.35;
+    }
+    .modeGrid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      margin-top:10px;
+    }
+    button, select, input{
+      font-family:inherit;
+      font-size:15px;
+    }
+    button{
+      border:none;
+      border-radius:12px;
+      padding:11px 12px;
+      cursor:pointer;
+      font-weight:700;
+      background:#e5e7eb;
+      color:#111827;
+      transition:.15s transform, .15s background;
+    }
+    button:hover{transform:translateY(-1px)}
+    .primary{background:var(--primary); color:#fff}
+    .primary:hover{background:var(--primary2)}
+    .ok{background:#dcfce7;color:#166534}
+    .danger{background:#fee2e2;color:#991b1b}
+    .yellow{background:#fef3c7;color:#92400e}
+    .active{
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 0 0 3px rgba(37,99,235,.18);
+    }
+    .controls{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin:10px 0;
+    }
+    .full{grid-column:1/-1}
+    label{
+      display:block;
+      font-weight:700;
+      margin-bottom:5px;
+      font-size:14px;
+    }
+    select,input{
+      width:100%;
+      padding:10px;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      background:#fff;
+    }
+    .challenge{
+      padding:13px;
+      background:#f8fafc;
+      border:1px dashed #cbd5e1;
+      border-radius:14px;
+      margin:10px 0;
+      line-height:1.4;
+    }
+    .challenge strong{color:#0f172a}
+    .feedback{
+      min-height:44px;
+      padding:12px;
+      border-radius:14px;
+      background:#f3f4f6;
+      margin-top:10px;
+      line-height:1.35;
+      font-weight:700;
+    }
+    .feedback.good{background:#dcfce7;color:#166534}
+    .feedback.bad{background:#fee2e2;color:#991b1b}
+    .feedback.info{background:#dbeafe;color:#1e3a8a}
+    .score{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      margin:10px 0;
+    }
+    .score div{
+      background:#f8fafc;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+    }
+    .score b{
+      display:block;
+      font-size:24px;
+      color:#0f172a;
+    }
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:center;
+      font-size:13px;
+      color:#4b5563;
+    }
+    .dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      display:inline-block;
+      vertical-align:middle;
+      margin-right:4px;
+    }
+    .blue{background:#2563eb}
+    .orange{background:#f59e0b}
+    .green{background:#16a34a}
+    .purple{background:#7c3aed}
+    .pointsList{
+      max-height:130px;
+      overflow:auto;
+      padding:8px;
+      background:#f9fafb;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      font-size:14px;
+      line-height:1.6;
+    }
+    footer{
+      text-align:center;
+      color:#6b7280;
+      padding:0 16px 20px;
+      font-size:13px;
+    }
+    @media(max-width:880px){
+      .wrap{grid-template-columns:1fr}
+    }
+    @media print{
+      body{background:white}
+      .wrap{display:block;max-width:100%;padding:0}
+      .panel button, .modeGrid, .controls, .feedback, footer{display:none}
+      .card{box-shadow:none;border:none}
+      canvas{max-width:680px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🗺️ Plano del Tesoro: Coordenadas</h1>
+    <p><strong>Fecha:</strong> Martes 2 de junio. <strong>Objetivo:</strong> Identificar y dibujar las coordenadas de puntos ubicados en el primer cuadrante del plano cartesiano utilizando números naturales.</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card canvasBox">
+      <div class="canvasHeader">
+        <span class="badge">Primer cuadrante · 0 a 10</span>
+        <span class="badge">Recuerda: primero X → después Y ↑</span>
+      </div>
+      <canvas id="plane" width="760" height="760" aria-label="Plano cartesiano interactivo"></canvas>
+      <div class="legend">
+        <span><span class="dot blue"></span>Punto a identificar</span>
+        <span><span class="dot orange"></span>Punto dibujado por estudiante</span>
+        <span><span class="dot green"></span>Correcto</span>
+        <span><span class="dot purple"></span>Ruta libre</span>
+      </div>
+    </section>
+
+    <aside class="card panel">
+      <h2>Actividades</h2>
+      <p class="small">Elige una actividad. La aplicación entrega retroalimentación inmediata para que el curso practique en forma individual, grupal o proyectada.</p>
+
+      <div class="modeGrid">
+        <button id="modeIdentify" class="active">1. Identificar coordenada</button>
+        <button id="modeDraw">2. Dibujar coordenada</button>
+        <button id="modeFree">3. Crear ruta de puntos</button>
+      </div>
+
+      <div class="score">
+        <div><span>Buenas</span><b id="good">0</b></div>
+        <div><span>Intentos</span><b id="tries">0</b></div>
+        <div><span>Racha</span><b id="streak">0</b></div>
+      </div>
+
+      <div class="challenge" id="challenge"></div>
+
+      <div id="identifyControls" class="controls">
+        <div>
+          <label for="xAnswer">Coordenada X</label>
+          <select id="xAnswer"></select>
+        </div>
+        <div>
+          <label for="yAnswer">Coordenada Y</label>
+          <select id="yAnswer"></select>
+        </div>
+        <button class="primary full" id="checkIdentify">Comprobar respuesta</button>
+      </div>
+
+      <div id="drawControls" class="controls" style="display:none">
+        <button class="primary full" id="newDraw">Nueva coordenada</button>
+        <button class="yellow full" id="clearPoint">Borrar punto dibujado</button>
+      </div>
+
+      <div id="freeControls" class="controls" style="display:none">
+        <button class="primary full" id="clearRoute">Borrar ruta</button>
+        <button class="ok full" id="showRoute">Mostrar listado de coordenadas</button>
+      </div>
+
+      <div class="feedback info" id="feedback">Observa el punto azul y escribe sus coordenadas.</div>
+
+      <h3>Mis puntos</h3>
+      <div class="pointsList" id="pointsList">Todavía no hay puntos registrados.</div>
+
+      <h3>Botones docentes</h3>
+      <div class="controls">
+        <button id="newChallenge" class="primary">Nuevo desafío</button>
+        <button id="resetScore" class="danger">Reiniciar puntaje</button>
+        <button id="printPage" class="full">Imprimir / guardar PDF</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    Aplicación educativa offline para practicar plano cartesiano en el primer cuadrante.
+  </footer>
+
+<script>
+  const canvas = document.getElementById("plane");
+  const ctx = canvas.getContext("2d");
+  const challenge = document.getElementById("challenge");
+  const feedback = document.getElementById("feedback");
+  const pointsList = document.getElementById("pointsList");
+
+  const xAnswer = document.getElementById("xAnswer");
+  const yAnswer = document.getElementById("yAnswer");
+
+  const goodEl = document.getElementById("good");
+  const triesEl = document.getElementById("tries");
+  const streakEl = document.getElementById("streak");
+
+  const modeButtons = {
+    identify: document.getElementById("modeIdentify"),
+    draw: document.getElementById("modeDraw"),
+    free: document.getElementById("modeFree")
+  };
+
+  const panels = {
+    identify: document.getElementById("identifyControls"),
+    draw: document.getElementById("drawControls"),
+    free: document.getElementById("freeControls")
+  };
+
+  let mode = "identify";
+  let target = {x: 3, y: 4};
+  let drawnPoint = null;
+  let routePoints = [];
+  let score = {good:0, tries:0, streak:0};
+
+  const margin = 76;
+  const gridMax = 10;
+  const gridSize = canvas.width - margin*2;
+  const step = gridSize / gridMax;
+
+  for(let i=0;i<=10;i++){
+    const optX = document.createElement("option");
+    optX.value = i;
+    optX.textContent = i;
+    xAnswer.appendChild(optX);
+
+    const optY = document.createElement("option");
+    optY.value = i;
+    optY.textContent = i;
+    yAnswer.appendChild(optY);
+  }
+
+  function randomPoint(){
+    return {
+      x: Math.floor(Math.random()*11),
+      y: Math.floor(Math.random()*11)
+    };
+  }
+
+  function coordToPixel(p){
+    return {
+      px: margin + p.x*step,
+      py: canvas.height - margin - p.y*step
+    };
+  }
+
+  function pixelToCoord(px, py){
+    const x = Math.round((px - margin)/step);
+    const y = Math.round((canvas.height - margin - py)/step);
+    return {
+      x: Math.max(0, Math.min(gridMax, x)),
+      y: Math.max(0, Math.min(gridMax, y))
+    };
+  }
+
+  function drawPlane(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Fondo suave
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Cuadrícula
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#dbe3ef";
+    ctx.font = "18px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    for(let i=0;i<=gridMax;i++){
+      const x = margin + i*step;
+      const y = margin + i*step;
+
+      ctx.beginPath();
+      ctx.moveTo(x, margin);
+      ctx.lineTo(x, canvas.height - margin);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(margin, y);
+      ctx.lineTo(canvas.width - margin, y);
+      ctx.stroke();
+    }
+
+    // Ejes
+    ctx.strokeStyle = "#111827";
+    ctx.lineWidth = 3;
+
+    ctx.beginPath();
+    ctx.moveTo(margin, canvas.height - margin);
+    ctx.lineTo(canvas.width - margin + 22, canvas.height - margin);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(margin, canvas.height - margin);
+    ctx.lineTo(margin, margin - 22);
+    ctx.stroke();
+
+    // Flechas
+    drawArrow(canvas.width - margin + 22, canvas.height - margin, "x");
+    drawArrow(margin, margin - 22, "y");
+
+    // Números ejes
+    ctx.fillStyle = "#374151";
+    ctx.font = "18px Arial";
+    for(let i=0;i<=gridMax;i++){
+      const x = margin + i*step;
+      const y = canvas.height - margin - i*step;
+      ctx.fillText(i, x, canvas.height - margin + 28);
+      ctx.fillText(i, margin - 28, y);
+    }
+
+    // Etiquetas
+    ctx.fillStyle = "#111827";
+    ctx.font = "bold 24px Arial";
+    ctx.fillText("X", canvas.width - margin + 45, canvas.height - margin);
+    ctx.fillText("Y", margin, margin - 45);
+
+    ctx.font = "bold 18px Arial";
+    ctx.fillText("Primer cuadrante", canvas.width/2, 34);
+
+    // Ruta libre
+    if(routePoints.length > 0){
+      ctx.strokeStyle = "#7c3aed";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      routePoints.forEach((p, idx)=>{
+        const {px,py}=coordToPixel(p);
+        if(idx===0) ctx.moveTo(px,py);
+        else ctx.lineTo(px,py);
+      });
+      ctx.stroke();
+
+      routePoints.forEach((p, idx)=>{
+        drawPoint(p, "#7c3aed", `${idx+1}`);
+      });
+    }
+
+    // Punto objetivo
+    if(mode === "identify"){
+      drawPoint(target, "#2563eb", "?");
+    }
+
+    // Punto dibujado
+    if(drawnPoint){
+      const correct = drawnPoint.x === target.x && drawnPoint.y === target.y;
+      drawPoint(drawnPoint, correct ? "#16a34a" : "#f59e0b", `(${drawnPoint.x},${drawnPoint.y})`);
+    }
+
+    if(mode === "draw"){
+      // marca objetivo en el panel, no en el plano
+    }
+  }
+
+  function drawArrow(x,y,axis){
+    ctx.fillStyle = "#111827";
+    ctx.beginPath();
+    if(axis === "x"){
+      ctx.moveTo(x, y);
+      ctx.lineTo(x-16, y-9);
+      ctx.lineTo(x-16, y+9);
+    }else{
+      ctx.moveTo(x, y);
+      ctx.lineTo(x-9, y+16);
+      ctx.lineTo(x+9, y+16);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawPoint(p, color, label){
+    const {px, py} = coordToPixel(p);
+
+    ctx.beginPath();
+    ctx.arc(px, py, 12, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#ffffff";
+    ctx.stroke();
+
+    ctx.fillStyle = "#111827";
+    ctx.font = "bold 15px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(label, px, py - 16);
+  }
+
+  function setFeedback(text, kind){
+    feedback.className = "feedback " + (kind || "info");
+    feedback.textContent = text;
+  }
+
+  function updateScore(){
+    goodEl.textContent = score.good;
+    triesEl.textContent = score.tries;
+    streakEl.textContent = score.streak;
+  }
+
+  function setMode(newMode){
+    mode = newMode;
+    Object.values(modeButtons).forEach(b=>b.classList.remove("active"));
+    modeButtons[newMode].classList.add("active");
+
+    Object.values(panels).forEach(p=>p.style.display = "none");
+    panels[newMode].style.display = "grid";
+
+    drawnPoint = null;
+
+    if(mode === "identify"){
+      target = randomPoint();
+      challenge.innerHTML = "<strong>Desafío:</strong> Observa el punto azul del plano. Escribe sus coordenadas usando el orden correcto: <strong>(X, Y)</strong>.";
+      setFeedback("Observa el punto azul y escribe sus coordenadas.", "info");
+    }
+
+    if(mode === "draw"){
+      target = randomPoint();
+      challenge.innerHTML = `"<strong>Desafío:</strong> Dibuja el punto <strong>(${target.x}, ${target.y})</strong> haciendo clic en el plano. Recuerda avanzar primero por el eje X y luego subir por el eje Y."`;
+      setFeedback("Haz clic sobre la intersección que corresponde a la coordenada indicada.", "info");
+    }
+
+    if(mode === "free"){
+      challenge.innerHTML = "<strong>Desafío:</strong> Crea una ruta de puntos en el primer cuadrante. Luego lee las coordenadas en voz alta o escríbelas en tu cuaderno.";
+      setFeedback("Haz clic en el plano para agregar puntos a tu ruta.", "info");
+    }
+
+    updateList();
+    drawPlane();
+  }
+
+  function newChallenge(){
+    target = randomPoint();
+    drawnPoint = null;
+    if(mode === "identify"){
+      challenge.innerHTML = "<strong>Desafío:</strong> Observa el nuevo punto azul y escribe sus coordenadas en la forma <strong>(X, Y)</strong>.";
+      setFeedback("Nuevo punto listo. Identifica sus coordenadas.", "info");
+    }
+    if(mode === "draw"){
+      challenge.innerHTML = `<strong>Desafío:</strong> Dibuja el punto <strong>(${target.x}, ${target.y})</strong> haciendo clic en el plano.`;
+      setFeedback("Nueva coordenada lista. Marca el punto en el plano.", "info");
+    }
+    drawPlane();
+  }
+
+  function checkIdentify(){
+    const ans = {x:Number(xAnswer.value), y:Number(yAnswer.value)};
+    score.tries++;
+    if(ans.x === target.x && ans.y === target.y){
+      score.good++;
+      score.streak++;
+      setFeedback(`¡Correcto! El punto es (${target.x}, ${target.y}). Primero se lee X y después Y.`, "good");
+      setTimeout(newChallenge, 900);
+    }else{
+      score.streak = 0;
+      setFeedback(`Revisa nuevamente. Recuerda: primero mira cuánto avanzas en X y luego cuánto subes en Y.`, "bad");
+    }
+    updateScore();
+  }
+
+  function checkDraw(p){
+    drawnPoint = p;
+    score.tries++;
+    if(p.x === target.x && p.y === target.y){
+      score.good++;
+      score.streak++;
+      setFeedback(`¡Muy bien! Marcaste correctamente el punto (${target.x}, ${target.y}).`, "good");
+      setTimeout(newChallenge, 900);
+    }else{
+      score.streak = 0;
+      setFeedback(`Marcaste (${p.x}, ${p.y}). El desafío era (${target.x}, ${target.y}). Intenta avanzar primero por X y luego subir por Y.`, "bad");
+    }
+    updateScore();
+    drawPlane();
+  }
+
+  function updateList(){
+    if(mode === "free" && routePoints.length > 0){
+      pointsList.textContent = routePoints.map((p,i)=>`${i+1}. (${p.x}, ${p.y})`).join("   |   ");
+    }else if(drawnPoint){
+      pointsList.textContent = `Punto dibujado: (${drawnPoint.x}, ${drawnPoint.y})`;
+    }else{
+      pointsList.textContent = "Todavía no hay puntos registrados.";
+    }
+  }
+
+  canvas.addEventListener("click", (event)=>{
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const px = (event.clientX - rect.left) * scaleX;
+    const py = (event.clientY - rect.top) * scaleY;
+
+    if(px < margin - step/2 || px > canvas.width - margin + step/2 ||
+       py < margin - step/2 || py > canvas.height - margin + step/2){
+      return;
+    }
+
+    const p = pixelToCoord(px, py);
+
+    if(mode === "draw"){
+      checkDraw(p);
+      updateList();
+    }
+
+    if(mode === "free"){
+      routePoints.push(p);
+      setFeedback(`Agregaste el punto (${p.x}, ${p.y}) a tu ruta.`, "info");
+      updateList();
+      drawPlane();
+    }
+  });
+
+  document.getElementById("checkIdentify").addEventListener("click", checkIdentify);
+  document.getElementById("newChallenge").addEventListener("click", newChallenge);
+  document.getElementById("newDraw").addEventListener("click", newChallenge);
+
+  document.getElementById("clearPoint").addEventListener("click", ()=>{
+    drawnPoint = null;
+    setFeedback("Punto borrado. Vuelve a intentarlo.", "info");
+    updateList();
+    drawPlane();
+  });
+
+  document.getElementById("clearRoute").addEventListener("click", ()=>{
+    routePoints = [];
+    setFeedback("Ruta borrada. Crea una nueva ruta de coordenadas.", "info");
+    updateList();
+    drawPlane();
+  });
+
+  document.getElementById("showRoute").addEventListener("click", ()=>{
+    if(routePoints.length === 0){
+      setFeedback("Primero agrega puntos al plano.", "bad");
+      return;
+    }
+    setFeedback("Ruta: " + routePoints.map(p=>`(${p.x}, ${p.y})`).join(" → "), "good");
+  });
+
+  document.getElementById("resetScore").addEventListener("click", ()=>{
+    score = {good:0, tries:0, streak:0};
+    updateScore();
+    setFeedback("Puntaje reiniciado.", "info");
+  });
+
+  document.getElementById("printPage").addEventListener("click", ()=>window.print());
+
+  modeButtons.identify.addEventListener("click", ()=>setMode("identify"));
+  modeButtons.draw.addEventListener("click", ()=>setMode("draw"));
+  modeButtons.free.addEventListener("click", ()=>setMode("free"));
+
+  setMode("identify");
+  updateScore();
+</script>
+</body>
+</html>
