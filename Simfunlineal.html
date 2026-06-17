@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Función Lineal Interactiva</title>
+
+<style>
+body { font-family: Arial; background:#f4f6f8; text-align:center; }
+.container { max-width:1100px; margin:auto; }
+
+.panel {
+    display:flex; gap:20px;
+    background:white; border-radius:12px;
+    padding:20px; box-shadow:0 0 10px #ccc;
+}
+
+canvas { border:1px solid #ccc; background:#fff; }
+
+.left { width:40%; }
+.right { width:25%; text-align:left; }
+
+.control {
+    display:flex; align-items:center; gap:10px; margin-bottom:10px;
+}
+
+.control label { min-width:120px; }
+.control input { flex:1; }
+
+.explain {
+    background:#f9fbff;
+    padding:15px;
+    border-radius:10px;
+    border:1px solid #dce6f7;
+    font-family: "Cambria Math","STIX Two Math","Times New Roman",serif;
+    font-size:16px;
+    line-height:1.8;
+}
+
+.fraccion {
+    display:inline-block;
+    text-align:center;
+}
+.arriba {
+    border-bottom:2px solid black;
+    display:block;
+    padding:2px 6px;
+}
+.abajo {
+    display:block;
+    padding:2px 6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>📈 Función Lineal Interactiva</h1>
+
+<div class="panel">
+
+<div class="left">
+
+<h3>y = mx + b</h3>
+<p id="funcionActual" style="font-family:'Cambria Math'; font-size:18px;"></p>
+
+<div class="control">
+<label>m: <span id="mVal">1</span></label>
+<input type="range" min="-5" max="5" value="1" id="mSlider">
+</div>
+
+<div class="control">
+<label>b: <span id="bVal">0</span></label>
+<input type="range" min="-10" max="10" value="0" id="bSlider">
+</div>
+
+<div class="control">
+<label>🔍 Zoom: <span id="zoomVal">20</span></label>
+<input type="range" min="10" max="50" value="20" id="zoomSlider">
+</div>
+
+<button onclick="generarTabla()">🎲 Nuevos valores</button>
+
+<table border="1">
+<tr><th>x</th><th>y</th></tr>
+<tr><td id="x1"></td><td><input id="y1" oninput="verificarEntrada()"></td></tr>
+<tr><td id="x2"></td><td><input id="y2" oninput="verificarEntrada()"></td></tr>
+<tr><td id="x3"></td><td><input id="y3" oninput="verificarEntrada()"></td></tr>
+<tr><td id="x4"></td><td><input id="y4" oninput="verificarEntrada()"></td></tr>
+<tr><td id="x5"></td><td><input id="y5" oninput="verificarEntrada()"></td></tr>
+</table>
+
+</div>
+
+<canvas id="grafico" width="500" height="500"></canvas>
+
+<div class="right">
+<div class="explain">
+
+<h4>📐 Pendiente (m)</h4>
+<p id="pendienteTexto">Completa al menos 2 valores...</p>
+
+<h4>📍 Intercepto (b)</h4>
+<p id="interceptoTexto"></p>
+
+</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let m = 1;
+let b = 0;
+let escala = 20;
+let valoresX = [];
+let puntos = [];
+let tooltip = null;
+
+const canvas = document.getElementById("grafico");
+const ctx = canvas.getContext("2d");
+
+// MCD
+function mcd(a,b){
+    return b === 0 ? a : mcd(b, a % b);
+}
+
+// función visible
+function actualizarFuncion(){
+    let signo = b >= 0 ? "+" : "-";
+    document.getElementById("funcionActual").innerHTML =
+        `y = ${m}x ${signo} ${Math.abs(b)}`;
+}
+
+// tabla
+function generarTabla(){
+    valoresX = [];
+    while(valoresX.length < 5){
+        let x = Math.floor(Math.random()*21)-10;
+        if(!valoresX.includes(x)) valoresX.push(x);
+    }
+
+    for(let i=1;i<=5;i++){
+        document.getElementById("x"+i).innerText = valoresX[i-1];
+        document.getElementById("y"+i).value = "";
+    }
+
+    document.getElementById("pendienteTexto").innerText = "Completa al menos 2 valores...";
+    document.getElementById("interceptoTexto").innerText = "";
+
+    puntos = [];
+    dibujar();
+}
+
+// detectar entrada
+function verificarEntrada(){
+
+    let datos = [];
+    puntos = [];
+
+    for(let i=1;i<=5;i++){
+        let y = document.getElementById("y"+i).value;
+
+        if(y !== "" && !isNaN(y)){
+            let x = valoresX[i-1];
+            let yNum = parseFloat(y);
+
+            datos.push({x:x, y:yNum});
+            puntos.push({x:x, y:yNum});
+        }
+    }
+
+    if(datos.length >= 2){
+        calcularPendiente(datos[0], datos[1]);
+    }
+
+    dibujar();
+}
+
+// 🔥 cálculo completo
+function calcularPendiente(p1, p2){
+
+    let num = p2.y - p1.y;
+    let den = p2.x - p1.x;
+
+    let divisor = mcd(Math.abs(num), Math.abs(den));
+    let numS = num / divisor;
+    let denS = den / divisor;
+
+    let resultado = numS / denS;
+
+    document.getElementById("pendienteTexto").innerHTML =
+
+    `m =
+    <div class="fraccion">
+        <span class="arriba">(${p2.y}-${p1.y})</span>
+        <span class="abajo">(${p2.x}-${p1.x})</span>
+    </div>
+
+    <br>
+
+    m =
+    <div class="fraccion">
+        <span class="arriba">${num}</span>
+        <span class="abajo">${den}</span>
+    </div>
+
+    <br>
+
+    m =
+    <div class="fraccion">
+        <span class="arriba">${numS}</span>
+        <span class="abajo">${denS}</span>
+    </div>
+
+    <br>
+
+    m = ${resultado}`;
+
+    let bCalc = p1.y - resultado * p1.x;
+
+    document.getElementById("interceptoTexto").innerHTML =
+        `b = y - mx<br>
+         b = ${p1.y} - (${resultado} × ${p1.x})<br>
+         b = ${bCalc}`;
+}
+
+// dibujo
+function dibujar(){
+
+    ctx.clearRect(0,0,500,500);
+
+    let cx=250, cy=250;
+    let rango = Math.floor(250/escala);
+
+    // cuadrícula
+    ctx.strokeStyle="#ddd";
+    for(let i=-rango;i<=rango;i++){
+        ctx.beginPath();
+        ctx.moveTo(cx+i*escala,0);
+        ctx.lineTo(cx+i*escala,500);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0,cy+i*escala);
+        ctx.lineTo(500,cy+i*escala);
+        ctx.stroke();
+    }
+
+    // ejes
+    ctx.strokeStyle="black";
+    ctx.lineWidth=2;
+
+    ctx.beginPath();
+    ctx.moveTo(0,cy);
+    ctx.lineTo(500,cy);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx,0);
+    ctx.lineTo(cx,500);
+    ctx.stroke();
+
+    // números
+    ctx.fillStyle="black";
+    ctx.font="12px Arial";
+
+    for(let i=-rango;i<=rango;i++){
+        if(i!==0){
+            ctx.fillText(i, cx+i*escala-6, cy+15);
+            ctx.fillText(i, cx+5, cy-i*escala+4);
+        }
+    }
+
+    ctx.fillText("x",480,cy-10);
+    ctx.fillText("y",cx+10,15);
+
+    // recta
+    ctx.beginPath();
+    ctx.strokeStyle="blue";
+
+    for(let x=-rango;x<=rango;x++){
+        let y = m*x + b;
+        let px = cx + x*escala;
+        let py = cy - y*escala;
+
+        if(x===-rango) ctx.moveTo(px,py);
+        else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // puntos
+    ctx.fillStyle="red";
+
+    puntos.forEach(p=>{
+        let px = cx + p.x*escala;
+        let py = cy - p.y*escala;
+
+        ctx.beginPath();
+        ctx.arc(px,py,5,0,Math.PI*2);
+        ctx.fill();
+
+        p.px = px;
+        p.py = py;
+    });
+
+    // tooltip
+    if(tooltip){
+        ctx.fillStyle="black";
+        ctx.fillText(`(${tooltip.x}, ${tooltip.y})`, tooltip.px+10, tooltip.py-10);
+    }
+}
+
+// mouse
+canvas.addEventListener("mousemove", e=>{
+    let rect = canvas.getBoundingClientRect();
+    let mx = e.clientX - rect.left;
+    let my = e.clientY - rect.top;
+
+    tooltip = null;
+
+    puntos.forEach(p=>{
+        if(Math.hypot(mx-p.px,my-p.py)<8){
+            tooltip = p;
+        }
+    });
+
+    dibujar();
+});
+
+canvas.addEventListener("mouseleave", ()=>{
+    tooltip=null;
+    dibujar();
+});
+
+// touch
+canvas.addEventListener("touchstart", e=>{
+    let rect = canvas.getBoundingClientRect();
+    let t = e.touches[0];
+
+    let mx = t.clientX - rect.left;
+    let my = t.clientY - rect.top;
+
+    tooltip = null;
+
+    puntos.forEach(p=>{
+        if(Math.hypot(mx-p.px,my-p.py)<10){
+            tooltip = p;
+        }
+    });
+
+    dibujar();
+});
+
+canvas.addEventListener("touchend", ()=>{
+    tooltip=null;
+    dibujar();
+});
+
+// sliders
+mSlider.oninput = function(){
+    m=parseFloat(this.value);
+    mVal.innerText=m;
+    actualizarFuncion();
+    dibujar();
+}
+
+bSlider.oninput = function(){
+    b=parseFloat(this.value);
+    bVal.innerText=b;
+    actualizarFuncion();
+    dibujar();
+}
+
+zoomSlider.oninput = function(){
+    escala=parseFloat(this.value);
+    zoomVal.innerText=escala;
+    dibujar();
+}
+
+// inicio
+generarTabla();
+actualizarFuncion();
+
+</script>
+
+</body>
+</html>
