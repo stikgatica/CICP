@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Máquina de Ingresos y Egresos - Modo Estudiante</title>
+<style>
+:root{
+  --line:#7c2d12;
+  --dark:#1f2937;
+  --accent:#f472b6;
+  --accentDark:#831843;
+  --sky1:#bae6fd;
+  --sky2:#eff6ff;
+  --ground1:#86efac;
+  --ground2:#22c55e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,system-ui,sans-serif;
+  background:linear-gradient(var(--sky1) 0 45%,var(--ground1) 45% 100%);
+  color:var(--dark);
+  min-height:100vh;
+}
+header{text-align:center;padding:16px 12px 8px}
+h1{margin:0;font-size:clamp(1.35rem,3vw,2.2rem);color:#7c2d12;text-shadow:0 2px #fff}
+.subtitle{font-weight:800;margin:6px 0 0;color:#14532d}
+.app{max-width:1280px;margin:0 auto;padding:12px;display:grid;grid-template-columns:380px 1fr;gap:14px}
+.panel{background:rgba(255,250,240,.95);border:3px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 10px 24px #0002}
+h2{margin:4px 0 10px;font-size:1.14rem;color:#7c2d12}
+label{display:block;font-weight:900;margin-top:10px}
+select,input,button{border:2px solid #7c2d12;border-radius:10px;padding:9px;font-weight:800;background:#fff}
+input[type=text],input[type=number]{width:100%}select{width:100%}
+button{cursor:pointer;background:#22c55e;color:#fff;box-shadow:0 4px 0 #15803d}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #15803d}
+.btn-blue{background:#3b82f6;box-shadow:0 4px 0 #1d4ed8}
+.btn-yellow{background:#f59e0b;box-shadow:0 4px 0 #b45309}
+.btn-red{background:#ef4444;box-shadow:0 4px 0 #991b1b}
+.btn-purple{background:#8b5cf6;box-shadow:0 4px 0 #6d28d9}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.small{font-size:.9rem;line-height:1.3}
+.challenge{background:#fff7ed;border:3px dashed #ea580c;border-radius:16px;padding:12px;margin-top:12px}
+.feedback{margin-top:10px;padding:10px;border-radius:12px;background:#eff6ff;border:2px solid #60a5fa;font-weight:800;min-height:42px}
+.machine-wrap{min-height:680px;display:flex;flex-direction:column;gap:14px}
+.machine{
+  position:relative;
+  flex:1;
+  min-height:500px;
+  background:linear-gradient(var(--sky1),var(--sky2));
+  border:4px solid #1e3a8a;
+  border-radius:22px;
+  overflow:hidden;
+  padding:20px;
+}
+.ground{position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(var(--ground1),var(--ground2));border-top:4px solid #15803d}
+.cloud{position:absolute;background:#fff;border-radius:999px;width:110px;height:34px;opacity:.85}
+.cloud:before,.cloud:after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud:before{width:50px;height:50px;left:18px;top:-24px}.cloud:after{width:60px;height:60px;right:12px;top:-31px}
+.c1{left:7%;top:10%}.c2{right:11%;top:16%;transform:scale(.8)}.c3{left:45%;top:7%;transform:scale(.6)}
+.decor{position:absolute;z-index:2;font-size:2.3rem;filter:drop-shadow(0 3px 0 #0002);animation:float 2.8s ease-in-out infinite}
+.d1{left:11%;bottom:128px}.d2{right:18%;bottom:142px;animation-delay:.7s}.d3{left:53%;bottom:132px;animation-delay:1.3s}
+@keyframes float{50%{transform:translateY(-14px)}}
+.flow{
+  position:relative;
+  z-index:3;
+  display:grid;
+  grid-template-columns:minmax(170px,220px) 44px minmax(330px,1fr) 44px minmax(170px,220px);
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  height:100%;
+  width:100%;
+}
+.box{background:#fff;border:4px solid #7c2d12;border-radius:18px;padding:16px;text-align:center;box-shadow:0 8px 0 #0002;min-width:0;width:100%}
+.box h3{margin:0 0 8px;color:#7c2d12}.big{font-size:2.1rem;font-weight:900;color:#14532d}
+.arrow{font-size:2.6rem;color:#7c2d12;font-weight:900;text-align:center;line-height:1}
+.engine{
+  background:linear-gradient(135deg,var(--accent),#f9a8d4);
+  width:100%;
+  border:6px solid var(--accentDark);
+  border-radius:30px;
+  padding:18px;
+  position:relative;
+  min-height:315px;
+  box-shadow:0 12px 0 #83184355;
+}
+.engine h3{margin:0;text-align:center;color:var(--accentDark);font-size:1.3rem}
+.gear{position:absolute;width:82px;height:82px;border:12px dashed #fff;border-radius:50%;opacity:.75;animation:spin 10s linear infinite}
+.g1{left:18px;bottom:20px}.g2{right:22px;bottom:50px;animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.steps{margin-top:14px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2}
+.step{
+  background:#fff;
+  border:3px solid var(--accentDark);
+  border-radius:14px;
+  padding:10px 12px;
+  font-weight:900;
+  display:grid;
+  grid-template-columns:minmax(118px,1fr) auto;
+  align-items:center;
+  column-gap:12px;
+  min-height:58px;
+}
+.step .label{font-size:1rem;line-height:1.15;margin:0}
+.step .value{
+  text-align:right;
+  white-space:nowrap;
+  font-size:1.02rem;
+}
+.hiddenValue{color:#6b7280;background:#f3f4f6;padding:4px 10px;border-radius:8px;border:2px dashed #9ca3af;white-space:nowrap}
+.expression{background:#111827;color:#fef3c7;border:4px solid #facc15;border-radius:16px;padding:14px;text-align:center;font-weight:900}
+.expression .formula{font-size:clamp(1.25rem,2.8vw,2rem);margin-top:4px;color:#fff}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{background:#fff;border:3px solid #7c2d12;border-radius:14px;padding:10px;text-align:center;font-weight:900}
+.card b{display:block;color:#7c2d12;font-size:.85rem}
+.tableBox{background:#fff;border:3px solid #7c2d12;border-radius:16px;padding:12px}
+table{width:100%;border-collapse:collapse;background:white}
+th,td{border:2px solid #7c2d12;padding:8px;text-align:center;font-weight:800}
+th{background:#fef3c7;color:#7c2d12}
+td input{width:100%;text-align:center}
+.pig{position:absolute;right:34px;bottom:50px;width:105px;height:90px;z-index:4}
+.pig .head{width:78px;height:68px;background:#f9a8d4;border:4px solid #be185d;border-radius:50%;position:absolute;right:0;bottom:18px}
+.pig .snout{width:38px;height:28px;background:#fbcfe8;border:3px solid #be185d;border-radius:50%;position:absolute;right:-22px;bottom:38px}
+.pig .ear{width:24px;height:34px;background:#f9a8d4;border:4px solid #be185d;border-radius:50%;position:absolute;right:40px;bottom:76px;transform:rotate(-20deg)}
+.pig .eye{width:9px;height:9px;background:#111;border-radius:50%;position:absolute;right:34px;bottom:56px}
+.pig .body{width:70px;height:48px;background:#ef4444;border:4px solid #991b1b;border-radius:40% 40% 45% 45%;position:absolute;right:20px;bottom:0}
+.pig .leg{width:8px;height:26px;background:#7c2d12;position:absolute;bottom:-14px}.pig .l1{right:35px}.pig .l2{right:65px}
+.sceneTitle{position:absolute;left:22px;bottom:18px;z-index:4;background:#ffffffdd;border:3px solid #7c2d12;border-radius:14px;padding:8px 12px;font-weight:900;color:#7c2d12}
+@media(max-width:980px){
+  .app{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr}
+  .flow{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto auto auto auto;
+    gap:10px;
+    align-content:start;
+    padding-bottom:115px;
+  }
+  .machine{min-height:920px}
+  .arrow{transform:rotate(90deg);font-size:2rem}
+  .step{grid-template-columns:minmax(120px,1fr) auto}
+  .box,.engine{max-width:100%;width:100%}
+  .pig{right:24px;bottom:48px;transform:scale(.9)}
+}
+
+/* Corrección de distribución: computador horizontal, celular vertical */
+.flow{
+  grid-template-columns:minmax(170px,220px) 44px minmax(330px,1fr) 44px minmax(170px,220px) !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+.box{width:100%;min-width:0}
+.engine{width:100%}
+@media(max-width:980px){
+  .flow{
+    grid-template-columns:1fr !important;
+    grid-template-rows:auto auto auto auto auto !important;
+    gap:10px !important;
+    padding-bottom:115px !important;
+  }
+  .machine{min-height:920px !important}
+  .arrow{transform:rotate(90deg);font-size:2rem}
+}
+
+
+/* Versión compacta para evitar scroll */
+header{padding:8px 10px 4px !important}
+h1{font-size:clamp(1.15rem,2.4vw,1.75rem) !important}
+.subtitle{font-size:.9rem !important;margin:3px 0 0 !important}
+.app{
+  max-width:1360px !important;
+  padding:6px 10px 8px !important;
+  grid-template-columns:340px 1fr !important;
+  gap:10px !important;
+}
+.panel{
+  padding:10px !important;
+  border-radius:14px !important;
+}
+h2{font-size:1rem !important;margin:2px 0 5px !important}
+label{margin-top:6px !important;font-size:.88rem !important}
+select,input,button{
+  padding:6px 7px !important;
+  border-radius:8px !important;
+  font-size:.88rem !important;
+}
+.small{font-size:.78rem !important;line-height:1.15 !important}
+.challenge{
+  padding:8px !important;
+  margin-top:8px !important;
+  border-radius:12px !important;
+}
+.feedback{
+  padding:7px !important;
+  margin-top:7px !important;
+  min-height:34px !important;
+  font-size:.82rem !important;
+}
+.row{gap:6px !important}
+.machine-wrap{
+  min-height:0 !important;
+  gap:8px !important;
+}
+.machine{
+  min-height:385px !important;
+  height:385px !important;
+  padding:14px !important;
+  border-radius:18px !important;
+}
+.flow{
+  grid-template-columns:minmax(145px,180px) 34px minmax(300px,1fr) 34px minmax(145px,180px) !important;
+  gap:10px !important;
+}
+.box{
+  padding:10px !important;
+  border-width:3px !important;
+  border-radius:14px !important;
+}
+.box h3{font-size:1rem !important;margin-bottom:5px !important}
+.big{font-size:1.75rem !important}
+.box p{font-size:.86rem !important;margin:4px 0 !important}
+.arrow{font-size:2rem !important}
+.engine{
+  min-height:235px !important;
+  padding:12px !important;
+  border-width:5px !important;
+  border-radius:24px !important;
+}
+.engine h3{font-size:1.08rem !important}
+.steps{margin-top:10px !important;gap:7px !important}
+.step{
+  min-height:46px !important;
+  padding:7px 9px !important;
+  border-width:2px !important;
+  border-radius:11px !important;
+  grid-template-columns:minmax(100px,1fr) auto !important;
+}
+.step .label{font-size:.88rem !important}
+.step .value{font-size:.88rem !important}
+.hiddenValue{padding:2px 7px !important}
+.gear{width:56px !important;height:56px !important;border-width:8px !important}
+.g1{left:14px !important;bottom:12px !important}
+.g2{right:16px !important;bottom:32px !important}
+.ground{height:82px !important}
+.decor{font-size:1.8rem !important;bottom:88px !important}
+.d1{left:9% !important}.d2{right:16% !important}.d3{left:53% !important}
+.pig{
+  transform:scale(.72) !important;
+  transform-origin:bottom right !important;
+  right:24px !important;
+  bottom:30px !important;
+}
+.sceneTitle{
+  left:16px !important;
+  bottom:13px !important;
+  padding:5px 9px !important;
+  font-size:.9rem !important;
+  border-width:2px !important;
+  border-radius:10px !important;
+}
+.expression{
+  padding:8px !important;
+  border-width:3px !important;
+  border-radius:12px !important;
+  font-size:.85rem !important;
+}
+.expression .formula{
+  font-size:clamp(1.05rem,2.2vw,1.55rem) !important;
+  margin-top:2px !important;
+}
+.cards{gap:7px !important}
+.card{
+  padding:7px !important;
+  border-width:2px !important;
+  border-radius:10px !important;
+  font-size:.85rem !important;
+}
+.card b{font-size:.75rem !important}
+.tableBox{
+  padding:7px !important;
+  border-width:2px !important;
+  border-radius:12px !important;
+}
+th,td{
+  padding:5px !important;
+  font-size:.82rem !important;
+}
+td input{
+  padding:5px !important;
+  font-size:.8rem !important;
+}
+#calcPanel label{margin-top:7px !important}
+@media(max-width:980px){
+  .app{grid-template-columns:1fr !important;padding:6px !important}
+  .machine{
+    height:auto !important;
+    min-height:650px !important;
+  }
+  .flow{
+    grid-template-columns:1fr !important;
+    gap:7px !important;
+    padding-bottom:74px !important;
+  }
+  .arrow{font-size:1.6rem !important}
+  .engine{min-height:225px !important}
+  .pig{transform:scale(.58) !important;bottom:26px !important}
+  .ground{height:70px !important}
+  .sceneTitle{font-size:.8rem !important}
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1>🐷 Máquina de Ingresos y Egresos</h1>
+<p class="subtitle">Modo estudiante: descubre la regla y calcula 3 valores de n</p>
+</header>
+
+<main class="app">
+<section class="panel">
+<h2>🎮 Panel del desafío</h2>
+<p class="small"><b>Objetivo:</b> representar expresiones algebraicas sencillas mediante una máquina de ingresos y egresos para generalizar relaciones entre números.</p>
+
+<label>Tipo de venta</label>
+<select id="context">
+<option value="stickers">Venta de stickers</option>
+<option value="pulseras">Venta de pulseras</option>
+<option value="llaveros">Venta de llaveros</option>
+<option value="chapitas">Venta de chapitas</option>
+<option value="agendas">Venta de agendas</option>
+</select>
+
+<div class="challenge">
+<b>📌 Situación</b>
+<p id="challengeText" class="small"></p>
+<p class="small"><b>Letra:</b> <span id="variableText">n</span> representa la cantidad vendida.</p>
+<p class="small"><b>Valores de n para calcular:</b> <span id="nList">2, 4 y 6</span></p>
+</div>
+
+<label>1) Escribe la regla algebraica</label>
+<input id="studentExpression" type="text" placeholder="Ej: G = 500n - 2000">
+
+<div class="row" style="margin-top:10px">
+<button id="checkRuleBtn" class="btn-yellow">✅ Revisar regla</button>
+<button id="showHintBtn" class="btn-blue">💡 Pista</button>
+<button id="randomBtn" class="btn-purple">🎲 Aleatorio</button>
+</div>
+
+<div id="feedback" class="feedback">Primero escribe la regla. La máquina no mostrará la fórmula ni el resultado hasta que la ingreses correctamente.</div>
+
+<div id="calcPanel" style="display:none">
+<label>2) Calcula usando la regla</label>
+<div class="tableBox">
+<table>
+<thead><tr><th>Valor de n</th><th>Sustitución</th><th>Resultado G</th></tr></thead>
+<tbody id="calcRows"></tbody>
+</table>
+</div>
+<div class="row" style="margin-top:10px">
+<button id="checkValuesBtn">✅ Revisar cálculos</button>
+<button id="clearBtn" class="btn-red">🧹 Limpiar</button>
+</div>
+</div>
+</section>
+
+<section class="machine-wrap">
+<div id="machineScene" class="machine">
+<div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+<div id="decor1" class="decor d1">🎀</div><div id="decor2" class="decor d2">💰</div><div id="decor3" class="decor d3">🛒</div>
+
+<div class="flow">
+<div class="box">
+<h3>Entrada</h3>
+<div class="big" id="entrySymbol">n</div>
+<p>cantidad vendida</p>
+<p>Valores: <b id="entryValues">2, 4, 6</b></p>
+</div>
+
+<div class="arrow">➡</div>
+
+<div class="engine">
+<h3>⚙️ Máquina</h3>
+<div class="gear g1"></div><div class="gear g2"></div>
+<div class="steps">
+<div class="step"><span class="label">1. Ingreso por unidad</span><span id="step1" class="value hiddenValue">oculto</span></div>
+<div class="step"><span class="label">2. Egreso fijo</span><span id="step2" class="value hiddenValue">oculto</span></div>
+<div class="step"><span class="label">3. Regla</span><span id="step3" class="value hiddenValue">escríbela tú</span></div>
+</div>
+</div>
+
+<div class="arrow">➡</div>
+
+<div class="box">
+<h3>Salida</h3>
+<div class="big" id="outputValue">?</div>
+<p>ganancia final</p>
+</div>
+</div>
+
+<div class="pig"><div class="ear"></div><div class="head"></div><div class="snout"></div><div class="eye"></div><div class="body"></div><div class="leg l1"></div><div class="leg l2"></div></div>
+<div id="sceneTitle" class="sceneTitle">Tienda de stickers</div>
+<div class="ground"></div>
+</div>
+
+<div class="expression">
+<div>Regla algebraica validada</div>
+<div id="formula" class="formula">G = ?</div>
+</div>
+
+<div class="cards">
+<div class="card"><b>Variable</b><span id="cardVar">n</span></div>
+<div class="card"><b>Ingreso</b><span id="cardIncome">oculto</span></div>
+<div class="card"><b>Egreso</b><span id="cardExpense">oculto</span></div>
+</div>
+</section>
+</main>
+
+<script>
+const themes = {
+  stickers: {
+    label:'Tienda de stickers',
+    person:'Peppa',
+    product:'stickers',
+    emoji1:'⭐', emoji2:'🎨', emoji3:'📒',
+    accent:'#f472b6', accentDark:'#831843',
+    sky1:'#bae6fd', sky2:'#eff6ff', ground1:'#86efac', ground2:'#22c55e',
+    inc:[300,400,500,600,750],
+    exp:[900,1200,1500,2000,2500],
+    vals:[[2,4,6],[1,3,5],[3,5,7],[4,6,8]]
+  },
+  pulseras: {
+    label:'Tienda de pulseras',
+    person:'Suzy',
+    product:'pulseras',
+    emoji1:'📿', emoji2:'💎', emoji3:'🎀',
+    accent:'#a78bfa', accentDark:'#5b21b6',
+    sky1:'#ddd6fe', sky2:'#f5f3ff', ground1:'#c4b5fd', ground2:'#8b5cf6',
+    inc:[250,350,400,450,600],
+    exp:[800,1000,1200,1600,1800],
+    vals:[[2,5,8],[3,6,9],[1,4,7],[4,8,10]]
+  },
+  llaveros: {
+    label:'Tienda de llaveros',
+    person:'George',
+    product:'llaveros',
+    emoji1:'🔑', emoji2:'🧸', emoji3:'🪙',
+    accent:'#60a5fa', accentDark:'#1e3a8a',
+    sky1:'#bfdbfe', sky2:'#eff6ff', ground1:'#93c5fd', ground2:'#2563eb',
+    inc:[500,650,700,800,900],
+    exp:[1500,1950,2100,3000,3600],
+    vals:[[1,3,5],[2,4,6],[3,6,9],[5,8,10]]
+  },
+  chapitas: {
+    label:'Tienda de chapitas',
+    person:'Pedro',
+    product:'chapitas',
+    emoji1:'🏅', emoji2:'🎯', emoji3:'🟡',
+    accent:'#facc15', accentDark:'#854d0e',
+    sky1:'#fef3c7', sky2:'#fffbeb', ground1:'#fde68a', ground2:'#f59e0b',
+    inc:[500,650,750,850,1000],
+    exp:[1500,1950,2500,3000,4000],
+    vals:[[2,4,6],[3,6,10],[1,5,9],[4,8,12]]
+  },
+  agendas: {
+    label:'Tienda de agendas',
+    person:'Candy',
+    product:'agendas',
+    emoji1:'📚', emoji2:'📝', emoji3:'📅',
+    accent:'#fb7185', accentDark:'#9f1239',
+    sky1:'#fecdd3', sky2:'#fff1f2', ground1:'#fda4af', ground2:'#e11d48',
+    inc:[800,900,1000,1200,1500],
+    exp:[2400,3600,5000,6000,7500],
+    vals:[[2,4,6],[3,5,7],[4,6,8],[1,3,5]]
+  }
+};
+
+let current = {};
+let currentType = 'stickers';
+let ruleUnlocked = false;
+
+const context = document.getElementById('context');
+const challengeText = document.getElementById('challengeText');
+const variableText = document.getElementById('variableText');
+const nList = document.getElementById('nList');
+const studentExpression = document.getElementById('studentExpression');
+const feedback = document.getElementById('feedback');
+const calcPanel = document.getElementById('calcPanel');
+const calcRows = document.getElementById('calcRows');
+
+const entrySymbol = document.getElementById('entrySymbol');
+const entryValues = document.getElementById('entryValues');
+const step1 = document.getElementById('step1');
+const step2 = document.getElementById('step2');
+const step3 = document.getElementById('step3');
+const outputValue = document.getElementById('outputValue');
+const formula = document.getElementById('formula');
+const cardVar = document.getElementById('cardVar');
+const cardIncome = document.getElementById('cardIncome');
+const cardExpense = document.getElementById('cardExpense');
+const sceneTitle = document.getElementById('sceneTitle');
+const decor1 = document.getElementById('decor1');
+const decor2 = document.getElementById('decor2');
+const decor3 = document.getElementById('decor3');
+
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function generateChallenge(type){
+  const t = themes[type];
+  currentType = type;
+  current = {
+    key:type,
+    person:t.person,
+    product:t.product,
+    v:'n',
+    inc:pick(t.inc),
+    exp:pick(t.exp),
+    vals:pick(t.vals)
+  };
+  applyTheme(type);
+  loadChallenge();
+}
+
+function applyTheme(type){
+  const t = themes[type];
+  document.documentElement.style.setProperty('--accent', t.accent);
+  document.documentElement.style.setProperty('--accentDark', t.accentDark);
+  document.documentElement.style.setProperty('--sky1', t.sky1);
+  document.documentElement.style.setProperty('--sky2', t.sky2);
+  document.documentElement.style.setProperty('--ground1', t.ground1);
+  document.documentElement.style.setProperty('--ground2', t.ground2);
+  decor1.textContent = t.emoji1;
+  decor2.textContent = t.emoji2;
+  decor3.textContent = t.emoji3;
+  sceneTitle.textContent = t.label;
+}
+
+function money(n){
+  const sign = n < 0 ? '-$' : '$';
+  return sign + Math.abs(n).toLocaleString('es-CL');
+}
+function correctFormula(){
+  return 'G = ' + current.inc + current.v + ' - ' + current.exp;
+}
+function normalize(s){
+  return s.toLowerCase()
+    .replaceAll(' ','')
+    .replaceAll('·','')
+    .replaceAll('*','')
+    .replaceAll('$','')
+    .replaceAll('.','')
+    .replaceAll(',','')
+    .replaceAll('−','-')
+    .replace(/^g=/,'')
+    .replace(/^ganancia=/,'')
+    .replace(/^g:/,'')
+    .replace(/^ganancia:/,'');
+}
+function calc(n){ return current.inc * n - current.exp; }
+function substitution(n){ return 'G = ' + current.inc + ' · ' + n + ' - ' + current.exp; }
+
+function loadChallenge(){
+  ruleUnlocked = false;
+  context.value = current.key;
+  challengeText.textContent = current.person + ' vende ' + current.product + '. Por cada unidad vendida obtiene un ingreso de $' + current.inc.toLocaleString('es-CL') + ' y debe descontar un egreso fijo de $' + current.exp.toLocaleString('es-CL') + '.';
+  variableText.textContent = current.v;
+  nList.textContent = current.vals.join(', ');
+  entrySymbol.textContent = current.v;
+  entryValues.textContent = current.vals.join(', ');
+  cardVar.textContent = current.v;
+  studentExpression.value = '';
+  calcPanel.style.display = 'none';
+  calcRows.innerHTML = '';
+  feedback.textContent = 'Primero escribe la regla. La máquina no mostrará la fórmula ni el resultado hasta que la ingreses correctamente.';
+
+  step1.textContent = 'oculto';
+  step2.textContent = 'oculto';
+  step3.textContent = 'escríbela tú';
+  step1.className = 'value hiddenValue';
+  step2.className = 'value hiddenValue';
+  step3.className = 'value hiddenValue';
+  outputValue.textContent = '?';
+  formula.textContent = 'G = ?';
+  cardIncome.textContent = 'oculto';
+  cardExpense.textContent = 'oculto';
+}
+
+function unlockRule(){
+  ruleUnlocked = true;
+  step1.textContent = current.inc + ' · ' + current.v;
+  step2.textContent = '- ' + current.exp;
+  step3.textContent = correctFormula();
+  step1.className = 'value';
+  step2.className = 'value';
+  step3.className = 'value';
+  formula.textContent = correctFormula();
+  cardIncome.textContent = current.inc + current.v;
+  cardExpense.textContent = '-' + current.exp;
+  outputValue.textContent = 'calcula';
+  buildCalcTable();
+  calcPanel.style.display = 'block';
+}
+
+function buildCalcTable(){
+  calcRows.innerHTML = '';
+  current.vals.forEach((n, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><b>n = ' + n + '</b></td>' +
+      '<td><input id="sub_' + idx + '" type="text" placeholder="G = ' + current.inc + ' · ' + n + ' - ' + current.exp + '"></td>' +
+      '<td><input id="res_' + idx + '" type="text" placeholder="Resultado"></td>';
+    calcRows.appendChild(tr);
+  });
+}
+
+function checkRule(){
+  const user = studentExpression.value.trim();
+  if(!user){
+    feedback.innerHTML = 'Escribe la regla antes de revisar. Usa la forma <b>G = ingreso·n - egreso</b>.';
+    return;
+  }
+  if(normalize(user) === normalize(correctFormula())){
+    feedback.innerHTML = '✅ <b>Regla correcta.</b> La respuesta puede escribirse con o sin <b>G =</b>. Ahora la máquina muestra la fórmula para calcular los tres valores de n.';
+    unlockRule();
+  } else {
+    feedback.innerHTML = '⚠️ Revisa la regla. Debes representar: <b>ingreso por unidad × n</b> y luego <b>restar el egreso fijo</b>.';
+  }
+}
+
+function showHint(){
+  feedback.innerHTML = '💡 Pista: si por cada unidad recibe $' + current.inc.toLocaleString('es-CL') + ', eso se representa como <b>' + current.inc + current.v + '</b>. Luego se descuenta el egreso fijo.';
+}
+
+function checkValues(){
+  if(!ruleUnlocked){
+    feedback.textContent = 'Primero debes escribir correctamente la regla algebraica.';
+    return;
+  }
+  let correct = 0;
+  let messages = [];
+  current.vals.forEach((n, idx) => {
+    const resRaw = document.getElementById('res_' + idx).value.trim();
+    const expectedRes = calc(n);
+    const cleanRes = Number(resRaw.replaceAll('$','').replaceAll('.','').replaceAll(' ','').replace(',','.'));
+    const resOk = cleanRes === expectedRes;
+    if(resOk) correct++;
+    if(!resOk) messages.push('n = ' + n + ': revisa el resultado.');
+  });
+  if(correct === current.vals.length){
+    feedback.innerHTML = '✅ <b>Muy bien.</b> Calculaste correctamente los tres valores de n.';
+    outputValue.textContent = '✓';
+  } else {
+    feedback.innerHTML = '⚠️ Correctos: <b>' + correct + ' de ' + current.vals.length + '</b>. ' + messages.join(' ');
+  }
+}
+
+function clearAnswers(){
+  loadChallenge();
+}
+
+context.addEventListener('change', () => generateChallenge(context.value));
+document.getElementById('checkRuleBtn').addEventListener('click', checkRule);
+document.getElementById('showHintBtn').addEventListener('click', showHint);
+document.getElementById('checkValuesBtn').addEventListener('click', checkValues);
+document.getElementById('clearBtn').addEventListener('click', clearAnswers);
+document.getElementById('randomBtn').addEventListener('click', () => generateChallenge(currentType));
+
+generateChallenge('stickers');
+</script>
+</body>
+</html>
