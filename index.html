@@ -410,6 +410,18 @@
     box-shadow: 0 6px 0 #d97706;
     text-align: center;
 }
+        .separador-semestre {
+    margin: 1.2rem 0 0.4rem;
+    padding: 0.55rem 1rem;
+    background: var(--ink);
+    color: var(--white);
+    border-radius: 12px;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.03em;
+}
     </style>
 </head>
 <body>
@@ -592,16 +604,26 @@
             lista.innerHTML = "";
 
             materiales[curso].forEach(item => {
-                const li = document.createElement('li');
-                const icono = iconoPorNombre(item.nombre);
-                li.innerHTML = `
-                    <a href="${item.url}" target="_blank" rel="noopener">
-                        <span class="item-icon">${icono}</span>
-                        <span>${item.nombre}</span>
-                        <span class="arrow">→</span>
-                    </a>`;
-                lista.appendChild(li);
-            });
+    const li = document.createElement('li');
+
+    if (item.tipo === "separador") {
+        li.className = "separador-semestre";
+        li.textContent = item.nombre;
+        lista.appendChild(li);
+        return;
+    }
+
+    const icono = iconoPorNombre(item.nombre);
+
+    li.innerHTML = `
+        <a href="${item.url}" target="_blank" rel="noopener">
+            <span class="item-icon">${icono}</span>
+            <span>${item.nombre}</span>
+            <span class="arrow">→</span>
+        </a>`;
+
+    lista.appendChild(li);
+});
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
