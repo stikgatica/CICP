@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Construcción de Triángulos ALA - 6to Básico</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: #f8fafc;
+      color: #1e293b;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 12px;
+      max-width: 960px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    p.subtitle {
+      font-size: 0.95rem;
+      color: #475569;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .workflow-panel {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-left: 6px solid #2563eb;
+    }
+
+    .instruction {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1e3a8a;
+      flex: 1 1 320px;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    button.btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    button.btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    button.btn-success {
+      background: #059669;
+      color: #ffffff;
+    }
+
+    button.btn-success:hover {
+      background: #047857;
+    }
+
+    button:disabled {
+      background: #cbd5e1;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 480px;
+      background: #ffffff;
+      cursor: default;
+    }
+
+    .zoom-toolbar {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      display: flex;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      z-index: 10;
+    }
+
+    .zoom-btn {
+      background: #f1f5f9;
+      color: #1e293b;
+      padding: 6px 12px;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+    }
+
+    .zoom-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .data-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .data-box {
+      border: 1px solid #e2e8f0;
+      padding: 10px;
+      border-radius: 8px;
+      background: #f8fafc;
+      text-align: center;
+    }
+
+    .data-label {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .data-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 4px;
+    }
+
+    .status-banner {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      display: none;
+      font-weight: 600;
+    }
+
+    .status-banner.error {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #f87171;
+    }
+
+    .status-banner.success {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    footer span {
+      color: #0f172a;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Construcción de Triángulos (Criterio A-L-A)</h1>
+    <p class="subtitle">Ajusta la base (hasta 18 cm) y mide los ángulos interiores. El zoom mantiene siempre centrado el triángulo.</p>
+  </header>
+
+  <div class="main-container">
+    <div class="workflow-panel">
+      <div id="step-instruction" class="instruction">
+        Paso 1: Arrastra el punto B para fijar la medida de la base AB (hasta 18 cm).
+      </div>
+      <div class="controls-row">
+        <button id="btn-next" onclick="nextStep()">Fijar base y continuar ➔</button>
+        <button id="btn-download" class="btn-success" onclick="downloadCanvasImage()" style="display: none;">
+          📷 Descargar Imagen
+        </button>
+        <button class="btn-secondary" onclick="resetAll()">Reiniciar</button>
+      </div>
+    </div>
+
+    <div id="status-msg" class="status-banner"></div>
+
+    <div class="canvas-wrapper">
+      <canvas id="geoCanvas" width="960" height="480"></canvas>
+      <div class="zoom-toolbar">
+        <button class="zoom-btn" onclick="zoomCentered(1.25)" title="Acercar vista">+</button>
+        <button class="zoom-btn" onclick="zoomCentered(0.8)" title="Alejar vista">−</button>
+        <button class="zoom-btn" onclick="resetView()" title="Restablecer posición inicial">Centrar Vista</button>
+      </div>
+    </div>
+
+    <div class="data-card">
+      <div class="data-box">
+        <div class="data-label">Lado Base (c = AB)</div>
+        <div id="val-base" class="data-val">8.0 cm</div>
+      </div>
+      <div class="data-box">
+        <div class="data-label">Ángulo Interior en A (&alpha;)</div>
+        <div id="val-alpha" class="data-val">--°</div>
+      </div>
+      <div class="data-box">
+        <div class="data-label">Ángulo Interior en B (&beta;)</div>
+        <div id="val-beta" class="data-val">--°</div>
+      </div>
+      <div class="data-box">
+        <div class="data-label">Suma (&alpha; + &beta;)</div>
+        <div id="val-sum" class="data-val">--°</div>
+      </div>
+    </div>
+
+    <footer>
+      Desarrollado por <span>Stik Gatica</span>
+    </footer>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('geoCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const SCALE = 40; // 40 px = 1 cm
+    const ORIGIN_A = { x: 120, y: 380 };
+
+    let currentStep = 1; 
+    let baseCm = 8.0;
+    const MAX_BASE_CM = 18.0;
+    let angleA = 50; 
+    let angleB = 60; 
+    let draggingHandle = null;
+
+    // Zoom y Paneo
+    let zoomLevel = 1.0;
+    let panOffset = { x: 0, y: 0 };
+    let isPanning = false;
+    let panStart = { x: 0, y: 0 };
+
+    function getBPos() {
+      return { x: ORIGIN_A.x + baseCm * SCALE, y: ORIGIN_A.y };
+    }
+
+    function getHandlePosA() {
+      const rad = (angleA * Math.PI) / 180;
+      const r = 160;
+      return { x: ORIGIN_A.x + r * Math.cos(rad), y: ORIGIN_A.y - r * Math.sin(rad) };
+    }
+
+    function getHandlePosB() {
+      const rad = (angleB * Math.PI) / 180;
+      const r = 160;
+      const bPos = getBPos();
+      return { x: bPos.x - r * Math.cos(rad), y: bPos.y - r * Math.sin(rad) };
+    }
+
+    function getFigureCenter() {
+      const bPos = getBPos();
+      const C = computeIntersection();
+      if (C && angleA + angleB < 180) {
+        return {
+          x: (ORIGIN_A.x + bPos.x + C.x) / 3,
+          y: (ORIGIN_A.y + bPos.y + C.y) / 3
+        };
+      }
+      return {
+        x: (ORIGIN_A.x + bPos.x) / 2,
+        y: ORIGIN_A.y - 80
+      };
+    }
+
+    function drawRuler() {
+      const y = ORIGIN_A.y + 16;
+      const totalRulerCm = MAX_BASE_CM;
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(ORIGIN_A.x - 10, y, (totalRulerCm * SCALE) + 20, 36);
+      ctx.strokeStyle = '#ca8a04';
+      ctx.strokeRect(ORIGIN_A.x - 10, y, (totalRulerCm * SCALE) + 20, 36);
+
+      ctx.fillStyle = '#854d0e';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+
+      for (let cm = 0; cm <= totalRulerCm; cm++) {
+        const markX = ORIGIN_A.x + cm * SCALE;
+        ctx.beginPath();
+        ctx.moveTo(markX, y);
+        ctx.lineTo(markX, y + 14);
+        ctx.stroke();
+        ctx.fillText(cm + ' cm', markX, y + 28);
+
+        if (cm < totalRulerCm) {
+          for (let mm = 1; mm < 10; mm++) {
+            const mmX = markX + (mm * SCALE) / 10;
+            const h = mm === 5 ? 9 : 5;
+            ctx.beginPath();
+            ctx.moveTo(mmX, y);
+            ctx.lineTo(mmX, y + h);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function drawProtractor(center, isVertexB = false) {
+      const radius = 155;
+      ctx.save();
+      ctx.translate(center.x, center.y);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, Math.PI, 0, false);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(219, 234, 254, 0.45)';
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#3b82f6';
+      ctx.stroke();
+
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let deg = 0; deg <= 180; deg += 5) {
+        const rad = (deg * Math.PI) / 180;
+        const isMajor = deg % 10 === 0;
+        const tickLen = isMajor ? 12 : 6;
+
+        const angleOnCanvas = isVertexB ? (Math.PI - rad) : rad;
+
+        const x1 = radius * Math.cos(-angleOnCanvas);
+        const y1 = radius * Math.sin(-angleOnCanvas);
+        const x2 = (radius - tickLen) * Math.cos(-angleOnCanvas);
+        const y2 = (radius - tickLen) * Math.sin(-angleOnCanvas);
+
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        if (isMajor && deg > 0 && deg < 180) {
+          const tx = (radius - 22) * Math.cos(-angleOnCanvas);
+          const ty = (radius - 22) * Math.sin(-angleOnCanvas);
+          ctx.fillText(deg + '°', tx, ty);
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 4, 0, 2 * Math.PI);
+      ctx.fillStyle = '#2563eb';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function computeIntersection() {
+      const bPos = getBPos();
+      const radA = (angleA * Math.PI) / 180;
+      const radB = (angleB * Math.PI) / 180;
+
+      if (angleA + angleB >= 180) {
+        return null;
+      }
+
+      const radC = Math.PI - (radA + radB);
+      const c = baseCm * SCALE;
+      const bSide = (c * Math.sin(radB)) / Math.sin(radC);
+
+      const Cx = ORIGIN_A.x + bSide * Math.cos(radA);
+      const Cy = ORIGIN_A.y - bSide * Math.sin(radA);
+
+      return { x: Cx, y: Cy };
+    }
+
+    function render() {
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(panOffset.x, panOffset.y);
+      ctx.scale(zoomLevel, zoomLevel);
+
+      const bPos = getBPos();
+
+      // Regla en Paso 1
+      if (currentStep === 1) {
+        drawRuler();
+      }
+
+      // Rayo A y rótulo
+      if (currentStep >= 2) {
+        const radA = (angleA * Math.PI) / 180;
+        ctx.beginPath();
+        ctx.moveTo(ORIGIN_A.x, ORIGIN_A.y);
+        ctx.lineTo(ORIGIN_A.x + 5000 * Math.cos(radA), ORIGIN_A.y - 5000 * Math.sin(radA));
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2 / zoomLevel;
+        ctx.setLineDash([6 / zoomLevel, 4 / zoomLevel]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const midA = radA / 2;
+        const textDistA = 48;
+        const textXA = ORIGIN_A.x + textDistA * Math.cos(midA);
+        const textYA = ORIGIN_A.y - textDistA * Math.sin(midA);
+        ctx.fillStyle = '#b91c1c';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`α = ${angleA}°`, textXA, textYA);
+      }
+
+      // Rayo B y rótulo
+      if (currentStep >= 3) {
+        const radB = (angleB * Math.PI) / 180;
+        ctx.beginPath();
+        ctx.moveTo(bPos.x, bPos.y);
+        ctx.lineTo(bPos.x - 5000 * Math.cos(radB), bPos.y - 5000 * Math.sin(radB));
+        ctx.strokeStyle = '#16a34a';
+        ctx.lineWidth = 2 / zoomLevel;
+        ctx.setLineDash([6 / zoomLevel, 4 / zoomLevel]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const midB = Math.PI - (radB / 2);
+        const textDistB = 48;
+        const textXB = bPos.x + textDistB * Math.cos(midB);
+        const textYB = bPos.y - textDistB * Math.sin(radB / 2);
+        ctx.fillStyle = '#15803d';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`β = ${angleB}°`, textXB, textYB);
+      }
+
+      // Transportadores
+      if (currentStep === 2) {
+        drawProtractor(ORIGIN_A, false);
+      } else if (currentStep === 3) {
+        drawProtractor(bPos, true);
+      }
+
+      // Triángulo cerrado
+      if (currentStep === 4) {
+        const C = computeIntersection();
+        if (C) {
+          ctx.beginPath();
+          ctx.moveTo(ORIGIN_A.x, ORIGIN_A.y);
+          ctx.lineTo(bPos.x, bPos.y);
+          ctx.lineTo(C.x, C.y);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+          ctx.fill();
+          ctx.strokeStyle = '#1d4ed8';
+          ctx.lineWidth = 3 / zoomLevel;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(C.x, C.y, 6 / zoomLevel, 0, 2 * Math.PI);
+          ctx.fillStyle = '#7c3aed';
+          ctx.fill();
+
+          const angleC = 180 - angleA - angleB;
+          ctx.fillStyle = '#4c1d95';
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`C (${angleC}°)`, C.x, C.y - 14 / zoomLevel);
+        }
+      }
+
+      // Base AB
+      ctx.beginPath();
+      ctx.moveTo(ORIGIN_A.x, ORIGIN_A.y);
+      ctx.lineTo(bPos.x, bPos.y);
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 4 / zoomLevel;
+      ctx.stroke();
+
+      // Vértices A y B
+      drawPoint(ORIGIN_A.x, ORIGIN_A.y, 'A', '#2563eb');
+      drawPoint(bPos.x, bPos.y, 'B', '#2563eb');
+
+      // Tiradores interactivos
+      if (currentStep === 1) {
+        drawHandle(bPos.x, bPos.y, '#f59e0b');
+      } else if (currentStep === 2) {
+        const hA = getHandlePosA();
+        drawHandle(hA.x, hA.y, '#dc2626');
+      } else if (currentStep === 3) {
+        const hB = getHandlePosB();
+        drawHandle(hB.x, hB.y, '#16a34a');
+      }
+
+      ctx.restore();
+      updateDataCard();
+    }
+
+    function drawPoint(x, y, label, color) {
+      ctx.beginPath();
+      ctx.arc(x, y, 6 / zoomLevel, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, y + 24 / zoomLevel);
+    }
+
+    function drawHandle(x, y, color) {
+      ctx.beginPath();
+      ctx.arc(x, y, 11 / zoomLevel, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.lineWidth = 3 / zoomLevel;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+    }
+
+    function updateDataCard() {
+      document.getElementById('val-base').textContent = baseCm.toFixed(1) + ' cm';
+      document.getElementById('val-alpha').textContent = currentStep >= 2 ? angleA + '°' : '--°';
+      document.getElementById('val-beta').textContent = currentStep >= 3 ? angleB + '°' : '--°';
+
+      if (currentStep >= 3) {
+        const sum = angleA + angleB;
+        document.getElementById('val-sum').textContent = sum + '°';
+      } else {
+        document.getElementById('val-sum').textContent = '--°';
+      }
+    }
+
+    function nextStep() {
+      const banner = document.getElementById('status-msg');
+      banner.className = 'status-banner';
+      banner.textContent = '';
+
+      if (currentStep === 1) {
+        currentStep = 2;
+        document.getElementById('step-instruction').textContent = 
+          'Paso 2: Usa el transportador en el vértice A. Arrastra el tirador rojo para medir el ángulo interior α.';
+        document.getElementById('btn-next').textContent = 'Fijar ángulo α y continuar ➔';
+      } else if (currentStep === 2) {
+        currentStep = 3;
+        document.getElementById('step-instruction').textContent = 
+          'Paso 3: El transportador se ubica en el vértice B con el 0° sobre el lado BA. Arrastra el tirador verde para medir el ángulo interior β.';
+        document.getElementById('btn-next').textContent = 'Comprobar y Cerrar Triángulo ➔';
+      } else if (currentStep === 3) {
+        currentStep = 4;
+        const sum = angleA + angleB;
+        if (sum >= 180) {
+          banner.className = 'status-banner error';
+          banner.textContent = `¡Atención! La suma de los dos ángulos adyacentes es ${sum}° (≥ 180°). Usa el zoom de alejamiento (−) para observar que los rayos se separan infinitamente y nunca formarán un triángulo.`;
+          document.getElementById('step-instruction').textContent = 
+            'Exploración: Los rayos divergen o son paralelos. Aleja la vista para comprobarlo.';
+        } else {
+          const angleC = 180 - sum;
+          banner.className = 'status-banner success';
+          banner.textContent = `¡Excelente! El triángulo se ha cerrado. El tercer ángulo interior mide: 180° - (${angleA}° + ${angleB}°) = ${angleC}°.`;
+          document.getElementById('step-instruction').textContent = 
+            'Construcción finalizada. Puedes descargar la imagen de tu triángulo.';
+        }
+        document.getElementById('btn-next').disabled = true;
+        document.getElementById('btn-download').style.display = 'inline-flex';
+      }
+      render();
+    }
+
+    function resetAll() {
+      currentStep = 1;
+      baseCm = 8.0;
+      angleA = 50;
+      angleB = 60;
+      resetView();
+      document.getElementById('step-instruction').textContent = 
+        'Paso 1: Arrastra el punto B para fijar la medida de la base AB (hasta 18 cm).';
+      document.getElementById('btn-next').textContent = 'Fijar base y continuar ➔';
+      document.getElementById('btn-next').disabled = false;
+      document.getElementById('btn-download').style.display = 'none';
+      const banner = document.getElementById('status-msg');
+      banner.className = 'status-banner';
+      banner.textContent = '';
+      render();
+    }
+
+    function zoomCentered(factor) {
+      const center = getFigureCenter();
+      const canvasCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+
+      const oldZoom = zoomLevel;
+      const newZoom = Math.min(Math.max(oldZoom * factor, 0.2), 3.5);
+
+      panOffset.x = canvasCenter.x - center.x * newZoom;
+      panOffset.y = canvasCenter.y - center.y * newZoom;
+      zoomLevel = newZoom;
+
+      render();
+    }
+
+    function resetView() {
+      const center = getFigureCenter();
+      const canvasCenter = { x: canvas.width / 2, y: canvas.height / 2 };
+      zoomLevel = 1.0;
+      panOffset.x = canvasCenter.x - center.x * zoomLevel;
+      panOffset.y = canvasCenter.y - center.y * zoomLevel;
+      render();
+    }
+
+    canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.15 : 0.85;
+      const newZoom = Math.min(Math.max(zoomLevel * factor, 0.2), 3.5);
+
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+      panOffset.x = mouseX - (mouseX - panOffset.x) * (newZoom / zoomLevel);
+      panOffset.y = mouseY - (mouseY - panOffset.y) * (newZoom / zoomLevel);
+      zoomLevel = newZoom;
+
+      render();
+    }, { passive: false });
+
+    function downloadCanvasImage() {
+      render();
+      const link = document.createElement('a');
+      link.download = `Triangulo_ALA_${baseCm}cm_${angleA}deg_${angleB}deg.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function screenToWorld(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const canvasX = (clientX - rect.left) * scaleX;
+      const canvasY = (clientY - rect.top) * scaleY;
+
+      return {
+        x: (canvasX - panOffset.x) / zoomLevel,
+        y: (canvasY - panOffset.y) / zoomLevel
+      };
+    }
+
+    function dist(p1, p2) {
+      return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const pt = screenToWorld(e.clientX, e.clientY);
+      const hitRadius = 25 / zoomLevel;
+
+      if (currentStep === 1 && dist(pt, getBPos()) < hitRadius) {
+        draggingHandle = 'base';
+      } else if (currentStep === 2 && dist(pt, getHandlePosA()) < hitRadius) {
+        draggingHandle = 'alpha';
+      } else if (currentStep === 3 && dist(pt, getHandlePosB()) < hitRadius) {
+        draggingHandle = 'beta';
+      } else {
+        isPanning = true;
+        panStart = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+        canvas.style.cursor = 'grab';
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isPanning) {
+        panOffset.x = e.clientX - panStart.x;
+        panOffset.y = e.clientY - panStart.y;
+        render();
+        return;
+      }
+
+      if (!draggingHandle) return;
+      const pt = screenToWorld(e.clientX, e.clientY);
+
+      if (draggingHandle === 'base') {
+        const dx = pt.x - ORIGIN_A.x;
+        let cm = Math.round((dx / SCALE) * 2) / 2;
+        if (cm < 3) cm = 3;
+        if (cm > MAX_BASE_CM) cm = MAX_BASE_CM;
+        baseCm = cm;
+      } else if (draggingHandle === 'alpha') {
+        const dx = pt.x - ORIGIN_A.x;
+        const dy = ORIGIN_A.y - pt.y;
+        let deg = Math.round((Math.atan2(dy, dx) * 180) / Math.PI);
+        if (deg < 10) deg = 10;
+        if (deg > 160) deg = 160;
+        angleA = deg;
+      } else if (draggingHandle === 'beta') {
+        const bPos = getBPos();
+        const dx = bPos.x - pt.x;
+        const dy = bPos.y - pt.y;
+        let deg = Math.round((Math.atan2(dy, dx) * 180) / Math.PI);
+        if (deg < 10) deg = 10;
+        if (deg > 160) deg = 160;
+        angleB = deg;
+      }
+      render();
+    });
+
+    window.addEventListener('mouseup', () => {
+      draggingHandle = null;
+      if (isPanning) {
+        isPanning = false;
+        canvas.style.cursor = 'default';
+      }
+    });
+
+    // Soporte táctil
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        const pt = screenToWorld(touch.clientX, touch.clientY);
+        const hitRadius = 35 / zoomLevel;
+
+        if (currentStep === 1 && dist(pt, getBPos()) < hitRadius) {
+          draggingHandle = 'base';
+        } else if (currentStep === 2 && dist(pt, getHandlePosA()) < hitRadius) {
+          draggingHandle = 'alpha';
+        } else if (currentStep === 3 && dist(pt, getHandlePosB()) < hitRadius) {
+          draggingHandle = 'beta';
+        } else {
+          isPanning = true;
+          panStart = { x: touch.clientX - panOffset.x, y: touch.clientY - panOffset.y };
+        }
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (isPanning && e.touches.length === 1) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        panOffset.x = touch.clientX - panStart.x;
+        panOffset.y = touch.clientY - panStart.y;
+        render();
+        return;
+      }
+
+      if (!draggingHandle || e.touches.length !== 1) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const pt = screenToWorld(touch.clientX, touch.clientY);
+
+      if (draggingHandle === 'base') {
+        let cm = Math.round(((pt.x - ORIGIN_A.x) / SCALE) * 2) / 2;
+        baseCm = Math.min(Math.max(cm, 3), MAX_BASE_CM);
+      } else if (draggingHandle === 'alpha') {
+        let deg = Math.round((Math.atan2(ORIGIN_A.y - pt.y, pt.x - ORIGIN_A.x) * 180) / Math.PI);
+        angleA = Math.min(Math.max(deg, 10), 160);
+      } else if (draggingHandle === 'beta') {
+        const bPos = getBPos();
+        let deg = Math.round((Math.atan2(bPos.y - pt.y, bPos.x - pt.x) * 180) / Math.PI);
+        angleB = Math.min(Math.max(deg, 10), 160);
+      }
+      render();
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => { 
+      draggingHandle = null; 
+      isPanning = false;
+    });
+
+    // Iniciar con vista centrada
+    resetView();
+  </script>
+</body>
+</html>
