@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taller Abierto de Teselados: Cubriendo el Plano</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --card: #ffffff;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Barra Superior */
+    header {
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .brand h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .badge-sub {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .metrics-bar {
+      display: flex;
+      gap: 1.25rem;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #1e293b;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+    }
+
+    .stat-val {
+      font-weight: 800;
+      color: #38bdf8;
+    }
+
+    /* Contenedor Principal */
+    .workspace {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      flex: 1;
+      height: calc(100vh - 61px);
+      overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      .workspace {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+    }
+
+    /* Panel Lateral de Figuras y Controles */
+    aside {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      overflow-y: auto;
+    }
+
+    .panel-section h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .palette-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .btn-add-tile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.8rem;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #f8fafc;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-add-tile:hover {
+      background: #1e293b;
+      border-color: var(--primary);
+      transform: translateX(2px);
+    }
+
+    .tile-tag {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .angle-tag {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    /* Acciones sobre pieza activa */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+
+    .btn-action {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #f8fafc;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .btn-action:hover:not(:disabled) {
+      background: #334155;
+      border-color: #94a3b8;
+    }
+
+    .btn-action:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-delete {
+      color: #f87171;
+      border-color: #7f1d1d;
+    }
+
+    .btn-delete:hover:not(:disabled) {
+      background: #991b1b !important;
+      color: #ffffff;
+    }
+
+    .info-card {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .info-card strong {
+      color: #f8fafc;
+    }
+
+    /* Lienzo SVG */
+    .viewport {
+      position: relative;
+      background: #090d16;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    svg#mainStage {
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .placed-tile {
+      cursor: grab;
+    }
+
+    .placed-tile:hover {
+      filter: brightness(1.1);
+    }
+
+    .placed-tile:active {
+      cursor: grabbing;
+    }
+
+    .placed-tile.selected polygon {
+      stroke: #38bdf8 !important;
+      stroke-width: 3.5 !important;
+      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.65));
+    }
+
+    /* Caja de Diagnóstico de Vértice en Tiempo Real */
+    .vertex-tooltip {
+      position: absolute;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border);
+      padding: 0.85rem 1.1rem;
+      border-radius: 10px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      font-size: 0.85rem;
+      max-width: 310px;
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+
+    .vertex-sum {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 0.2rem;
+    }
+
+    .status-ok { color: var(--success); }
+    .status-gap { color: var(--warning); }
+    .status-over { color: var(--danger); }
+  </style>
+</head>
+<body>
+
+  <!-- Barra Superior -->
+  <header>
+    <div class="brand">
+      <h1>📐 Plano Libre de Teselados</h1>
+      <span class="badge-sub">Modo Exploración 2D</span>
+    </div>
+
+    <div class="metrics-bar">
+      <div class="stat-pill">
+        <span>Piezas en el plano:</span>
+        <span id="tileCounter" class="stat-val">0</span>
+      </div>
+      <div class="stat-pill">
+        <span>Vértices sellados (360°):</span>
+        <span id="perfectVtxCounter" class="stat-val" style="color:#10b981;">0</span>
+      </div>
+      <button class="btn-action" style="padding:0.35rem 0.75rem; border-color:#ef4444; color:#ef4444;" onclick="clearAllTiles()">
+        🗑 Limpiar Todo
+      </button>
+    </div>
+  </header>
+
+  <!-- Espacio de Trabajo -->
+  <div class="workspace">
+    <!-- Panel Lateral -->
+    <aside>
+      <div class="panel-section">
+        <h3>Agregar Polígonos Regulares</h3>
+        <div class="palette-grid">
+          <button class="btn-add-tile" onclick="spawnTile(3)">
+            <span class="tile-tag"><span class="dot" style="background:#ef4444;"></span> Triángulo</span>
+            <span class="angle-tag">60°</span>
+          </button>
+          <button class="btn-add-tile" onclick="spawnTile(4)">
+            <span class="tile-tag"><span class="dot" style="background:#f97316;"></span> Cuadrado</span>
+            <span class="angle-tag">90°</span>
+          </button>
+          <button class="btn-add-tile" onclick="spawnTile(6)">
+            <span class="tile-tag"><span class="dot" style="background:#10b981;"></span> Hexágono</span>
+            <span class="angle-tag">120°</span>
+          </button>
+          <button class="btn-add-tile" onclick="spawnTile(8)">
+            <span class="tile-tag"><span class="dot" style="background:#3b82f6;"></span> Octágono</span>
+            <span class="angle-tag">135°</span>
+          </button>
+          <button class="btn-add-tile" onclick="spawnTile(12)">
+            <span class="tile-tag"><span class="dot" style="background:#8b5cf6;"></span> Dodecágono</span>
+            <span class="angle-tag">150°</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Girar Pieza Seleccionada</h3>
+        <div class="action-grid">
+          <button class="btn-action" id="btnR30" onclick="rotateActive(30)" disabled>🔄 +30°</button>
+          <button class="btn-action" id="btnR45" onclick="rotateActive(45)" disabled>🔄 +45°</button>
+          <button class="btn-action" id="btnR60" onclick="rotateActive(60)" disabled>🔄 +60°</button>
+          <button class="btn-action" id="btnR90" onclick="rotateActive(90)" disabled>🔄 +90°</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Editar</h3>
+        <button class="btn-action btn-delete" id="btnDel" style="width: 100%;" onclick="deleteActive()" disabled>
+          ✖ Eliminar Seleccionada
+        </button>
+      </div>
+
+      <div class="info-card">
+        <strong>💡 ¿Cómo teselar el plano?</strong><br>
+        1. <strong>Arrastra</strong> una pieza hacia el borde de otra: se acoplará magnéticamente borde con borde.<br>
+        2. Puedes rotar las piezas libremente con los botones de giro.<br>
+        3. Pasa el cursor sobre cualquier esquina para verificar si la suma es exactamente <strong>360°</strong>.
+      </div>
+    </aside>
+
+    <!-- Lienzo del Plano -->
+    <div class="viewport">
+      <svg id="mainStage">
+        <defs>
+          <pattern id="canvasGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+            <circle cx="15" cy="15" r="1.2" fill="#1e293b" />
+          </pattern>
+        </defs>
+
+        <!-- Fondo cuadriculado -->
+        <rect width="100%" height="100%" fill="url(#canvasGrid)" />
+
+        <!-- Aristas magnéticas -->
+        <g id="snapVisualLayer"></g>
+
+        <!-- Capa de Polígonos -->
+        <g id="tilesLayer"></g>
+
+        <!-- Capa de Vértices Auditados -->
+        <g id="verticesLayer"></g>
+      </svg>
+
+      <!-- HUD Auditor de Vértices -->
+      <div class="vertex-tooltip" id="vtxHud">
+        <div style="font-size:0.75rem; color:#94a3b8; font-weight:700; text-transform:uppercase;">Inspector de Vértice</div>
+        <div id="vtxSumText" class="vertex-sum status-ok">360°</div>
+        <div id="vtxDescText" style="color:#cbd5e1; font-size:0.8rem;">Vértice perfectamente sellado sin huecos ni superposiciones.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ================= GEOMETRÍA UNIVERSAL ================= */
+    const SIDE_LEN = 52; // Medida fija de lado para encaje universal
+    const POLY_DEF = {
+      3:  { name: 'Triángulo', angle: 60,  color: '#ef4444' },
+      4:  { name: 'Cuadrado',  angle: 90,  color: '#f97316' },
+      6:  { name: 'Hexágono',  angle: 120, color: '#10b981' },
+      8:  { name: 'Octágono',  angle: 135, color: '#3b82f6' },
+      12: { name: 'Dodecágono', angle: 150, color: '#8b5cf6' }
+    };
+
+    let placedTiles = []; // [{ id, sides, vertices: [{x,y}, ...] }]
+    let selectedTileId = null;
+    let dragData = null;
+
+    function createPolyVertices(sides, edgeLen = SIDE_LEN) {
+      const intRad = ((sides - 2) * Math.PI) / sides;
+      const turnRad = Math.PI - intRad;
+      const pts = [{ x: 0, y: 0 }];
+      let cx = 0, cy = 0;
+      let angle = 0;
+
+      for (let i = 0; i < sides - 1; i++) {
+        cx += edgeLen * Math.cos(angle);
+        cy += edgeLen * Math.sin(angle);
+        pts.push({ x: cx, y: cy });
+        angle += turnRad;
+      }
+      return pts;
+    }
+
+    function getCenter(vertices) {
+      let sx = 0, sy = 0;
+      vertices.forEach(p => { sx += p.x; sy += p.y; });
+      return { x: sx / vertices.length, y: sy / vertices.length };
+    }
+
+    /* ================= GENERACIÓN DE PIEZAS ================= */
+    function spawnTile(sides) {
+      const rect = document.getElementById('mainStage').getBoundingClientRect();
+      const spawnX = rect.width / 2 - 50 + (Math.random() * 40 - 20);
+      const spawnY = rect.height / 2 - 50 + (Math.random() * 40 - 20);
+
+      const baseV = createPolyVertices(sides);
+      const shifted = baseV.map(p => ({ x: p.x + spawnX, y: p.y + spawnY }));
+
+      const newTile = {
+        id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        sides: sides,
+        vertices: shifted
+      };
+
+      placedTiles.push(newTile);
+      selectTile(newTile.id);
+      render();
+    }
+
+    function clearAllTiles() {
+      placedTiles = [];
+      selectedTileId = null;
+      render();
+    }
+
+    function selectTile(id) {
+      selectedTileId = id;
+      updateControlButtons();
+      render();
+    }
+
+    function deleteActive() {
+      if (!selectedTileId) return;
+      placedTiles = placedTiles.filter(t => t.id !== selectedTileId);
+      selectedTileId = null;
+      updateControlButtons();
+      render();
+    }
+
+    function rotateActive(deg) {
+      if (!selectedTileId) return;
+      const tile = placedTiles.find(t => t.id === selectedTileId);
+      if (!tile) return;
+
+      const rad = (deg * Math.PI) / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+      const c = getCenter(tile.vertices);
+
+      tile.vertices = tile.vertices.map(p => {
+        const rx = p.x - c.x;
+        const ry = p.y - c.y;
+        return {
+          x: c.x + (rx * cos - ry * sin),
+          y: c.y + (rx * sin + ry * cos)
+        };
+      });
+
+      render();
+    }
+
+    function updateControlButtons() {
+      const hasSel = selectedTileId !== null;
+      document.getElementById('btnR30').disabled = !hasSel;
+      document.getElementById('btnR45').disabled = !hasSel;
+      document.getElementById('btnR60').disabled = !hasSel;
+      document.getElementById('btnR90').disabled = !hasSel;
+      document.getElementById('btnDel').disabled = !hasSel;
+    }
+
+    /* ================= ARRASTRE Y ENCAJE MAGNÉTICO INTELIGENTE ================= */
+    function onPointerDown(e, tile) {
+      e.preventDefault();
+      selectTile(tile.id);
+
+      const svg = document.getElementById('mainStage');
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+      const c = getCenter(tile.vertices);
+      dragData = {
+        tileId: tile.id,
+        grabOffsetX: svgP.x - c.x,
+        grabOffsetY: svgP.y - c.y
+      };
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    }
+
+    function onPointerMove(e) {
+      if (!dragData) return;
+      const svg = document.getElementById('mainStage');
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+      const targetX = svgP.x - dragData.grabOffsetX;
+      const targetY = svgP.y - dragData.grabOffsetY;
+
+      const tile = placedTiles.find(t => t.id === dragData.tileId);
+      if (!tile) return;
+
+      const c = getCenter(tile.vertices);
+      const dx = targetX - c.x;
+      const dy = targetY - c.y;
+
+      tile.vertices = tile.vertices.map(p => ({ x: p.x + dx, y: p.y + dy }));
+
+      // Buscar acoplamiento magnético
+      const snap = findSnap(tile);
+      const snapLayer = document.getElementById('snapVisualLayer');
+      snapLayer.innerHTML = '';
+
+      if (snap) {
+        // Resaltar borde magnético
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', snap.targetEdge.p1.x);
+        line.setAttribute('y1', snap.targetEdge.p1.y);
+        line.setAttribute('x2', snap.targetEdge.p2.x);
+        line.setAttribute('y2', snap.targetEdge.p2.y);
+        line.setAttribute('stroke', '#38bdf8');
+        line.setAttribute('stroke-width', '5');
+        line.setAttribute('stroke-linecap', 'round');
+        snapLayer.appendChild(line);
+      }
+
+      render();
+    }
+
+    function onPointerUp() {
+      if (!dragData) return;
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+
+      document.getElementById('snapVisualLayer').innerHTML = '';
+
+      const tile = placedTiles.find(t => t.id === dragData.tileId);
+      if (tile) {
+        const snap = findSnap(tile);
+        if (snap) {
+          applySnap(tile, snap);
+        }
+      }
+
+      dragData = null;
+      render();
+    }
+
+    function findSnap(currentTile) {
+      const snapThreshold = 45;
+      let bestDist = Infinity;
+      let bestSnap = null;
+
+      const fixedEdges = [];
+      placedTiles.forEach(t => {
+        if (t.id === currentTile.id) return;
+        const n = t.vertices.length;
+        for (let i = 0; i < n; i++) {
+          fixedEdges.push({
+            p1: t.vertices[i],
+            p2: t.vertices[(i + 1) % n]
+          });
+        }
+      });
+
+      const mobileEdges = [];
+      const n = currentTile.vertices.length;
+      for (let i = 0; i < n; i++) {
+        mobileEdges.push({
+          p1: currentTile.vertices[i],
+          p2: currentTile.vertices[(i + 1) % n]
+        });
+      }
+
+      mobileEdges.forEach(mEdge => {
+        const mMid = { x: (mEdge.p1.x + mEdge.p2.x) / 2, y: (mEdge.p1.y + mEdge.p2.y) / 2 };
+
+        fixedEdges.forEach(fEdge => {
+          const fMid = { x: (fEdge.p1.x + fEdge.p2.x) / 2, y: (fEdge.p1.y + fEdge.p2.y) / 2 };
+          const dist = Math.hypot(mMid.x - fMid.x, mMid.y - fMid.y);
+
+          if (dist < snapThreshold && dist < bestDist) {
+            bestDist = dist;
+
+            const angF = Math.atan2(fEdge.p2.y - fEdge.p1.y, fEdge.p2.x - fEdge.p1.x);
+            const angM = Math.atan2(mEdge.p2.y - mEdge.p1.y, mEdge.p2.x - mEdge.p1.x);
+
+            let rotDiff = (angF + Math.PI) - angM;
+            while (rotDiff > Math.PI) rotDiff -= 2 * Math.PI;
+            while (rotDiff < -Math.PI) rotDiff += 2 * Math.PI;
+
+            bestSnap = {
+              targetEdge: fEdge,
+              sourceEdge: mEdge,
+              rotRad: rotDiff,
+              fixedMid: fMid,
+              mobileMid: mMid
+            };
+          }
+        });
+      });
+
+      return bestSnap;
+    }
+
+    function applySnap(tile, snap) {
+      const cos = Math.cos(snap.rotRad);
+      const sin = Math.sin(snap.rotRad);
+      const px = snap.mobileMid.x;
+      const py = snap.mobileMid.y;
+
+      tile.vertices = tile.vertices.map(p => {
+        const rx = p.x - px;
+        const ry = p.y - py;
+        return {
+          x: px + (rx * cos - ry * sin),
+          y: py + (rx * sin + ry * cos)
+        };
+      });
+
+      const dx = snap.fixedMid.x - px;
+      const dy = snap.fixedMid.y - py;
+
+      tile.vertices = tile.vertices.map(p => ({ x: p.x + dx, y: p.y + dy }));
+    }
+
+    /* ================= RENDERIZADO Y AUDITORÍA DE VÉRTICES ================= */
+    function render() {
+      const layer = document.getElementById('tilesLayer');
+      layer.innerHTML = '';
+
+      // Contador de piezas
+      document.getElementById('tileCounter').textContent = placedTiles.length;
+
+      placedTiles.forEach(tile => {
+        const spec = POLY_DEF[tile.sides];
+        const isSel = tile.id === selectedTileId;
+        const ptsStr = tile.vertices.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'placed-tile' + (isSel ? ' selected' : ''));
+
+        const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        poly.setAttribute('points', ptsStr);
+        poly.setAttribute('fill', spec.color);
+        poly.setAttribute('fill-opacity', isSel ? '0.85' : '0.65');
+        poly.setAttribute('stroke', spec.color);
+        poly.setAttribute('stroke-width', '2');
+        poly.setAttribute('stroke-linejoin', 'round');
+        g.appendChild(poly);
+
+        const c = getCenter(tile.vertices);
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', c.x.toFixed(1));
+        txt.setAttribute('y', (c.y + 4).toFixed(1));
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('font-size', '11');
+        txt.setAttribute('font-weight', 'bold');
+        txt.setAttribute('fill', '#ffffff');
+        txt.textContent = `${spec.angle}°`;
+        g.appendChild(txt);
+
+        g.addEventListener('pointerdown', (e) => onPointerDown(e, tile));
+        layer.appendChild(g);
+      });
+
+      auditVertices();
+    }
+
+    /* Agrupa vértices concurrentes y analiza la suma angular en cada uno */
+    function auditVertices() {
+      const vtxLayer = document.getElementById('verticesLayer');
+      vtxLayer.innerHTML = '';
+
+      const vtxClusters = [];
+      const threshold = 10;
+
+      placedTiles.forEach(tile => {
+        const angle = POLY_DEF[tile.sides].angle;
+        tile.vertices.forEach(p => {
+          let found = false;
+          for (let cl of vtxClusters) {
+            if (Math.hypot(cl.x - p.x, cl.y - p.y) < threshold) {
+              cl.angles.push(angle);
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            vtxClusters.push({ x: p.x, y: p.y, angles: [angle] });
+          }
+        });
+      });
+
+      let perfectCount = 0;
+      vtxClusters.forEach(vtx => {
+        if (vtx.angles.length > 1) {
+          const sum = vtx.angles.reduce((a, b) => a + b, 0);
+          if (sum === 360) perfectCount++;
+
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', vtx.x.toFixed(1));
+          circle.setAttribute('cy', vtx.y.toFixed(1));
+          circle.setAttribute('r', '5');
+          circle.setAttribute('stroke', '#ffffff');
+          circle.setAttribute('stroke-width', '1.5');
+          circle.style.cursor = 'pointer';
+
+          if (sum === 360) {
+            circle.setAttribute('fill', '#10b981'); // Sellado perfecto
+          } else if (sum < 360) {
+            circle.setAttribute('fill', '#f59e0b'); // Hueco libre
+          } else {
+            circle.setAttribute('fill', '#ef4444'); // Superposición
+          }
+
+          circle.addEventListener('pointerenter', () => showVtxTooltip(sum, vtx.angles));
+          vtxLayer.appendChild(circle);
+        }
+      });
+
+      document.getElementById('perfectVtxCounter').textContent = perfectCount;
+    }
+
+    function showVtxTooltip(sum, angles) {
+      const hud = document.getElementById('vtxHud');
+      const sumText = document.getElementById('vtxSumText');
+      const descText = document.getElementById('vtxDescText');
+
+      sumText.textContent = `${sum}°`;
+
+      if (sum === 360) {
+        sumText.className = 'vertex-sum status-ok';
+        descText.innerHTML = `✅ <strong>360° exactos</strong> (${angles.join('° + ')}°). El vértice está sellado sin huecos.`;
+      } else if (sum < 360) {
+        sumText.className = 'vertex-sum status-gap';
+        descText.innerHTML = `⚠️ <strong>Faltan ${360 - sum}°</strong> (${angles.join('° + ')}°). Queda un espacio abierto para otra pieza.`;
+      } else {
+        sumText.className = 'vertex-sum status-over';
+        descText.innerHTML = `❌ <strong>Se pasa por ${sum - 360}°</strong> (${angles.join('° + ')}°). Hay figuras montadas una sobre otra.`;
+      }
+    }
+
+    // Inicializar con dos piezas base listas para experimentar
+    window.addEventListener('load', () => {
+      spawnTile(6);
+      spawnTile(6);
+    });
+  </script>
+</body>
+</html>
