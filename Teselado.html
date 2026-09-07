@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clase Autoguiada: Área y Volumen de Prismas Rectos</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --secondary: #0d9488;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #15803d;
+      --error: #b91c1c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px 15px 60px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .badge-date {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .timer-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      color: #334155;
+      font-variant-numeric: tabular-nums;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+
+    .objective {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      border-left: 3px solid var(--primary-light);
+      padding-left: 10px;
+    }
+
+    .progress-wrapper {
+      margin-top: 18px;
+    }
+
+    .progress-bar-bg {
+      width: 100%;
+      height: 10px;
+      background-color: #e2e8f0;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-light), var(--secondary));
+      transition: width 0.4s ease;
+    }
+
+    .step-indicators {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .step-ind.active {
+      color: var(--primary);
+    }
+    .step-ind.completed {
+      color: var(--secondary);
+    }
+
+    .module-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: opacity 0.3s ease;
+    }
+
+    .module-card.locked {
+      opacity: 0.45;
+      pointer-events: none;
+      filter: grayscale(80%);
+      user-select: none;
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .module-title {
+      font-size: 1.15rem;
+      color: var(--primary);
+    }
+
+    .module-time {
+      font-size: 0.8rem;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--text-muted);
+    }
+
+    .formula-box {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary-light);
+      padding: 14px 16px;
+      margin: 14px 0;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.95rem;
+    }
+
+    .formula-line {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #1e3a8a;
+      background: #ffffff;
+      padding: 8px 12px;
+      margin: 6px 0 10px;
+      border-radius: 6px;
+      border: 1px solid #dbeafe;
+      width: fit-content;
+    }
+
+    .math-sym {
+      font-style: italic;
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+    }
+
+    .interactive-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+
+    @media (max-width: 650px) {
+      .interactive-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .control-panel, .display-panel {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #334155;
+    }
+
+    input[type="range"], select, input[type="number"], textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      background: white;
+    }
+
+    .radio-option {
+      display: block;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .radio-option:hover {
+      background: #f1f5f9;
+    }
+
+    .radio-option input {
+      margin-right: 8px;
+    }
+
+    button.btn-check {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    button.btn-check:hover {
+      background: #1d4ed8;
+    }
+
+    .feedback-msg {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .feedback-msg.error {
+      background: #fef2f2;
+      color: var(--error);
+      border: 1px solid #fecaca;
+      display: block;
+    }
+
+    .feedback-msg.success {
+      background: #f0fdf4;
+      color: var(--success);
+      border: 1px solid #bbf7d0;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-top">
+      <span class="badge-date">Lunes 07 de Septiembre de 2026</span>
+      <div class="timer-container">
+        <span>⏱ Tiempo de clase:</span>
+        <span id="timer-display">60:00</span>
+      </div>
+    </div>
+    <h1>Área de Superficie y Volumen de Prismas Rectos</h1>
+    <div class="objective">
+      <strong>Objetivo:</strong> Explicar y modelar el concepto de área de superficie y volumen de prismas rectos de bases diversas mediante descomposición de redes y cálculo de capacidades.
+    </div>
+
+    <div class="progress-wrapper">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+      <div class="step-indicators">
+        <span id="ind-1" class="step-ind active">1. Concepto (10m)</span>
+        <span id="ind-2" class="step-ind">2. Modelamiento (15m)</span>
+        <span id="ind-3" class="step-ind">3. Desafío Taller (25m)</span>
+        <span id="ind-4" class="step-ind">4. Ticket Salida (10m)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ETAPA 1 -->
+  <section id="step-1" class="module-card">
+    <div class="module-header">
+      <h2 class="module-title">Paso 1: Fundamento Geométrico y Descomposición</h2>
+      <span class="module-time">Sugerido: 10 min</span>
+    </div>
+    <p>Un <strong>prisma recto</strong> es un cuerpo geométrico tridimensional limitado por dos caras basales poligonales paralelas y congruentes, y cuyas caras laterales son rectángulos perpendiculares a las bases.</p>
+    
+    <div class="formula-box">
+      <strong>Estructura de Fórmulas Generales:</strong><br><br>
+      • <strong>Área Total (<span class="math-sym">A<sub>total</sub></span>):</strong> Suma de las dos caras basales más el área lateral total.
+      <span class="formula-line"><span class="math-sym">A<sub>total</sub></span> = 2 · <span class="math-sym">A<sub>base</sub></span> + <span class="math-sym">A<sub>lateral</sub></span> = 2 · <span class="math-sym">A<sub>base</sub></span> + (<span class="math-sym">P<sub>base</sub></span> · <span class="math-sym">h</span>)</span>
+      
+      • <strong>Volumen (<span class="math-sym">V</span>):</strong> Capacidad generada al proyectar la superficie basal a lo largo de la altura del prisma.
+      <span class="formula-line"><span class="math-sym">V</span> = <span class="math-sym">A<sub>base</sub></span> · <span class="math-sym">h</span></span>
+    </div>
+
+    <p style="margin-bottom: 12px;"><strong>Comprobación de lectura para desbloquear:</strong> Si desplegamos la superficie de cualquier prisma recto (su red geométrica), ¿qué forma geométrica compone siempre la totalidad del área lateral extendida?</p>
+    
+    <div>
+      <label class="radio-option">
+        <input type="radio" name="q1" value="a"> Un triángulo cuya base es la altura del prisma.
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="q1" value="b"> Un gran rectángulo cuya base es el perímetro basal (<span class="math-sym">P<sub>base</sub></span>) y su altura es la altura del prisma (<span class="math-sym">h</span>).
+      </label>
+      <label class="radio-option">
+        <input type="radio" name="q1" value="c"> Múltiples trapecios rectos equivalentes a la cantidad de aristas basales.
+      </label>
+    </div>
+
+    <button class="btn-check" onclick="validarPaso1()">Comprobar y Continuar</button>
+    <div id="feedback-1" class="feedback-msg"></div>
+  </section>
+
+  <!-- ETAPA 2 -->
+  <section id="step-2" class="module-card locked">
+    <div class="module-header">
+      <h2 class="module-title">Paso 2: Laboratorio de Modelamiento Dinámico</h2>
+      <span class="module-time">Sugerido: 15 min</span>
+    </div>
+    <p>Varía los parámetros del prisma para observar cómo interactúan la base seleccionada, la altura y las magnitudes resultantes.</p>
+
+    <div class="interactive-grid">
+      <div class="control-panel">
+        <label for="base-select">Tipo de Base:</label>
+        <select id="base-select" onchange="actualizarSimulador()">
+          <option value="triangular">Prisma Triangular (Triángulo equilátero)</option>
+          <option value="hexagonal">Prisma Hexagonal Regular</option>
+        </select>
+
+        <label for="param-lado">Lado de la Base (<span class="math-sym">l</span>): <span id="val-lado">4</span> cm</label>
+        <input type="range" id="param-lado" min="2" max="10" step="1" value="4" oninput="actualizarSimulador()">
+
+        <label for="param-h">Altura del Prisma (<span class="math-sym">h</span>): <span id="val-h">8</span> cm</label>
+        <input type="range" id="param-h" min="2" max="15" step="1" value="8" oninput="actualizarSimulador()">
+      </div>
+
+      <div class="display-panel">
+        <h3 style="font-size: 1rem; color: var(--primary); margin-bottom: 8px;">Métricas en Tiempo Real</h3>
+        <p>Área Basal (<span class="math-sym">A<sub>base</sub></span>): <strong><span id="out-abase">6.93</span> cm²</strong></p>
+        <p>Perímetro Basal (<span class="math-sym">P<sub>base</sub></span>): <strong><span id="out-pbase">12</span> cm</strong></p>
+        <p>Área Lateral (<span class="math-sym">A<sub>L</sub></span>): <strong><span id="out-alat">96.00</span> cm²</strong></p>
+        <p>Área Total (<span class="math-sym">A<sub>T</sub></span>): <strong><span id="out-atot">109.86</span> cm²</strong></p>
+        <hr style="margin: 8px 0; border: none; border-top: 1px dashed var(--border);">
+        <p style="color: var(--secondary); font-size: 1.05rem;">Volumen (<span class="math-sym">V</span>): <strong><span id="out-vol">55.44</span> cm³</strong></p>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px; background: #fff; padding: 12px; border: 1px solid var(--border); border-radius: 8px;">
+      <p><strong>Reto del Laboratorio:</strong> Ajusta el selector a <strong>Prisma Hexagonal</strong>, con lado <strong><span class="math-sym">l</span> = 6 cm</strong> y altura <strong><span class="math-sym">h</span> = 10 cm</strong>. Observa el volumen calculado e ingrésalo a continuación (con 1 decimal):</p>
+      <div style="display: flex; gap: 10px; margin-top: 8px; align-items: center;">
+        <input type="number" id="input-vol-reto" step="0.1" placeholder="Ej: 935.3" style="max-width: 180px; margin-bottom: 0;">
+        <button class="btn-check" onclick="validarPaso2()">Validar Datos</button>
+      </div>
+      <div id="feedback-2" class="feedback-msg"></div>
+    </div>
+  </section>
+
+  <!-- ETAPA 3 -->
+  <section id="step-3" class="module-card locked">
+    <div class="module-header">
+      <h2 class="module-title">Paso 3: Taller de Aplicación - Prisma de Base Trapezoidal</h2>
+      <span class="module-time">Sugerido: 25 min</span>
+    </div>
+    <p>Se diseña un contenedor industrial que tiene forma de <strong>prisma recto cuya base es un trapecio isósceles</strong>.</p>
+    
+    <div style="background: #f8fafc; padding: 14px; border-radius: 8px; margin: 12px 0;">
+      <strong>Dimensiones de la base trapezoidal:</strong><br>
+      • Base mayor (<span class="math-sym">B</span>) = 10 cm<br>
+      • Base menor (<span class="math-sym">b</span>) = 4 cm<br>
+      • Altura del trapecio (<span class="math-sym">h<sub>t</sub></span>) = 4 cm<br>
+      • Lados no paralelos = 5 cm cada uno.<br>
+      <strong>Dimensión del prisma:</strong><br>
+      • Altura del cuerpo (<span class="math-sym">H</span>) = 12 cm
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+      <div>
+        <label for="taller-abase">1. Área de la Base (<span class="math-sym">A<sub>base</sub></span>) en cm²:</label>
+        <input type="number" id="taller-abase" placeholder="Área basal">
+      </div>
+      <div>
+        <label for="taller-alat">2. Área Lateral total (<span class="math-sym">A<sub>L</sub></span>) en cm²:</label>
+        <input type="number" id="taller-alat" placeholder="Área lateral">
+      </div>
+      <div>
+        <label for="taller-atot">3. Área Total (<span class="math-sym">A<sub>T</sub></span>) en cm²:</label>
+        <input type="number" id="taller-atot" placeholder="Área total">
+      </div>
+      <div>
+        <label for="taller-vol">4. Volumen Total (<span class="math-sym">V</span>) en cm³:</label>
+        <input type="number" id="taller-vol" placeholder="Volumen">
+      </div>
+    </div>
+
+    <button class="btn-check" style="margin-top: 10px;" onclick="validarPaso3()">Comprobar Resultados</button>
+    <div id="feedback-3" class="feedback-msg"></div>
+  </section>
+
+  <!-- ETAPA 4 -->
+  <section id="step-4" class="module-card locked">
+    <div class="module-header">
+      <h2 class="module-title">Paso 4: Ticket de Salida y Cierre</h2>
+      <span class="module-time">Sugerido: 10 min</span>
+    </div>
+    <p>Sintetiza el modelo matemático trabajado durante la sesión.</p>
+
+    <div style="margin: 14px 0;">
+      <label for="ticket-resp"><strong>Pregunta:</strong> ¿Por qué la fórmula <span class="math-sym">V</span> = <span class="math-sym">A<sub>base</sub></span> · <span class="math-sym">h</span> se mantiene idéntica sin importar la forma del polígono de la base (triángulo, trapecio, hexágono)? Justifica usando la noción de apilamiento regular de capas uniformes:</label>
+      <textarea id="ticket-resp" rows="4" placeholder="Escribe tu fundamentación geométrica aquí..."></textarea>
+    </div>
+
+    <button class="btn-check" onclick="finalizarClase()">Finalizar y Entregar Sesión</button>
+    <div id="feedback-4" class="feedback-msg"></div>
+  </section>
+</div>
+
+<script>
+  let tiempoRestante = 60 * 60;
+  const timerDisplay = document.getElementById('timer-display');
+
+  const reloj = setInterval(() => {
+    if (tiempoRestante <= 0) {
+      clearInterval(reloj);
+      timerDisplay.textContent = "00:00 - Fin de clase";
+      timerDisplay.style.color = "var(--error)";
+      return;
+    }
+    tiempoRestante--;
+    const min = Math.floor(tiempoRestante / 60);
+    const seg = tiempoRestante % 60;
+    timerDisplay.textContent = `${String(min).padStart(2, '0')}:${String(seg).padStart(2, '0')}`;
+  }, 1000);
+
+  function actualizarProgreso(pasoCompletado) {
+    const progreso = (pasoCompletado / 4) * 100;
+    document.getElementById('progress-bar').style.width = `${progreso}%`;
+    
+    document.getElementById(`ind-${pasoCompletado}`).classList.remove('active');
+    document.getElementById(`ind-${pasoCompletado}`).classList.add('completed');
+    
+    if (pasoCompletado < 4) {
+      document.getElementById(`ind-${pasoCompletado + 1}`).classList.add('active');
+    }
+  }
+
+  function validarPaso1() {
+    const radios = document.getElementsByName('q1');
+    let seleccion = '';
+    for (const r of radios) {
+      if (r.checked) seleccion = r.value;
+    }
+
+    const fb = document.getElementById('feedback-1');
+    if (seleccion === 'b') {
+      fb.className = "feedback-msg success";
+      fb.innerHTML = "✓ <strong>¡Correcto!</strong> Al desarmar las caras laterales de un prisma recto, forman un rectángulo continuo cuya base es el perímetro de la base y su altura corresponde a la altura del prisma (P<sub>base</sub> · h). Desbloqueando Paso 2...";
+      
+      setTimeout(() => {
+        document.getElementById('step-2').classList.remove('locked');
+        actualizarProgreso(1);
+        document.getElementById('step-2').scrollIntoView({ behavior: 'smooth' });
+      }, 900);
+    } else {
+      fb.className = "feedback-msg error";
+      fb.textContent = "Respuesta incorrecta. Recuerda que cada cara lateral rectangular comparte la altura del prisma y una arista basal, formando una banda rectangular continua.";
+    }
+  }
+
+  function actualizarSimulador() {
+    const tipo = document.getElementById('base-select').value;
+    const l = parseFloat(document.getElementById('param-lado').value);
+    const h = parseFloat(document.getElementById('param-h').value);
+
+    document.getElementById('val-lado').textContent = l;
+    document.getElementById('val-h').textContent = h;
+
+    let aBase = 0;
+    let pBase = 0;
+
+    if (tipo === 'triangular') {
+      aBase = (Math.pow(l, 2) * Math.sqrt(3)) / 4;
+      pBase = 3 * l;
+    } else {
+      aBase = (3 * Math.sqrt(3) * Math.pow(l, 2)) / 2;
+      pBase = 6 * l;
+    }
+
+    const aLat = pBase * h;
+    const aTot = 2 * aBase + aLat;
+    const vol = aBase * h;
+
+    document.getElementById('out-abase').textContent = aBase.toFixed(2);
+    document.getElementById('out-pbase').textContent = pBase.toFixed(1);
+    document.getElementById('out-alat').textContent = aLat.toFixed(2);
+    document.getElementById('out-atot').textContent = aTot.toFixed(2);
+    document.getElementById('out-vol').textContent = vol.toFixed(2);
+  }
+
+  function validarPaso2() {
+    const valInput = parseFloat(document.getElementById('input-vol-reto').value);
+    const fb = document.getElementById('feedback-2');
+    
+    if (!isNaN(valInput) && Math.abs(valInput - 935.3) <= 1.0) {
+      fb.className = "feedback-msg success";
+      fb.innerHTML = "✓ <strong>¡Cálculo validado con éxito!</strong> El volumen para esas dimensiones es 935.3 cm³. Desbloqueando Paso 3...";
+      
+      setTimeout(() => {
+        document.getElementById('step-3').classList.remove('locked');
+        actualizarProgreso(2);
+        document.getElementById('step-3').scrollIntoView({ behavior: 'smooth' });
+      }, 900);
+    } else {
+      fb.className = "feedback-msg error";
+      fb.textContent = "Valor incorrecto o fuera de rango. Selecciona Hexagonal, fija l = 6 y h = 10, y revisa el valor de volumen resultante.";
+    }
+  }
+
+  function validarPaso3() {
+    const aBase = parseFloat(document.getElementById('taller-abase').value);
+    const aLat = parseFloat(document.getElementById('taller-alat').value);
+    const aTot = parseFloat(document.getElementById('taller-atot').value);
+    const vol = parseFloat(document.getElementById('taller-vol').value);
+    const fb = document.getElementById('feedback-3');
+
+    const c1 = Math.abs(aBase - 28) < 0.5;
+    const c2 = Math.abs(aLat - 288) < 0.5;
+    const c3 = Math.abs(aTot - 344) < 0.5;
+    const c4 = Math.abs(vol - 336) < 0.5;
+
+    if (c1 && c2 && c3 && c4) {
+      fb.className = "feedback-msg success";
+      fb.innerHTML = "✓ <strong>¡Cálculos correctos!</strong> Descomposición completada: A<sub>base</sub> = 28 cm², A<sub>lat</sub> = 288 cm², A<sub>total</sub> = 344 cm² y Volumen = 336 cm³. Pasando al ticket de salida.";
+      
+      setTimeout(() => {
+        document.getElementById('step-4').classList.remove('locked');
+        actualizarProgreso(3);
+        document.getElementById('step-4').scrollIntoView({ behavior: 'smooth' });
+      }, 900);
+    } else {
+      let errores = [];
+      if (!c1) errores.push("Área Basal: ((B + b) · h_t) / 2");
+      if (!c2) errores.push("Área Lateral: (Perímetro basal) · H_prisma");
+      if (!c3) errores.push("Área Total: 2·A_base + A_lateral");
+      if (!c4) errores.push("Volumen: A_base · H_prisma");
+      
+      fb.className = "feedback-msg error";
+      fb.innerHTML = "Revisa los siguientes puntos:<br>• " + errores.join("<br>• ");
+    }
+  }
+
+  function finalizarClase() {
+    const texto = document.getElementById('ticket-resp').value.trim();
+    const fb = document.getElementById('feedback-4');
+
+    if (texto.length < 25) {
+      fb.className = "feedback-msg error";
+      fb.textContent = "Por favor elabora una justificación completa (al menos 2 o 3 líneas fundamentando la relación entre el área y la altura).";
+      return;
+    }
+
+    actualizarProgreso(4);
+    fb.className = "feedback-msg success";
+    fb.innerHTML = "🎉 <strong>¡Clase completada con éxito!</strong> Has fundamentado el concepto de sección transversal continua y volumen de prismas rectos.";
+  }
+
+  actualizarSimulador();
+</script>
+
+</body>
+</html>

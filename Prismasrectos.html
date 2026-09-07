@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taller Interactivo de Convivencia - 7° Básico</title>
+  <style>
+    :root {
+      --bg-main: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #f43f5e;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --border: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1050px;
+      text-align: center;
+      padding: 20px 24px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      margin-bottom: 24px;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.4;
+    }
+
+    nav {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      max-width: 1050px;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      background: var(--card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .nav-btn.active {
+      background: var(--accent);
+      color: #0f172a;
+      border-color: var(--accent);
+    }
+
+    main {
+      width: 100%;
+      max-width: 1050px;
+      flex: 1;
+    }
+
+    .screen {
+      display: none;
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 16px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-level {
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      background: rgba(56, 189, 248, 0.15);
+      border-radius: 8px;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    .case-box {
+      background: #131c2e;
+      border-left: 5px solid var(--accent);
+      padding: 20px;
+      border-radius: 10px;
+      font-size: 1.15rem;
+      line-height: 1.6;
+      margin: 20px 0;
+    }
+
+    .vote-panel {
+      margin: 24px 0;
+      padding: 20px;
+      background: #111a2c;
+      border-radius: 12px;
+      border: 1px dashed var(--border);
+    }
+
+    .vote-title {
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+      font-weight: bold;
+    }
+
+    .vote-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .vote-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .vote-btn:hover {
+      background: #27354a;
+      border-color: var(--accent);
+    }
+
+    .vote-btn span.counter {
+      font-size: 1.3rem;
+      color: var(--accent);
+    }
+
+    .solution-btn {
+      background: var(--accent);
+      color: #0f172a;
+      padding: 12px 24px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .solution-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .debrief-card {
+      margin-top: 20px;
+      padding: 20px;
+      background: #0f2744;
+      border: 1px solid #1e4976;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .debrief-card h3 {
+      color: #7dd3fc;
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+
+    .asertividad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .style-card {
+      background: #111a2c;
+      border-radius: 12px;
+      padding: 20px;
+      border-top: 4px solid var(--border);
+    }
+
+    .style-card.pasivo { border-top-color: var(--text-muted); }
+    .style-card.agresivo { border-top-color: var(--danger); }
+    .style-card.asertivo { border-top-color: var(--success); }
+
+    .style-card h4 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+    }
+
+    .networks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .network-card {
+      background: #111a2c;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .network-card h3 {
+      font-size: 1.2rem;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .network-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: bold;
+      background: #1e3a5f;
+      color: #7dd3fc;
+      margin-bottom: 10px;
+    }
+
+    .phone-number {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #34d399;
+      margin: 10px 0;
+      letter-spacing: 1px;
+    }
+
+    .btn-nav-controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .control-btn {
+      background: #334155;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .control-btn:hover {
+      background: #475569;
+    }
+
+    @media (max-width: 800px) {
+      .asertividad-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="meta">
+      <span>Fecha: Lunes 07 de Septiembre</span>
+      <span>Nivel: 7° Básico</span>
+    </div>
+    <h1>Convivencia, Entorno Digital y Apoyo Seguro</h1>
+    <p><strong>Objetivo de la clase:</strong> Identificar situaciones de violencia o acoso escolar y virtual entre adolescentes, desarrollando respuestas asertivas de afrontamiento y reconociendo redes de apoyo especializadas.</p>
+  </header>
+
+  <nav id="navbar">
+    <button class="nav-btn active" onclick="goToStep(0)">1. Inicio / Activación</button>
+    <button class="nav-btn" onclick="goToStep(1)">2. Caso 1 (Recreo)</button>
+    <button class="nav-btn" onclick="goToStep(2)">3. Caso 2 (WhatsApp)</button>
+    <button class="nav-btn" onclick="goToStep(3)">4. Caso 3 (Confesiones)</button>
+    <button class="nav-btn" onclick="goToStep(4)">5. La Asertividad</button>
+    <button class="nav-btn" onclick="goToStep(5)">6. Redes de Apoyo</button>
+  </nav>
+
+  <main>
+    <!-- PASO 1: ACTIVACIÓN -->
+    <section class="screen active" id="step-0">
+      <h2>👋 Activación: ¿Es broma o es daño?</h2>
+      <p style="font-size: 1.1rem; margin-top: 10px; color: var(--text-muted);">
+        A veces decimos <em>"era solo un meme"</em>, <em>"no aguanta nada"</em> o <em>"estamos molestando en buena onda"</em>.
+      </p>
+
+      <div class="case-box">
+        ¿Cuál es el límite real entre una broma compartida y una agresión o acoso?
+      </div>
+
+      <div style="background: #162235; padding: 20px; border-radius: 12px; margin-top: 20px;">
+        <h3 style="color: var(--accent); margin-bottom: 12px;">Regla clave para reflexionar con el curso:</h3>
+        <ul style="line-height: 1.8; margin-left: 24px; font-size: 1.05rem;">
+          <li><strong>En una broma:</strong> Se ríen todas las personas involucradas por igual. Si a alguien le duele o le incomoda, ya no es broma.</li>
+          <li><strong>En el acoso (Bullying / Ciberacoso):</strong> Hay intención, repetición y una diferencia de poder (uno queda vulnerable frente al resto o al grupo).</li>
+          <li><strong>La huella digital:</strong> Lo que se sube a internet se viraliza rápido, no se borra con facilidad y daña a escala gigante.</li>
+        </ul>
+      </div>
+
+      <div class="btn-nav-controls">
+        <div></div>
+        <button class="control-btn" onclick="goToStep(1)">Comenzar con los Casos ➔</button>
+      </div>
+    </section>
+
+    <!-- PASO 2: CASO 1 (PRESENCIAL) -->
+    <section class="screen" id="step-1">
+      <h2><span class="badge-level">Caso 1: Presencial</span> El "apodo" en el patio</h2>
+      <div class="case-box">
+        "En los recreos, un grupo de compañeros inventó un apodo sobre el cuerpo de Tomás. Cada vez que él camina cerca, se ríen y dicen la palabra en voz alta. Tomás finge sonreír para que no lo molesten más, pero ya no sale al patio y prefiere quedarse solo en la sala."
+      </div>
+
+      <div class="vote-panel">
+        <div class="vote-title">Pregunta al curso: ¿Qué tipo de situación observamos aquí? (Votar a mano alzada)</div>
+        <div class="vote-options">
+          <button class="vote-btn" onclick="addVote('c1-v1')">
+            <span>Una talla normal de amigos</span>
+            <span class="counter" id="c1-v1">0 votos</span>
+          </button>
+          <button class="vote-btn" onclick="addVote('c1-v2')">
+            <span>Acoso escolar (Bullying)</span>
+            <span class="counter" id="c1-v2">0 votos</span>
+          </button>
+          <button class="vote-btn" onclick="addVote('c1-v3')">
+            <span>Exageración de Tomás</span>
+            <span class="counter" id="c1-v3">0 votos</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="solution-btn" onclick="toggleDebrief('debrief-1')">🔍 Revelar Análisis del Caso</button>
+
+      <div class="debrief-card" id="debrief-1">
+        <h3>Diagnóstico Pedagógico:</h3>
+        <p style="line-height: 1.6; margin-bottom: 10px;">
+          Es <strong>Acoso Escolar (Bullying)</strong>. Existe reiteración, burla focalizada y genera aislamiento social voluntario por miedo. Que la víctima sonría <em>no significa consentimiento</em>: suele ser un mecanismo de defensa para no mostrar debilidad frente a los agresores.
+        </p>
+        <p><strong>Rol de los testigos:</strong> Si el resto se ríe o calla, valida la agresión. El cambio empieza cuando un compañero dice: <em>"Córtenla, ya no tiene gracia"</em>.</p>
+      </div>
+
+      <div class="btn-nav-controls">
+        <button class="control-btn" onclick="goToStep(0)">⬅ Volver</button>
+        <button class="control-btn" onclick="goToStep(2)">Siguiente Caso ➔</button>
+      </div>
+    </section>
+
+    <!-- PASO 3: CASO 2 (DIGITAL / WHATSAPP) -->
+    <section class="screen" id="step-2">
+      <h2><span class="badge-level">Caso 2: Virtual</span> El sticker del curso</h2>
+      <div class="case-box">
+        "En una videollamada o presentación en clases, sacaron una captura de pantalla a Sofía desprevenida y con mala cara. Alguien creó un sticker y lo subió al grupo del curso de WhatsApp sin su permiso. Ahora lo mandan cada vez que alguien comete un error."
+      </div>
+
+      <div class="vote-panel">
+        <div class="vote-title">Pregunta al curso: ¿Cuál es la consecuencia más grave de este hecho?</div>
+        <div class="vote-options">
+          <button class="vote-btn" onclick="addVote('c2-v1')">
+            <span>Es inofensivo, todos tienen stickers</span>
+            <span class="counter" id="c2-v1">0 votos</span>
+          </button>
+          <button class="vote-btn" onclick="addVote('c2-v2')">
+            <span>Ciberacoso y vulneración de privacidad</span>
+            <span class="counter" id="c2-v2">0 votos</span>
+          </button>
+          <button class="vote-btn" onclick="addVote('c2-v3')">
+            <span>Culpa de Sofía por poner esa cara</span>
+            <span class="counter" id="c2-v3">0 votos</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="solution-btn" onclick="toggleDebrief('debrief-2')">🔍 Revelar Análisis del Caso</button>
+
+      <div class="debrief-card" id="debrief-2">
+        <h3>Diagnóstico Pedagógico:</h3>
+        <p style="line-height: 1.6; margin-bottom: 10px;">
+          Se trata de <strong>Ciberacoso (Cyberbullying) y uso indebido de imagen personal</strong>. En redes sociales el impacto se multiplica: el sticker sale del colegio y queda fuera de control.
+        </p>
+        <p><strong>Criterio Digital:</strong> Nadie puede fotografiar, grabar o hacer circular stickers de otra persona sin su consentimiento explícito. Quien reenvía el sticker también es parte de la difusión.</p>
+      </div>
+
+      <div class="btn-nav-controls">
+        <button class="control-btn" onclick="goToStep(1)">⬅ Volver</button>
+        <button class="control-btn" onclick="goToStep(3)">Siguiente Caso ➔</button>
+      </div>
+    </section>
+
+    <!-- PASO 4: CASO 3 (CUENTA DE CONFESIONES) -->
+    <section class="screen" id="step-3">
+      <h2><span class="badge-level">Caso 3: Redes Sociales</span> La cuenta anónima de Instagram o TikTok</h2>
+      <div class="case-box">
+        "Se crea una cuenta anónima de 'Confesiones del Colegio'. Alguien envía un mensaje falso afirmando que Martín le robó dinero a una compañera. La publicación se llena de comentarios atacándolo y amenazándolo, todo bajo perfiles falsos o anónimos."
+      </div>
+
+      <div class="vote-panel">
+        <div class="vote-title">Pregunta al curso: ¿El anonimato en internet protege legalmente a quien lo hace?</div>
+        <div class="vote-options">
+          <button class="vote-btn" onclick="addVote('c3-v1')">
+            <span>Sí, nunca se sabrá quién fue</span>
+            <span class="counter" id="c3-v1">0 votos</span>
+          </button>
+          <button class="vote-btn" onclick="addVote('c3-v2')">
+            <span>No, la PDI/Fiscalía puede rastrear la IP</span>
+            <span class="counter" id="c3-v2">0 votos</span>
+          </button>
+          <button class="vote-btn" onclick="addVote('c3-v3')">
+            <span>Da igual, en internet no hay normas</span>
+            <span class="counter" id="c3-v3">0 votos</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="solution-btn" onclick="toggleDebrief('debrief-3')">🔍 Revelar Análisis del Caso</button>
+
+      <div class="debrief-card" id="debrief-3">
+        <h3>Diagnóstico Pedagógico:</h3>
+        <p style="line-height: 1.6; margin-bottom: 10px;">
+          El anonimato total <strong>no existe</strong>. Difundir calumnias, amenazas o datos personales falsos constituye faltas graves al reglamento interno e incluso delitos sancionables por la Ley de Responsabilidad Penal Adolescente (según la edad) o investigables mediante la Brigada del Cibercrimen de la PDI.
+        </p>
+        <p><strong>Acción asertiva:</strong> No interactuar con la cuenta, tomar capturas de pantalla de respaldo y denunciar a Inspectoría General o Encargado(a) de Convivencia Escolar.</p>
+      </div>
+
+      <div class="btn-nav-controls">
+        <button class="control-btn" onclick="goToStep(2)">⬅ Volver</button>
+        <button class="control-btn" onclick="goToStep(4)">Aprender Respuestas Asertivas ➔</button>
+      </div>
+    </section>
+
+    <!-- PASO 5: RESPUESTAS ASERTIVAS -->
+    <section class="screen" id="step-4">
+      <h2>🗣️ Laboratorio de Respuestas: Pasivo, Agresivo o Asertivo</h2>
+      <p style="font-size: 1.05rem; color: var(--text-muted);">
+        Frente a una provocación o agresión en 7° básico, solemos reaccionar de 3 maneras. ¿Cuál nos protege realmente?
+      </p>
+
+      <div class="asertividad-grid">
+        <div class="style-card pasivo">
+          <h4 style="color: var(--text-muted);">❌ Estilo Pasivo</h4>
+          <p style="font-size: 0.95rem; line-height: 1.5; margin: 10px 0;">
+            Callar, fingir que no duele, esconderse, aislarse y esperar que pase mágicamente.
+          </p>
+          <div style="background: #09101d; padding: 10px; border-radius: 8px; font-size: 0.85rem;">
+            <strong>Consecuencia:</strong> La persona agresora cree que tiene poder ilimitado y continúa la conducta.
+          </div>
+        </div>
+
+        <div class="style-card agresivo">
+          <h4 style="color: var(--danger);">❌ Estilo Agresivo</h4>
+          <p style="font-size: 0.95rem; line-height: 1.5; margin: 10px 0;">
+            Responder con insultos, amenazas de golpes o armar una "funa" en redes sociales.
+          </p>
+          <div style="background: #09101d; padding: 10px; border-radius: 8px; font-size: 0.85rem;">
+            <strong>Consecuencia:</strong> Escala el conflicto a violencia física o sanciones disciplinarias para ambas partes.
+          </div>
+        </div>
+
+        <div class="style-card asertivo">
+          <h4 style="color: var(--success);">✔ Estilo Asertivo (Firme y Seguro)</h4>
+          <p style="font-size: 0.95rem; line-height: 1.5; margin: 10px 0;">
+            Poner un límite claro y directo con calma, buscar apoyo adulto y no ser cómplice pasivo.
+          </p>
+          <div style="background: #09101d; padding: 10px; border-radius: 8px; font-size: 0.85rem;">
+            <strong>Estrategia clave:</strong> La técnica del "Mensaje en Primera Persona": <em>"No me causa risa tu comentario, no me hables así y detente ahora."</em>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 25px; padding: 18px; background: #13273e; border-radius: 12px;">
+        <h4 style="color: #38bdf8; margin-bottom: 6px;">Protocolo Asertivo Digital (Si te pasa a ti o a un compañero):</h4>
+        <ol style="margin-left: 20px; line-height: 1.7; font-size: 0.95rem;">
+          <li><strong>No responder con violencia:</strong> Eso alimenta al atacante.</li>
+          <li><strong>Guardar evidencia:</strong> Sacar captura de pantalla completa (fecha, hora, usuario).</li>
+          <li><strong>Bloquear y denunciar:</strong> Usar las herramientas de la plataforma (WhatsApp, Instagram, TikTok).</li>
+          <li><strong>Romper el silencio:</strong> Contarle de inmediato a un adulto de confianza.</li>
+        </ol>
+      </div>
+
+      <div class="btn-nav-controls">
+        <button class="control-btn" onclick="goToStep(3)">⬅ Volver</button>
+        <button class="control-btn" onclick="goToStep(5)">Ver Redes de Apoyo ➔</button>
+      </div>
+    </section>
+
+    <!-- PASO 6: REDES DE APOYO -->
+    <section class="screen" id="step-5">
+      <h2>🛡️ Redes de Apoyo Especializadas</h2>
+      <p style="font-size: 1.05rem; color: var(--text-muted);">
+        Nadie tiene por qué resolver estas situaciones solo/a. Hay redes dentro y fuera del establecimiento:
+      </p>
+
+      <div class="networks-grid">
+        <div class="network-card">
+          <span class="network-tag">En nuestro Colegio</span>
+          <h3>Equipo de Convivencia y Docentes</h3>
+          <p style="font-size: 0.95rem; line-height: 1.5;">
+            Profesor(a) Jefe, Encargado(a) de Convivencia Escolar, Inspectoría General y Equipo Psicosocial.
+          </p>
+          <p style="margin-top: 10px; font-size: 0.85rem; color: var(--accent);">
+            💬 Recuerda: Acudir a un adulto responsable no es "ser sapo", es activar la protección que mereces por derecho.
+          </p>
+        </div>
+
+        <div class="network-card">
+          <span class="network-tag">Línea Gratuita y Confidencial</span>
+          <h3>Línea Libre (Fundación Amparo y Justicia)</h3>
+          <p style="font-size: 0.95rem; line-height: 1.5;">
+            Atención psicológica especializada para niños, niñas y adolescentes vía llamada o WhatsApp.
+          </p>
+          <div class="phone-number">Fono: 1515</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">O mediante app / web Línea Libre (Gratis).</p>
+        </div>
+
+        <div class="network-card">
+          <span class="network-tag">Canal Oficial de Menores</span>
+          <h3>Fono Niñez (Carabineros de Chile)</h3>
+          <p style="font-size: 0.95rem; line-height: 1.5;">
+            Orientación ante situaciones graves de vulneración de derechos, violencia escolar o delitos digitales.
+          </p>
+          <div class="phone-number">Fono: 147</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Línea gratuita disponible desde cualquier teléfono.</p>
+        </div>
+
+        <div class="network-card">
+          <span class="network-tag">Institución Pública</span>
+          <h3>Superintendencia de Educación</h3>
+          <p style="font-size: 0.95rem; line-height: 1.5;">
+            Organismo que fiscaliza que los colegios apliquen sus protocolos de convivencia y resguarden a los estudiantes.
+          </p>
+          <div class="phone-number">600 3600 390</div>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Denuncias y orientación en supereduc.cl</p>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px; padding: 20px; background: #132238; border-radius: 12px;">
+        <h3 style="color: var(--accent);">Compromiso de Cierre del Curso</h3>
+        <p style="margin-top: 8px; font-size: 1.05rem;">
+          <em>"En nuestra sala no avalamos el acoso en el patio ni en los grupos virtuales. Cuidar al compañero/a es responsabilidad de todas y todos."</em>
+        </p>
+      </div>
+
+      <div class="btn-nav-controls">
+        <button class="control-btn" onclick="goToStep(4)">⬅ Volver a Asertividad</button>
+        <button class="control-btn" onclick="goToStep(0)">Volver al Inicio ↺</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentStep = 0;
+    const totalSteps = 6;
+    const votes = {};
+
+    function goToStep(index) {
+      currentStep = index;
+      for (let i = 0; i < totalSteps; i++) {
+        const screen = document.getElementById('step-' + i);
+        if (screen) {
+          screen.classList.toggle('active', i === index);
+        }
+      }
+
+      const buttons = document.querySelectorAll('.nav-btn');
+      buttons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function addVote(id) {
+      if (!votes[id]) votes[id] = 0;
+      votes[id]++;
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = votes[id] + (votes[id] === 1 ? ' voto' : ' votos');
+      }
+    }
+
+    function toggleDebrief(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+      }
+    }
+  </script>
+</body>
+</html>
