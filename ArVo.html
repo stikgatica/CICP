@@ -1,0 +1,2047 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio de Geometría: Volumen, Área y Red Geométrica</title>
+  <!-- Three.js y OrbitControls vía CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <style>
+    :root {
+      --primary: #1976d2;
+      --primary-dark: #0d47a1;
+      --accent: #2e7d32;
+      --bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --text: #2c3e50;
+      --border-color: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    /* Botón Farmear Aura */
+    .btn-aura {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      color: #ffffff;
+      border: 2px solid #e9d5ff;
+      padding: 8px 16px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-aura:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 0 22px rgba(168, 85, 247, 0.85);
+      background: linear-gradient(135deg, #9333ea, #4f46e5);
+    }
+
+    .btn-aura.unlocked {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+      border-color: #a7f3d0;
+    }
+
+    header h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      flex-grow: 1;
+      text-align: center;
+      margin-right: 140px; /* Equilibrio visual con el botón */
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+      }
+      header h1 {
+        margin-right: 0;
+        font-size: 1.3rem;
+      }
+    }
+
+    .container {
+      max-width: 1250px;
+      margin: 25px auto;
+      padding: 0 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Selector de cuerpos */
+    .selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: #ffffff;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: 2px solid var(--primary);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+    }
+
+    .selector-bar label {
+      font-weight: 700;
+      color: var(--primary-dark);
+      font-size: 1.05rem;
+    }
+
+    .selector-bar select {
+      padding: 8px 14px;
+      font-size: 1rem;
+      border: 2px solid #94a3b8;
+      border-radius: 8px;
+      outline: none;
+      background: #f8fafc;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .selector-bar select:focus {
+      border-color: var(--primary);
+    }
+
+    /* Grid principal */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 470px 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1020px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: #fafbfc;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #e5e9f0;
+    }
+
+    .section-subtitle {
+      font-size: 1.15rem;
+      color: var(--primary-dark);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .control-group label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #4a5568;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .val-display {
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    /* Visor 3D arriba */
+    .canvas-3d-wrapper {
+      position: relative;
+      width: 100%;
+      height: 350px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .info-tag {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      border: 1px solid #cbd5e1;
+      pointer-events: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      text-align: left;
+      line-height: 1.45;
+    }
+
+    /* Control de red geométrica */
+    .net-control-box {
+      background: #ffffff;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .net-control-box label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #334155;
+    }
+
+    /* Vaso milimetrado abajo */
+    .beaker-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .beaker-container.locked {
+      background: #f1f5f9;
+      opacity: 0.65;
+    }
+
+    .beaker-lock-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(241, 245, 249, 0.78);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 15px;
+      border-radius: 10px;
+      z-index: 10;
+      backdrop-filter: blur(2px);
+    }
+
+    .beaker-lock-overlay.hidden {
+      display: none;
+    }
+
+    .lock-msg {
+      background: #ffffff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .beaker-glass {
+      position: relative;
+      width: 86px;
+      height: 160px;
+      border: 3px solid #64748b;
+      border-top: none;
+      border-radius: 0 0 12px 12px;
+      background: rgba(240, 249, 255, 0.4);
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .beaker-liquid {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to top, #1976d2, #42a5f5);
+      opacity: 0.8;
+      transition: height 0.2s ease;
+    }
+
+    .beaker-ticks {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column-reverse;
+      justify-content: space-between;
+      pointer-events: none;
+      padding: 5px 0;
+    }
+
+    .tick {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px;
+      font-size: 9px;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .tick::before {
+      content: "-";
+    }
+
+    /* Taller y Tabla */
+    .workshop-zone {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .measurements-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      border: 1px solid #cbd5e1;
+    }
+
+    .measurements-table th, .measurements-table td {
+      padding: 9px 12px;
+      border: 1px solid #e2e8f0;
+      text-align: left;
+    }
+
+    .measurements-table th {
+      background: #eef7fe;
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .measurements-table td.badge-cell {
+      font-weight: 700;
+      color: #0b5394;
+    }
+
+    .formula-card {
+      background: #fdfdfd;
+      border: 1px solid #cbd5e1;
+      border-left: 5px solid var(--primary);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .formula-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .formula-name {
+      font-weight: 700;
+      color: #1e293b;
+      font-size: 0.95rem;
+    }
+
+    .base-formula-badge {
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+      font-style: italic;
+      font-size: 1rem;
+      background: #eef7fe;
+      color: #0d47a1;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid #bfdbfe;
+    }
+
+    .replacement-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px dashed #94a3b8;
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+      font-size: 1.1rem;
+    }
+
+    .replacement-row input.math-input {
+      width: 72px;
+      padding: 4px;
+      font-size: 1rem;
+      text-align: center;
+      border: 2px solid var(--primary);
+      border-radius: 6px;
+      background: #ffffff;
+      font-weight: bold;
+      color: #0d47a1;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .replacement-row input.math-input:focus {
+      outline: none;
+      background: #eff6ff;
+      border-color: #0d47a1;
+    }
+
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button.btn {
+      padding: 6px 12px;
+      font-size: 0.88rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      border: none;
+      transition: background 0.2s;
+    }
+
+    button.btn-calc {
+      background: var(--primary);
+      color: white;
+    }
+
+    button.btn-calc:hover {
+      background: var(--primary-dark);
+    }
+
+    button.btn-clear {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+
+    button.btn-clear:hover {
+      background: #e2e8f0;
+    }
+
+    .result-badge {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+      padding: 3px 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .feedback-msg {
+      font-size: 0.82rem;
+      margin-left: 6px;
+      font-weight: 600;
+    }
+
+    .feedback-msg.success {
+      color: #15803d;
+    }
+
+    .feedback-msg.error {
+      color: #b91c1c;
+    }
+
+    .math-symbol {
+      font-family: 'Cambria Math', 'Times New Roman', serif;
+      font-style: italic;
+    }
+
+    /* SECCIÓN DE EJERCICIOS INFERIOR */
+    .practice-section {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 22px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .practice-title {
+      font-size: 1.3rem;
+      color: var(--primary-dark);
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .practice-desc {
+      font-size: 0.92rem;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
+    .practice-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+    }
+
+    .practice-table th, .practice-table td {
+      padding: 10px 12px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    .practice-table th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    .practice-table input.practice-input {
+      width: 95px;
+      padding: 5px 8px;
+      border: 2px solid #cbd5e1;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+      color: #0f172a;
+      font-size: 0.92rem;
+    }
+
+    .practice-table input.practice-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #f0f9ff;
+    }
+
+    .practice-table input.is-correct {
+      border-color: #16a34a !important;
+      background-color: #dcfce7 !important;
+      color: #15803d !important;
+    }
+
+    .practice-table input.is-wrong {
+      border-color: #dc2626 !important;
+      background-color: #fee2e2 !important;
+      color: #b91c1c !important;
+    }
+
+    .btn-check-all {
+      background: var(--accent);
+      color: white;
+      padding: 8px 18px;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 14px;
+    }
+
+    .btn-check-all:hover {
+      background: #1b5e20;
+    }
+
+    .score-banner {
+      display: inline-block;
+      margin-left: 15px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #1e293b;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <button class="btn-aura" id="btn-farm-aura" onclick="farmAura()">
+        ✨ Farmear aura
+      </button>
+    </div>
+    <h1>Laboratorio Interactivo de Geometría Espacial</h1>
+  </header>
+
+  <div class="container">
+
+    <!-- SELECTOR DE CUERPO -->
+    <div class="selector-bar">
+      <label for="body-selector">Selecciona el cuerpo geométrico a trabajar:</label>
+      <select id="body-selector">
+        <option value="prisma">1. Prisma Recto (Base Cuadrada / Rectangular)</option>
+        <option value="cilindro">2. Cilindro</option>
+        <!-- La opción de prisma triangular se desbloquea con el botón Farmear aura -->
+      </select>
+    </div>
+
+    <!-- SECCIÓN INTERACTIVA -->
+    <section class="card">
+      <h2 class="card-title" id="module-title" style="color: var(--primary-dark); font-size: 1.35rem; margin-bottom: 15px; border-bottom: 2px solid #edf2f7; padding-bottom: 8px;">
+        Taller de Cálculo y Exploración 3D
+      </h2>
+
+      <div class="main-grid">
+        
+        <!-- Columna Izquierda: Visor 3D Arriba + Red + Dimensiones + Vaso Abajo -->
+        <div class="left-panel">
+          <div class="section-subtitle">Visualización 3D y Red Geométrica</div>
+
+          <!-- 1. Visor 3D ARRIBA -->
+          <div class="canvas-3d-wrapper" id="canvas-main-container">
+            <div class="info-tag" id="canvas-info-tag">Cargando modelo 3D...</div>
+          </div>
+
+          <!-- Deslizador de Red de Superficie DEBAJO DEL 3D -->
+          <div class="net-control-box">
+            <label for="slider-net">
+              <span>Desplegar Red Geométrica:</span>
+              <span class="val-display" id="net-txt">0% (Cuerpo cerrado)</span>
+            </label>
+            <input type="range" id="slider-net" min="0" max="100" step="1" value="0">
+            <small style="color: #64748b;">Desliza para extender todas las caras sobre el plano base.</small>
+          </div>
+
+          <!-- Dimensiones del cuerpo -->
+          <div id="dynamic-sliders" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Inyectado por JS -->
+          </div>
+
+          <!-- 2. Vaso Milimetrado ABAJO -->
+          <div class="beaker-container locked" id="beaker-box">
+            
+            <!-- Bloqueador mientras no se calcule el volumen -->
+            <div class="beaker-lock-overlay" id="beaker-lock">
+              <div class="lock-msg">
+                🔒 Vaso bloqueado<br>
+                <span style="font-weight: 400; font-size: 0.82rem; color: #475569;">
+                  Calcula correctamente el <strong>Volumen</strong> en el taller para activarlo.
+                </span>
+              </div>
+            </div>
+
+            <label><strong>Vaso Milimetrado (cm³)</strong></label>
+            <input type="range" id="beaker-water-slider" min="0" max="800" step="5" value="0" disabled>
+            <span class="val-display" id="beaker-water-txt">0 cm³</span>
+            
+            <div class="beaker-glass">
+              <div class="beaker-liquid" id="beaker-liquid-fill"></div>
+              <div class="beaker-ticks">
+                <div class="tick"><span>Cap. Máx</span></div>
+                <div class="tick"><span>75%</span></div>
+                <div class="tick"><span>50%</span></div>
+                <div class="tick"><span>25%</span></div>
+                <div class="tick"><span>0</span></div>
+              </div>
+            </div>
+            <small style="color: #64748b; text-align: center;">Vierte agua para llenar el cuerpo 3D</small>
+          </div>
+
+        </div>
+
+        <!-- Columna Derecha: Taller interactivo de fórmulas + Tabla -->
+        <div class="workshop-zone">
+          
+          <!-- Tabla de Datos y Mediciones -->
+          <div>
+            <div class="section-subtitle">Tabla de Mediciones y Resultados</div>
+            <table class="measurements-table" id="data-table">
+              <!-- Inyectado dinámicamente -->
+            </table>
+          </div>
+
+          <!-- Zona de reemplazo en fórmulas -->
+          <div>
+            <div class="section-subtitle">Remplaza los valores en las fórmulas:</div>
+            <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 12px;">
+              Escribe las medidas en las casillas correspondientes y presiona <strong>Calcular resultado</strong> para comprobar tus cálculos y completar la tabla.
+            </p>
+
+            <div id="formula-cards-container" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE PRÁCTICA / EJERCICIOS ABAJO DEL TODO -->
+    <section class="practice-section">
+      <div class="practice-title">
+        📝 Ejercicios Prácticos: Cálculo de Área y Volumen
+      </div>
+      <p class="practice-desc">
+        Aplica las fórmulas deducidas anteriormente para completar la siguiente tabla con los datos solicitados (usa <span class="math-symbol">π ≈ 3.14</span> cuando corresponda). Luego presiona <strong>Comprobar respuestas</strong>.
+      </p>
+
+      <div style="overflow-x: auto;">
+        <table class="practice-table" id="practice-table">
+          <thead>
+            <tr>
+              <th>Cuerpo Geométrico</th>
+              <th>Dimensiones Dadas</th>
+              <th>Área Basal (<span class="math-symbol">A<sub>b</sub></span>)</th>
+              <th>Área Total (<span class="math-symbol">A<sub>t</sub></span>)</th>
+              <th>Volumen (<span class="math-symbol">V</span>)</th>
+            </tr>
+          </thead>
+          <tbody id="practice-body">
+            <!-- Filas inyectadas por JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <button class="btn-check-all" onclick="checkPracticeExercises()">Comprobar respuestas</button>
+        <div class="score-banner" id="score-banner"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    /* ==========================================================
+       CONFIGURACIÓN THREE.JS
+       ========================================================== */
+    const container = document.getElementById('canvas-main-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf1f5f9);
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(16, 16, 22);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.95);
+    hemiLight.position.set(0, 25, 0);
+    scene.add(hemiLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.65);
+    dirLight.position.set(12, 22, 16);
+    scene.add(dirLight);
+
+    const grid = new THREE.GridHelper(34, 34, 0x94a3b8, 0xe2e8f0);
+    grid.position.y = -0.01;
+    scene.add(grid);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    const netGroup = new THREE.Group();
+    scene.add(netGroup);
+
+    const waterMaterial = new THREE.MeshStandardMaterial({
+      color: 0x0288d1,
+      transparent: true,
+      opacity: 0.75,
+      roughness: 0.1
+    });
+
+    let currentWaterMesh = null;
+
+    /* ==========================================================
+       ESTADO DE LA APLICACIÓN
+       ========================================================== */
+    const appState = {
+      selectedType: 'prisma',
+      netProgress: 0,
+      isVolumeUnlocked: false,
+      auraUnlocked: false,
+      prisma: { length: 5.0, width: 5.0, height: 8.0, water: 0 },
+      cilindro: { radius: 3.0, height: 8.0, water: 0 },
+      triangular: { base: 5.0, heightTri: 4.33, height: 8.0, water: 0 } // Base triángulo equilátero
+    };
+
+    /* ==========================================================
+       FARMEAR AURA: DESBLOQUEAR PRISMA TRIANGULAR
+       ========================================================== */
+    function farmAura() {
+      const btn = document.getElementById('btn-farm-aura');
+      const selector = document.getElementById('body-selector');
+
+      if (!appState.auraUnlocked) {
+        appState.auraUnlocked = true;
+        btn.classList.add('unlocked');
+        btn.innerHTML = '⚡ +10,000 Aura (Triangular Activado)';
+
+        // Agregar opción al selector si no existe
+        if (!document.getElementById('opt-triangular')) {
+          const opt = document.createElement('option');
+          opt.value = 'triangular';
+          opt.id = 'opt-triangular';
+          opt.innerText = '3. Prisma Recto Base Triangular (Aura Desbloqueada 🔥)';
+          selector.appendChild(opt);
+        }
+
+        selector.value = 'triangular';
+        appState.selectedType = 'triangular';
+        renderModule();
+      } else {
+        // Efecto visual al clickear de nuevo
+        btn.innerHTML = '⚡ Aura Máxima Infinita ✨';
+        setTimeout(() => {
+          btn.innerHTML = '⚡ +10,000 Aura (Triangular Activado)';
+        }, 1200);
+      }
+    }
+
+    /* ==========================================================
+       RENDERIZADO DEL MÓDULO (HTML DINÁMICO)
+       ========================================================== */
+    function renderModule() {
+      const type = appState.selectedType;
+      const slidersBox = document.getElementById('dynamic-sliders');
+      const table = document.getElementById('data-table');
+      const formulasBox = document.getElementById('formula-cards-container');
+      const title = document.getElementById('module-title');
+
+      appState.isVolumeUnlocked = false;
+      appState.netProgress = 0;
+      document.getElementById('slider-net').value = 0;
+      document.getElementById('net-txt').innerText = '0% (Cuerpo cerrado)';
+      lockBeaker();
+
+      if (type === 'prisma') {
+        const isCuadrada = (appState.prisma.length === appState.prisma.width);
+        title.innerHTML = '1. Prisma Recto (Base Rectangular / Cuadrada)';
+        
+        slidersBox.innerHTML = `
+          <div class="control-group">
+            <label>Largo de la base (<span class="math-symbol">a</span>): <span class="val-display" id="len-txt">${appState.prisma.length.toFixed(1)}</span> cm</label>
+            <input type="range" id="slider-len" min="2" max="7" step="0.5" value="${appState.prisma.length}">
+          </div>
+          <div class="control-group">
+            <label>Ancho de la base (<span class="math-symbol">b</span>): <span class="val-display" id="wid-txt">${appState.prisma.width.toFixed(1)}</span> cm</label>
+            <input type="range" id="slider-wid" min="2" max="7" step="0.5" value="${appState.prisma.width}">
+          </div>
+          <div class="control-group">
+            <label>Altura del prisma (<span class="math-symbol">h</span>): <span class="val-display" id="h-txt">${appState.prisma.height.toFixed(1)}</span> cm</label>
+            <input type="range" id="slider-h" min="3" max="10" step="0.5" value="${appState.prisma.height}">
+          </div>
+          <small id="base-kind-note" style="color: #64748b; font-style: italic;">
+            ${isCuadrada ? '💡 Si a = b, la base es cuadrada.' : '💡 Si a ≠ b, la base es rectangular.'}
+          </small>
+        `;
+
+        table.innerHTML = `
+          <thead>
+            <tr><th>Parámetro</th><th>Medida / Valor</th><th>Fórmula base</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Largo base (<span class="math-symbol">a</span>)</td><td class="badge-cell" id="td-a">${appState.prisma.length.toFixed(1)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Ancho base (<span class="math-symbol">b</span>)</td><td class="badge-cell" id="td-b">${appState.prisma.width.toFixed(1)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Altura (<span class="math-symbol">h</span>)</td><td class="badge-cell" id="td-h">${appState.prisma.height.toFixed(1)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Área Basal (<span class="math-symbol">A<sub>b</sub></span>)</td><td class="badge-cell" id="td-ab">?</td><td><span class="math-symbol">a · b</span></td></tr>
+            <tr><td>Área Total (<span class="math-symbol">A<sub>t</sub></span>)</td><td class="badge-cell" id="td-at">?</td><td><span class="math-symbol">2·(a·b + a·h + b·h)</span></td></tr>
+            <tr><td>Volumen Total (<span class="math-symbol">V</span>)</td><td class="badge-cell" id="td-vol">?</td><td><span class="math-symbol">A<sub>b</sub> · h = a · b · h</span></td></tr>
+          </tbody>
+        `;
+
+        formulasBox.innerHTML = `
+          <div class="formula-card">
+            <div class="formula-header">
+              <span class="formula-name">1. Área Basal (<span class="math-symbol">A<sub>b</sub></span>)</span>
+              <span class="base-formula-badge">A<sub>b</sub> = a · b</span>
+            </div>
+            <div class="replacement-row">
+              <span>A<sub>b</sub> = (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-rec-a" placeholder="a">
+              <span>) · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-rec-b" placeholder="b">
+              <span>) = </span>
+              <span class="result-badge" id="res-rec-ab"></span>
+              <span class="feedback-msg" id="fb-rec-ab"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcRecAb()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-rec-a','inp-rec-b'], 'res-rec-ab', 'td-ab', 'fb-rec-ab')">Limpiar fórmula</button>
+            </div>
+          </div>
+
+          <div class="formula-card">
+            <div class="formula-header">
+              <span class="formula-name">2. Área Total (<span class="math-symbol">A<sub>t</sub></span>)</span>
+              <span class="base-formula-badge">A<sub>t</sub> = 2 · (a·b + a·h + b·h)</span>
+            </div>
+            <div class="replacement-row">
+              <span>A<sub>t</sub> = 2 · [ (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-rec-at-ab" placeholder="a·b">
+              <span>) + (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-rec-at-ah" placeholder="a·h">
+              <span>) + (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-rec-at-bh" placeholder="b·h">
+              <span>) ] = </span>
+              <span class="result-badge" id="res-rec-at"></span>
+              <span class="feedback-msg" id="fb-rec-at"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcRecAt()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-rec-at-ab','inp-rec-at-ah','inp-rec-at-bh'], 'res-rec-at', 'td-at', 'fb-rec-at')">Limpiar fórmula</button>
+            </div>
+          </div>
+
+          <div class="formula-card" style="border-left-color: #f59e0b;">
+            <div class="formula-header">
+              <span class="formula-name">3. Volumen (<span class="math-symbol">V</span>) <small style="color: #d97706;">★ Activa el vaso milimetrado</small></span>
+              <span class="base-formula-badge">V = A<sub>b</sub> · h = a · b · h</span>
+            </div>
+            <div class="replacement-row">
+              <span>V = (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-rec-v-ab" placeholder="A_b">
+              <span>) · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-rec-v-h" placeholder="h">
+              <span>) = </span>
+              <span class="result-badge" id="res-rec-v"></span>
+              <span class="feedback-msg" id="fb-rec-v"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcRecV()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-rec-v-ab','inp-rec-v-h'], 'res-rec-v', 'td-vol', 'fb-rec-v')">Limpiar fórmula</button>
+            </div>
+          </div>
+        `;
+
+        attachPrismListeners();
+
+      } else if (type === 'cilindro') {
+        title.innerText = '2. Cilindro';
+
+        slidersBox.innerHTML = `
+          <div class="control-group">
+            <label>Radio basal (<span class="math-symbol">r</span>): <span class="val-display" id="rad-txt">${appState.cilindro.radius.toFixed(1)}</span> cm</label>
+            <input type="range" id="slider-rad" min="1.5" max="5.5" step="0.5" value="${appState.cilindro.radius}">
+          </div>
+          <div class="control-group">
+            <label>Altura (<span class="math-symbol">h</span>): <span class="val-display" id="h-txt">${appState.cilindro.height.toFixed(1)}</span> cm</label>
+            <input type="range" id="slider-h" min="3" max="10" step="0.5" value="${appState.cilindro.height}">
+          </div>
+        `;
+
+        table.innerHTML = `
+          <thead>
+            <tr><th>Parámetro</th><th>Medida / Valor</th><th>Fórmula base (π ≈ 3.14)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Radio basal (<span class="math-symbol">r</span>)</td><td class="badge-cell" id="td-r">${appState.cilindro.radius.toFixed(1)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Altura (<span class="math-symbol">h</span>)</td><td class="badge-cell" id="td-h">${appState.cilindro.height.toFixed(1)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Área Basal (<span class="math-symbol">A<sub>b</sub></span>)</td><td class="badge-cell" id="td-ab">?</td><td><span class="math-symbol">π · r²</span></td></tr>
+            <tr><td>Área Lateral (<span class="math-symbol">A<sub>l</sub></span>)</td><td class="badge-cell" id="td-al">?</td><td><span class="math-symbol">2 · π · r · h</span></td></tr>
+            <tr><td>Área Total (<span class="math-symbol">A<sub>t</sub></span>)</td><td class="badge-cell" id="td-at">?</td><td><span class="math-symbol">2·A<sub>b</sub> + A<sub>l</sub></span></td></tr>
+            <tr><td>Volumen Total (<span class="math-symbol">V</span>)</td><td class="badge-cell" id="td-vol">?</td><td><span class="math-symbol">A<sub>b</sub> · h</span></td></tr>
+          </tbody>
+        `;
+
+        formulasBox.innerHTML = `
+          <div class="formula-card">
+            <div class="formula-header">
+              <span class="formula-name">1. Área Basal (<span class="math-symbol">A<sub>b</sub></span>)</span>
+              <span class="base-formula-badge">A<sub>b</sub> = 3.14 · r²</span>
+            </div>
+            <div class="replacement-row">
+              <span>A<sub>b</sub> = 3.14 · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-cyl-r" placeholder="r">
+              <span>)² = </span>
+              <span class="result-badge" id="res-cyl-ab"></span>
+              <span class="feedback-msg" id="fb-cyl-ab"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcCylAb()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-cyl-r'], 'res-cyl-ab', 'td-ab', 'fb-cyl-ab')">Limpiar fórmula</button>
+            </div>
+          </div>
+
+          <div class="formula-card">
+            <div class="formula-header">
+              <span class="formula-name">2. Área Total (<span class="math-symbol">A<sub>t</sub></span>)</span>
+              <span class="base-formula-badge">A<sub>t</sub> = 2 · A<sub>b</sub> + 2 · 3.14 · r · h</span>
+            </div>
+            <div class="replacement-row">
+              <span>A<sub>t</sub> = 2 · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-cyl-at-ab" placeholder="A_b">
+              <span>) + 2 · 3.14 · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-cyl-at-r" placeholder="r">
+              <span>) · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-cyl-at-h" placeholder="h">
+              <span>) = </span>
+              <span class="result-badge" id="res-cyl-at"></span>
+              <span class="feedback-msg" id="fb-cyl-at"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcCylAt()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-cyl-at-ab','inp-cyl-at-r','inp-cyl-at-h'], 'res-cyl-at', 'td-at', 'fb-cyl-at')">Limpiar fórmula</button>
+            </div>
+          </div>
+
+          <div class="formula-card" style="border-left-color: #f59e0b;">
+            <div class="formula-header">
+              <span class="formula-name">3. Volumen (<span class="math-symbol">V</span>) <small style="color: #d97706;">★ Activa el vaso milimetrado</small></span>
+              <span class="base-formula-badge">V = A<sub>b</sub> · h = 3.14 · r² · h</span>
+            </div>
+            <div class="replacement-row">
+              <span>V = (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-cyl-v-ab" placeholder="A_b">
+              <span>) · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-cyl-v-h" placeholder="h">
+              <span>) = </span>
+              <span class="result-badge" id="res-cyl-v"></span>
+              <span class="feedback-msg" id="fb-cyl-v"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcCylV()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-cyl-v-ab','inp-cyl-v-h'], 'res-cyl-v', 'td-vol', 'fb-cyl-v')">Limpiar fórmula</button>
+            </div>
+          </div>
+        `;
+
+        attachCylListeners();
+
+      } else if (type === 'triangular') {
+        title.innerHTML = '3. Prisma Recto Base Triangular <span style="font-size:0.95rem; color:#7c3aed;">(⚡ Modo Aura Activado)</span>';
+
+        // Triángulo equilátero de lado 'a': h_tri = a * sqrt(3)/2
+        appState.triangular.heightTri = (appState.triangular.base * Math.sqrt(3)) / 2;
+
+        slidersBox.innerHTML = `
+          <div class="control-group">
+            <label>Lado de la base triangular (<span class="math-symbol">a</span>): <span class="val-display" id="tri-b-txt">${appState.triangular.base.toFixed(1)}</span> cm</label>
+            <input type="range" id="slider-tri-b" min="2" max="7" step="0.5" value="${appState.triangular.base}">
+          </div>
+          <div class="control-group">
+            <label>Altura del prisma (<span class="math-symbol">h</span>): <span class="val-display" id="tri-h-txt">${appState.triangular.height.toFixed(1)}</span> cm</label>
+            <input type="range" id="slider-tri-h" min="3" max="10" step="0.5" value="${appState.triangular.height}">
+          </div>
+          <small style="color: #64748b; font-style: italic;">
+            Base triangular equilátera de lado a. Altura del triángulo basal: h_base ≈ ${(appState.triangular.heightTri).toFixed(2)} cm.
+          </small>
+        `;
+
+        table.innerHTML = `
+          <thead>
+            <tr><th>Parámetro</th><th>Medida / Valor</th><th>Fórmula base</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Lado del triángulo (<span class="math-symbol">a</span>)</td><td class="badge-cell" id="td-tri-a">${appState.triangular.base.toFixed(1)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Altura triángulo (<span class="math-symbol">h<sub>b</sub></span>)</td><td class="badge-cell" id="td-tri-hb">${appState.triangular.heightTri.toFixed(2)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Altura prisma (<span class="math-symbol">h</span>)</td><td class="badge-cell" id="td-tri-h">${appState.triangular.height.toFixed(1)} cm</td><td>Dato conocido</td></tr>
+            <tr><td>Área Basal (<span class="math-symbol">A<sub>b</sub></span>)</td><td class="badge-cell" id="td-ab">?</td><td><span class="math-symbol">(a · h<sub>b</sub>) / 2</span></td></tr>
+            <tr><td>Área Total (<span class="math-symbol">A<sub>t</sub></span>)</td><td class="badge-cell" id="td-at">?</td><td><span class="math-symbol">2·A<sub>b</sub> + 3·(a·h)</span></td></tr>
+            <tr><td>Volumen Total (<span class="math-symbol">V</span>)</td><td class="badge-cell" id="td-vol">?</td><td><span class="math-symbol">A<sub>b</sub> · h</span></td></tr>
+          </tbody>
+        `;
+
+        formulasBox.innerHTML = `
+          <div class="formula-card">
+            <div class="formula-header">
+              <span class="formula-name">1. Área Basal (<span class="math-symbol">A<sub>b</sub></span>)</span>
+              <span class="base-formula-badge">A<sub>b</sub> = (a · h<sub>b</sub>) / 2</span>
+            </div>
+            <div class="replacement-row">
+              <span>A<sub>b</sub> = [ (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-tri-a" placeholder="a">
+              <span>) · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-tri-hb" placeholder="h_b">
+              <span>) ] / 2 = </span>
+              <span class="result-badge" id="res-tri-ab"></span>
+              <span class="feedback-msg" id="fb-tri-ab"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcTriAb()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-tri-a','inp-tri-hb'], 'res-tri-ab', 'td-ab', 'fb-tri-ab')">Limpiar fórmula</button>
+            </div>
+          </div>
+
+          <div class="formula-card">
+            <div class="formula-header">
+              <span class="formula-name">2. Área Total (<span class="math-symbol">A<sub>t</sub></span>)</span>
+              <span class="base-formula-badge">A<sub>t</sub> = 2 · A<sub>b</sub> + 3 · (a · h)</span>
+            </div>
+            <div class="replacement-row">
+              <span>A<sub>t</sub> = 2 · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-tri-at-ab" placeholder="A_b">
+              <span>) + 3 · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-tri-at-a" placeholder="a">
+              <span>·</span>
+              <input type="number" step="0.1" class="math-input" id="inp-tri-at-h" placeholder="h">
+              <span>) = </span>
+              <span class="result-badge" id="res-tri-at"></span>
+              <span class="feedback-msg" id="fb-tri-at"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcTriAt()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-tri-at-ab','inp-tri-at-a','inp-tri-at-h'], 'res-tri-at', 'td-at', 'fb-tri-at')">Limpiar fórmula</button>
+            </div>
+          </div>
+
+          <div class="formula-card" style="border-left-color: #f59e0b;">
+            <div class="formula-header">
+              <span class="formula-name">3. Volumen (<span class="math-symbol">V</span>) <small style="color: #d97706;">★ Activa el vaso milimetrado</small></span>
+              <span class="base-formula-badge">V = A<sub>b</sub> · h</span>
+            </div>
+            <div class="replacement-row">
+              <span>V = (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-tri-v-ab" placeholder="A_b">
+              <span>) · (</span>
+              <input type="number" step="0.1" class="math-input" id="inp-tri-v-h" placeholder="h">
+              <span>) = </span>
+              <span class="result-badge" id="res-tri-v"></span>
+              <span class="feedback-msg" id="fb-tri-v"></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn btn-calc" onclick="calcTriV()">Calcular resultado</button>
+              <button class="btn btn-clear" onclick="clearInputs(['inp-tri-v-ab','inp-tri-v-h'], 'res-tri-v', 'td-vol', 'fb-tri-v')">Limpiar fórmula</button>
+            </div>
+          </div>
+        `;
+
+        attachTriListeners();
+      }
+
+      update3DScene();
+    }
+
+    /* ==========================================================
+       CONTROL DEL VASO MILIMETRADO
+       ========================================================== */
+    function lockBeaker() {
+      const lockOverlay = document.getElementById('beaker-lock');
+      const beakerBox = document.getElementById('beaker-box');
+      const beakerSlider = document.getElementById('beaker-water-slider');
+
+      lockOverlay.classList.remove('hidden');
+      beakerBox.classList.add('locked');
+      beakerSlider.disabled = true;
+      beakerSlider.value = 0;
+      appState[appState.selectedType].water = 0;
+      document.getElementById('beaker-water-txt').innerText = '0 cm³';
+      document.getElementById('beaker-liquid-fill').style.height = '0%';
+    }
+
+    function unlockBeaker() {
+      const lockOverlay = document.getElementById('beaker-lock');
+      const beakerBox = document.getElementById('beaker-box');
+      const beakerSlider = document.getElementById('beaker-water-slider');
+
+      appState.isVolumeUnlocked = true;
+      lockOverlay.classList.add('hidden');
+      beakerBox.classList.remove('locked');
+      beakerSlider.disabled = false;
+      update3DScene();
+    }
+
+    // Listener de red
+    document.getElementById('slider-net').addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      appState.netProgress = val / 100;
+      if (val === 0) {
+        document.getElementById('net-txt').innerText = '0% (Cuerpo cerrado)';
+      } else if (val === 100) {
+        document.getElementById('net-txt').innerText = '100% (Red coplanar desplegada)';
+      } else {
+        document.getElementById('net-txt').innerText = `${val}% de apertura`;
+      }
+      update3DScene();
+    });
+
+    // Listener del vaso
+    const beakerSlider = document.getElementById('beaker-water-slider');
+    beakerSlider.addEventListener('input', () => {
+      if (!appState.isVolumeUnlocked) return;
+      const val = parseFloat(beakerSlider.value);
+      appState[appState.selectedType].water = val;
+      update3DScene();
+    });
+
+    /* ==========================================================
+       CONSTRUCCIÓN 3D: PIVOTES Y CINEMÁTICA
+       ========================================================== */
+    function createFace(w, h, color = 0x60a5fa, opacity = 0.6) {
+      const group = new THREE.Group();
+      const geom = new THREE.PlaneGeometry(w, h);
+      const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        transparent: true,
+        opacity: opacity,
+        side: THREE.DoubleSide,
+        roughness: 0.2
+      });
+      const mesh = new THREE.Mesh(geom, mat);
+      group.add(mesh);
+
+      const edgeGeom = new THREE.EdgesGeometry(geom);
+      const edgeMat = new THREE.LineBasicMaterial({ color: 0x1e293b, linewidth: 2 });
+      const edges = new THREE.LineSegments(edgeGeom, edgeMat);
+      group.add(edges);
+
+      return group;
+    }
+
+    function createCircleFace(r, color = 0x38bdf8, opacity = 0.6) {
+      const group = new THREE.Group();
+      const geom = new THREE.CircleGeometry(r, 48);
+      const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        transparent: true,
+        opacity: opacity,
+        side: THREE.DoubleSide,
+        roughness: 0.2
+      });
+      const mesh = new THREE.Mesh(geom, mat);
+      group.add(mesh);
+
+      const edgeGeom = new THREE.EdgesGeometry(geom);
+      const edgeMat = new THREE.LineBasicMaterial({ color: 0x1e293b, linewidth: 2 });
+      const edges = new THREE.LineSegments(edgeGeom, edgeMat);
+      group.add(edges);
+
+      return group;
+    }
+
+    // Triángulo equilátero como malla 2D
+    function createTriangleFace(a, color = 0x93c5fd, opacity = 0.75) {
+      const group = new THREE.Group();
+      const h_tri = (a * Math.sqrt(3)) / 2;
+      const shape = new THREE.Shape();
+      shape.moveTo(-a / 2, 0);
+      shape.lineTo(a / 2, 0);
+      shape.lineTo(0, h_tri);
+      shape.closePath();
+
+      const geom = new THREE.ShapeGeometry(shape);
+      const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        transparent: true,
+        opacity: opacity,
+        side: THREE.DoubleSide,
+        roughness: 0.2
+      });
+      const mesh = new THREE.Mesh(geom, mat);
+      group.add(mesh);
+
+      const edgeGeom = new THREE.EdgesGeometry(geom);
+      const edgeMat = new THREE.LineBasicMaterial({ color: 0x1e293b, linewidth: 2 });
+      const edges = new THREE.LineSegments(edgeGeom, edgeMat);
+      group.add(edges);
+
+      return group;
+    }
+
+    function update3DScene() {
+      while (netGroup.children.length > 0) {
+        netGroup.remove(netGroup.children[0]);
+      }
+      if (currentWaterMesh) {
+        scene.remove(currentWaterMesh);
+        currentWaterMesh = null;
+      }
+
+      const type = appState.selectedType;
+      const t = appState.netProgress;
+
+      let totalCapacity = 0;
+      let waterH = 0;
+      let areaBasal = 0;
+      let hVal = 0;
+
+      if (type === 'prisma') {
+        const a = appState.prisma.length;
+        const b = appState.prisma.width;
+        const h = appState.prisma.height;
+        hVal = h;
+        areaBasal = a * b;
+        totalCapacity = areaBasal * h;
+
+        const angle = t * (Math.PI / 2);
+
+        // Base inferior
+        const baseInf = createFace(a, b, 0x93c5fd, 0.75);
+        baseInf.rotation.x = -Math.PI / 2;
+        baseInf.position.set(0, 0.01, 0);
+        netGroup.add(baseInf);
+
+        // Cara Frontal
+        const frontPivot = new THREE.Group();
+        frontPivot.position.set(0, 0.01, b / 2);
+        frontPivot.rotation.x = angle;
+        const frontFace = createFace(a, h);
+        frontFace.position.set(0, h / 2, 0);
+        frontPivot.add(frontFace);
+        netGroup.add(frontPivot);
+
+        // Cara Posterior
+        const backPivot = new THREE.Group();
+        backPivot.position.set(0, 0.01, -b / 2);
+        backPivot.rotation.x = -angle;
+        const backFace = createFace(a, h);
+        backFace.position.set(0, h / 2, 0);
+        backPivot.add(backFace);
+
+        // Tapa Superior
+        const topPivot = new THREE.Group();
+        topPivot.position.set(0, h, 0);
+        topPivot.rotation.x = (1 - t) * (Math.PI / 2);
+        const topFace = createFace(a, b, 0x93c5fd, 0.75);
+        topFace.position.set(0, b / 2, 0);
+        topPivot.add(topFace);
+        backPivot.add(topPivot);
+        netGroup.add(backPivot);
+
+        // Cara Derecha
+        const rightPivot = new THREE.Group();
+        rightPivot.position.set(a / 2, 0.01, 0);
+        rightPivot.rotation.z = -angle;
+        const rightFace = createFace(b, h);
+        rightFace.rotation.y = Math.PI / 2;
+        rightFace.position.set(0, h / 2, 0);
+        rightPivot.add(rightFace);
+        netGroup.add(rightPivot);
+
+        // Cara Izquierda
+        const leftPivot = new THREE.Group();
+        leftPivot.position.set(-a / 2, 0.01, 0);
+        leftPivot.rotation.z = angle;
+        const leftFace = createFace(b, h);
+        leftFace.rotation.y = -Math.PI / 2;
+        leftFace.position.set(0, h / 2, 0);
+        leftPivot.add(leftFace);
+        netGroup.add(leftPivot);
+
+        if (t < 0.15 && appState.isVolumeUnlocked) {
+          const w = appState.prisma.water;
+          waterH = totalCapacity > 0 ? (w / areaBasal) : 0;
+          if (waterH > 0.05) {
+            const wGeo = new THREE.BoxGeometry(a * 0.98, waterH, b * 0.98);
+            currentWaterMesh = new THREE.Mesh(wGeo, waterMaterial);
+            currentWaterMesh.position.set(0, waterH / 2, 0);
+            scene.add(currentWaterMesh);
+          }
+        }
+
+      } else if (type === 'cilindro') {
+        const r = appState.cilindro.radius;
+        const h = appState.cilindro.height;
+        hVal = h;
+        areaBasal = 3.14 * r * r;
+        totalCapacity = areaBasal * h;
+
+        const circ = 2 * Math.PI * r;
+        const halfCirc = circ / 2;
+        const segments = 56;
+        const halfSegs = segments / 2;
+
+        function buildHalfLateral(isRightSide) {
+          const group = new THREE.Group();
+          const sign = isRightSide ? 1 : -1;
+          const stripW = halfCirc / halfSegs;
+
+          for (let i = 0; i < halfSegs; i++) {
+            const sMid = (i + 0.5) * stripW;
+            let posX, posZ, rotY;
+
+            if (t < 0.999) {
+              const curR = r / (1 - t);
+              const angle = (sMid / halfCirc) * (Math.PI * (1 - t));
+              const cZ = -r + curR;
+              posX = sign * curR * Math.sin(angle);
+              posZ = cZ - curR * Math.cos(angle);
+              rotY = sign * angle;
+            } else {
+              posX = sign * sMid;
+              posZ = -r;
+              rotY = 0;
+            }
+
+            const strip = createFace(stripW + 0.05, h, 0x60a5fa, 0.6);
+            strip.position.set(posX, h / 2, posZ);
+            strip.rotation.y = rotY;
+            group.add(strip);
+          }
+          return group;
+        }
+
+        netGroup.add(buildHalfLateral(true));
+        netGroup.add(buildHalfLateral(false));
+
+        // Base Inferior
+        const basePivot = new THREE.Group();
+        basePivot.position.set(0, 0.01, -r);
+        basePivot.rotation.x = t * (Math.PI / 2);
+        const baseCircle = createCircleFace(r, 0x93c5fd, 0.75);
+        baseCircle.rotation.x = -Math.PI / 2;
+        baseCircle.position.set(0, 0, r);
+        basePivot.add(baseCircle);
+        netGroup.add(basePivot);
+
+        // Base Superior
+        const topPivot = new THREE.Group();
+        topPivot.position.set(0, h, -r);
+        topPivot.rotation.x = -t * (Math.PI / 2);
+        topPivot.position.y = (1 - t) * h + t * 0.01;
+        const topCircle = createCircleFace(r, 0x93c5fd, 0.75);
+        topCircle.rotation.x = -Math.PI / 2;
+        topCircle.position.set(0, 0, -r);
+        topPivot.add(topCircle);
+        netGroup.add(topPivot);
+
+        if (t < 0.15 && appState.isVolumeUnlocked) {
+          const w = appState.cilindro.water;
+          waterH = totalCapacity > 0 ? (w / areaBasal) : 0;
+          if (waterH > 0.05) {
+            const wGeo = new THREE.CylinderGeometry(r * 0.98, r * 0.98, waterH, 36);
+            currentWaterMesh = new THREE.Mesh(wGeo, waterMaterial);
+            currentWaterMesh.position.set(0, waterH / 2, 0);
+            scene.add(currentWaterMesh);
+          }
+        }
+
+      } else if (type === 'triangular') {
+        const a = appState.triangular.base;
+        const h_tri = (a * Math.sqrt(3)) / 2;
+        const h = appState.triangular.height;
+        hVal = h;
+        areaBasal = (a * h_tri) / 2;
+        totalCapacity = areaBasal * h;
+
+        // Base central (cara rectangular lateral central en el plano de la red)
+        // Red geométrica clásica: 3 rectángulos contiguos (a x h) + 2 triángulos en los extremos
+        const centralFace = createFace(a, h, 0xa855f7, 0.65);
+        centralFace.position.set(0, (1 - t) * (h / 2) + t * 0.01, 0);
+        centralFace.rotation.x = -(1 - t) * 0 - t * (Math.PI / 2);
+        netGroup.add(centralFace);
+
+        // Cara lateral derecha (bisagra a la derecha en x = +a/2)
+        const rightPivot = new THREE.Group();
+        rightPivot.position.set(a / 2, 0, 0);
+        // Con t=0 forma ángulo de 60° respecto a la cara central cerrando el prisma triangular
+        // Con t=1 queda en el mismo plano (0°)
+        rightPivot.rotation.y = (1 - t) * (Math.PI / 3);
+        const rightFace = createFace(a, h, 0x818cf8, 0.6);
+        rightFace.position.set(a / 2, 0, 0);
+        rightPivot.add(rightFace);
+        centralFace.add(rightPivot);
+
+        // Cara lateral izquierda (bisagra a la izquierda en x = -a/2)
+        const leftPivot = new THREE.Group();
+        leftPivot.position.set(-a / 2, 0, 0);
+        leftPivot.rotation.y = -(1 - t) * (Math.PI / 3);
+        const leftFace = createFace(a, h, 0x818cf8, 0.6);
+        leftFace.position.set(-a / 2, 0, 0);
+        leftPivot.add(leftFace);
+        centralFace.add(leftPivot);
+
+        // Base triangular inferior (bisagra inferior en y' = -h/2)
+        const bTriPivot = new THREE.Group();
+        bTriPivot.position.set(0, -h / 2, 0);
+        bTriPivot.rotation.x = (1 - t) * (Math.PI / 2);
+        const bTriMesh = createTriangleFace(a, 0xc084fc, 0.8);
+        bTriMesh.rotation.z = Math.PI; // Apunta hacia afuera al desplegar
+        bTriPivot.add(bTriMesh);
+        centralFace.add(bTriPivot);
+
+        // Base triangular superior (bisagra superior en y' = +h/2)
+        const tTriPivot = new THREE.Group();
+        tTriPivot.position.set(0, h / 2, 0);
+        tTriPivot.rotation.x = -(1 - t) * (Math.PI / 2);
+        const tTriMesh = createTriangleFace(a, 0xc084fc, 0.8);
+        tTriPivot.add(tTriMesh);
+        centralFace.add(tTriPivot);
+
+        if (t < 0.15 && appState.isVolumeUnlocked) {
+          const w = appState.triangular.water;
+          waterH = totalCapacity > 0 ? (w / areaBasal) : 0;
+          if (waterH > 0.05) {
+            // Prisma triangular de agua con ExtrudeGeometry
+            const shape = new THREE.Shape();
+            shape.moveTo(-a * 0.49, 0);
+            shape.lineTo(a * 0.49, 0);
+            shape.lineTo(0, h_tri * 0.98);
+            shape.closePath();
+
+            const extrudeSettings = { depth: waterH, bevelEnabled: false };
+            const wGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            currentWaterMesh = new THREE.Mesh(wGeo, waterMaterial);
+            currentWaterMesh.rotation.x = Math.PI / 2;
+            currentWaterMesh.position.set(0, waterH, 0);
+            scene.add(currentWaterMesh);
+          }
+        }
+      }
+
+      // Sincronizar vaso
+      const waterVal = appState[type].water;
+      beakerSlider.max = Math.ceil(totalCapacity);
+      document.getElementById('beaker-water-txt').innerText = waterVal.toFixed(1) + ' cm³';
+      const pct = totalCapacity > 0 ? (waterVal / totalCapacity) * 100 : 0;
+      document.getElementById('beaker-liquid-fill').style.height = `${pct}%`;
+
+      let infoHTML = `
+        <strong>Visualización 3D:</strong><br>
+        • Red Geométrica: <b>${Math.round(t * 100)}%</b> desplegada<br>
+      `;
+
+      if (!appState.isVolumeUnlocked) {
+        infoHTML += `• Estado de llenado: <i>Bloqueado (calcula el volumen para habilitar)</i>`;
+      } else {
+        infoHTML += `• Agua vertida: <b>${waterVal.toFixed(1)} cm³</b> (${pct.toFixed(0)}%)<br>`;
+        if (t < 0.15) {
+          infoHTML += `• Nivel de agua: <b>${waterH.toFixed(2)} cm</b> / ${hVal.toFixed(1)} cm<br>`;
+        } else {
+          infoHTML += `• <i>(Cierra la red al 0% para visualizar el líquido)</i><br>`;
+        }
+
+        if (pct >= 99.5) {
+          infoHTML += `<span style="color: #15803d; font-weight: bold; background: #dcfce7; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 3px;">
+            🎉 ¡Capacidad máxima alcanzada! Volumen total = ${totalCapacity.toFixed(1)} cm³
+          </span>`;
+        }
+      }
+
+      document.getElementById('canvas-info-tag').innerHTML = infoHTML;
+    }
+
+    /* ==========================================================
+       LISTENERS DE DIMENSIONES
+       ========================================================== */
+    function attachPrismListeners() {
+      const sLen = document.getElementById('slider-len');
+      const sWid = document.getElementById('slider-wid');
+      const sH = document.getElementById('slider-h');
+
+      function onDimChange() {
+        appState.prisma.length = parseFloat(sLen.value);
+        appState.prisma.width = parseFloat(sWid.value);
+        appState.prisma.height = parseFloat(sH.value);
+
+        document.getElementById('len-txt').innerText = appState.prisma.length.toFixed(1);
+        document.getElementById('wid-txt').innerText = appState.prisma.width.toFixed(1);
+        document.getElementById('h-txt').innerText = appState.prisma.height.toFixed(1);
+
+        document.getElementById('td-a').innerText = appState.prisma.length.toFixed(1) + ' cm';
+        document.getElementById('td-b').innerText = appState.prisma.width.toFixed(1) + ' cm';
+        document.getElementById('td-h').innerText = appState.prisma.height.toFixed(1) + ' cm';
+
+        const isCuad = (appState.prisma.length === appState.prisma.width);
+        document.getElementById('base-kind-note').innerText = isCuad ?
+          '💡 Base cuadrada (a = b = ' + appState.prisma.length.toFixed(1) + ' cm)' :
+          '💡 Base rectangular (a ≠ b)';
+
+        appState.isVolumeUnlocked = false;
+        lockBeaker();
+        update3DScene();
+      }
+
+      sLen.addEventListener('input', onDimChange);
+      sWid.addEventListener('input', onDimChange);
+      sH.addEventListener('input', onDimChange);
+    }
+
+    function attachCylListeners() {
+      const sRad = document.getElementById('slider-rad');
+      const sH = document.getElementById('slider-h');
+
+      sRad.addEventListener('input', (e) => {
+        appState.cilindro.radius = parseFloat(e.target.value);
+        document.getElementById('rad-txt').innerText = appState.cilindro.radius.toFixed(1);
+        document.getElementById('td-r').innerText = appState.cilindro.radius.toFixed(1) + ' cm';
+        appState.isVolumeUnlocked = false;
+        lockBeaker();
+        update3DScene();
+      });
+
+      sH.addEventListener('input', (e) => {
+        appState.cilindro.height = parseFloat(e.target.value);
+        document.getElementById('h-txt').innerText = appState.cilindro.height.toFixed(1);
+        document.getElementById('td-h').innerText = appState.cilindro.height.toFixed(1) + ' cm';
+        appState.isVolumeUnlocked = false;
+        lockBeaker();
+        update3DScene();
+      });
+    }
+
+    function attachTriListeners() {
+      const sB = document.getElementById('slider-tri-b');
+      const sH = document.getElementById('slider-tri-h');
+
+      function onTriChange() {
+        appState.triangular.base = parseFloat(sB.value);
+        appState.triangular.height = parseFloat(sH.value);
+        appState.triangular.heightTri = (appState.triangular.base * Math.sqrt(3)) / 2;
+
+        document.getElementById('tri-b-txt').innerText = appState.triangular.base.toFixed(1);
+        document.getElementById('tri-h-txt').innerText = appState.triangular.height.toFixed(1);
+
+        document.getElementById('td-tri-a').innerText = appState.triangular.base.toFixed(1) + ' cm';
+        document.getElementById('td-tri-hb').innerText = appState.triangular.heightTri.toFixed(2) + ' cm';
+        document.getElementById('td-tri-h').innerText = appState.triangular.height.toFixed(1) + ' cm';
+
+        appState.isVolumeUnlocked = false;
+        lockBeaker();
+        update3DScene();
+      }
+
+      sB.addEventListener('input', onTriChange);
+      sH.addEventListener('input', onTriChange);
+    }
+
+    document.getElementById('body-selector').addEventListener('change', (e) => {
+      appState.selectedType = e.target.value;
+      renderModule();
+    });
+
+    /* ==========================================================
+       LÓGICA DE REEMPLAZO, EVALUACIÓN Y DESBLOQUEO
+       ========================================================== */
+    function clearInputs(inputIds, resBadgeId, tdId, fbId) {
+      inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const badge = document.getElementById(resBadgeId);
+      if (badge) badge.style.display = 'none';
+      const td = document.getElementById(tdId);
+      if (td) td.innerText = '?';
+      const fb = document.getElementById(fbId);
+      if (fb) fb.innerText = '';
+    }
+
+    // Prisma
+    function calcRecAb() {
+      const a = parseFloat(document.getElementById('inp-rec-a').value);
+      const b = parseFloat(document.getElementById('inp-rec-b').value);
+      const fb = document.getElementById('fb-rec-ab');
+
+      if (isNaN(a) || isNaN(b)) return alert('Ingresa a y b.');
+      const res = a * b;
+      const badge = document.getElementById('res-rec-ab');
+      badge.innerText = res.toFixed(2) + ' cm²';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-ab').innerText = res.toFixed(2) + ' cm²';
+
+      const expA = appState.prisma.length;
+      const expB = appState.prisma.width;
+
+      if ((Math.abs(a - expA) < 0.05 && Math.abs(b - expB) < 0.05) ||
+          (Math.abs(a - expB) < 0.05 && Math.abs(b - expA) < 0.05)) {
+        fb.innerHTML = '✓ ¡Correcto!';
+        fb.className = 'feedback-msg success';
+      } else {
+        fb.innerHTML = `⚠️ Dimensiones actuales: a = ${expA.toFixed(1)}, b = ${expB.toFixed(1)}`;
+        fb.className = 'feedback-msg error';
+      }
+    }
+
+    function calcRecAt() {
+      const ab = parseFloat(document.getElementById('inp-rec-at-ab').value);
+      const ah = parseFloat(document.getElementById('inp-rec-at-ah').value);
+      const bh = parseFloat(document.getElementById('inp-rec-at-bh').value);
+      const fb = document.getElementById('fb-rec-at');
+
+      if (isNaN(ab) || isNaN(ah) || isNaN(bh)) return alert('Ingresa los 3 productos parciales.');
+      const at = 2 * (ab + ah + bh);
+      const badge = document.getElementById('res-rec-at');
+      badge.innerText = at.toFixed(2) + ' cm²';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-at').innerText = at.toFixed(2) + ' cm²';
+
+      const expA = appState.prisma.length;
+      const expB = appState.prisma.width;
+      const expH = appState.prisma.height;
+      const expAt = 2 * (expA * expB + expA * expH + expB * expH);
+
+      if (Math.abs(at - expAt) < 1.0) {
+        fb.innerHTML = '✓ ¡Área total correcta!';
+        fb.className = 'feedback-msg success';
+      } else {
+        fb.innerHTML = '⚠️ Revisa los productos parciales respecto a la figura actual.';
+        fb.className = 'feedback-msg error';
+      }
+    }
+
+    function calcRecV() {
+      const ab = parseFloat(document.getElementById('inp-rec-v-ab').value);
+      const h = parseFloat(document.getElementById('inp-rec-v-h').value);
+      const fb = document.getElementById('fb-rec-v');
+
+      if (isNaN(ab) || isNaN(h)) return alert('Ingresa A_b y h.');
+      const v = ab * h;
+      const badge = document.getElementById('res-rec-v');
+      badge.innerText = v.toFixed(2) + ' cm³';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-vol').innerText = v.toFixed(2) + ' cm³';
+
+      const expA = appState.prisma.length;
+      const expB = appState.prisma.width;
+      const expH = appState.prisma.height;
+      const expV = expA * expB * expH;
+
+      if (Math.abs(v - expV) < 1.0) {
+        fb.innerHTML = '✓ ¡Volumen correcto! El vaso milimetrado ha sido desbloqueado.';
+        fb.className = 'feedback-msg success';
+        unlockBeaker();
+      } else {
+        fb.innerHTML = `⚠️ No coincide con las medidas actuales (V esperado ≈ ${expV.toFixed(1)} cm³).`;
+        fb.className = 'feedback-msg error';
+        lockBeaker();
+      }
+    }
+
+    // Cilindro
+    function calcCylAb() {
+      const r = parseFloat(document.getElementById('inp-cyl-r').value);
+      const fb = document.getElementById('fb-cyl-ab');
+
+      if (isNaN(r)) return alert('Ingresa el radio r.');
+      const ab = 3.14 * r * r;
+      const badge = document.getElementById('res-cyl-ab');
+      badge.innerText = ab.toFixed(2) + ' cm²';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-ab').innerText = ab.toFixed(2) + ' cm²';
+
+      const expR = appState.cilindro.radius;
+      if (Math.abs(r - expR) < 0.05) {
+        fb.innerHTML = '✓ ¡Correcto!';
+        fb.className = 'feedback-msg success';
+      } else {
+        fb.innerHTML = `⚠️ El radio actual es r = ${expR.toFixed(1)} cm`;
+        fb.className = 'feedback-msg error';
+      }
+    }
+
+    function calcCylAt() {
+      const ab = parseFloat(document.getElementById('inp-cyl-at-ab').value);
+      const r = parseFloat(document.getElementById('inp-cyl-at-r').value);
+      const h = parseFloat(document.getElementById('inp-cyl-at-h').value);
+      const fb = document.getElementById('fb-cyl-at');
+
+      if (isNaN(ab) || isNaN(r) || isNaN(h)) return alert('Ingresa A_b, r y h.');
+      const al = 2 * 3.14 * r * h;
+      const at = 2 * ab + al;
+      const badge = document.getElementById('res-cyl-at');
+      badge.innerText = at.toFixed(2) + ' cm²';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-al').innerText = al.toFixed(2) + ' cm²';
+      document.getElementById('td-at').innerText = at.toFixed(2) + ' cm²';
+
+      const expR = appState.cilindro.radius;
+      const expH = appState.cilindro.height;
+      const expAt = 2 * (3.14 * expR * expR) + (2 * 3.14 * expR * expH);
+
+      if (Math.abs(at - expAt) < 1.5) {
+        fb.innerHTML = '✓ ¡Área total correcta!';
+        fb.className = 'feedback-msg success';
+      } else {
+        fb.innerHTML = '⚠️ Revisa los datos ingresados respecto a la figura actual.';
+        fb.className = 'feedback-msg error';
+      }
+    }
+
+    function calcCylV() {
+      const ab = parseFloat(document.getElementById('inp-cyl-v-ab').value);
+      const h = parseFloat(document.getElementById('inp-cyl-v-h').value);
+      const fb = document.getElementById('fb-cyl-v');
+
+      if (isNaN(ab) || isNaN(h)) return alert('Ingresa A_b y h.');
+      const v = ab * h;
+      const badge = document.getElementById('res-cyl-v');
+      badge.innerText = v.toFixed(2) + ' cm³';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-vol').innerText = v.toFixed(2) + ' cm³';
+
+      const expR = appState.cilindro.radius;
+      const expH = appState.cilindro.height;
+      const expV = (3.14 * expR * expR) * expH;
+
+      if (Math.abs(v - expV) < 1.5) {
+        fb.innerHTML = '✓ ¡Volumen correcto! El vaso milimetrado ha sido desbloqueado.';
+        fb.className = 'feedback-msg success';
+        unlockBeaker();
+      } else {
+        fb.innerHTML = `⚠️ No coincide con las medidas actuales (V esperado ≈ ${expV.toFixed(1)} cm³).`;
+        fb.className = 'feedback-msg error';
+        lockBeaker();
+      }
+    }
+
+    // Triangular
+    function calcTriAb() {
+      const a = parseFloat(document.getElementById('inp-tri-a').value);
+      const hb = parseFloat(document.getElementById('inp-tri-hb').value);
+      const fb = document.getElementById('fb-tri-ab');
+
+      if (isNaN(a) || isNaN(hb)) return alert('Ingresa a y h_b.');
+      const ab = (a * hb) / 2;
+      const badge = document.getElementById('res-tri-ab');
+      badge.innerText = ab.toFixed(2) + ' cm²';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-ab').innerText = ab.toFixed(2) + ' cm²';
+
+      const expA = appState.triangular.base;
+      if (Math.abs(a - expA) < 0.1) {
+        fb.innerHTML = '✓ ¡Correcto!';
+        fb.className = 'feedback-msg success';
+      } else {
+        fb.innerHTML = `⚠️ El lado de la base actual es a = ${expA.toFixed(1)} cm`;
+        fb.className = 'feedback-msg error';
+      }
+    }
+
+    function calcTriAt() {
+      const ab = parseFloat(document.getElementById('inp-tri-at-ab').value);
+      const a = parseFloat(document.getElementById('inp-tri-at-a').value);
+      const h = parseFloat(document.getElementById('inp-tri-at-h').value);
+      const fb = document.getElementById('fb-tri-at');
+
+      if (isNaN(ab) || isNaN(a) || isNaN(h)) return alert('Ingresa A_b, a y h.');
+      const at = 2 * ab + 3 * (a * h);
+      const badge = document.getElementById('res-tri-at');
+      badge.innerText = at.toFixed(2) + ' cm²';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-at').innerText = at.toFixed(2) + ' cm²';
+
+      const expA = appState.triangular.base;
+      const expH = appState.triangular.height;
+      const expHb = (expA * Math.sqrt(3)) / 2;
+      const expAt = 2 * ((expA * expHb) / 2) + 3 * (expA * expH);
+
+      if (Math.abs(at - expAt) < 2.0) {
+        fb.innerHTML = '✓ ¡Área total correcta!';
+        fb.className = 'feedback-msg success';
+      } else {
+        fb.innerHTML = '⚠️ Revisa los datos ingresados respecto al prisma actual.';
+        fb.className = 'feedback-msg error';
+      }
+    }
+
+    function calcTriV() {
+      const ab = parseFloat(document.getElementById('inp-tri-v-ab').value);
+      const h = parseFloat(document.getElementById('inp-tri-v-h').value);
+      const fb = document.getElementById('fb-tri-v');
+
+      if (isNaN(ab) || isNaN(h)) return alert('Ingresa A_b y h.');
+      const v = ab * h;
+      const badge = document.getElementById('res-tri-v');
+      badge.innerText = v.toFixed(2) + ' cm³';
+      badge.style.display = 'inline-block';
+      document.getElementById('td-vol').innerText = v.toFixed(2) + ' cm³';
+
+      const expA = appState.triangular.base;
+      const expH = appState.triangular.height;
+      const expHb = (expA * Math.sqrt(3)) / 2;
+      const expAb = (expA * expHb) / 2;
+      const expV = expAb * expH;
+
+      if (Math.abs(v - expV) < 2.0) {
+        fb.innerHTML = '✓ ¡Volumen correcto! El vaso milimetrado ha sido desbloqueado.';
+        fb.className = 'feedback-msg success';
+        unlockBeaker();
+      } else {
+        fb.innerHTML = `⚠️ No coincide con las medidas actuales (V esperado ≈ ${expV.toFixed(1)} cm³).`;
+        fb.className = 'feedback-msg error';
+        lockBeaker();
+      }
+    }
+
+    /* ==========================================================
+       SECCIÓN DE EJERCICIOS PRÁCTICOS INFERIOR
+       ========================================================== */
+    const exercisesData = [
+      {
+        tipo: 'Prisma Rectangular',
+        dims: 'Largo = 4 cm, Ancho = 3 cm, Altura = 6 cm',
+        ab: 12,       // 4 * 3
+        at: 108,      // 2*(12 + 24 + 18) = 108
+        v: 72         // 12 * 6
+      },
+      {
+        tipo: 'Prisma Base Cuadrada',
+        dims: 'Lado = 5 cm, Altura = 10 cm',
+        ab: 25,       // 5 * 5
+        at: 250,      // 2*(25) + 4*(5*10) = 50 + 200
+        v: 250        // 25 * 10
+      },
+      {
+        tipo: 'Cilindro',
+        dims: 'Radio = 2 cm, Altura = 8 cm (π ≈ 3.14)',
+        ab: 12.56,    // 3.14 * 4
+        at: 125.6,    // 2*(12.56) + 2*3.14*2*8 = 25.12 + 100.48 = 125.6
+        v: 100.48     // 12.56 * 8
+      },
+      {
+        tipo: 'Cilindro',
+        dims: 'Radio = 4 cm, Altura = 5 cm (π ≈ 3.14)',
+        ab: 50.24,    // 3.14 * 16
+        at: 226.08,   // 2*(50.24) + 2*3.14*4*5 = 100.48 + 125.6 = 226.08
+        v: 251.2      // 50.24 * 5
+      },
+      {
+        tipo: 'Prisma Triangular',
+        dims: 'Base tri = 6 cm, Alt. tri = 4 cm, Altura = 12 cm',
+        ab: 12,       // (6 * 4) / 2
+        at: 240,      // 2*(12) + 3*(6*12) = 24 + 216
+        v: 144        // 12 * 12
+      }
+    ];
+
+    function initPracticeTable() {
+      const tbody = document.getElementById('practice-body');
+      tbody.innerHTML = '';
+
+      exercisesData.forEach((ex, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight: 700; color: #1e293b;">${ex.tipo}</td>
+          <td style="color: #475569;">${ex.dims}</td>
+          <td><input type="number" step="0.01" class="practice-input" id="prac-ab-${idx}" placeholder="cm²"></td>
+          <td><input type="number" step="0.01" class="practice-input" id="prac-at-${idx}" placeholder="cm²"></td>
+          <td><input type="number" step="0.01" class="practice-input" id="prac-v-${idx}" placeholder="cm³"></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function checkPracticeExercises() {
+      let correctCount = 0;
+      let totalFields = exercisesData.length * 3;
+
+      exercisesData.forEach((ex, idx) => {
+        const inAb = document.getElementById(`prac-ab-${idx}`);
+        const inAt = document.getElementById(`prac-at-${idx}`);
+        const inV = document.getElementById(`prac-v-${idx}`);
+
+        const valAb = parseFloat(inAb.value);
+        const valAt = parseFloat(inAt.value);
+        const valV = parseFloat(inV.value);
+
+        // Tolerancia de 0.2 para redondeos
+        if (!isNaN(valAb) && Math.abs(valAb - ex.ab) <= 0.25) {
+          inAb.className = 'practice-input is-correct';
+          correctCount++;
+        } else {
+          inAb.className = 'practice-input is-wrong';
+        }
+
+        if (!isNaN(valAt) && Math.abs(valAt - ex.at) <= 0.35) {
+          inAt.className = 'practice-input is-correct';
+          correctCount++;
+        } else {
+          inAt.className = 'practice-input is-wrong';
+        }
+
+        if (!isNaN(valV) && Math.abs(valV - ex.v) <= 0.35) {
+          inV.className = 'practice-input is-correct';
+          correctCount++;
+        } else {
+          inV.className = 'practice-input is-wrong';
+        }
+      });
+
+      const scoreBanner = document.getElementById('score-banner');
+      const pct = Math.round((correctCount / totalFields) * 100);
+      if (pct === 100) {
+        scoreBanner.innerHTML = `🌟 ¡Puntaje perfecto! ${correctCount}/${totalFields} aciertos (${pct}%). ¡Excelente dominio!`;
+        scoreBanner.style.color = '#15803d';
+      } else {
+        scoreBanner.innerHTML = `Puntaje: ${correctCount}/${totalFields} correctos (${pct}%). Revisa las casillas en rojo.`;
+        scoreBanner.style.color = '#b91c1c';
+      }
+    }
+
+    /* ==========================================================
+       BUCLE DE ANIMACIÓN
+       ========================================================== */
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    renderModule();
+    initPracticeTable();
+    animate();
+  </script>
+</body>
+</html>
