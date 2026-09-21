@@ -1391,9 +1391,37 @@ class ReforzamientoApp {
     if (!f) return;
     const r = new FileReader();
     r.onload = (e) => {
-      this.state = JSON.parse(e.target.result);
-      StorageManager.save(this.state);
-      location.reload();
+      try {
+        const imported = JSON.parse(e.target.result);
+        
+        // 1. Extraer y asegurar el número de sesión (incluso si viene de versiones anteriores)
+        let sNum = 1;
+        if (imported.sessionNumber !== undefined) {
+          sNum = parseInt(imported.sessionNumber, 10);
+        } else if (imported.sessionsLog && imported.sessionsLog.length > 0) {
+          sNum = imported.sessionsLog.length + 1;
+        }
+
+        // 2. Unificar estructura
+        this.state = {
+          sessionNumber: isNaN(sNum) ? 1 : sNum,
+          bank: (imported.bank && imported.bank.length > 0) ? imported.bank : this.state.bank,
+          usedHistory: imported.usedHistory || [],
+          config: imported.config || this.state.config,
+          sessionsLog: imported.sessionsLog || []
+        };
+
+        // 3. Guardar directamente en la clave activa actual
+        StorageManager.save(this.state);
+        
+        alert(`¡Respaldo restaurado con éxito! Continuando en la Sesión N° ${this.state.sessionNumber}.`);
+        
+        // 4. Recargar interfaz completa
+        this.initUI();
+        this.closeModal();
+      } catch (err) {
+        alert("Error al leer el archivo JSON: asegúrate de que sea un respaldo válido.");
+      }
     };
     r.readAsText(f);
   }
