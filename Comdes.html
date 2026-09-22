@@ -1,0 +1,2679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio Decimal: Misión Valor Posicional</title>
+  <style>
+    :root {
+      --bg-main: #f0f4f8;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0ea5e9;
+      --accent-yellow: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      
+      /* Colores de Valor Posicional Obligatorios */
+      --col-u: #2563eb;  /* Unidades: Azul */
+      --col-d: #10b981;  /* Décimas: Verde */
+      --col-c: #f97316;  /* Centésimas: Naranja */
+      --col-m: #8b5cf6;  /* Milésimas: Morado */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e0f2fe 0%, #f1f5f9 50%, #f3e8ff 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-size: 17px;
+    }
+
+    /* ENCABEZADO SUPERIOR */
+    header.mission-header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .student-badge-info {
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: #eff6ff;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-chip {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 5px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+    }
+
+    .progress-bar-container {
+      width: 140px;
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    main.app-container {
+      flex: 1;
+      max-width: 960px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 0 16px 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.07), 0 8px 10px -6px rgba(0,0,0,0.04);
+      padding: 32px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .station-title-box {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .station-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .badge-b1 { background: #dbeafe; color: #1e40af; }
+    .badge-b2 { background: #fae8ff; color: #86198f; }
+
+    .station-title {
+      font-size: 1.8rem;
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    /* PERSONAJE GUÍA - ROBO-DECI */
+    .robot-guide-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .robot-svg-icon {
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+      animation: floatRobot 3s ease-in-out infinite;
+    }
+
+    @keyframes floatRobot {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .robot-speech {
+      font-size: 1.05rem;
+      line-height: 1.5;
+      color: #334155;
+    }
+
+    /* POSICIONES DECIMALES DESTACADAS */
+    .pos-u { color: var(--col-u); font-weight: bold; }
+    .pos-d { color: var(--col-d); font-weight: bold; }
+    .pos-c { color: var(--col-c); font-weight: bold; }
+    .pos-m { color: var(--col-m); font-weight: bold; }
+
+    .tag-u { background: #eff6ff; color: var(--col-u); border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+    .tag-d { background: #ecfdf5; color: var(--col-d); border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+    .tag-c { background: #fff7ed; color: var(--col-c); border: 1px solid #fed7aa; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+    .tag-m { background: #f5f3ff; color: var(--col-m); border: 1px solid #ddd6fe; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+
+    /* TABLA DE VALOR POSICIONAL */
+    .pos-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+
+    .pos-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 1.1rem;
+    }
+
+    .pos-table th {
+      padding: 12px 6px;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .pos-table td {
+      padding: 14px 6px;
+      border-top: 2px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .th-u { background: #dbeafe; color: #1e3a8a; }
+    .th-d { background: #d1fae5; color: #065f46; }
+    .th-c { background: #ffedd5; color: #9a3412; }
+    .th-m { background: #ede9fe; color: #5b21b6; }
+    .th-sep { background: #cbd5e1; color: #334155; width: 24px; font-size: 1.5rem; }
+
+    /* BOTONES */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px -3px rgba(0,0,0,0.15);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; }
+    .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-help { background: #fef3c7; color: #92400e; border: 2px solid #fcd34d; padding: 10px 20px; font-size: 1rem; }
+    .btn-sm { padding: 8px 16px; font-size: 0.95rem; border-radius: 10px; }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* FORMULARIOS Y CAMPOS */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .input-text {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1.15rem;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      transition: border 0.2s;
+      outline: none;
+    }
+
+    .input-text:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .input-math {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* EJERCICIOS Y PREGUNTAS */
+    .exercise-box {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .big-number-display {
+      font-size: 2.8rem;
+      font-weight: 900;
+      text-align: center;
+      letter-spacing: 2px;
+      margin: 15px 0;
+      color: #0f172a;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .option-btn {
+      padding: 16px;
+      background: white;
+      border: 2px solid #cbd5e1;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      color: #1e293b;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background: #eff6ff;
+      transform: translateY(-2px);
+    }
+
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: #dbeafe;
+      color: var(--primary-dark);
+    }
+
+    /* FEEDBACK Y MENSAJES */
+    .feedback-box {
+      padding: 16px 20px;
+      border-radius: 14px;
+      margin: 20px 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: none;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .feedback-success { background: #d1fae5; color: #065f46; border: 2px solid #6ee7b7; }
+    .feedback-warning { background: #fef3c7; color: #92400e; border: 2px solid #fcd34d; }
+    .feedback-danger { background: #fee2e2; color: #991b1b; border: 2px solid #fca5a5; }
+
+    /* TARJETAS ARRASTRABLES / CLICKEABLES */
+    .tiles-zone {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin: 20px 0;
+      min-height: 60px;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: 16px;
+      border: 2px dashed #cbd5e1;
+    }
+
+    .math-tile {
+      background: white;
+      border: 2px solid #3b82f6;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #1e40af;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06);
+    }
+
+    .math-tile:hover {
+      transform: scale(1.06);
+      background: #eff6ff;
+    }
+
+    .math-tile.used {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      border-color: #cbd5e1;
+      color: #94a3b8;
+    }
+
+    .slot-zone {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
+
+    .slot-box {
+      min-width: 90px;
+      height: 64px;
+      border: 3px dashed #94a3b8;
+      border-radius: 14px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 800;
+      padding: 0 16px;
+      transition: all 0.2s;
+    }
+
+    .slot-box.filled {
+      border: 3px solid #10b981;
+      background: #ecfdf5;
+      color: #065f46;
+    }
+
+    /* MODAL DE AYUDA */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: 24px;
+      max-width: 650px;
+      width: 100%;
+      padding: 32px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.5rem;
+      background: #f1f5f9;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* MODO PROFESOR */
+    .teacher-trigger-btn {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      opacity: 0.4;
+      font-size: 0.85rem;
+      background: #334155;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 50;
+      transition: opacity 0.2s;
+    }
+
+    .teacher-trigger-btn:hover { opacity: 1; }
+
+    /* INFORME Y RESULTADOS */
+    .report-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    .report-table th, .report-table td {
+      border: 1px solid #e2e8f0;
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    .report-table th {
+      background: #f1f5f9;
+      font-weight: 800;
+    }
+
+    .report-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .report-summary-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .report-summary-card .val {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--primary);
+    }
+
+    .report-summary-card .lbl {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* IMPRESIÓN (@media print) */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+        font-size: 12pt;
+      }
+      header.mission-header,
+      .robot-guide-box,
+      .btn,
+      .teacher-trigger-btn,
+      .modal-overlay,
+      #appNavButtons {
+        display: none !important;
+      }
+      .card {
+        box-shadow: none !important;
+        border: 1px solid #94a3b8 !important;
+        padding: 15px !important;
+        page-break-inside: avoid;
+      }
+      .report-table th {
+        background: #e2e8f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .page-break {
+        page-break-before: always;
+      }
+      .print-header {
+        display: block !important;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+      }
+    }
+
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- ENCABEZADO DE MISIÓN -->
+  <header class="mission-header" id="mainHeader" style="display:none;">
+    <div class="brand-title">
+      <span>🔬</span> Laboratorio Decimal
+    </div>
+    <div class="student-badge-info" id="hdrStudentInfo">Estudiante: Cargando...</div>
+    <div class="header-stats">
+      <div class="stat-chip">
+        <span>⭐</span> <span id="hdrStars">0</span>
+      </div>
+      <div class="stat-chip">
+        <span id="hdrStationLabel">Estación 1/16</span>
+      </div>
+      <div class="stat-chip" title="Progreso de la misión">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="hdrProgressBar"></div>
+        </div>
+        <span style="font-size:0.85rem; margin-left:4px;" id="hdrProgressPercent">0%</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR DE LA APLICACIÓN -->
+  <main class="app-container" id="appMain">
+    
+    <!-- PANTALLA INICIAL (BIENVENIDA) -->
+    <section id="screenWelcome" class="card">
+      <div style="text-align:center; margin-bottom: 24px;">
+        <div style="font-size: 4rem; margin-bottom: 10px;">🧪 🤖 📐</div>
+        <h1 style="font-size: 2.5rem; color: #1e3a8a; font-weight: 900; margin-bottom: 8px;">Laboratorio Decimal</h1>
+        <h2 style="font-size: 1.5rem; color: #0284c7; font-weight: 700;">Misión Valor Posicional</h2>
+        <p style="margin-top: 12px; font-size: 1.2rem; color: #475569; font-weight: 600;">
+          ¿Estás listo para convertirte en un experto en números decimales?
+        </p>
+      </div>
+
+      <div style="max-width: 520px; margin: 0 auto 30px; background: #f8fafc; padding: 24px; border-radius: 16px; border: 2px solid #e2e8f0;">
+        <div class="form-group">
+          <label class="form-label" for="inputStudentName">Nombre del Estudiante:</label>
+          <input type="text" id="inputStudentName" class="input-text" placeholder="Escribe tu nombre y apellido..." autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inputStudentGrade">Curso:</label>
+          <!-- CURSO MANUAL EDITABLE -->
+          <input type="text" id="inputStudentGrade" class="input-text" value="5° básico" placeholder="Ej: 5° básico A, 5° básico B...">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">Fecha de la sesión:</label>
+          <div id="displaySessionDate" style="font-weight: 800; font-size: 1.1rem; color: #334155; padding: 10px; background: white; border-radius: 10px; border: 1px solid #cbd5e1;"></div>
+        </div>
+      </div>
+
+      <!-- VISUALIZACIÓN DE BLOQUES PEDAGÓGICOS (SIN TIEMPOS EN MINUTOS) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 30px;">
+        <div style="background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 16px; padding: 18px;">
+          <div style="font-weight: 800; color: #1d4ed8; font-size: 1.1rem; margin-bottom: 6px;">
+            🟦 BLOQUE 1: REPASO Y ACTIVACIÓN
+          </div>
+          <p style="font-size: 0.95rem; color: #334155;">
+            Lectura, escritura y valor posicional de números decimales hasta la milésima.
+          </p>
+        </div>
+        <div style="background: #faf5ff; border: 2px solid #e9d5ff; border-radius: 16px; padding: 18px;">
+          <div style="font-weight: 800; color: #7e22ce; font-size: 1.1rem; margin-bottom: 6px;">
+            🟪 BLOQUE 2: COMPOSICIÓN Y DESCOMPOSICIÓN
+          </div>
+          <p style="font-size: 0.95rem; color: #334155;">
+            Componer y descomponer números decimales en forma estándar reconociendo sus equivalencias.
+          </p>
+        </div>
+      </div>
+
+      <div style="text-align: center;">
+        <button class="btn btn-primary" id="btnStartMission" style="font-size: 1.35rem; padding: 16px 40px;">
+          🚀 INICIAR MISIÓN
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA DINÁMICA DE ESTACIÓN (ESTACIONES 1 A 16) -->
+    <section id="screenStation" class="card" style="display:none;">
+      <div class="station-title-box">
+        <span class="station-badge" id="stationBlockBadge">Bloque 1</span>
+        <h2 class="station-title" id="stationTitle">Estación 1: Detectives del Decimal</h2>
+      </div>
+
+      <!-- PERSONAJE GUÍA -->
+      <div class="robot-guide-box">
+        <svg class="robot-svg-icon" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="#3b82f6"/>
+          <rect x="25" y="30" width="50" height="35" rx="8" fill="#ffffff"/>
+          <circle cx="40" cy="45" r="6" fill="#1e3a8a"/>
+          <circle cx="60" cy="45" r="6" fill="#1e3a8a"/>
+          <path d="M40 55 Q50 63 60 55" stroke="#1e3a8a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <line x1="50" y1="5" x2="50" y2="15" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="50" cy="5" r="5" fill="#ef4444"/>
+          <rect x="18" y="42" width="6" height="12" rx="3" fill="#93c5fd"/>
+          <rect x="76" y="42" width="6" height="12" rx="3" fill="#93c5fd"/>
+        </svg>
+        <div class="robot-speech" id="robotSpeechText">
+          ¡Hola! Soy <strong>Robo-Deci</strong>. Te acompañaré durante toda la misión. Lee atentamente cada desafío.
+        </div>
+      </div>
+
+      <!-- CONTENEDOR DINÁMICO DE ACTIVIDAD -->
+      <div id="stationContentArea"></div>
+
+      <!-- ZONA DE RETROALIMENTACIÓN -->
+      <div id="stationFeedback" class="feedback-box"></div>
+
+      <!-- ACCIONES DE LA ESTACIÓN -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; flex-wrap: wrap; gap: 12px;" id="appNavButtons">
+        <button class="btn btn-help" id="btnNeedHelp">💡 Necesito ayuda</button>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary" id="btnCheckAnswer">COMPROBAR</button>
+          <button class="btn btn-success" id="btnNextStation" style="display:none;">CONTINUAR ➔</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA CHECKPOINT ENTRE BLOQUES (FIN REPASO) -->
+    <section id="screenCheckpoint" class="card" style="display:none; text-align:center;">
+      <div style="font-size: 4rem; margin-bottom: 12px;">🎉 ⚙️ 🔓</div>
+      <h2 style="font-size: 2.2rem; color: #1e3a8a; font-weight: 900; margin-bottom: 12px;">¡REPASO COMPLETADO!</h2>
+      <p style="font-size: 1.25rem; color: #334155; max-width: 600px; margin: 0 auto 24px; line-height: 1.5;">
+        Has recuperado tus habilidades decimales con éxito.<br>
+        <strong>¡Ahora desbloqueaste la Máquina de Composición y Descomposición!</strong>
+      </p>
+
+      <div class="report-summary-grid" style="max-width: 650px; margin: 20px auto 30px;">
+        <div class="report-summary-card">
+          <div class="val" id="cpStars">0</div>
+          <div class="lbl">Estrellas Obtenidas ⭐</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="cpPercent">100%</div>
+          <div class="lbl">Porcentaje de Logro</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="cpCorrect">0</div>
+          <div class="lbl">Ejercicios Correctos ✓</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btnUnlockBlock2" style="font-size: 1.25rem; padding: 16px 36px;">
+        🔓 DESBLOQUEAR NUEVA MISIÓN
+      </button>
+    </section>
+
+    <!-- PANTALLA FINAL (MISIÓN COMPLETADA) -->
+    <section id="screenFinal" class="card" style="display:none; text-align:center;">
+      <div style="font-size: 4.5rem; margin-bottom: 10px;">🏆 🌟 🎓</div>
+      <h1 style="font-size: 2.6rem; color: #15803d; font-weight: 900; margin-bottom: 6px;">¡MISIÓN COMPLETADA!</h1>
+      <h2 style="font-size: 1.5rem; color: #1e3a8a; font-weight: 800; margin-bottom: 20px;" id="finalStudentName">Estudiante</h2>
+
+      <!-- INSIGNIA -->
+      <div style="display: inline-block; background: linear-gradient(135deg, #fef08a, #fde047); border: 3px solid #eab308; padding: 14px 32px; border-radius: 999px; font-weight: 900; font-size: 1.3rem; color: #854d0e; box-shadow: 0 10px 15px -3px rgba(234, 179, 8, 0.3); margin-bottom: 24px;">
+        🎖️ EXPERTO EN DECIMALES
+      </div>
+
+      <!-- LOGROS ALCANZADOS -->
+      <div style="max-width: 500px; margin: 0 auto 30px; text-align: left; background: #f8fafc; padding: 20px 28px; border-radius: 16px; border: 2px solid #e2e8f0;">
+        <div style="font-weight: 800; margin-bottom: 12px; color: #0f172a;">Habilidades Dominadas:</div>
+        <div style="display: grid; gap: 8px; font-size: 1.05rem; font-weight: 700; color: #166534;">
+          <div>✓ Lectura de números decimales</div>
+          <div>✓ Escritura de decimales hasta la milésima</div>
+          <div>✓ Reconocimiento de valor posicional (U, d, c, m)</div>
+          <div>✓ Descomposición en forma estándar</div>
+          <div>✓ Composición decimal y reparación de errores</div>
+        </div>
+      </div>
+
+      <!-- MÉTRICAS FINALES -->
+      <div class="report-summary-grid" style="max-width: 700px; margin: 0 auto 30px;">
+        <div class="report-summary-card">
+          <div class="val" id="finalStars">0</div>
+          <div class="lbl">Estrellas Totales ⭐</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="finalPercent">0%</div>
+          <div class="lbl">Logro General</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="finalCorrectRatio">0 / 0</div>
+          <div class="lbl">Aciertos / Total</div>
+        </div>
+      </div>
+
+      <!-- ACCIONES FINALES -->
+      <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+        <button class="btn btn-primary" id="btnViewReport">📊 VER INFORME DETALLADO</button>
+        <button class="btn btn-secondary" id="btnRestartMission">🔄 VOLVER A PRACTICAR</button>
+      </div>
+    </section>
+
+    <!-- INFORME DEL ESTUDIANTE -->
+    <section id="screenReport" class="card" style="display:none;">
+      <!-- CABECERA PARA IMPRESIÓN EXCLUSIVA -->
+      <div class="print-header">
+        <h1 style="font-size: 1.6rem; font-weight: 900;">Laboratorio Decimal: Misión Valor Posicional</h1>
+        <p style="font-size: 1rem; color: #555;">Informe Pedagógico Individual de Evaluación</p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 24px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h2 style="font-size: 1.8rem; font-weight: 900; color: #0f172a;">INFORME DEL ESTUDIANTE</h2>
+          <div style="font-size: 1.1rem; color: #475569; margin-top: 4px;">
+            <strong>Estudiante:</strong> <span id="repStudentName"></span> | 
+            <strong>Curso:</strong> <span id="repStudentGrade"></span> | 
+            <strong>Fecha:</strong> <span id="repSessionDate"></span>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnBackFromReport">← Volver</button>
+      </div>
+
+      <!-- RESUMEN GENERAL -->
+      <h3 style="font-size: 1.3rem; margin-bottom: 12px; color: #1e3a8a;">Resumen de Desempeño General</h3>
+      <div class="report-summary-grid">
+        <div class="report-summary-card">
+          <div class="val" id="repTotalEx">0</div>
+          <div class="lbl">Ejercicios Realizados</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" style="color: #16a34a;" id="repTotalCorrect">0</div>
+          <div class="lbl">Correctos</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" style="color: #dc2626;" id="repTotalIncorrect">0</div>
+          <div class="lbl">Incorrectos Iniciales</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="repPercent">0%</div>
+          <div class="lbl">Porcentaje de Logro</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="repStars">0</div>
+          <div class="lbl">Estrellas ⭐</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="repAttempts">0</div>
+          <div class="lbl">Total Intentos</div>
+        </div>
+        <div class="report-summary-card">
+          <div class="val" id="repHelpCount">0</div>
+          <div class="lbl">Ayudas Consultadas 💡</div>
+        </div>
+      </div>
+
+      <!-- RESULTADOS POR CONTENIDO -->
+      <h3 style="font-size: 1.3rem; margin: 30px 0 12px; color: #1e3a8a;">Desempeño por Habilidad y Contenido</h3>
+      <table class="report-table" id="skillsTable">
+        <thead>
+          <tr>
+            <th>Contenido / Habilidad</th>
+            <th style="text-align:center;">Ejercicios</th>
+            <th style="text-align:center;">Correctos</th>
+            <th style="text-align:center;">Incorrectos</th>
+            <th>Logro</th>
+          </tr>
+        </thead>
+        <tbody id="skillsTableBody"></tbody>
+      </table>
+
+      <!-- DETALLE DE RESPUESTAS -->
+      <h3 style="font-size: 1.3rem; margin: 30px 0 12px; color: #1e3a8a;">Registro Detallado de Ejercicios</h3>
+      <div style="overflow-x:auto;">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Estación</th>
+              <th>Pregunta / Desafío</th>
+              <th>Respuesta Estudiante</th>
+              <th>Respuesta Correcta</th>
+              <th style="text-align:center;">Estado</th>
+              <th style="text-align:center;">Intentos</th>
+              <th style="text-align:center;">Ayuda</th>
+            </tr>
+          </thead>
+          <tbody id="repDetailTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- BOTONES DE EXPORTACIÓN Y ACCIÓN -->
+      <div style="display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; justify-content: center;" id="reportActionButtons">
+        <button class="btn btn-primary" id="btnPrintReport">🖨️ IMPRIMIR INFORME</button>
+        <button class="btn btn-primary" id="btnSavePdf">📄 GUARDAR COMO PDF</button>
+        <button class="btn btn-success" id="btnDownloadHtml">💾 DESCARGAR INFORME (HTML)</button>
+        <button class="btn btn-success" id="btnDownloadCsv">📑 DESCARGAR RESULTADOS CSV</button>
+        <button class="btn btn-secondary" id="btnReturnToActivity">VOLVER A LA ACTIVIDAD</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE AYUDA PEDAGÓGICA -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-box">
+      <button class="modal-close" id="btnCloseHelp">&times;</button>
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <span style="font-size: 2rem;">💡</span>
+        <h3 style="font-size: 1.5rem; color: #1e3a8a; font-weight: 800;">Panel de Ayuda Robo-Deci</h3>
+      </div>
+      <div id="helpModalContent" style="line-height: 1.6; color: #334155;"></div>
+    </div>
+  </div>
+
+  <!-- BOTÓN Y MODAL DISCRETO DE MODO PROFESOR -->
+  <button class="teacher-trigger-btn" id="btnTeacherOpen">Desarrollado por Stik Gatica</button>
+
+  <div class="modal-overlay" id="teacherModal">
+    <div class="modal-box" style="max-width: 700px;">
+      <button class="modal-close" id="btnCloseTeacher">&times;</button>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <span style="font-size: 1.8rem;">🔒</span>
+        <h3 style="font-size: 1.4rem; font-weight: 800; color: #0f172a;">Acceso a Modo Profesor</h3>
+      </div>
+
+      <div id="teacherAuthArea">
+        <div class="form-group">
+          <label class="form-label" for="teacherPassword">Ingrese contraseña de docente:</label>
+          <input type="password" id="teacherPassword" class="input-text" placeholder="Contraseña...">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn btn-primary btn-sm" id="btnSubmitTeacherAuth">Entrar</button>
+        </div>
+      </div>
+
+      <div id="teacherControlPanel" style="display: none;">
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px; margin-bottom: 20px;">
+          <strong>Panel de Gestión Docente:</strong> Controle el avance de la sesión en vivo.
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label class="form-label">Saltar directamente a estación:</label>
+          <div style="display: flex; gap: 10px;">
+            <select id="teacherStationSelect" class="input-text" style="padding: 10px;">
+              <!-- Llenado dinámico -->
+            </select>
+            <button class="btn btn-primary btn-sm" id="btnTeacherJumpStation">Ir</button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+          <button class="btn btn-secondary btn-sm" id="btnTeacherRevealAnswer">Mostrar Respuesta Correcta</button>
+          <button class="btn btn-secondary btn-sm" id="btnTeacherRegenExercise">Regenerar Ejercicio</button>
+          <button class="btn btn-secondary btn-sm" id="btnTeacherViewReportDirect">Ver Informe</button>
+          <button class="btn btn-secondary btn-sm" id="btnTeacherDownloadCsv">Exportar CSV</button>
+        </div>
+
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; display: flex; justify-content: space-between;">
+          <button class="btn btn-danger btn-sm" style="background:#dc2626; color:white;" id="btnTeacherResetAll">Reiniciar Sesión Completa</button>
+          <button class="btn btn-secondary btn-sm" id="btnTeacherClosePanel">Cerrar Modo Profesor</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT INTEGRADO Y AUTOCONTENIDO -->
+  <script>
+    /* =========================================================================
+       ESTADO GENERAL Y CONFIGURACIÓN DE LA APLICACIÓN
+       ========================================================================= */
+    const APP_STATE = {
+      studentName: "",
+      studentGrade: "5° básico",
+      sessionDate: "",
+      currentStation: 1, // 1 a 16
+      stars: 0,
+      totalExercisesAttempted: 0,
+      totalExercisesCorrect: 0,
+      helpConsultedInCurrent: false,
+      currentExerciseAttempts: 0,
+      exerciseCurrentData: null,
+      history: [],
+      // Categorías oficiales de contenido
+      skills: {
+        "Lectura de números decimales": { attempted: 0, correct: 0, incorrect: 0 },
+        "Escritura de números decimales": { attempted: 0, correct: 0, incorrect: 0 },
+        "Parte entera y parte decimal": { attempted: 0, correct: 0, incorrect: 0 },
+        "Valor posicional": { attempted: 0, correct: 0, incorrect: 0 },
+        "Décimas": { attempted: 0, correct: 0, incorrect: 0 },
+        "Centésimas": { attempted: 0, correct: 0, incorrect: 0 },
+        "Milésimas": { attempted: 0, correct: 0, incorrect: 0 },
+        "Composición": { attempted: 0, correct: 0, incorrect: 0 },
+        "Descomposición": { attempted: 0, correct: 0, incorrect: 0 },
+        "Detección de errores": { attempted: 0, correct: 0, incorrect: 0 }
+      }
+    };
+
+    // Estaciones pedagógicas definidas
+    const STATIONS_METADATA = [
+      { id: 1, block: 1, name: "Estación 1: Detectives del Decimal", skill: "Parte entera y parte decimal" },
+      { id: 2, block: 1, name: "Estación 2: Laboratorio del Valor Posicional", skill: "Valor posicional" },
+      { id: 3, block: 1, name: "Estación 3: Código Decimal", skill: "Lectura de números decimales" },
+      { id: 4, block: 1, name: "Estación 4: Construye el Decimal", skill: "Escritura de números decimales" },
+      { id: 5, block: 1, name: "Estación 5: Detector de Errores", skill: "Detección de errores" },
+      { id: 6, block: 1, name: "Estación 6: Desafío de Repaso", skill: "Valor posicional" },
+      { id: 7, block: 2, name: "Estación 7: Máquina Descomponedora", skill: "Descomposición" },
+      { id: 8, block: 2, name: "Estación 8: Descomposición Guiada", skill: "Descomposición" },
+      { id: 9, block: 2, name: "Estación 9: Descompón Tú Mismo", skill: "Descomposición" },
+      { id: 10, block: 2, name: "Estación 10: Arrastra el Valor Correcto", skill: "Descomposición" },
+      { id: 11, block: 2, name: "Estación 11: Máquina Componedora", skill: "Composición" },
+      { id: 12, block: 2, name: "Estación 12: Compón el Número", skill: "Composición" },
+      { id: 13, block: 2, name: "Estación 13: De Palabras a Número", skill: "Composición" },
+      { id: 14, block: 2, name: "Estación 14: Elige la Descomposición", skill: "Descomposición" },
+      { id: 15, block: 2, name: "Estación 15: Repara la Máquina", skill: "Detección de errores" },
+      { id: 16, block: 2, name: "Estación 16: Desafío Final", skill: "Composición" }
+    ];
+
+    /* =========================================================================
+       UTILIDADES MATEMÁTICAS Y DE FORMATO
+       ========================================================================= */
+    function formatDecimal(num, decimals = 3) {
+      // Retorna cadena siempre con coma decimal
+      let str = num.toFixed(decimals).replace('.', ',');
+      // Elimina ceros a la derecha innecesarios si se requiere o mantiene fijos
+      return str;
+    }
+
+    function cleanMathInput(str) {
+      if (!str) return "";
+      return str.trim().toLowerCase().replace(/\./g, ',').replace(/\s+/g, ' ');
+    }
+
+    function randomChoice(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    /* =========================================================================
+       INICIALIZACIÓN DE LA APLICACIÓN
+       ========================================================================= */
+    document.addEventListener("DOMContentLoaded", () => {
+      // Fecha automática desde el dispositivo
+      const today = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      APP_STATE.sessionDate = today.toLocaleDateString('es-CL', options);
+      document.getElementById('displaySessionDate').textContent = APP_STATE.sessionDate;
+
+      // Intentar recuperar de sessionStorage si existía sesión activa
+      loadSessionBackup();
+
+      setupEventListeners();
+      populateTeacherStationSelect();
+    });
+
+    function saveSessionBackup() {
+      try {
+        sessionStorage.setItem("laboratorio_decimales_backup", JSON.stringify(APP_STATE));
+      } catch (e) {
+        console.warn("Storage not available", e);
+      }
+    }
+
+    function loadSessionBackup() {
+      try {
+        const saved = sessionStorage.getItem("laboratorio_decimales_backup");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          Object.assign(APP_STATE, parsed);
+          if (APP_STATE.studentName) {
+            document.getElementById('inputStudentName').value = APP_STATE.studentName;
+          }
+          if (APP_STATE.studentGrade) {
+            document.getElementById('inputStudentGrade').value = APP_STATE.studentGrade;
+          }
+        }
+      } catch (e) {
+        console.warn("Could not restore session", e);
+      }
+    }
+
+    /* =========================================================================
+       ASIGNACIÓN DE EVENTOS PRINCIPALES
+       ========================================================================= */
+    function setupEventListeners() {
+      // Iniciar sesión desde bienvenida
+      document.getElementById('btnStartMission').addEventListener('click', () => {
+        const nameVal = document.getElementById('inputStudentName').value.trim();
+        const gradeVal = document.getElementById('inputStudentGrade').value.trim();
+        
+        if (!nameVal) {
+          alert("Por favor ingresa tu nombre para comenzar la aventura.");
+          document.getElementById('inputStudentName').focus();
+          return;
+        }
+        
+        APP_STATE.studentName = nameVal;
+        APP_STATE.studentGrade = gradeVal || "5° básico";
+        saveSessionBackup();
+        
+        document.getElementById('screenWelcome').style.display = 'none';
+        document.getElementById('mainHeader').style.display = 'flex';
+        document.getElementById('screenStation').style.display = 'block';
+        
+        updateHeaderUI();
+        loadStation(APP_STATE.currentStation);
+      });
+
+      // Comprobar respuesta en la estación activa
+      document.getElementById('btnCheckAnswer').addEventListener('click', () => {
+        validateCurrentStationExercise();
+      });
+
+      // Continuar a la siguiente estación
+      document.getElementById('btnNextStation').addEventListener('click', () => {
+        advanceNextStep();
+      });
+
+      // Desbloquear Bloque 2 desde checkpoint
+      document.getElementById('btnUnlockBlock2').addEventListener('click', () => {
+        document.getElementById('screenCheckpoint').style.display = 'none';
+        document.getElementById('screenStation').style.display = 'block';
+        APP_STATE.currentStation = 7;
+        loadStation(7);
+      });
+
+      // Botón "Necesito Ayuda"
+      document.getElementById('btnNeedHelp').addEventListener('click', () => {
+        openHelpModal();
+      });
+      document.getElementById('btnCloseHelp').addEventListener('click', () => {
+        document.getElementById('helpModal').style.display = 'none';
+      });
+
+      // Ver informe desde pantalla final
+      document.getElementById('btnViewReport').addEventListener('click', () => {
+        showReportScreen();
+      });
+
+      // Volver a practicar (reiniciar)
+      document.getElementById('btnRestartMission').addEventListener('click', () => {
+        if (confirm("¿Deseas reiniciar la misión? Se conservará tu nombre y curso.")) {
+          resetStudentSession();
+        }
+      });
+
+      // Botones de reporte
+      document.getElementById('btnBackFromReport').addEventListener('click', () => {
+        document.getElementById('screenReport').style.display = 'none';
+        if (APP_STATE.currentStation > 16) {
+          document.getElementById('screenFinal').style.display = 'block';
+        } else {
+          document.getElementById('screenStation').style.display = 'block';
+        }
+      });
+      document.getElementById('btnReturnToActivity').addEventListener('click', () => {
+        document.getElementById('screenReport').style.display = 'none';
+        document.getElementById('screenStation').style.display = 'block';
+      });
+
+      document.getElementById('btnPrintReport').addEventListener('click', () => {
+        window.print();
+      });
+
+      document.getElementById('btnSavePdf').addEventListener('click', () => {
+        alert("En la ventana de impresión que se abrirá a continuación, selecciona la opción 'Guardar como PDF' en el destino de tu impresora.");
+        window.print();
+      });
+
+      document.getElementById('btnDownloadHtml').addEventListener('click', () => {
+        downloadIndependentHtmlReport();
+      });
+
+      document.getElementById('btnDownloadCsv').addEventListener('click', () => {
+        downloadSessionCsv();
+      });
+
+      // Control del Modo Profesor
+      document.getElementById('btnTeacherOpen').addEventListener('click', () => {
+        document.getElementById('teacherModal').style.display = 'flex';
+        document.getElementById('teacherPassword').value = "";
+        document.getElementById('teacherPassword').focus();
+      });
+      document.getElementById('btnCloseTeacher').addEventListener('click', () => {
+        document.getElementById('teacherModal').style.display = 'none';
+      });
+      document.getElementById('btnSubmitTeacherAuth').addEventListener('click', () => {
+        const pass = document.getElementById('teacherPassword').value;
+        if (pass === "Stik") {
+          document.getElementById('teacherAuthArea').style.display = 'none';
+          document.getElementById('teacherControlPanel').style.display = 'block';
+        } else {
+          alert("Contraseña incorrecta.");
+        }
+      });
+      document.getElementById('btnTeacherJumpStation').addEventListener('click', () => {
+        const target = parseInt(document.getElementById('teacherStationSelect').value);
+        APP_STATE.currentStation = target;
+        document.getElementById('teacherModal').style.display = 'none';
+        document.getElementById('screenCheckpoint').style.display = 'none';
+        document.getElementById('screenFinal').style.display = 'none';
+        document.getElementById('screenReport').style.display = 'none';
+        document.getElementById('screenStation').style.display = 'block';
+        loadStation(target);
+      });
+      document.getElementById('btnTeacherRevealAnswer').addEventListener('click', () => {
+        revealTeacherAnswer();
+      });
+      document.getElementById('btnTeacherRegenExercise').addEventListener('click', () => {
+        loadStation(APP_STATE.currentStation);
+        document.getElementById('teacherModal').style.display = 'none';
+      });
+      document.getElementById('btnTeacherViewReportDirect').addEventListener('click', () => {
+        document.getElementById('teacherModal').style.display = 'none';
+        showReportScreen();
+      });
+      document.getElementById('btnTeacherDownloadCsv').addEventListener('click', () => {
+        downloadSessionCsv();
+      });
+      document.getElementById('btnTeacherResetAll').addEventListener('click', () => {
+        if (confirm("¿Seguro que desea reiniciar por completo la sesión del estudiante? Se borrará todo el historial.")) {
+          sessionStorage.removeItem("laboratorio_decimales_backup");
+          window.location.reload();
+        }
+      });
+      document.getElementById('btnTeacherClosePanel').addEventListener('click', () => {
+        document.getElementById('teacherModal').style.display = 'none';
+      });
+    }
+
+    function updateHeaderUI() {
+      document.getElementById('hdrStudentInfo').textContent = `${APP_STATE.studentName} (${APP_STATE.studentGrade})`;
+      document.getElementById('hdrStars').textContent = APP_STATE.stars;
+      document.getElementById('hdrStationLabel').textContent = `Estación ${Math.min(APP_STATE.currentStation, 16)}/16`;
+      
+      const pct = Math.round(((Math.min(APP_STATE.currentStation - 1, 16)) / 16) * 100);
+      document.getElementById('hdrProgressBar').style.width = `${pct}%`;
+      document.getElementById('hdrProgressPercent').textContent = `${pct}%`;
+    }
+
+    function populateTeacherStationSelect() {
+      const select = document.getElementById('teacherStationSelect');
+      select.innerHTML = "";
+      STATIONS_METADATA.forEach(st => {
+        const opt = document.createElement('option');
+        opt.value = st.id;
+        opt.textContent = `${st.name} (${st.block === 1 ? 'Bloque 1' : 'Bloque 2'})`;
+        select.appendChild(opt);
+      });
+    }
+
+    /* =========================================================================
+       GENERADOR DE ESTACIONES (1 A 16)
+       ========================================================================= */
+    function loadStation(stationId) {
+      APP_STATE.currentExerciseAttempts = 0;
+      APP_STATE.helpConsultedInCurrent = false;
+      
+      const meta = STATIONS_METADATA.find(s => s.id === stationId);
+      if (!meta) return;
+
+      updateHeaderUI();
+
+      // Configuración de badges y títulos
+      const badge = document.getElementById('stationBlockBadge');
+      badge.textContent = meta.block === 1 ? "Bloque 1: Repaso y Activación" : "Bloque 2: Composición y Descomposición";
+      badge.className = meta.block === 1 ? "station-badge badge-b1" : "station-badge badge-b2";
+      
+      document.getElementById('stationTitle').textContent = meta.name;
+      
+      const content = document.getElementById('stationContentArea');
+      content.innerHTML = "";
+      
+      const feedback = document.getElementById('stationFeedback');
+      feedback.style.display = "none";
+      feedback.className = "feedback-box";
+      
+      document.getElementById('btnCheckAnswer').style.display = "inline-flex";
+      document.getElementById('btnCheckAnswer').disabled = false;
+      document.getElementById('btnNextStation').style.display = "none";
+      
+      // Construir la estación correspondiente
+      switch(stationId) {
+        case 1: buildStation1(content); break;
+        case 2: buildStation2(content); break;
+        case 3: buildStation3(content); break;
+        case 4: buildStation4(content); break;
+        case 5: buildStation5(content); break;
+        case 6: buildStation6(content); break;
+        case 7: buildStation7(content); break;
+        case 8: buildStation8(content); break;
+        case 9: buildStation9(content); break;
+        case 10: buildStation10(content); break;
+        case 11: buildStation11(content); break;
+        case 12: buildStation12(content); break;
+        case 13: buildStation13(content); break;
+        case 14: buildStation14(content); break;
+        case 15: buildStation15(content); break;
+        case 16: buildStation16(content); break;
+      }
+      saveSessionBackup();
+    }
+
+    /* --- ESTACIÓN 1: DETECTIVES DEL DECIMAL --- */
+    function buildStation1(container) {
+      setRobotSpeech("¡Bienvenido a la Estación 1! Todo número decimal tiene una parte entera y una parte decimal separadas por la coma. ¡Identifica cada una!");
+      
+      const pool = ["4,7", "12,35", "8,406", "25,019", "103,208", "6,042", "0,305"];
+      const numStr = randomChoice(pool);
+      const parts = numStr.split(',');
+      const integerPart = parts[0];
+      const decimalPart = parts[1];
+      const decimalDigitsCount = decimalPart.length;
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 1,
+        skill: "Parte entera y parte decimal",
+        question: `Analizar el número decimal: ${numStr}`,
+        correct: {
+          entera: integerPart,
+          decimal: decimalPart,
+          cifras: decimalDigitsCount.toString()
+        },
+        displayNumber: numStr
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Observa detenidamente el número:</div>
+          <div class="big-number-display">${numStr}</div>
+          
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; text-align: left;">
+            <div class="form-group">
+              <label class="form-label">¿Cuál es la parte entera?</label>
+              <input type="number" id="st1_input_entera" class="input-text input-math" placeholder="Ej: 4">
+            </div>
+            <div class="form-group">
+              <label class="form-label">¿Cuál es la parte decimal?</label>
+              <input type="text" id="st1_input_decimal" class="input-text input-math" placeholder="Ej: 7">
+            </div>
+            <div class="form-group">
+              <label class="form-label">¿Cuántas cifras decimales tiene?</label>
+              <input type="number" id="st1_input_cifras" class="input-text input-math" placeholder="1, 2 o 3">
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 2: LABORATORIO DEL VALOR POSICIONAL --- */
+    function buildStation2(container) {
+      setRobotSpeech("En esta tabla posicional cada posición tiene un nombre: Décimas (d), Centésimas (c) y Milésimas (m). Observa la cifra coloreada.");
+      
+      const pool = [
+        { num: "6,482", targetDigit: "8", posName: "Centésimas", posValue: "0,08", col: "pos-c" },
+        { num: "15,307", targetDigit: "7", posName: "Milésimas", posValue: "0,007", col: "pos-m" },
+        { num: "4,915", targetDigit: "9", posName: "Décimas", posValue: "0,9", col: "pos-d" },
+        { num: "8,046", targetDigit: "4", posName: "Centésimas", posValue: "0,04", col: "pos-c" },
+        { num: "2,351", targetDigit: "2", posName: "Unidades", posValue: "2", col: "pos-u" }
+      ];
+      const ex = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 2,
+        skill: "Valor posicional",
+        question: `En ${ex.num}, identificar posición y valor de la cifra ${ex.targetDigit}`,
+        correct: {
+          posicion: ex.posName,
+          valor: ex.posValue
+        },
+        num: ex.num,
+        digit: ex.targetDigit
+      };
+
+      // Separar para renderizar con color la cifra objetivo
+      const numHtml = ex.num.split('').map(char => {
+        if (char === ex.targetDigit) {
+          return `<span class="${ex.col}" style="text-decoration: underline; transform: scale(1.15); display:inline-block;">${char}</span>`;
+        }
+        return char;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">En el número:</div>
+          <div class="big-number-display">${numHtml}</div>
+          
+          <div class="pos-table-wrap">
+            <table class="pos-table">
+              <thead>
+                <tr>
+                  <th class="th-u">Unidades (U)</th>
+                  <th class="th-sep">,</th>
+                  <th class="th-d">Décimas (d)</th>
+                  <th class="th-c">Centésimas (c)</th>
+                  <th class="th-m">Milésimas (m)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:var(--col-u);">${ex.num.split(',')[0]}</td>
+                  <td class="th-sep">,</td>
+                  <td style="color:var(--col-d);">${ex.num.split(',')[1][0] || '0'}</td>
+                  <td style="color:var(--col-c);">${ex.num.split(',')[1][1] || '0'}</td>
+                  <td style="color:var(--col-m);">${ex.num.split(',')[1][2] || '0'}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top:20px; text-align: left;">
+            <div class="form-group">
+              <label class="form-label">¿En qué posición está la cifra <strong>${ex.targetDigit}</strong>?</label>
+              <select id="st2_posSelect" class="input-text">
+                <option value="">-- Selecciona posición --</option>
+                <option value="Unidades">Unidades</option>
+                <option value="Décimas">Décimas</option>
+                <option value="Centésimas">Centésimas</option>
+                <option value="Milésimas">Milésimas</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">¿Cuánto vale esa cifra? (Valor que representa):</label>
+              <input type="text" id="st2_valInput" class="input-text input-math" placeholder="Ej: 0,08">
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 3: CÓDIGO DECIMAL --- */
+    function buildStation3(container) {
+      setRobotSpeech("Descifra el código decimal. Para leer un decimal, leemos la parte entera y luego la parte decimal mencionando el lugar de la última cifra.");
+      
+      const pool = [
+        { num: "3,5", text: "tres enteros y cinco décimas" },
+        { num: "7,24", text: "siete enteros y veinticuatro centésimas" },
+        { num: "12,308", text: "doce enteros y trescientas ocho milésimas" },
+        { num: "0,407", text: "cuatrocientas siete milésimas" },
+        { num: "25,019", text: "veinticinco enteros y diecinueve milésimas" },
+        { num: "8,006", text: "ocho enteros y seis milésimas" }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 3,
+        skill: "Lectura de números decimales",
+        question: `¿Cómo se lee el número decimal ${item.num}?`,
+        correct: item.text,
+        num: item.num
+      };
+
+      // Alternativas para selección múltiple
+      const distractors = [
+        item.text.replace("milésimas", "centésimas").replace("centésimas", "décimas"),
+        item.text.replace("cinco", "cincuenta").replace("ocho", "ochenta"),
+        item.text.includes("enteros") ? item.text.replace("enteros", "décimas") : "cero enteros y cuatro centésimas"
+      ];
+      const allOpts = Array.from(new Set([item.text, ...distractors])).slice(0, 3);
+      allOpts.sort(() => Math.random() - 0.5);
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Descifra cómo se lee el número:</div>
+          <div class="big-number-display">${item.num}</div>
+          
+          <div style="max-width: 550px; margin: 20px auto; text-align: left;" id="st3_write_mode">
+            <label class="form-label">Escribe con tus palabras cómo se lee:</label>
+            <input type="text" id="st3_input_text" class="input-text" placeholder="Ej: ${item.text.split(' ')[0]} enteros y...">
+            <div style="margin-top: 10px; font-size: 0.9rem; color:#64748b;">
+              Tip: También puedes pulsar "Necesito ayuda" si prefieres opciones.
+            </div>
+          </div>
+
+          <div id="st3_multi_mode" style="display:none; margin-top:20px;">
+            <div style="font-weight:700; margin-bottom:10px; color:#1e40af;">Selecciona la opción correcta:</div>
+            <div class="options-grid">
+              ${allOpts.map(op => `
+                <button class="option-btn st3-opt-btn" onclick="selectSt3Option(this, '${op}')">${op}</button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    window.selectSt3Option = function(btn, textVal) {
+      document.querySelectorAll('.st3-opt-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('st3_input_text').value = textVal;
+    };
+
+    /* --- ESTACIÓN 4: CONSTRUYE EL DECIMAL --- */
+    function buildStation4(container) {
+      setRobotSpeech("¡Convierte palabras en números decimales! Recuerda usar la coma decimal y poner ceros donde no haya valor.");
+      
+      const pool = [
+        { text: "cinco enteros y tres décimas", num: "5,3" },
+        { text: "ocho enteros y cuarenta y dos centésimas", num: "8,42" },
+        { text: "doce enteros y ciento cinco milésimas", num: "12,105" },
+        { text: "siete enteros y nueve milésimas", num: "7,009" },
+        { text: "treinta enteros y doscientas treinta y cuatro milésimas", num: "30,234" }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 4,
+        skill: "Escritura de números decimales",
+        question: `Escribir como número decimal: "${item.text}"`,
+        correct: item.num,
+        prompt: item.text
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Expresión en palabras:</div>
+          <div style="font-size: 1.8rem; font-weight:800; color:#1e3a8a; margin: 18px 0;">"${item.text}"</div>
+          
+          <div style="max-width: 300px; margin: 24px auto; text-align: left;">
+            <label class="form-label" style="text-align:center;">Escribe el número decimal (usa coma):</label>
+            <input type="text" id="st4_input_num" class="input-text input-math" placeholder="Ej: 5,3">
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 5: DETECTOR DE ERRORES --- */
+    function buildStation5(container) {
+      setRobotSpeech("¡Atención al radar de anomalías! Determina si la afirmación es Correcta o Incorrecta.");
+      
+      const pool = [
+        { stmt: "En 4,582 el 8 representa ocho décimas.", isCorrect: false, explanation: "Incorrecto: El 8 está en la posición de las centésimas, por lo que representa 0,08 (ocho centésimas)." },
+        { stmt: "7,04 se lee siete enteros y cuatro centésimas.", isCorrect: true, explanation: "Correcto: El 4 ocupa el segundo lugar decimal, que corresponde a las centésimas." },
+        { stmt: "En 12,305 el número 5 está en las centésimas.", isCorrect: false, explanation: "Incorrecto: El 5 está en la tercera posición decimal, es decir, en las milésimas (0,005)." },
+        { stmt: "En 8,072 el número 7 representa siete centésimas.", isCorrect: true, explanation: "Correcto: El 7 se ubica en el segundo lugar después de la coma, por lo que representa 0,07." }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 5,
+        skill: "Detección de errores",
+        question: `Afirmación: "${item.stmt}"`,
+        correct: item.isCorrect ? "CORRECTO" : "INCORRECTO",
+        explanation: item.explanation
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Afirmación a evaluar:</div>
+          <div style="font-size: 1.6rem; font-weight:800; color:#1e293b; margin: 20px 0; background:white; padding:20px; border-radius:14px; border:2px solid #e2e8f0;">
+            "${item.stmt}"
+          </div>
+          
+          <div style="display:flex; justify-content:center; gap: 20px; margin-top:24px;">
+            <button class="btn btn-success btn-lg" style="min-width:160px;" id="st5_btn_c" onclick="chooseSt5('CORRECTO')">
+              ✓ CORRECTO
+            </button>
+            <button class="btn btn-danger btn-lg" style="min-width:160px; background:#dc2626; color:white;" id="st5_btn_i" onclick="chooseSt5('INCORRECTO')">
+              ✗ INCORRECTO
+            </button>
+          </div>
+          <input type="hidden" id="st5_selection" value="">
+        </div>
+      `;
+    }
+
+    window.chooseSt5 = function(choice) {
+      document.getElementById('st5_selection').value = choice;
+      document.getElementById('st5_btn_c').style.outline = choice === 'CORRECTO' ? '4px solid #1e3a8a' : 'none';
+      document.getElementById('st5_btn_i').style.outline = choice === 'INCORRECTO' ? '4px solid #1e3a8a' : 'none';
+    };
+
+    /* --- ESTACIÓN 6: DESAFÍO DE REPASO --- */
+    function buildStation6(container) {
+      setRobotSpeech("¡Último filtro del Bloque 1! Resuelve esta pregunta combinada para desbloquear la Máquina de Composición.");
+      
+      const pool = [
+        { q: "¿Qué valor representa la cifra 4 en el número 13,248?", opts: ["0,4", "0,04", "0,004", "4"], ans: "0,04", subskill: "Centésimas" },
+        { q: "¿Cómo se escribe en número decimal 'seis enteros y ocho milésimas'?", opts: ["6,8", "6,08", "6,008", "6,800"], ans: "6,008", subskill: "Milésimas" },
+        { q: "¿Cuál es la parte decimal en el número 45,209?", opts: ["45", "209", "2", "9"], ans: "209", subskill: "Parte entera y parte decimal" },
+        { q: "¿En qué posición está el 7 en el número 0,724?", opts: ["Unidades", "Décimas", "Centésimas", "Milésimas"], ans: "Décimas", subskill: "Décimas" }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 6,
+        skill: item.subskill,
+        question: item.q,
+        correct: item.ans,
+        isCheckpoint: true
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Pregunta de Evaluación de Repaso:</div>
+          <div style="font-size: 1.5rem; font-weight:800; color:#1e3a8a; margin: 20px 0;">${item.q}</div>
+          
+          <div class="options-grid" style="max-width: 600px; margin: 0 auto;">
+            ${item.opts.map(opt => `
+              <button class="option-btn st6-opt-btn" onclick="selectSt6Option(this, '${opt}')">${opt}</button>
+            `).join('')}
+          </div>
+          <input type="hidden" id="st6_selection" value="">
+        </div>
+      `;
+    }
+
+    window.selectSt6Option = function(btn, val) {
+      document.querySelectorAll('.st6-opt-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('st6_selection').value = val;
+    };
+
+    /* --- ESTACIÓN 7: MÁQUINA DESCOMPONEDORA --- */
+    function buildStation7(container) {
+      setRobotSpeech("¡Bienvenido al Bloque 2! Descomponer un número significa separarlo según el valor de cada cifra. Observa la animación.");
+      
+      APP_STATE.exerciseCurrentData = {
+        stationId: 7,
+        skill: "Descomposición",
+        question: "Observar descomposición interactiva de 4,382",
+        correct: "4 + 0,3 + 0,08 + 0,002",
+        interactiveOnly: true
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Descomposición aditiva estándar:</div>
+          <div class="big-number-display" id="st7_main_num">4,382</div>
+          
+          <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin: 24px 0; flex-wrap:wrap;" id="st7_cards">
+            <span class="slot-box filled tag-u" style="font-size:1.4rem;">4</span>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <span class="slot-box filled tag-d" style="font-size:1.4rem;">0,3</span>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <span class="slot-box filled tag-c" style="font-size:1.4rem;">0,08</span>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <span class="slot-box filled tag-m" style="font-size:1.4rem;">0,002</span>
+          </div>
+
+          <div style="background:#f1f5f9; padding:16px; border-radius:12px; max-width:600px; margin:0 auto; font-size:1.05rem;">
+            <strong>4 unidades</strong> + <strong>3 décimas</strong> + <strong>8 centésimas</strong> + <strong>2 milésimas</strong><br>
+            ¡Cada cifra conserva su valor según la posición que ocupa!
+          </div>
+
+          <div style="margin-top:20px;">
+            <button class="btn btn-secondary btn-sm" onclick="animateSt7Cards()">▶️ Volver a animar separación</button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.animateSt7Cards = function() {
+      const cards = document.getElementById('st7_cards');
+      cards.style.opacity = '0';
+      cards.style.transform = 'scale(0.8)';
+      setTimeout(() => {
+        cards.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        cards.style.opacity = '1';
+        cards.style.transform = 'scale(1)';
+      }, 100);
+    };
+
+    /* --- ESTACIÓN 8: DESCOMPOSICIÓN GUIADA (EL CERO POSICIONAL) --- */
+    function buildStation8(container) {
+      setRobotSpeech("¡Cuidado con el cero! El cero en los decimales guarda el lugar de la posición para que las demás cifras mantengan su valor.");
+      
+      const pool = [
+        { num: "12,406", ent: "12", d: "0,4", c: "0", m: "0,006", zeroPos: "centésimas" },
+        { num: "5,038", ent: "5", d: "0", c: "0,03", m: "0,008", zeroPos: "décimas" }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 8,
+        skill: "Descomposición",
+        question: `En ${item.num}, ¿en qué posición está el cero y cuánto aporta?`,
+        correct: item.zeroPos,
+        num: item.num
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Ejemplo Guiado:</div>
+          <div class="big-number-display">${item.num}</div>
+          
+          <div style="background:#eff6ff; border:2px solid #bfdbfe; border-radius:14px; padding:16px; max-width:600px; margin:0 auto 20px; font-size:1.15rem; font-weight:700;">
+            ${item.num} = ${item.ent} + ${item.d} + ${item.c !== "0" ? item.c : ""}${item.c === "0" ? "" : " + "}${item.m}
+          </div>
+
+          <div style="max-width:500px; margin:0 auto; text-align:left;">
+            <label class="form-label">¿Qué posición está ocupando el dígito <strong>0</strong> en ${item.num}?</label>
+            <select id="st8_zeroSelect" class="input-text">
+              <option value="">-- Elige la posición --</option>
+              <option value="décimas">Décimas</option>
+              <option value="centésimas">Centésimas</option>
+              <option value="milésimas">Milésimas</option>
+            </select>
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 9: DESCOMPÓN TÚ MISMO --- */
+    function buildStation9(container) {
+      setRobotSpeech("Completa cada casilla con el valor correspondiente. Escribe cada valor con su coma si es decimal.");
+      
+      const pool = [
+        { num: "5,274", u: "5", d: "0,2", c: "0,07", m: "0,004" },
+        { num: "8,309", u: "8", d: "0,3", c: "0", m: "0,009" },
+        { num: "14,052", u: "14", d: "0", c: "0,05", m: "0,002" },
+        { num: "7,006", u: "7", d: "0", c: "0", m: "0,006" }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 9,
+        skill: "Descomposición",
+        question: `Descomponer el número ${item.num}`,
+        correct: item,
+        num: item.num
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Descompón el siguiente número decimal:</div>
+          <div class="big-number-display">${item.num}</div>
+          
+          <div style="display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap; margin:24px 0;">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <span class="tag-u" style="font-size:0.85rem; margin-bottom:4px;">Entero</span>
+              <input type="text" id="st9_in_u" class="input-text input-math" style="width:100px;" placeholder="U">
+            </div>
+            <span style="font-size:1.6rem; font-weight:bold; margin-top:20px;">+</span>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <span class="tag-d" style="font-size:0.85rem; margin-bottom:4px;">Décimas</span>
+              <input type="text" id="st9_in_d" class="input-text input-math" style="width:100px;" placeholder="0,d">
+            </div>
+            <span style="font-size:1.6rem; font-weight:bold; margin-top:20px;">+</span>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <span class="tag-c" style="font-size:0.85rem; margin-bottom:4px;">Centésimas</span>
+              <input type="text" id="st9_in_c" class="input-text input-math" style="width:100px;" placeholder="0,0c">
+            </div>
+            <span style="font-size:1.6rem; font-weight:bold; margin-top:20px;">+</span>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+              <span class="tag-m" style="font-size:0.85rem; margin-bottom:4px;">Milésimas</span>
+              <input type="text" id="st9_in_m" class="input-text input-math" style="width:100px;" placeholder="0,00m">
+            </div>
+          </div>
+          <div style="font-size:0.95rem; color:#64748b;">(Si en alguna posición hay un cero, puedes escribir 0)</div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 10: ARRASTRA EL VALOR CORRECTO --- */
+    function buildStation10(container) {
+      setRobotSpeech("Haz clic en las tarjetas de abajo para colocarlas en los casilleros en orden. ¡Cuidado con las tarjetas trampa!");
+      
+      const correctCards = ["6", "0,4", "0,08", "0,002"];
+      const distractors = ["0,8", "0,02", "0,004"];
+      const allCards = [...correctCards, ...distractors].sort(() => Math.random() - 0.5);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 10,
+        skill: "Descomposición",
+        question: "Armar la descomposición de 6,482 seleccionando las tarjetas correctas",
+        correct: correctCards,
+        slots: ["", "", "", ""]
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Forma la descomposición exacta de:</div>
+          <div class="big-number-display">6,482</div>
+
+          <div style="font-weight:700; color:#1e40af; margin-bottom:10px;">Casilleros a completar (en orden de izquierda a derecha):</div>
+          <div class="slot-zone" id="st10_slots_container">
+            <div class="slot-box" id="st10_slot_0" onclick="clearSlot10(0)">?</div>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <div class="slot-box" id="st10_slot_1" onclick="clearSlot10(1)">?</div>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <div class="slot-box" id="st10_slot_2" onclick="clearSlot10(2)">?</div>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <div class="slot-box" id="st10_slot_3" onclick="clearSlot10(3)">?</div>
+          </div>
+
+          <div style="font-weight:700; color:#334155; margin-top:20px; margin-bottom:8px;">Haz clic en una tarjeta para colocarla:</div>
+          <div class="tiles-zone" id="st10_tiles_pool">
+            ${allCards.map((card, idx) => `
+              <div class="math-tile" id="tile_${idx}" onclick="pickTile10('${card}', 'tile_${idx}')">${card}</div>
+            `).join('')}
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="resetSlots10()">Reiniciar casilleros</button>
+        </div>
+      `;
+    }
+
+    window.pickTile10 = function(val, tileId) {
+      const slots = APP_STATE.exerciseCurrentData.slots;
+      const emptyIdx = slots.indexOf("");
+      if (emptyIdx === -1) return; // Lleno
+
+      slots[emptyIdx] = val;
+      const slotEl = document.getElementById(`st10_slot_${emptyIdx}`);
+      slotEl.textContent = val;
+      slotEl.classList.add('filled');
+      slotEl.dataset.tileId = tileId;
+
+      document.getElementById(tileId).classList.add('used');
+    };
+
+    window.clearSlot10 = function(slotIdx) {
+      const slots = APP_STATE.exerciseCurrentData.slots;
+      if (!slots[slotIdx]) return;
+      
+      const slotEl = document.getElementById(`st10_slot_${slotIdx}`);
+      const tileId = slotEl.dataset.tileId;
+      if (tileId) {
+        document.getElementById(tileId).classList.remove('used');
+      }
+      slots[slotIdx] = "";
+      slotEl.textContent = "?";
+      slotEl.classList.remove('filled');
+      delete slotEl.dataset.tileId;
+    };
+
+    window.resetSlots10 = function() {
+      for (let i = 0; i < 4; i++) {
+        window.clearSlot10(i);
+      }
+    };
+
+    /* --- ESTACIÓN 11: MÁQUINA COMPONEDORA --- */
+    function buildStation11(container) {
+      setRobotSpeech("Componer es el proceso inverso: unimos los valores de cada posición para formar un solo número decimal.");
+      
+      APP_STATE.exerciseCurrentData = {
+        stationId: 11,
+        skill: "Composición",
+        question: "Observar composición animada de 2 + 0,5 + 0,03 + 0,008",
+        correct: "2,538",
+        interactiveOnly: true
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Valores posicionales separados:</div>
+          
+          <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin:24px 0; flex-wrap:wrap;" id="st11_parts">
+            <span class="tag-u" style="font-size:1.6rem; padding:8px 16px;">2</span>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <span class="tag-d" style="font-size:1.6rem; padding:8px 16px;">0,5</span>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <span class="tag-c" style="font-size:1.6rem; padding:8px 16px;">0,03</span>
+            <span style="font-size:1.5rem; font-weight:bold;">+</span>
+            <span class="tag-m" style="font-size:1.6rem; padding:8px 16px;">0,008</span>
+          </div>
+
+          <div style="font-size:2rem; margin:16px 0;">⬇️ Se ensamblan en:</div>
+          <div class="big-number-display" style="color:#15803d;" id="st11_result">2,538</div>
+
+          <div style="background:#f8fafc; padding:16px; border-radius:12px; max-width:600px; margin:0 auto; font-size:1.05rem;">
+            2 enteros, 5 décimas, 3 centésimas y 8 milésimas se unen formando <strong>2,538</strong>.
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 12: COMPÓN EL NÚMERO --- */
+    function buildStation12(container) {
+      setRobotSpeech("¡Escribe el número decimal resultante! Recuerda vigilar las posiciones vacías que llevan un cero.");
+      
+      const pool = [
+        { exp: "4 + 0,2 + 0,05 + 0,003", ans: "4,253" },
+        { exp: "7 + 0,6 + 0,004", ans: "7,604" },
+        { exp: "10 + 3 + 0,8 + 0,02", ans: "13,82" },
+        { exp: "5 + 0,09 + 0,006", ans: "5,096" },
+        { exp: "20 + 4 + 0,3 + 0,007", ans: "24,307" }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 12,
+        skill: "Composición",
+        question: `Componer el número: ${item.exp}`,
+        correct: item.ans,
+        expression: item.exp
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Junta los valores y forma el número decimal:</div>
+          <div style="font-size: 1.8rem; font-weight:800; color:#1e3a8a; margin: 20px 0;">
+            ${item.exp}
+          </div>
+
+          <div style="max-width: 320px; margin: 20px auto; text-align:left;">
+            <label class="form-label" style="text-align:center;">Número decimal compuesto (usa coma):</label>
+            <input type="text" id="st12_input_ans" class="input-text input-math" placeholder="Ej: ${item.ans.replace(/\d/g, '#')}">
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 13: DE PALABRAS A NÚMERO --- */
+    function buildStation13(container) {
+      setRobotSpeech("Traduce las unidades posicionales escritas directamente al número decimal en cifras.");
+      
+      const pool = [
+        { phrase: "3 unidades + 4 décimas + 2 centésimas + 5 milésimas", ans: "3,425" },
+        { phrase: "8 unidades + 7 centésimas + 3 milésimas", ans: "8,073" },
+        { phrase: "2 decenas + 5 unidades + 6 décimas + 4 milésimas", ans: "25,604" },
+        { phrase: "9 unidades + 1 décima + 8 centésimas", ans: "9,18" }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 13,
+        skill: "Composición",
+        question: `Expresar en número decimal: ${item.phrase}`,
+        correct: item.ans,
+        phrase: item.phrase
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Composición según unidades de orden:</div>
+          <div style="font-size: 1.5rem; font-weight:800; color:#0f172a; margin: 20px 0; background:white; padding:16px; border-radius:12px; border:2px solid #e2e8f0;">
+            ${item.phrase}
+          </div>
+
+          <div style="max-width: 300px; margin: 20px auto; text-align:left;">
+            <label class="form-label" style="text-align:center;">Escribe el número decimal resultante:</label>
+            <input type="text" id="st13_input_num" class="input-text input-math" placeholder="Ej: 3,425">
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 14: ELIGE LA DESCOMPOSICIÓN CORRECTA --- */
+    function buildStation14(container) {
+      setRobotSpeech("Analiza bien las cuatro alternativas. ¡Verifica cuántos ceros lleva cada posición decimal!");
+      
+      const pool = [
+        {
+          num: "5,307",
+          correct: "5 + 0,3 + 0,007",
+          options: [
+            "5 + 0,3 + 0,07",
+            "5 + 0,3 + 0,007",
+            "5 + 0,03 + 0,007",
+            "5 + 3 + 0,07"
+          ],
+          exp: "El 3 está en las décimas (0,3) y el 7 en las milésimas (0,007)."
+        },
+        {
+          num: "4,082",
+          correct: "4 + 0,08 + 0,002",
+          options: [
+            "4 + 0,8 + 0,02",
+            "4 + 0,08 + 0,002",
+            "4 + 0,8 + 0,002",
+            "4 + 0,008 + 0,002"
+          ],
+          exp: "No hay décimas (0), el 8 vale 0,08 y el 2 vale 0,002."
+        }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 14,
+        skill: "Descomposición",
+        question: `Elegir la descomposición correcta para ${item.num}`,
+        correct: item.correct,
+        explanation: item.exp
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">¿Cuál es la descomposición estándar correcta de:</div>
+          <div class="big-number-display">${item.num}</div>
+
+          <div class="options-grid" style="max-width: 650px; margin: 20px auto;">
+            ${item.options.map((opt, i) => `
+              <button class="option-btn st14-opt" onclick="selectSt14Option(this, '${opt}')">
+                <strong>${String.fromCharCode(65 + i)})</strong>${opt}
+              </button>
+            `).join('')}
+          </div>
+          <input type="hidden" id="st14_selection" value="">
+        </div>
+      `;
+    }
+
+    window.selectSt14Option = function(btn, val) {
+      document.querySelectorAll('.st14-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('st14_selection').value = val;
+    };
+
+    /* --- ESTACIÓN 15: REPARA LA MÁQUINA --- */
+    function buildStation15(container) {
+      setRobotSpeech("¡Alerta en los circuitos! Una de las descomposiciones tiene un error posicional. Repárala escribiendo la correcta.");
+      
+      const pool = [
+        { wrong: "6,482 = 6 + 0,4 + 0,8 + 0,2", right: "6 + 0,4 + 0,08 + 0,002", num: "6,482", errorDesc: "El 8 y el 2 tenían valores decimales incorrectos." },
+        { wrong: "3,205 = 3 + 0,2 + 0,05", right: "3 + 0,2 + 0,005", num: "3,205", errorDesc: "El 5 está en las milésimas (0,005) y no en las centésimas." },
+        { wrong: "12,034 = 10 + 2 + 0,3 + 0,04", right: "10 + 2 + 0,03 + 0,004", num: "12,034", errorDesc: "El 3 corresponde a centésimas (0,03) y el 4 a milésimas (0,004)." }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 15,
+        skill: "Detección de errores",
+        question: `Reparar la descomposición errónea: ${item.wrong}`,
+        correct: item.right,
+        explanation: item.errorDesc
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#dc2626; font-weight:800;">⚙️ FÓRMULA AVERIADA DETECTADA:</div>
+          <div style="font-size: 1.6rem; font-weight:800; color:#991b1b; background:#fee2e2; padding:16px; border-radius:14px; margin: 16px 0; border:2px dashed #f87171;">
+            ${item.wrong}
+          </div>
+
+          <div style="max-width:550px; margin:20px auto; text-align:left;">
+            <label class="form-label">Escribe la descomposición reparada (usa signos + y coma):</label>
+            <input type="text" id="st15_input_repair" class="input-text input-math" placeholder="Ej: ${item.right}">
+          </div>
+        </div>
+      `;
+    }
+
+    /* --- ESTACIÓN 16: DESAFÍO FINAL COMBINADO --- */
+    function buildStation16(container) {
+      setRobotSpeech("¡Estación final de graduación! Demuestra todo lo aprendido sobre lectura, escritura, equivalencia, composición y descomposición.");
+      
+      const pool = [
+        {
+          q: "¿Cuál es el resultado de componer 9 + 0,04 + 0,007?",
+          opts: ["9,47", "9,047", "9,407", "9,0047"],
+          ans: "9,047",
+          skill: "Composición"
+        },
+        {
+          q: "¿Cómo se lee el número 15,008?",
+          opts: [
+            "quince enteros y ocho centésimas",
+            "quince enteros y ocho milésimas",
+            "quince enteros y ocho décimas",
+            "quince enteros y ochenta milésimas"
+          ],
+          ans: "quince enteros y ocho milésimas",
+          skill: "Lectura de números decimales"
+        },
+        {
+          q: "En el número 7,835, ¿cuál es el valor posicional del 8?",
+          opts: ["8 unidades", "0,8", "0,08", "0,008"],
+          ans: "0,8",
+          skill: "Décimas"
+        }
+      ];
+      const item = randomChoice(pool);
+
+      APP_STATE.exerciseCurrentData = {
+        stationId: 16,
+        skill: item.skill,
+        question: item.q,
+        correct: item.ans,
+        isFinal: true
+      };
+
+      container.innerHTML = `
+        <div class="exercise-box" style="text-align:center;">
+          <div style="font-size:1.1rem; color:#64748b; font-weight:700;">Desafío de Certificación Final:</div>
+          <div style="font-size: 1.5rem; font-weight:800; color:#1e3a8a; margin: 20px 0;">${item.q}</div>
+
+          <div class="options-grid" style="max-width: 650px; margin: 0 auto;">
+            ${item.opts.map(opt => `
+              <button class="option-btn st16-opt" onclick="selectSt16Option(this, '${opt}')">${opt}</button>
+            `).join('')}
+          </div>
+          <input type="hidden" id="st16_selection" value="">
+        </div>
+      `;
+    }
+
+    window.selectSt16Option = function(btn, val) {
+      document.querySelectorAll('.st16-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('st16_selection').value = val;
+    };
+
+    /* =========================================================================
+       VALIDACIÓN PEDAGÓGICA Y FEEDBACK
+       ========================================================================= */
+    function validateCurrentStationExercise() {
+      const data = APP_STATE.exerciseCurrentData;
+      if (!data) return;
+
+      APP_STATE.currentExerciseAttempts++;
+      let isCorrect = false;
+      let studentAnswerText = "";
+      let correctAnswerText = "";
+
+      const feedback = document.getElementById('stationFeedback');
+      feedback.style.display = "block";
+
+      // Lógica de evaluación específica por estación
+      switch(data.stationId) {
+        case 1: {
+          const inE = document.getElementById('st1_input_entera').value.trim();
+          const inD = document.getElementById('st1_input_decimal').value.trim();
+          const inC = document.getElementById('st1_input_cifras').value.trim();
+
+          studentAnswerText = `Entera: ${inE || 'vacío'}, Decimal: ${inD || 'vacío'}, Cifras: ${inC || 'vacío'}`;
+          correctAnswerText = `Entera: ${data.correct.entera}, Decimal: ${data.correct.decimal}, Cifras: ${data.correct.cifras}`;
+
+          if (inE === data.correct.entera && inD === data.correct.decimal && inC === data.correct.cifras) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 2: {
+          const selPos = document.getElementById('st2_posSelect').value;
+          const inVal = cleanMathInput(document.getElementById('st2_valInput').value);
+
+          studentAnswerText = `Posición: ${selPos || 'ninguna'}, Valor: ${inVal || 'vacío'}`;
+          correctAnswerText = `Posición: ${data.correct.posicion}, Valor: ${data.correct.valor}`;
+
+          if (selPos.toLowerCase() === data.correct.posicion.toLowerCase() && inVal === data.correct.valor) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 3: {
+          const inText = cleanMathInput(document.getElementById('st3_input_text').value);
+          studentAnswerText = inText || 'vacío';
+          correctAnswerText = data.correct;
+
+          // Flexibilidad para lectura en español
+          if (inText === cleanMathInput(data.correct) || inText.includes(cleanMathInput(data.correct.split(' enteros y ')[1] || ""))) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 4: {
+          const inNum = cleanMathInput(document.getElementById('st4_input_num').value);
+          studentAnswerText = inNum || 'vacío';
+          correctAnswerText = data.correct;
+
+          if (inNum === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 5: {
+          const sel = document.getElementById('st5_selection').value;
+          studentAnswerText = sel || 'sin selección';
+          correctAnswerText = data.correct;
+
+          if (sel === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 6: {
+          const sel = document.getElementById('st6_selection').value;
+          studentAnswerText = sel || 'sin selección';
+          correctAnswerText = data.correct;
+
+          if (sel === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 7: {
+          // Estación conceptual interactiva
+          isCorrect = true;
+          studentAnswerText = "Observado y explorado";
+          correctAnswerText = data.correct;
+          break;
+        }
+
+        case 8: {
+          const sel = document.getElementById('st8_zeroSelect').value;
+          studentAnswerText = sel || 'sin selección';
+          correctAnswerText = data.correct;
+
+          if (sel === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 9: {
+          const u = cleanMathInput(document.getElementById('st9_in_u').value);
+          const d = cleanMathInput(document.getElementById('st9_in_d').value);
+          const c = cleanMathInput(document.getElementById('st9_in_c').value);
+          const m = cleanMathInput(document.getElementById('st9_in_m').value);
+
+          studentAnswerText = `${u} + ${d} + ${c} + ${m}`;
+          correctAnswerText = `${data.correct.u} + ${data.correct.d} + ${data.correct.c} + ${data.correct.m}`;
+
+          if ((u === data.correct.u) && (d === data.correct.d) && (c === data.correct.c) && (m === data.correct.m)) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 10: {
+          const slots = data.slots;
+          studentAnswerText = slots.join(" + ");
+          correctAnswerText = data.correct.join(" + ");
+
+          // Debe tener las 4 correctas y en orden
+          if (JSON.stringify(slots) === JSON.stringify(data.correct)) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 11: {
+          isCorrect = true;
+          studentAnswerText = "Observado y explorado";
+          correctAnswerText = data.correct;
+          break;
+        }
+
+        case 12: {
+          const inAns = cleanMathInput(document.getElementById('st12_input_ans').value);
+          studentAnswerText = inAns || 'vacío';
+          correctAnswerText = data.correct;
+
+          if (inAns === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 13: {
+          const inNum = cleanMathInput(document.getElementById('st13_input_num').value);
+          studentAnswerText = inNum || 'vacío';
+          correctAnswerText = data.correct;
+
+          if (inNum === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 14: {
+          const sel = document.getElementById('st14_selection').value;
+          studentAnswerText = sel || 'sin selección';
+          correctAnswerText = data.correct;
+
+          if (sel === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 15: {
+          const inRepair = cleanMathInput(document.getElementById('st15_input_repair').value).replace(/\s+/g, '');
+          const cleanRight = cleanMathInput(data.correct).replace(/\s+/g, '');
+          studentAnswerText = inRepair || 'vacío';
+          correctAnswerText = data.correct;
+
+          if (inRepair === cleanRight) {
+            isCorrect = true;
+          }
+          break;
+        }
+
+        case 16: {
+          const sel = document.getElementById('st16_selection').value;
+          studentAnswerText = sel || 'sin selección';
+          correctAnswerText = data.correct;
+
+          if (sel === data.correct) {
+            isCorrect = true;
+          }
+          break;
+        }
+      }
+
+      // Registro histórico
+      const record = {
+        studentName: APP_STATE.studentName,
+        date: APP_STATE.sessionDate,
+        grade: APP_STATE.studentGrade,
+        stationId: data.stationId,
+        stationName: STATIONS_METADATA.find(s => s.id === data.stationId)?.name,
+        skill: data.skill,
+        question: data.question,
+        studentAnswer: studentAnswerText,
+        correctAnswer: correctAnswerText,
+        isCorrect: isCorrect,
+        attempts: APP_STATE.currentExerciseAttempts,
+        usedHelp: APP_STATE.helpConsultedInCurrent
+      };
+      APP_STATE.history.push(record);
+
+      // Actualizar conteos pedagógicos
+      const skillTracker = APP_STATE.skills[data.skill];
+      if (skillTracker) {
+        skillTracker.attempted++;
+        if (isCorrect) skillTracker.correct++;
+        else skillTracker.incorrect++;
+      }
+
+      APP_STATE.totalExercisesAttempted++;
+
+      if (isCorrect) {
+        APP_STATE.totalExercisesCorrect++;
+        APP_STATE.stars += 3;
+        feedback.className = "feedback-box feedback-success";
+        
+        const goodMsgs = [
+          "¡Excelente trabajo! Has aplicado correctamente el valor posicional.",
+          "¡Muy bien! Tus cálculos y deducciones son exactos.",
+          "¡Misión superada en esta estación! Sigue brillando.",
+          "¡Buen trabajo! Estás dominando los números decimales."
+        ];
+        feedback.innerHTML = `<span>🌟</span> ${randomChoice(goodMsgs)}`;
+        
+        document.getElementById('btnCheckAnswer').style.display = "none";
+        document.getElementById('btnNextStation').style.display = "inline-flex";
+      } else {
+        feedback.className = "feedback-box feedback-warning";
+        const retryMsgs = [
+          "¡Casi! Revisa con atención el valor posicional de las cifras.",
+          "Observa nuevamente la posición de la cifra antes o después de la coma.",
+          "Tu estrategia va bien, inténtalo una vez más. ¡Tú puedes!",
+          "Revisa cuántos lugares decimales ocupa y si necesitas colocar algún cero."
+        ];
+        feedback.innerHTML = `<span>🔍</span> ${randomChoice(retryMsgs)}`;
+      }
+
+      updateHeaderUI();
+      saveSessionBackup();
+    }
+
+    function advanceNextStep() {
+      if (APP_STATE.currentStation === 6) {
+        // Fin del Bloque 1 -> Mostrar Checkpoint de Repaso
+        showCheckpointScreen();
+      } else if (APP_STATE.currentStation >= 16) {
+        // Fin del Bloque 2 -> Mostrar Pantalla Final de Misión
+        showFinalScreen();
+      } else {
+        APP_STATE.currentStation++;
+        loadStation(APP_STATE.currentStation);
+      }
+    }
+
+    function showCheckpointScreen() {
+      document.getElementById('screenStation').style.display = 'none';
+      document.getElementById('screenCheckpoint').style.display = 'block';
+
+      const block1History = APP_STATE.history.filter(h => h.stationId <= 6);
+      const correctCount = block1History.filter(h => h.isCorrect).length;
+      const pct = block1History.length ? Math.round((correctCount / block1History.length) * 100) : 100;
+
+      document.getElementById('cpStars').textContent = APP_STATE.stars;
+      document.getElementById('cpPercent').textContent = `${pct}%`;
+      document.getElementById('cpCorrect').textContent = `${correctCount}/${block1History.length}`;
+    }
+
+    function showFinalScreen() {
+      document.getElementById('screenStation').style.display = 'none';
+      document.getElementById('screenFinal').style.display = 'block';
+
+      document.getElementById('finalStudentName').textContent = `${APP_STATE.studentName} - ${APP_STATE.studentGrade}`;
+      document.getElementById('finalStars').textContent = APP_STATE.stars;
+      
+      const pct = APP_STATE.history.length ? Math.round((APP_STATE.totalExercisesCorrect / APP_STATE.history.length) * 100) : 100;
+      document.getElementById('finalPercent').textContent = `${pct}%`;
+      document.getElementById('finalCorrectRatio').textContent = `${APP_STATE.totalExercisesCorrect} / ${APP_STATE.history.length}`;
+    }
+
+    function resetStudentSession() {
+      APP_STATE.currentStation = 1;
+      APP_STATE.stars = 0;
+      APP_STATE.totalExercisesAttempted = 0;
+      APP_STATE.totalExercisesCorrect = 0;
+      APP_STATE.history = [];
+      Object.keys(APP_STATE.skills).forEach(k => {
+        APP_STATE.skills[k] = { attempted: 0, correct: 0, incorrect: 0 };
+      });
+      saveSessionBackup();
+      document.getElementById('screenFinal').style.display = 'none';
+      document.getElementById('screenStation').style.display = 'block';
+      loadStation(1);
+    }
+
+    function setRobotSpeech(text) {
+      document.getElementById('robotSpeechText').innerHTML = text;
+    }
+
+    /* =========================================================================
+       PANEL Y CONTENIDO DE AYUDA PEDAGÓGICA
+       ========================================================================= */
+    function openHelpModal() {
+      APP_STATE.helpConsultedInCurrent = true;
+      const modal = document.getElementById('helpModal');
+      const content = document.getElementById('helpModalContent');
+      
+      // Si la estación actual es la 3 (Código decimal), activar modo selección múltiple
+      if (APP_STATE.currentStation === 3) {
+        document.getElementById('st3_multi_mode').style.display = 'block';
+      }
+
+      content.innerHTML = `
+        <div style="margin-bottom:16px;">
+          <h4 style="color:#1e3a8a; font-size:1.15rem; margin-bottom:8px;">Tabla de Valor Posicional</h4>
+          <div class="pos-table-wrap">
+            <table class="pos-table" style="font-size:0.95rem;">
+              <thead>
+                <tr>
+                  <th class="th-u">Unidades</th>
+                  <th class="th-sep">,</th>
+                  <th class="th-d">Décimas</th>
+                  <th class="th-c">Centésimas</th>
+                  <th class="th-m">Milésimas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td class="th-sep">,</td>
+                  <td>0,1</td>
+                  <td>0,01</td>
+                  <td>0,001</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc; border-left:4px solid #3b82f6; padding:12px; margin-bottom:16px;">
+          <strong>¿Qué representa cada cifra?</strong><br>
+          • <span class="pos-u">Unidad (U):</span> Parte entera antes de la coma.<br>
+          • <span class="pos-d">Décima (d):</span> Primer lugar después de la coma. Diez décimas forman 1 unidad.<br>
+          • <span class="pos-c">Centésima (c):</span> Segundo lugar después de la coma. Cien centésimas forman 1 unidad.<br>
+          • <span class="pos-m">Milésima (m):</span> Tercer lugar después de la coma. Mil milésimas forman 1 unidad.
+        </div>
+
+        <div style="background:#fef3c7; border-left:4px solid #f59e0b; padding:12px;">
+          <strong>Ejemplo similar al de tu estación:</strong><br>
+          En el número <strong>8,452</strong>:<br>
+          8 = 8 unidades (8)<br>
+          4 = 4 décimas (0,4)<br>
+          5 = 5 centésimas (0,05)<br>
+          2 = 2 milésimas (0,002)<br>
+          <em>Descomposición: 8 + 0,4 + 0,05 + 0,002</em>
+        </div>
+      `;
+
+      modal.style.display = 'flex';
+      saveSessionBackup();
+    }
+
+    /* =========================================================================
+       PANTALLA DE INFORME Y EXPORTACIONES
+       ========================================================================= */
+    function showReportScreen() {
+      document.getElementById('screenStation').style.display = 'none';
+      document.getElementById('screenCheckpoint').style.display = 'none';
+      document.getElementById('screenFinal').style.display = 'none';
+      document.getElementById('screenReport').style.display = 'block';
+
+      // Cabecera estudiante
+      document.getElementById('repStudentName').textContent = APP_STATE.studentName;
+      document.getElementById('repStudentGrade').textContent = APP_STATE.studentGrade;
+      document.getElementById('repSessionDate').textContent = APP_STATE.sessionDate;
+
+      // Resumen general
+      const totalEx = APP_STATE.history.length;
+      const totalCorrect = APP_STATE.history.filter(h => h.isCorrect).length;
+      const totalIncorrect = totalEx - totalCorrect;
+      const pct = totalEx ? Math.round((totalCorrect / totalEx) * 100) : 0;
+      const totalAttempts = APP_STATE.history.reduce((acc, h) => acc + h.attempts, 0);
+      const totalHelp = APP_STATE.history.filter(h => h.usedHelp).length;
+
+      document.getElementById('repTotalEx').textContent = totalEx;
+      document.getElementById('repTotalCorrect').textContent = totalCorrect;
+      document.getElementById('repTotalIncorrect').textContent = totalIncorrect;
+      document.getElementById('repPercent').textContent = `${pct}%`;
+      document.getElementById('repStars').textContent = APP_STATE.stars;
+      document.getElementById('repAttempts').textContent = totalAttempts;
+      document.getElementById('repHelpCount').textContent = totalHelp;
+
+      // Tabla de Habilidades / Contenido
+      const skillsBody = document.getElementById('skillsTableBody');
+      skillsBody.innerHTML = "";
+
+      Object.keys(APP_STATE.skills).forEach(skillName => {
+        const item = APP_STATE.skills[skillName];
+        if (item.attempted > 0) {
+          const sPct = Math.round((item.correct / item.attempted) * 100);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="font-weight:700;">${skillName}</td>
+            <td style="text-align:center;">${item.attempted}</td>
+            <td style="text-align:center; color:#16a34a; font-weight:bold;">${item.correct}</td>
+            <td style="text-align:center; color:#dc2626; font-weight:bold;">${item.incorrect}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <div class="progress-bar-container" style="flex:1;">
+                  <div class="progress-bar-fill" style="width:${sPct}%;"></div>
+                </div>
+                <span style="font-size:0.9rem; font-weight:bold;">${sPct}%</span>
+              </div>
+            </td>
+          `;
+          skillsBody.appendChild(tr);
+        }
+      });
+
+      // Detalle de Respuestas
+      const detailBody = document.getElementById('repDetailTableBody');
+      detailBody.innerHTML = "";
+
+      APP_STATE.history.forEach((h, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight:700; font-size:0.9rem;">${h.stationName}</td>
+          <td style="font-size:0.95rem;">${h.question}</td>
+          <td style="font-size:0.95rem; font-weight:700;">${h.studentAnswer}</td>
+          <td style="font-size:0.95rem; color:#166534;">${h.correctAnswer}</td>
+          <td style="text-align:center; font-weight:800; color:${h.isCorrect ? '#16a34a' : '#dc2626'};">
+            ${h.isCorrect ? '✓ Correcta' : '✗ Incorrecta'}
+          </td>
+          <td style="text-align:center;">${h.attempts}</td>
+          <td style="text-align:center;">${h.usedHelp ? 'Sí' : 'No'}</td>
+        `;
+        detailBody.appendChild(tr);
+      });
+    }
+
+    /* --- DESCARGA HTML INDEPENDIENTE --- */
+    function downloadIndependentHtmlReport() {
+      const sanitizedName = APP_STATE.studentName.replace(/\s+/g, '_');
+      const filename = `Informe_Decimales_${sanitizedName}.html`;
+
+      const reportHtml = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe - ${APP_STATE.studentName}</title>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+    h1, h2, h3 { color: #1e3a8a; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
+    th { background: #f1f5f9; }
+    .card { background: #f8fafc; border: 2px solid #e2e8f0; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-weight: bold; }
+    @media print { .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom: 20px;">
+    <button onclick="window.print()" style="padding: 10px 20px; font-weight: bold; cursor: pointer;">🖨️ Imprimir Informe</button>
+  </div>
+  <h1>Laboratorio Decimal: Misión Valor Posicional</h1>
+  <h2>Informe Individual de Desempeño</h2>
+  <div class="card">
+    <p><strong>Estudiante:</strong> ${APP_STATE.studentName}</p>
+    <p><strong>Curso:</strong> ${APP_STATE.studentGrade}</p>
+    <p><strong>Fecha de Sesión:</strong> ${APP_STATE.sessionDate}</p>
+    <p><strong>Estrellas Obtenidas:</strong> ⭐ ${APP_STATE.stars}</p>
+    <p><strong>Ejercicios Realizados:</strong> ${APP_STATE.history.length}</p>
+    <p><strong>Aciertos:</strong> ${APP_STATE.totalExercisesCorrect}</p>
+  </div>
+  <h3>Detalle de Ejercicios Realizados</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Estación</th>
+        <th>Habilidad</th>
+        <th>Pregunta</th>
+        <th>Respuesta Estudiante</th>
+        <th>Respuesta Correcta</th>
+        <th>Resultado</th>
+        <th>Intentos</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${APP_STATE.history.map(h => `
+        <tr>
+          <td>${h.stationName}</td>
+          <td>${h.skill}</td>
+          <td>${h.question}</td>
+          <td>${h.studentAnswer}</td>
+          <td>${h.correctAnswer}</td>
+          <td style="color:${h.isCorrect ? 'green' : 'red'}; font-weight:bold;">${h.isCorrect ? '✓ Correcta' : '✗ Incorrecta'}</td>
+          <td>${h.attempts}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+</body>
+</html>
+      `;
+
+      const blob = new Blob([reportHtml], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* --- DESCARGA CSV (EXCEL COMPATIBLE CON BOM) --- */
+    function downloadSessionCsv() {
+      const sanitizedName = APP_STATE.studentName.replace(/\s+/g, '_');
+      const filename = `Resultados_Decimales_${sanitizedName}.csv`;
+
+      const headers = [
+        "Nombre",
+        "Curso",
+        "Fecha",
+        "Estacion",
+        "Contenido",
+        "Pregunta",
+        "Respuesta del estudiante",
+        "Respuesta correcta",
+        "Resultado",
+        "Intentos",
+        "Utilizo ayuda"
+      ];
+
+      const rows = APP_STATE.history.map(h => [
+        `"${h.studentName}"`,
+        `"${h.grade}"`,
+        `"${h.date}"`,
+        `"${h.stationName}"`,
+        `"${h.skill}"`,
+        `"${h.question.replace(/"/g, '""')}"`,
+        `"${h.studentAnswer.replace(/"/g, '""')}"`,
+        `"${h.correctAnswer.replace(/"/g, '""')}"`,
+        `"${h.isCorrect ? 'Correcta' : 'Incorrecta'}"`,
+        h.attempts,
+        `"${h.usedHelp ? 'Sí' : 'No'}"`
+      ]);
+
+      const csvContent = [headers.join(";"), ...rows.map(r => r.join(";"))].join("\r\n");
+      
+      // UTF-8 BOM para compatibilidad directa con MS Excel
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    /* --- FUNCIONES DE MODO PROFESOR --- */
+    function revealTeacherAnswer() {
+      const data = APP_STATE.exerciseCurrentData;
+      if (!data) return;
+
+      let msg = `Respuesta correcta:\n`;
+      if (typeof data.correct === 'object') {
+        msg += JSON.stringify(data.correct, null, 2);
+      } else {
+        msg += data.correct;
+      }
+      alert(msg);
+    }
+  </script>
+</body>
+</html>

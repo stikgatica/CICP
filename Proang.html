@@ -1,0 +1,3482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio de Ingeniería Geométrica - Base Antártica</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            ice: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            },
+            polar: {
+              card: 'rgba(15, 23, 42, 0.75)',
+              border: '#1e3a5f',
+              glow: '#00d2ff',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: radial-gradient(circle at top right, #0b1e36 0%, #050d1a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    .polar-glass {
+      background: rgba(13, 27, 49, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid #1e3a5f;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    }
+
+    .polar-glass-bright {
+      background: rgba(22, 43, 77, 0.65);
+      border: 1px solid #38bdf8;
+    }
+
+    .blueprint-grid {
+      background-image: linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* Print sheet styling for clean teacher PDF report */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      #printReportSection {
+        display: block !important;
+        background: #ffffff !important;
+        color: #111827 !important;
+        padding: 0 !important;
+      }
+      .print-card {
+        border: 1px solid #cbd5e1 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+      }
+      .print-table th, .print-table td {
+        border: 1px solid #94a3b8 !important;
+        padding: 6px 10px !important;
+        color: #0f172a !important;
+      }
+      .print-table th {
+        background: #e2e8f0 !important;
+      }
+    }
+
+    /* Animations */
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+      50% { box-shadow: 0 0 22px rgba(56, 189, 248, 0.7); }
+    }
+    .active-step {
+      animation: pulseGlow 2.5s infinite;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #091526;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e3a5f;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0284c7;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased blueprint-grid flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+  <header class="no-print sticky top-0 z-50 polar-glass border-b border-ice-900/60 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Polar Base Badge -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-lg bg-ice-600/30 border border-ice-400 flex items-center justify-center text-cyan-300 font-bold text-xl shadow-inner">
+          ❄️
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-wide text-white uppercase font-mono">
+              Base Antártica: <span class="text-cyan-400">Lab Geométrico</span>
+            </h1>
+            <span id="profBadge" class="hidden text-xs bg-amber-500 text-black px-2 py-0.5 rounded font-bold uppercase tracking-wider animate-pulse">
+              Modo Profesor
+            </span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-slate-300 font-mono">
+            <span id="navCadetName">Cadete: No registrado</span>
+            <span class="text-cyan-600">|</span>
+            <span id="navCadetGrade">Curso: --</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mission Progress Bar & Step Tracker -->
+      <div class="flex-1 max-w-md mx-2 min-w-[220px]">
+        <div class="flex justify-between items-center text-xs font-mono text-cyan-300 mb-1">
+          <span id="missionCounterText">Misión 1 de 18</span>
+          <span id="missionPercentText">0%</span>
+        </div>
+        <div class="w-full bg-slate-900 rounded-full h-2.5 p-0.5 border border-slate-700">
+          <div id="missionProgressBar" class="bg-gradient-to-r from-cyan-500 to-blue-500 h-full rounded-full transition-all duration-500" style="width: 5.5%;"></div>
+        </div>
+      </div>
+
+      <!-- Action buttons: Teacher mode, Reset & Navigation shortcut -->
+      <div class="flex items-center space-x-2">
+        <button onclick="openTeacherModal()" class="text-xs font-mono px-2.5 py-1.5 rounded border border-slate-700 text-slate-400 hover:text-cyan-300 hover:border-cyan-500 transition">
+          ⚙️ Docente
+        </button>
+        <button id="btnPrevScreen" onclick="navigateScreen(-1)" class="text-xs px-3 py-1.5 rounded font-medium bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none transition">
+          ◀ Anterior
+        </button>
+        <button id="btnNextScreen" onclick="navigateScreen(1)" class="text-xs px-4 py-1.5 rounded font-bold bg-cyan-600 hover:bg-cyan-500 text-white border border-cyan-400 disabled:opacity-40 disabled:pointer-events-none transition shadow-lg shadow-cyan-900/30">
+          Siguiente ▶
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto w-full px-4 py-6 flex-grow">
+    <!-- Notice Toast Box -->
+    <div id="systemToast" class="hidden mb-4 p-3 rounded-lg border text-sm flex items-center justify-between transition duration-300">
+      <div class="flex items-center space-x-2">
+        <span id="toastIcon" class="text-lg">ℹ️</span>
+        <span id="toastMsg" class="font-medium"></span>
+      </div>
+      <button onclick="hideToast()" class="text-xs text-slate-400 hover:text-white px-2 py-0.5">✕</button>
+    </div>
+
+    <!-- Tiered Hint Feedback Container (Reusable across problem screens) -->
+    <div id="hintCardContainer" class="hidden mb-6 p-4 rounded-xl polar-glass border-l-4 border-amber-400">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-amber-400 font-bold text-sm uppercase tracking-wider font-mono">📡 Asistente de Telemetría Polar:</span>
+        <span id="hintLevelBadge" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded">Pista 1</span>
+      </div>
+      <p id="hintText" class="text-slate-200 text-sm leading-relaxed"></p>
+    </div>
+
+    <section id="screen-1" class="screen-view polar-glass rounded-2xl p-6 sm:p-10 border border-ice-700/40 shadow-2xl relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-mono tracking-widest uppercase">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+          Expedición Científica • Sector Domos Polares
+        </div>
+
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          Base Antártica: <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-sky-200">Laboratorio de Ingeniería Geométrica</span>
+        </h2>
+
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-700/80 text-sm text-slate-300 space-y-2">
+          <p class="font-bold text-cyan-300 font-mono text-xs uppercase tracking-wider">🎯 Objetivo Pedagógico de la Misión:</p>
+          <p class="leading-relaxed">
+            Resolver problemas geométricos de diseño de estructuras aplicando los patrones descubiertos de la suma de ángulos interiores y exteriores de los polígonos del domo geodésico polar.
+          </p>
+          <p class="text-xs text-slate-400 border-t border-slate-800 pt-2">
+            Hoy formarás parte del equipo de ingeniería polar encargado de revisar el diseño geométrico de la base. Para certificar cada módulo estructural, deberás deducir, comprobar y calcular con precisión los ángulos de cada panel antes de su montaje contra las tormentas antárticas.
+          </p>
+        </div>
+
+        <!-- Saved State Recovery Warning -->
+        <div id="savedStateAlert" class="hidden p-4 rounded-xl bg-blue-950/60 border border-blue-500/50 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div>
+            <div class="font-bold text-cyan-300 text-sm">Registro de misión anterior detectado</div>
+            <div id="savedStateDesc" class="text-xs text-slate-300">Se encontraron datos guardados en este equipo.</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="resumeSavedState()" class="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold font-mono">
+              Continuar Misión
+            </button>
+            <button onclick="clearSavedState()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs font-mono">
+              Comenzar Nueva
+            </button>
+          </div>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="formRegistration" onsubmit="event.preventDefault(); startCadetMission();" class="space-y-4 pt-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-mono uppercase text-slate-300 mb-1">Nombre Completo del Cadete:</label>
+              <input type="text" id="inputCadetName" required placeholder="Ej: Valentina Morales" 
+                     class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-mono uppercase text-slate-300 mb-1">Curso o Nivel:</label>
+              <input type="text" id="inputCadetGrade" required placeholder="Ej: 7° Básico B" 
+                     class="w-full px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-sm">
+            </div>
+          </div>
+
+          <div class="pt-4 flex justify-end">
+            <button type="submit" class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold tracking-wide shadow-lg shadow-cyan-500/20 hover:from-cyan-400 hover:to-blue-500 transition duration-200 font-mono uppercase text-sm">
+              Comenzar Misión Polar 🚀
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="screen-2" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+          <div>
+            <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 1 / 18 • Verificación Inicial</span>
+            <h2 class="text-2xl font-bold text-white">¿Qué recuerdas de los polígonos?</h2>
+          </div>
+          <span class="text-xs bg-slate-800 text-cyan-300 px-3 py-1 rounded-full font-mono border border-slate-700">5 reactivos</span>
+        </div>
+
+        <p class="text-sm text-slate-300 leading-relaxed">
+          Antes de ingresar a los talleres del domo, el sistema central requiere calibrar tus conocimientos previos sobre geometría de polígonos. Responde cada pregunta y observa la retroalimentación inmediata.
+        </p>
+
+        <div id="quizActivationContainer" class="space-y-6">
+          <!-- Rendered programmatically via JS for robust feedback & tracking -->
+        </div>
+
+        <div id="screen2LockNotice" class="text-xs font-mono text-amber-300/80 bg-amber-950/30 border border-amber-800/40 p-3 rounded-lg flex items-center gap-2">
+          <span>🔒</span> Debes contestar correctamente las 5 preguntas diagnósticas para calibrar los sistemas de navegación.
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-3" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 2 / 18 • Laboratorio Experimental</span>
+          <h2 class="text-2xl font-bold text-white">¿De dónde apareció (n - 2) × 180°?</h2>
+          <p class="text-xs text-slate-400 mt-1">Deducción mediante triangulación desde un único vértice maestro.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Polygon Interactive Canvas -->
+          <div class="lg:col-span-7 bg-slate-900/90 rounded-xl p-4 border border-slate-700 flex flex-col items-center">
+            <div class="flex justify-between w-full mb-2">
+              <span class="text-xs font-mono text-slate-400">Polígono Activo: <strong id="lblActivePolyName" class="text-cyan-400">Pentágono (5 lados)</strong></span>
+              <span class="text-xs text-slate-400 font-mono">Vértices: <span class="text-cyan-300 font-bold" id="lblVertexSelected">Haz clic en un vértice</span></span>
+            </div>
+
+            <!-- SVG Viewbox -->
+            <div class="w-full flex justify-center bg-slate-950 rounded-lg p-2 border border-slate-800 relative">
+              <svg id="svgTriangulation" viewBox="0 0 320 280" class="w-72 h-64 select-none touch-manipulation cursor-crosshair">
+                <!-- Programmatically drawn lines, vertices and fill -->
+              </svg>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-4 justify-center w-full">
+              <button onclick="setTriangulationPoly(3)" class="btn-poly-select px-3 py-1 rounded text-xs font-mono bg-slate-800 text-slate-300 hover:border-cyan-400 border border-slate-700">Triángulo (3)</button>
+              <button onclick="setTriangulationPoly(4)" class="btn-poly-select px-3 py-1 rounded text-xs font-mono bg-slate-800 text-slate-300 hover:border-cyan-400 border border-slate-700">Cuadrilátero (4)</button>
+              <button onclick="setTriangulationPoly(5)" class="btn-poly-select px-3 py-1 rounded text-xs font-mono bg-cyan-900/60 text-cyan-300 border border-cyan-500">Pentágono (5)</button>
+              <button onclick="setTriangulationPoly(6)" class="btn-poly-select px-3 py-1 rounded text-xs font-mono bg-slate-800 text-slate-300 hover:border-cyan-400 border border-slate-700">Hexágono (6)</button>
+            </div>
+
+            <div class="mt-3 flex gap-2">
+              <button id="btnExecuteTriangulation" onclick="executeTriangulate()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold font-mono tracking-wider shadow">
+                📐 Trazar Diagonales (Triangular)
+              </button>
+              <button onclick="resetTriangulationCanvas()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-lg text-xs font-mono">
+                Reiniciar
+              </button>
+            </div>
+          </div>
+
+          <!-- Proof Table and Deduction -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+              <h3 class="text-xs font-mono uppercase text-cyan-400 font-bold mb-2">Tabla de Descomposición</h3>
+              <p class="text-xs text-slate-400 mb-2">Cuenta los triángulos que se forman al trazar todas las diagonales desde UN SOLO vértice:</p>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left text-slate-300 font-mono">
+                  <thead class="bg-slate-800 text-cyan-300 border-b border-slate-700">
+                    <tr>
+                      <th class="p-1.5">Polígono</th>
+                      <th class="p-1.5 text-center">Lados (n)</th>
+                      <th class="p-1.5 text-center">Triángulos</th>
+                      <th class="p-1.5 text-right">Suma Interior</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800">
+                    <tr>
+                      <td class="p-1.5 font-sans">Triángulo</td>
+                      <td class="p-1.5 text-center">3</td>
+                      <td class="p-1.5 text-center">
+                        <input type="number" id="tblTri3" onchange="validateTriangulationTable()" class="w-12 text-center bg-slate-950 border border-slate-700 rounded py-0.5 text-cyan-300">
+                      </td>
+                      <td class="p-1.5 text-right">
+                        <span id="lblSuma3" class="text-slate-400">---</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="p-1.5 font-sans">Cuadrilátero</td>
+                      <td class="p-1.5 text-center">4</td>
+                      <td class="p-1.5 text-center">
+                        <input type="number" id="tblTri4" onchange="validateTriangulationTable()" class="w-12 text-center bg-slate-950 border border-slate-700 rounded py-0.5 text-cyan-300">
+                      </td>
+                      <td class="p-1.5 text-right">
+                        <span id="lblSuma4" class="text-slate-400">---</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="p-1.5 font-sans">Pentágono</td>
+                      <td class="p-1.5 text-center">5</td>
+                      <td class="p-1.5 text-center">
+                        <input type="number" id="tblTri5" onchange="validateTriangulationTable()" class="w-12 text-center bg-slate-950 border border-slate-700 rounded py-0.5 text-cyan-300">
+                      </td>
+                      <td class="p-1.5 text-right">
+                        <span id="lblSuma5" class="text-slate-400">---</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="p-1.5 font-sans">Hexágono</td>
+                      <td class="p-1.5 text-center">6</td>
+                      <td class="p-1.5 text-center">
+                        <input type="number" id="tblTri6" onchange="validateTriangulationTable()" class="w-12 text-center bg-slate-950 border border-slate-700 rounded py-0.5 text-cyan-300">
+                      </td>
+                      <td class="p-1.5 text-right">
+                        <span id="lblSuma6" class="text-slate-400">---</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Deductive synthesis step -->
+            <div id="boxDeductionPattern" class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 space-y-3">
+              <label class="block text-xs font-mono text-cyan-300">
+                ¿Qué relación descubres entre el número de lados (n) y el número de triángulos formados?
+              </label>
+              <div class="flex items-center gap-2 text-xs font-mono text-white">
+                <span>N° de triángulos = n &minus;</span>
+                <input type="number" id="inputConstantDeduction" placeholder="?" oninput="checkDeductionFormula()" 
+                       class="w-14 text-center py-1 bg-slate-950 border border-cyan-500 rounded font-bold text-cyan-300 focus:outline-none">
+              </div>
+
+              <!-- Unlocked formal statement -->
+              <div id="boxFormulaRevealed" class="hidden p-3 rounded-lg bg-cyan-950/70 border border-cyan-500/60 text-xs space-y-1.5 animate-fadeIn">
+                <div class="font-bold text-cyan-300 font-mono text-sm">💡 Conclusión Geométrica:</div>
+                <div class="font-mono text-amber-300 font-bold text-center text-sm py-1 bg-slate-900 rounded border border-amber-500/30">
+                  Suma interior: S = (n - 2) × 180°
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed">
+                  “Cada triángulo siempre aporta 180° a los ángulos interiores del polígono. Como al triangular desde un único vértice siempre se forman exactamente <strong>(n - 2)</strong> triángulos, multiplicamos esa cantidad por 180°.”
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-4" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+          <div>
+            <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 3 / 18 • Cálculo Estructurado</span>
+            <h2 class="text-2xl font-bold text-white">Comprobación de la Fórmula en Paneles</h2>
+          </div>
+          <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono border border-slate-700">4 Paneles</span>
+        </div>
+
+        <p class="text-sm text-slate-300">
+          Para certificar la resistencia del domo polar, debes realizar el desglose paso a paso. No está permitido saltarse el desarrollo matemático:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="cardsStepByStepContainer">
+          <!-- Panel Octágono, Hexágono, Pentágono, Cuadrilátero rendered dynamically -->
+        </div>
+
+        <div class="p-3 rounded-lg bg-slate-900/60 border border-slate-800 text-xs font-mono text-slate-400 flex items-center justify-between">
+          <span id="screen4StatusText">Completados: 0 de 4 paneles certificados.</span>
+          <button onclick="checkAllScreen4Panels()" class="px-4 py-1.5 bg-cyan-700 hover:bg-cyan-600 text-white rounded text-xs font-bold uppercase tracking-wider">
+            Verificar Paneles
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-5" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 4 / 18 • Simulación Cinética Polar</span>
+          <h2 class="text-2xl font-bold text-white">El Robot Inspector Recorre el Perímetro del Domo</h2>
+          <p class="text-xs text-slate-400 mt-1">Observa la orientación del robot y el ángulo de giro exterior acumulado en cada vértice.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <!-- Robot Canvas Simulator -->
+          <div class="lg:col-span-7 bg-slate-950 rounded-xl p-3 border border-slate-800 flex flex-col items-center">
+            <div class="w-full flex justify-between text-xs font-mono text-slate-400 mb-1">
+              <span>Perímetro: <strong id="lblRobotPolyName" class="text-cyan-300">Pentágono</strong></span>
+              <span id="lblGiroAcumulado" class="text-amber-400 font-bold">Giro acumulado: 0°</span>
+            </div>
+
+            <canvas id="robotCanvas" width="340" height="280" class="w-full max-w-[340px] bg-slate-900 rounded-lg border border-slate-800"></canvas>
+
+            <div class="flex flex-wrap gap-2 mt-3 justify-center">
+              <button onclick="setupRobotSimulation(3)" class="px-2.5 py-1 rounded text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Triángulo (3)</button>
+              <button onclick="setupRobotSimulation(4)" class="px-2.5 py-1 rounded text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Cuadrilátero (4)</button>
+              <button onclick="setupRobotSimulation(5)" class="px-2.5 py-1 rounded text-xs font-mono bg-cyan-900 text-cyan-300 border border-cyan-500">Pentágono (5)</button>
+              <button onclick="setupRobotSimulation(6)" class="px-2.5 py-1 rounded text-xs font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">Hexágono (6)</button>
+            </div>
+
+            <div class="mt-3 flex gap-2">
+              <button id="btnPlayRobot" onclick="runRobotInspection()" class="px-5 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg text-xs font-mono font-bold tracking-wider shadow">
+                🤖 Iniciar Recorrido del Robot
+              </button>
+            </div>
+          </div>
+
+          <!-- Conceptual Analysis and Deduction -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 space-y-3">
+              <h3 class="text-xs font-mono uppercase text-cyan-400 font-bold">Análisis de Telemetría Polar</h3>
+              
+              <div class="space-y-2">
+                <label class="block text-xs text-slate-300 font-mono">1. ¿Qué tipo de giro completó el robot al regresar a su punto de partida?</label>
+                <div class="space-y-1.5 text-xs text-slate-200">
+                  <label class="flex items-center gap-2 p-2 rounded bg-slate-800/60 hover:bg-slate-800 cursor-pointer">
+                    <input type="radio" name="robotTurnQuestion" value="media" onchange="checkRobotTelemetry()"> Media vuelta (180°)
+                  </label>
+                  <label class="flex items-center gap-2 p-2 rounded bg-slate-800/60 hover:bg-slate-800 cursor-pointer">
+                    <input type="radio" name="robotTurnQuestion" value="completa" onchange="checkRobotTelemetry()"> Una vuelta completa (giro cerrado de orientación)
+                  </label>
+                  <label class="flex items-center gap-2 p-2 rounded bg-slate-800/60 hover:bg-slate-800 cursor-pointer">
+                    <input type="radio" name="robotTurnQuestion" value="dos" onchange="checkRobotTelemetry()"> Dos vueltas completas
+                  </label>
+                </div>
+              </div>
+
+              <div class="space-y-2 pt-2 border-t border-slate-800">
+                <label class="block text-xs text-slate-300 font-mono">2. En grados sexagesimales, ¿cuánto mide siempre una vuelta completa?</label>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="inputFullTurnDegrees" placeholder="Grados" oninput="checkRobotTelemetry()" 
+                         class="w-24 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-mono text-center font-bold">
+                  <span class="text-slate-400 text-xs font-mono">° (grados)</span>
+                </div>
+              </div>
+
+              <!-- Unlocked Exterior Theorem Statement -->
+              <div id="boxExteriorTheorem" class="hidden p-3 rounded-lg bg-blue-950/80 border border-cyan-400 text-xs space-y-2 animate-fadeIn">
+                <div class="font-bold text-cyan-300 font-mono text-xs uppercase">❄️ Teorema Fundamental del Giro Exterior:</div>
+                <div class="text-center font-mono font-bold text-amber-300 text-base py-1 bg-slate-900 rounded border border-amber-500/40">
+                  Suma exterior = 360° (Siempre constante)
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed">
+                  “Sin importar si el polígono convexo tiene 3, 5, 8 o 100 lados, la suma de un ángulo exterior en cada vértice es <strong>SIEMPRE exactamente 360°</strong>, porque recorrer el perímetro equivale a realizar un giro completo sobre sí mismo.”
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-6" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+          <div>
+            <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 5 / 18 • Laboratorio de Ensayos</span>
+            <h2 class="text-2xl font-bold text-white">Laboratorio de Giros Exteriores</h2>
+          </div>
+          <button onclick="generateRandomExteriorExercises()" class="text-xs font-mono text-cyan-300 bg-slate-800 px-3 py-1.5 rounded border border-cyan-700/50 hover:bg-slate-700">
+            🔄 Generar Nuevos Valores
+          </button>
+        </div>
+
+        <p class="text-sm text-slate-300">
+          En los nodos de unión del domo antártico, los sensores detectan todos los giros exteriores excepto uno (<span class="font-mono text-amber-400 font-bold">x</span>). Resuelve la ecuación geométrica descomponiendo la suma de los conocidos y restando de 360°:
+        </p>
+
+        <!-- 3 Interactive Dynamic Exercise Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="exteriorExercisesGrid">
+          <!-- Rendered programmatically -->
+        </div>
+
+        <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 flex justify-between items-center text-xs font-mono text-slate-400">
+          <span id="screen6ValidationStatus">Debes resolver y verificar los 3 polígonos.</span>
+          <button onclick="validateAllScreen6Exercises()" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold uppercase tracking-wider">
+            Certificar Giros
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-7" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 6 / 18 • Clasificación Conceptual</span>
+          <h2 class="text-2xl font-bold text-white">¿Ángulo Interior o Ángulo Exterior?</h2>
+          <p class="text-xs text-slate-400 mt-1">Clasifica cada situación técnica arrastrando o haciendo clic en su panel correspondiente.</p>
+        </div>
+
+        <!-- Target Bins -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Interior Bin -->
+          <div id="dropBinInterior" class="p-5 rounded-2xl bg-cyan-950/40 border-2 border-dashed border-cyan-500/50 min-h-[200px] flex flex-col items-center justify-start transition duration-200"
+               ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'interior')">
+            <div class="flex items-center gap-2 mb-2 text-cyan-300 font-mono font-bold text-sm uppercase">
+              <span>📐</span> Propiedad de Ángulos Interiores
+            </div>
+            <div class="text-xs font-mono text-cyan-400/80 bg-slate-900/80 px-3 py-1 rounded-full border border-cyan-500/40 mb-3">
+              Fórmula: S = (n - 2) × 180°
+            </div>
+            <div id="binInteriorList" class="w-full space-y-2 flex-grow">
+              <!-- Dropped items go here -->
+            </div>
+          </div>
+
+          <!-- Exterior Bin -->
+          <div id="dropBinExterior" class="p-5 rounded-2xl bg-blue-950/40 border-2 border-dashed border-blue-500/50 min-h-[200px] flex flex-col items-center justify-start transition duration-200"
+               ondragover="handleDragOver(event)" ondrop="handleDrop(event, 'exterior')">
+            <div class="flex items-center gap-2 mb-2 text-blue-300 font-mono font-bold text-sm uppercase">
+              <span>🔄</span> Propiedad de Ángulos Exteriores
+            </div>
+            <div class="text-xs font-mono text-blue-400/80 bg-slate-900/80 px-3 py-1 rounded-full border border-blue-500/40 mb-3">
+              Propiedad: S = 360° (Constante)
+            </div>
+            <div id="binExteriorList" class="w-full space-y-2 flex-grow">
+              <!-- Dropped items go here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Source Cards (8 Statements) -->
+        <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800">
+          <div class="text-xs font-mono text-slate-400 mb-3 uppercase tracking-wider flex justify-between">
+            <span>Tarjetas de situación por clasificar (Arrastra o haz clic en los botones de envío):</span>
+            <span id="lblClassifyPendingCount" class="text-cyan-400 font-bold">8 pendientes</span>
+          </div>
+          <div id="sourceCardsPool" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-8" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 7 / 18 • Toma de Decisiones Técnicas</span>
+          <h2 class="text-2xl font-bold text-white">¿Qué Propiedad Necesitas para Resolver?</h2>
+          <p class="text-xs text-slate-400 mt-1">Un ingeniero no aplica fórmulas a ciegas: primero identifica el fenómeno geométrico.</p>
+        </div>
+
+        <p class="text-sm text-slate-300">
+          Analiza cada uno de los 6 informes de los módulos del domo. Selecciona la propiedad geométrica pertinente antes de pasar a la mesa de cálculo:
+        </p>
+
+        <div id="screen8DecisionsContainer" class="space-y-3.5">
+          <!-- 6 Scenarios populated by JS -->
+        </div>
+
+        <div class="flex justify-between items-center text-xs font-mono text-slate-400 p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+          <span id="screen8StatusCount">Decisiones validadas: 0 de 6</span>
+          <button onclick="checkAllScreen8Decisions()" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold uppercase tracking-wider">
+            Confirmar Diagnósticos
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-9" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 8 / 18 • Protocolo de Certificación 1</span>
+          <h2 class="text-2xl font-bold text-white">Revisión Estructural: Panel Hexagonal</h2>
+        </div>
+
+        <!-- Problem Card with SVG Illustration -->
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700 flex flex-col sm:flex-row items-center gap-4">
+          <div class="w-32 h-32 flex-shrink-0 bg-slate-950 rounded-lg p-2 border border-slate-800 flex items-center justify-center">
+            <!-- Regular Hexagon SVG -->
+            <svg viewBox="0 0 100 100" class="w-28 h-28">
+              <polygon points="50,5 89,27 89,73 50,95 11,73 11,27" fill="rgba(6,182,212,0.15)" stroke="#38bdf8" stroke-width="2.5" />
+              <text x="50" y="55" fill="#38bdf8" font-size="10" font-family="monospace" text-anchor="middle" font-weight="bold">PANEL HEX</text>
+            </svg>
+          </div>
+          <div class="text-xs text-slate-300 space-y-1.5">
+            <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-800">CASO TÉCNICO N° 101</span>
+            <p class="leading-relaxed">
+              Un panel principal del domo antártico tiene forma de <strong>hexágono convexo</strong>. El equipo de construcción civil necesita certificar ante el comité polar la suma total de sus ángulos interiores antes de ensamblar los refuerzos de titanio.
+            </p>
+          </div>
+        </div>
+
+        <!-- 6 Sequential Step Fields -->
+        <div class="space-y-4">
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">Paso 1: ¿Cuántos lados (n) tiene este panel?</label>
+            <input type="number" id="s9Step1" placeholder="n" class="w-20 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold font-mono">
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">Paso 2: ¿Qué propiedad geométrica se debe utilizar?</label>
+            <select id="s9Step2" class="bg-slate-950 border border-slate-700 text-xs text-cyan-300 rounded px-3 py-1 font-mono">
+              <option value="">Selecciona...</option>
+              <option value="interior">Suma de Ángulos Interiores: (n - 2) × 180°</option>
+              <option value="exterior">Suma de Ángulos Exteriores: 360°</option>
+            </select>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">Paso 3: Cantidad de triángulos formados al triangular (n - 2):</label>
+            <input type="number" id="s9Step3" placeholder="Triángulos" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold font-mono">
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">Paso 4: Multiplicación formal (Triángulos × 180°):</label>
+            <div class="flex items-center gap-2 font-mono text-xs text-white">
+              <span id="lblS9TriDisplay">4</span> × 180° = 
+              <input type="number" id="s9Step4" placeholder="Resultado" class="w-28 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold font-mono">
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">Paso 5: Suma total de ángulos interiores certificada (°):</label>
+            <input type="number" id="s9Step5" placeholder="Total °" class="w-28 text-center py-1 bg-slate-950 border border-cyan-500 rounded text-cyan-300 font-bold font-mono">
+          </div>
+
+          <!-- Mandatory Written Conclusion -->
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1.5">
+            <label class="block text-xs font-mono text-amber-300 font-bold">
+              Paso 6: Redacta la conclusión técnica para la bitácora de obra:
+            </label>
+            <textarea id="s9Step6Explanation" rows="2" placeholder="Ej: El panel hexagonal posee 6 lados y se descompone en 4 triángulos, por lo que la suma interior es 720°..." 
+                      class="w-full p-2.5 rounded bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"></textarea>
+            <span class="text-[10px] text-slate-400 font-mono">Obligatorio: Redacta con tus palabras explicando el cálculo y el resultado obtenido.</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="validateScreen9Hexagon()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider">
+            Validar Protocolo Hexagonal
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-10" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 9 / 18 • Protocolo de Certificación 2</span>
+          <h2 class="text-2xl font-bold text-white">Unión Exterior Defectuosa en Panel Pentagonal</h2>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-700 flex flex-col sm:flex-row items-center gap-4">
+          <div class="w-32 h-32 flex-shrink-0 bg-slate-950 rounded-lg p-2 border border-slate-800 flex items-center justify-center">
+            <!-- Regular Pentagon with Exterior Vector Angles SVG -->
+            <svg viewBox="0 0 100 100" class="w-28 h-28">
+              <polygon points="50,10 90,38 75,85 25,85 10,38" fill="rgba(59,130,246,0.15)" stroke="#60a5fa" stroke-width="2.5" />
+              <!-- Extended lines representing exterior angles -->
+              <line x1="50" y1="10" x2="80" y2="0" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="2,2"/>
+              <text x="50" y="55" fill="#93c5fd" font-size="9" font-family="monospace" text-anchor="middle" font-weight="bold">PANEL PENT</text>
+            </svg>
+          </div>
+          <div class="text-xs text-slate-300 space-y-1.5">
+            <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 font-mono text-[10px] font-bold border border-blue-800">ALERTA ESTRUCTURAL N° 204</span>
+            <p class="leading-relaxed">
+              En una unión perimetral de un panel pentagonal, el escáner láser registró cuatro giros exteriores válidos: 
+              <strong class="text-cyan-300">60°, 70°, 85° y 65°</strong>. El quinto ángulo de unión (<strong class="text-amber-400">x</strong>) perdió su calibración. ¿Cuánto debe medir exactamente <strong class="text-amber-400">x</strong> para que la estructura cierre perfectamente sin colapsar?
+            </p>
+          </div>
+        </div>
+
+        <!-- Problem Step Fields -->
+        <div class="space-y-4">
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">1. ¿A cuánto debe sumar la totalidad de los giros exteriores de un pentágono?</label>
+            <input type="number" id="s10Step1" placeholder="360" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold font-mono">
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">2. Suma de los 4 ángulos exteriores conocidos (60 + 70 + 85 + 65):</label>
+            <input type="number" id="s10Step2" placeholder="Suma" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold font-mono">
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">3. Diferencia para completar la vuelta entera (360° &minus; suma conocidos):</label>
+            <input type="number" id="s10Step3" placeholder="Resta" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold font-mono">
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex items-center justify-between">
+            <label class="text-xs font-mono text-slate-300">4. Valor calibrado del ángulo exterior faltante (x):</label>
+            <div class="flex items-center gap-1 font-mono text-cyan-400 font-bold">
+              <span>x =</span>
+              <input type="number" id="s10Step4" placeholder="x" class="w-24 text-center py-1 bg-slate-950 border border-cyan-400 rounded text-amber-400 font-bold font-mono">
+              <span>°</span>
+            </div>
+          </div>
+
+          <!-- Mandatory Written Justification -->
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1.5">
+            <label class="block text-xs font-mono text-amber-300 font-bold">
+              5. Justifica por qué el valor de x asegura la estabilidad del domo:
+            </label>
+            <textarea id="s10Step5Explanation" rows="2" placeholder="Ej: Sumando los 4 ángulos conocidos da 280°. Como todo polígono convexo completa 360° en sus giros exteriores, x debe medir 80°..." 
+                      class="w-full p-2.5 rounded bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="validateScreen10Exterior()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider">
+            Certificar Unión Pentagonal
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-11" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+          <div>
+            <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 10 / 18 • Banco de Pruebas Polar</span>
+            <h2 class="text-2xl font-bold text-white">Estación de Problemas de Ingeniería</h2>
+          </div>
+          <span id="screen11ProblemIndex" class="text-xs font-mono bg-cyan-950 text-cyan-300 px-3 py-1 rounded-full border border-cyan-700">
+            Problema 1 de 8
+          </span>
+        </div>
+
+        <!-- Single active problem presentation -->
+        <div id="screen11ProblemCard" class="p-5 rounded-2xl bg-slate-900/90 border border-slate-700 space-y-4">
+          <!-- Populated by JS based on current problem index (0 to 7) -->
+        </div>
+
+        <div class="flex justify-between items-center">
+          <span id="screen11HelpStatus" class="text-xs font-mono text-slate-400">Analiza detenidamente la consigna técnica.</span>
+          <div class="flex gap-2">
+            <button id="btnCheckS11Problem" onclick="checkCurrentS11Problem()" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-mono text-xs font-bold uppercase tracking-wider">
+              Comprobar Respuesta
+            </button>
+            <button id="btnNextS11Problem" onclick="nextS11Problem()" class="hidden px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded font-mono text-xs font-bold uppercase tracking-wider animate-bounce">
+              Problema Siguiente ▶
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-12" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 11 / 18 • Razonamiento Inverso</span>
+          <h2 class="text-2xl font-bold text-white">Descifrando el Panel a partir de su Suma Interior</h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Si conocemos la suma interior, ¿cuántos lados tiene el panel? Descompón en grupos de 180° y determina n.
+          </p>
+        </div>
+
+        <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1">
+          <span class="font-bold text-cyan-300 font-mono">Guía de Razonamiento Aritmético:</span>
+          <p>
+            Como cada triángulo suma 180°, dividimos la suma total entre 180° para saber la cantidad de triángulos formados: 
+            <span class="font-mono text-amber-300 font-bold">N° Triángulos = Suma ÷ 180°</span>. 
+            Luego, sabemos que <span class="font-mono text-amber-300 font-bold">n = Triángulos + 2</span>.
+          </p>
+        </div>
+
+        <!-- Inverse Problems Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left text-slate-200 font-mono bg-slate-900/90 rounded-xl border border-slate-800">
+            <thead class="bg-slate-800 text-cyan-300 border-b border-slate-700">
+              <tr>
+                <th class="p-3">Suma Interior Medida</th>
+                <th class="p-3 text-center">Grupos de 180° (Suma ÷ 180)</th>
+                <th class="p-3 text-center">N° de Triángulos (n - 2)</th>
+                <th class="p-3 text-center">Lados Totales (n)</th>
+                <th class="p-3 text-center">Nombre del Polígono</th>
+              </tr>
+            </thead>
+            <tbody id="inverseProblemsTbody" class="divide-y divide-slate-800">
+              <!-- 5 rows: 720°, 540°, 900°, 1080°, 1260° -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-between items-center text-xs font-mono text-slate-400">
+          <span id="s12FeedbackMsg">Completa todas las celdas de la bitácora inversa.</span>
+          <button onclick="checkAllScreen12Inverse()" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold uppercase tracking-wider">
+            Validar Bitácora Inversa
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-13" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 12 / 18 • Auditoría Técnica</span>
+          <h2 class="text-2xl font-bold text-white">Detectives de Errores: Algo Falló en los Planos</h2>
+          <p class="text-xs text-slate-400 mt-1">Los ingenieros junior cometieron 4 errores críticos. Tu misión es detectarlos y corregirlos.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="errorAuditCardsGrid">
+          <!-- 4 Critical Error Cards:
+               1. 6 * 180 instead of (6-2)*180
+               2. Exterior angles of pentagon claimed 540 instead of 360
+               3. Arithmetic 6*180 = 980 instead of 1080
+               4. Belief that exterior angles grow with number of sides
+          -->
+        </div>
+
+        <div class="flex justify-between items-center text-xs font-mono text-slate-400">
+          <span id="screen13StatusText">Casos auditados: 0 de 4</span>
+          <button onclick="checkAllScreen13Audits()" class="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold uppercase tracking-wider">
+            Emitir Informe de Auditoría
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-14" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 13 / 18 • Contraste Estructural</span>
+          <h2 class="text-2xl font-bold text-white">Comparación de Estructuras: Panel A vs Panel B</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          <!-- Panel A: Pentagon -->
+          <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-700 flex flex-col items-center">
+            <span class="text-xs font-mono text-cyan-300 font-bold mb-2">PANEL A: Pentágono Regular (5 lados)</span>
+            <svg viewBox="0 0 100 100" class="w-32 h-32">
+              <polygon points="50,12 88,40 73,84 27,84 12,40" fill="rgba(6,182,212,0.2)" stroke="#38bdf8" stroke-width="2"/>
+            </svg>
+            <div class="w-full mt-3 space-y-2 text-xs font-mono">
+              <div class="flex justify-between items-center">
+                <span>Suma interior:</span>
+                <input type="number" id="s14PentInt" placeholder="(5-2)×180" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Suma exterior:</span>
+                <input type="number" id="s14PentExt" placeholder="360" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel B: Octagon -->
+          <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-700 flex flex-col items-center">
+            <span class="text-xs font-mono text-blue-300 font-bold mb-2">PANEL B: Octágono Regular (8 lados)</span>
+            <svg viewBox="0 0 100 100" class="w-32 h-32">
+              <polygon points="30,10 70,10 90,30 90,70 70,90 30,90 10,70 10,30" fill="rgba(59,130,246,0.2)" stroke="#60a5fa" stroke-width="2"/>
+            </svg>
+            <div class="w-full mt-3 space-y-2 text-xs font-mono">
+              <div class="flex justify-between items-center">
+                <span>Suma interior:</span>
+                <input type="number" id="s14OctInt" placeholder="(8-2)×180" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Suma exterior:</span>
+                <input type="number" id="s14OctExt" placeholder="360" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparative Inquiries -->
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3 text-xs">
+          <div class="space-y-1">
+            <label class="font-mono text-cyan-300 block">1. ¿Cuál de los dos paneles tiene una mayor suma de ángulos interiores?</label>
+            <select id="s14SelectMayorInt" class="bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-slate-200">
+              <option value="">Selecciona panel...</option>
+              <option value="A">Panel A (Pentágono)</option>
+              <option value="B">Panel B (Octágono)</option>
+              <option value="igual">Ambos tienen la misma suma interior</option>
+            </select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="font-mono text-cyan-300 block">2. ¿Cuál de los dos paneles tiene una mayor suma de ángulos exteriores?</label>
+            <select id="s14SelectMayorExt" class="bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-slate-200">
+              <option value="">Selecciona panel...</option>
+              <option value="A">Panel A (Pentágono)</option>
+              <option value="B">Panel B (Octágono)</option>
+              <option value="igual">Ambos tienen exactamente la misma suma exterior (360°)</option>
+            </select>
+          </div>
+
+          <div class="space-y-1 pt-2">
+            <label class="font-mono text-amber-300 font-bold block">
+              3. Justifica por escrito: ¿Por qué la suma interior aumenta con los lados pero la exterior no cambia?
+            </label>
+            <textarea id="s14ComparisonJustification" rows="2" placeholder="Explica detalladamente la diferencia geométrica entre ambas sumas..." 
+                      class="w-full p-2.5 rounded bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="validateScreen14Comparison()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider">
+            Confirmar Comparación
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-15" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 14 / 18 • Laboratorio de Diseño Polar</span>
+          <h2 class="text-2xl font-bold text-white">Diseña tu Módulo para la Base Antártica</h2>
+          <p class="text-xs text-slate-400 mt-1">Selecciona la geometría del panel de tu domo y elabora la ficha técnica oficial de ingeniería.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Selection & Blueprint Graphic -->
+          <div class="lg:col-span-5 bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center">
+            <label class="block text-xs font-mono text-cyan-300 mb-2 uppercase">Elige la figura del panel:</label>
+            <select id="s15PolygonChoice" onchange="renderCustomDomePanel()" class="w-full bg-slate-900 border border-cyan-500/50 rounded-lg p-2 text-xs font-mono text-cyan-300 mb-3">
+              <option value="5">Pentágono (5 lados)</option>
+              <option value="6" selected>Hexágono (6 lados)</option>
+              <option value="7">Heptágono (7 lados)</option>
+              <option value="8">Octágono (8 lados)</option>
+              <option value="9">Nonágono (9 lados)</option>
+              <option value="10">Decágono (10 lados)</option>
+            </select>
+
+            <div class="w-full flex justify-center bg-slate-900 rounded-lg p-2 border border-slate-800 relative">
+              <svg id="s15BlueprintSvg" viewBox="0 0 240 240" class="w-56 h-56 select-none">
+                <!-- Dynamically rendered polygon with interior triangles visualizer -->
+              </svg>
+            </div>
+
+            <div class="flex gap-2 mt-3">
+              <button onclick="toggleDesignHighlight('interior')" class="px-2.5 py-1 bg-cyan-950 border border-cyan-500 text-cyan-300 rounded text-[11px] font-mono">
+                Resaltar Ángulos Interiores
+              </button>
+              <button onclick="toggleDesignHighlight('exterior')" class="px-2.5 py-1 bg-blue-950 border border-blue-500 text-blue-300 rounded text-[11px] font-mono">
+                Resaltar Ángulos Exteriores
+              </button>
+            </div>
+          </div>
+
+          <!-- Technical Blueprint Sheet -->
+          <div class="lg:col-span-7 space-y-4">
+            <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 space-y-3 text-xs">
+              <h3 class="font-mono text-cyan-400 font-bold uppercase text-xs">Ficha Técnica de Construcción Polar</h3>
+
+              <div class="grid grid-cols-2 gap-3 font-mono">
+                <div>
+                  <label class="block text-slate-400 text-[11px] mb-1">Nombre del Panel:</label>
+                  <input type="text" id="s15PanelName" placeholder="Ej: Domo Norte Hexa-7" 
+                         class="w-full px-2.5 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+                </div>
+                <div>
+                  <label class="block text-slate-400 text-[11px] mb-1">Número de lados (n):</label>
+                  <input type="number" id="s15SidesInput" readonly 
+                         class="w-full px-2.5 py-1 bg-slate-950/80 border border-slate-700 rounded text-slate-400">
+                </div>
+                <div>
+                  <label class="block text-slate-400 text-[11px] mb-1">Triángulos al triangular:</label>
+                  <input type="number" id="s15TrianglesInput" placeholder="(n-2)" 
+                         class="w-full px-2.5 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+                </div>
+                <div>
+                  <label class="block text-slate-400 text-[11px] mb-1">Suma Ángulos Interiores (°):</label>
+                  <input type="number" id="s15InteriorSumInput" placeholder="(n-2)*180" 
+                         class="w-full px-2.5 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-slate-400 text-[11px] mb-1">Suma Ángulos Exteriores (°):</label>
+                  <input type="number" id="s15ExteriorSumInput" placeholder="360" 
+                         class="w-full px-2.5 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+                </div>
+              </div>
+
+              <!-- Mandatory Engineering Justification Inquiries -->
+              <div class="space-y-3 pt-2 border-t border-slate-800">
+                <div>
+                  <label class="block font-mono text-slate-300 text-[11px] mb-1">a) ¿Cómo comprobaste la suma de ángulos interiores de tu diseño?</label>
+                  <textarea id="s15ExplainInterior" rows="2" placeholder="Explica la relación entre lados, triangulación y 180°..." 
+                            class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-slate-200 text-xs focus:border-cyan-400"></textarea>
+                </div>
+                <div>
+                  <label class="block font-mono text-slate-300 text-[11px] mb-1">b) ¿Por qué la suma de ángulos exteriores sigue siendo 360°?</label>
+                  <textarea id="s15ExplainExterior" rows="2" placeholder="Explica el giro completo alrededor de la figura..." 
+                            class="w-full p-2 bg-slate-950 border border-slate-700 rounded text-slate-200 text-xs focus:border-cyan-400"></textarea>
+                </div>
+                <div>
+                  <label class="block font-mono text-slate-300 text-[11px] mb-1">c) ¿En qué sector o función de la base antártica instalarías este módulo?</label>
+                  <input type="text" id="s15ExplainSector" placeholder="Ej: Cúpula del observatorio astronómico, esclusa de aire, invernadero..." 
+                         class="w-full px-2.5 py-1 bg-slate-950 border border-slate-700 rounded text-slate-200 text-xs focus:border-cyan-400">
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button onclick="validateScreen15Design()" class="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider">
+                Aprobar Ficha de Diseño
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-16" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-4xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 15 / 18 • Matriz de Construcción</span>
+          <h2 class="text-2xl font-bold text-white">Desafío de Ingeniería de la Base</h2>
+          <p class="text-xs text-slate-400 mt-1">El equipo polar debe integrar tres módulos simultáneos: Pentágono, Hexágono y Octágono.</p>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs font-mono text-slate-200 bg-slate-900/90 rounded-xl border border-slate-800">
+            <thead class="bg-slate-800 text-cyan-300 border-b border-slate-700">
+              <tr>
+                <th class="p-3 text-left">Módulo</th>
+                <th class="p-3 text-center">N° de Lados (n)</th>
+                <th class="p-3 text-center">Suma Ángulos Interiores</th>
+                <th class="p-3 text-center">Suma Ángulos Exteriores</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+              <tr>
+                <td class="p-3 font-sans font-bold text-white">Módulo A: Pentágono</td>
+                <td class="p-3 text-center"><input type="number" id="s16A_sides" placeholder="5" class="w-16 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+                <td class="p-3 text-center"><input type="number" id="s16A_int" placeholder="540" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+                <td class="p-3 text-center"><input type="number" id="s16A_ext" placeholder="360" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+              </tr>
+              <tr>
+                <td class="p-3 font-sans font-bold text-white">Módulo B: Hexágono</td>
+                <td class="p-3 text-center"><input type="number" id="s16B_sides" placeholder="6" class="w-16 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+                <td class="p-3 text-center"><input type="number" id="s16B_int" placeholder="720" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+                <td class="p-3 text-center"><input type="number" id="s16B_ext" placeholder="360" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+              </tr>
+              <tr>
+                <td class="p-3 font-sans font-bold text-white">Módulo C: Octágono</td>
+                <td class="p-3 text-center"><input type="number" id="s16C_sides" placeholder="8" class="w-16 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+                <td class="p-3 text-center"><input type="number" id="s16C_int" placeholder="1080" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+                <td class="p-3 text-center"><input type="number" id="s16C_ext" placeholder="360" class="w-24 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 4 Pattern Analysis Questions -->
+        <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 space-y-3 text-xs">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block font-mono text-cyan-300 mb-1">1. ¿Cuál tiene mayor suma de ángulos interiores?</label>
+              <select id="s16Q1" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200">
+                <option value="">Selecciona...</option>
+                <option value="A">Módulo A (Pentágono)</option>
+                <option value="B">Módulo B (Hexágono)</option>
+                <option value="C">Módulo C (Octágono)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-mono text-cyan-300 mb-1">2. ¿Qué ocurre con las sumas exteriores en los 3 módulos?</label>
+              <select id="s16Q2" class="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200">
+                <option value="">Selecciona...</option>
+                <option value="aumenta">Aumentan a medida que hay más lados</option>
+                <option value="disminuye">Disminuyen conforme se añaden vértices</option>
+                <option value="invariante">Permanecen exactamente iguales en 360°</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-mono text-slate-300 mb-1">3. ¿Qué patrón algebraico o numérico observas en las sumas interiores?</label>
+            <input type="text" id="s16Q3" placeholder="Ej: Cada lado adicional añade exactamente 180° a la suma interior..." 
+                   class="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded text-slate-200 text-xs">
+          </div>
+
+          <div>
+            <label class="block font-mono text-amber-300 font-bold mb-1">4. Conclusión general para el manual de ingeniería polar:</label>
+            <textarea id="s16Q4" rows="2" placeholder="Resume con tus palabras cómo se comportan los ángulos interiores y exteriores en cualquier polígono..." 
+                      class="w-full p-2.5 bg-slate-950 border border-slate-700 rounded text-slate-200 text-xs"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="validateScreen16Matrix()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider">
+            Certificar Matriz de Construcción
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-17" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3">
+          <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 16 / 18 • Síntesis Conceptual</span>
+          <h2 class="text-2xl font-bold text-white">¿Qué Aprendimos del Diseño Geométrico?</h2>
+          <p class="text-xs text-slate-400 mt-1">Completa los enunciados científicos que consolidan los descubrimientos de la misión.</p>
+        </div>
+
+        <!-- 5 Cloze Sentences -->
+        <div class="space-y-4 text-xs">
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-300 leading-relaxed">
+              1. A medida que aumenta el número de lados de un polígono, la suma de sus ángulos interiores:
+            </span>
+            <select id="s17Blank1" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-cyan-300 font-mono">
+              <option value="">Selecciona...</option>
+              <option value="aumenta">aumenta</option>
+              <option value="disminuye">disminuye</option>
+              <option value="permanece igual">permanece igual</option>
+            </select>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-300 leading-relaxed">
+              2. La suma de un ángulo exterior en cada vértice de cualquier polígono convexo es siempre:
+            </span>
+            <select id="s17Blank2" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-cyan-300 font-mono">
+              <option value="">Selecciona...</option>
+              <option value="180">180°</option>
+              <option value="360">360°</option>
+              <option value="variable">dependiente de n</option>
+            </select>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-300 leading-relaxed">
+              3. La suma interior de un polígono convexo de n lados se calcula formalmente mediante:
+            </span>
+            <select id="s17Blank3" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-cyan-300 font-mono">
+              <option value="">Selecciona...</option>
+              <option value="n180">n × 180°</option>
+              <option value="n-2_180">(n - 2) × 180°</option>
+              <option value="360/n">360° ÷ n</option>
+            </select>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-300 leading-relaxed">
+              4. La triangulación desde un único vértice siempre forma exactamente:
+            </span>
+            <select id="s17Blank4" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-cyan-300 font-mono">
+              <option value="">Selecciona...</option>
+              <option value="n">n triángulos</option>
+              <option value="n-1">(n - 1) triángulos</option>
+              <option value="n-2">(n - 2) triángulos</option>
+            </select>
+          </div>
+
+          <div class="p-3 bg-slate-900/60 rounded-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-slate-300 leading-relaxed">
+              5. El giro acumulado de una vuelta completa alrededor del contorno representa:
+            </span>
+            <select id="s17Blank5" class="bg-slate-950 border border-slate-700 rounded px-2.5 py-1 text-cyan-300 font-mono">
+              <option value="">Selecciona...</option>
+              <option value="180">180°</option>
+              <option value="360">360°</option>
+              <option value="720">720°</option>
+            </select>
+          </div>
+
+          <!-- Mandatory Open Personal Conclusion -->
+          <div class="p-4 bg-slate-900/80 rounded-xl border border-slate-800 space-y-2">
+            <label class="block font-mono text-amber-300 font-bold">
+              Conclusión Personal del Cadete (Quedará registrada en tu Certificado Oficial):
+            </label>
+            <p class="text-slate-400 text-[11px]">
+              Explica con tus propias palabras la diferencia fundamental entre la propiedad de los ángulos interiores y la de los ángulos exteriores:
+            </p>
+            <textarea id="s17PersonalConclusion" rows="3" placeholder="Redacta tu explicación aquí..." 
+                      class="w-full p-2.5 rounded bg-slate-950 border border-slate-700 text-slate-200 text-xs focus:outline-none focus:border-cyan-400"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button onclick="validateScreen17Synthesis()" class="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider">
+            Consolidar Conclusiones
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-18" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-8 border border-ice-700/40">
+      <div class="max-w-3xl mx-auto space-y-6">
+        <div class="border-b border-slate-700 pb-3 flex justify-between items-center">
+          <div>
+            <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Etapa 17 / 18 • Evaluación Individual</span>
+            <h2 class="text-2xl font-bold text-white">Ticket de Salida Polar</h2>
+          </div>
+          <span class="text-xs bg-cyan-950 text-cyan-300 px-3 py-1 rounded-full border border-cyan-800 font-mono">5 Preguntas Finales</span>
+        </div>
+
+        <p class="text-sm text-slate-300">
+          Demuestra de manera individual tu dominio de los conceptos antes del cierre oficial de la expedición antártica:
+        </p>
+
+        <div class="space-y-4 text-xs font-mono">
+          <!-- Question 1 -->
+          <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 space-y-2">
+            <span class="text-cyan-300 font-bold block">1. Calcula la suma de los ángulos interiores de un hexágono:</span>
+            <div class="flex items-center gap-2">
+              <span>S =</span>
+              <input type="number" id="ticketQ1" placeholder="Ej: 720" class="w-32 px-3 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold">
+              <span>°</span>
+            </div>
+          </div>
+
+          <!-- Question 2 -->
+          <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 space-y-2">
+            <span class="text-cyan-300 font-bold block">2. Calcula la suma de los ángulos interiores de un octágono:</span>
+            <div class="flex items-center gap-2">
+              <span>S =</span>
+              <input type="number" id="ticketQ2" placeholder="Ej: 1080" class="w-32 px-3 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold">
+              <span>°</span>
+            </div>
+          </div>
+
+          <!-- Question 3 -->
+          <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 space-y-2">
+            <span class="text-cyan-300 font-bold block">3. Un panel pentagonal tiene 4 ángulos exteriores de 75°, 60°, 80° y 70°. ¿Cuánto mide el quinto ángulo exterior (x)?</span>
+            <div class="flex items-center gap-2">
+              <span>x =</span>
+              <input type="number" id="ticketQ3" placeholder="x" class="w-32 px-3 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold">
+              <span>°</span>
+            </div>
+          </div>
+
+          <!-- Question 4 -->
+          <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 space-y-2">
+            <span class="text-cyan-300 font-bold block">4. ¿Cuál propiedad utilizarías para calcular cuánto suman los ángulos interiores de un decágono (10 lados)?</span>
+            <div class="space-y-1 pt-1 font-sans text-slate-300">
+              <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                <input type="radio" name="ticketQ4" value="interior"> S = (n - 2) × 180° (Propiedad de ángulos interiores)
+              </label>
+              <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer">
+                <input type="radio" name="ticketQ4" value="exterior"> S = 360° (Propiedad de ángulos exteriores)
+              </label>
+            </div>
+          </div>
+
+          <!-- Question 5 -->
+          <div class="p-4 bg-slate-900/70 rounded-xl border border-slate-800 space-y-2 font-sans">
+            <span class="text-amber-300 font-mono font-bold block text-xs">
+              5. Explica: ¿Por qué la suma de los ángulos exteriores sigue siendo 360° aunque aumente la cantidad de lados de la figura?
+            </span>
+            <textarea id="ticketQ5" rows="2" placeholder="Escribe tu fundamentación conceptual..." 
+                      class="w-full p-2.5 rounded bg-slate-950 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+          <button onclick="submitTicketDeSalida()" class="px-8 py-3 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white rounded-xl text-xs font-mono font-bold uppercase tracking-wider shadow-lg">
+            Finalizar Misión y Generar Informe 🎓
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-report" class="screen-view hidden polar-glass rounded-2xl p-6 sm:p-10 border border-cyan-500/50 shadow-2xl">
+      <div class="max-w-4xl mx-auto space-y-8">
+        <!-- Interactive Top Banner -->
+        <div class="text-center space-y-3 no-print">
+          <div class="inline-flex p-3 rounded-full bg-cyan-950 border border-cyan-400 text-cyan-300 text-3xl">
+            🏆
+          </div>
+          <h2 class="text-3xl font-extrabold text-white">¡Misión Antártica Completada con Éxito!</h2>
+          <p class="text-slate-300 text-sm max-w-xl mx-auto">
+            Has completado rigurosamente los 18 protocolos de ingeniería. El diseño del domo de la Base Polar ha sido certificado y aprobado.
+          </p>
+          <div class="pt-2 flex justify-center gap-3">
+            <button onclick="window.print()" class="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg text-xs font-mono font-bold uppercase tracking-wider shadow-lg flex items-center gap-2">
+              🖨️ Imprimir / Guardar Informe PDF
+            </button>
+            <button onclick="exportReportJSON()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-mono border border-slate-700">
+              💾 Descargar Resumen (.txt)
+            </button>
+          </div>
+        </div>
+
+        <!-- Official Diagnostic Report Sheet (Standard Letter Clean Printable) -->
+        <div id="printReportSection" class="p-6 sm:p-8 rounded-xl bg-slate-900/90 border border-slate-700 space-y-6 text-slate-300 print-card font-sans">
+          <!-- Official Polar Header -->
+          <div class="border-b-2 border-cyan-500 pb-4 flex justify-between items-start">
+            <div>
+              <span class="text-[11px] font-mono tracking-widest text-cyan-400 uppercase font-bold">Laboratorio de Ingeniería Polar • 7° Básico</span>
+              <h3 class="text-xl font-bold text-white mt-0.5">Certificado Oficial de Desempeño Geométrico</h3>
+              <p class="text-xs text-slate-400">Patrones de Ángulos Interiores y Exteriores de Polígonos Convexos</p>
+            </div>
+            <div class="text-right text-xs font-mono">
+              <div class="text-cyan-300 font-bold" id="rptDateDisplay">--/--/----</div>
+              <div class="text-slate-400" id="rptTimeDisplay">--:-- hrs</div>
+            </div>
+          </div>
+
+          <!-- Student & Metadata Table -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-slate-950/70 rounded-lg border border-slate-800 text-xs font-mono">
+            <div>
+              <span class="text-slate-400 text-[10px] block">CADETE:</span>
+              <strong class="text-white" id="rptStudentName">--</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px] block">CURSO:</span>
+              <strong class="text-white" id="rptStudentGrade">--</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px] block">ETAPAS SUPERADAS:</span>
+              <strong class="text-cyan-300">18 de 18 (100%)</strong>
+            </div>
+            <div>
+              <span class="text-slate-400 text-[10px] block">INTENTOS REGISTRADOS:</span>
+              <strong class="text-amber-400" id="rptTotalAttempts">0</strong>
+            </div>
+          </div>
+
+          <!-- Section 1: Activation -->
+          <div class="space-y-1.5 border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-mono font-bold text-cyan-400 uppercase">Sección 1: Activación de Conocimientos Previos</h4>
+            <div class="text-xs" id="rptSec1Content">Evaluación diagnóstica inicial aprobada (5/5 respuestas analizadas).</div>
+          </div>
+
+          <!-- Section 2: Interior Proof -->
+          <div class="space-y-1.5 border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-mono font-bold text-cyan-400 uppercase">Sección 2: Propiedad de Ángulos Interiores</h4>
+            <div class="text-xs text-slate-300">
+              Fórmula deducida por triangulación: <strong>S = (n - 2) × 180°</strong>. Descomposición validada en cuadrilátero, pentágono, hexágono y octágono.
+            </div>
+          </div>
+
+          <!-- Section 3: Exterior Theorem -->
+          <div class="space-y-1.5 border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-mono font-bold text-cyan-400 uppercase">Sección 3: Propiedad de Ángulos Exteriores</h4>
+            <div class="text-xs text-slate-300">
+              Comprobación cinética del robot inspector: un giro completo equivale a <strong>360° invariantes</strong> para cualquier polígono convexo.
+            </div>
+          </div>
+
+          <!-- Section 4 & 5: Problems & Audits -->
+          <div class="space-y-1.5 border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-mono font-bold text-cyan-400 uppercase">Sección 4 & 5: Banco de Problemas y Auditoría de Errores</h4>
+            <div class="text-xs text-slate-300">
+              8 problemas de aplicación polar y 4 auditorías de cálculos erróneos resueltos y corregidos satisfactoriamente.
+            </div>
+          </div>
+
+          <!-- Section 6: Custom Dome Design Data -->
+          <div class="space-y-1.5 border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-mono font-bold text-cyan-400 uppercase">Sección 6: Ficha de Diseño del Módulo Polar</h4>
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800 text-xs space-y-1 font-mono" id="rptSec6DesignBox">
+              <!-- Rendered with student's actual inputs -->
+            </div>
+          </div>
+
+          <!-- Section 7: Inductive Conclusions Written by Student -->
+          <div class="space-y-1.5 border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-mono font-bold text-cyan-400 uppercase">Sección 7: Conclusiones Inductivas y Personales</h4>
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800 text-xs text-slate-200 italic" id="rptSec7Conclusion">
+              "..."
+            </div>
+          </div>
+
+          <!-- Section 8: Exit Ticket Responses -->
+          <div class="space-y-1.5 border-t border-slate-800 pt-3">
+            <h4 class="text-xs font-mono font-bold text-cyan-400 uppercase">Sección 8: Respuestas del Ticket de Salida</h4>
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800 text-xs font-mono space-y-1" id="rptSec8Ticket">
+              <!-- Populated by JS with actual student inputs -->
+            </div>
+          </div>
+
+          <!-- Signatures for Printable View -->
+          <div class="pt-8 grid grid-cols-2 gap-8 text-center text-xs font-mono text-slate-400 border-t border-slate-700">
+            <div>
+              <div class="border-b border-slate-600 pb-8 mb-2"></div>
+              <span>Firma del Cadete Estudiante</span>
+            </div>
+            <div>
+              <div class="border-b border-slate-600 pb-8 mb-2"></div>
+              <span>Firma del Docente Inspector</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="teacherModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden no-print">
+    <div class="polar-glass max-w-md w-full rounded-2xl p-6 border border-cyan-500/60 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+        <h3 class="font-mono font-bold text-cyan-300 text-base flex items-center gap-2">
+          <span>⚙️</span> Panel de Control Docente
+        </h3>
+        <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-white text-sm">✕</button>
+      </div>
+
+      <!-- Authentication view -->
+      <div id="teacherAuthBox" class="space-y-3">
+        <p class="text-xs text-slate-300">
+          Ingresa la contraseña de control docente para desbloquear la navegación libre y las herramientas de auditoría rápida.
+        </p>
+        <div class="space-y-1">
+          <label class="block text-[11px] font-mono uppercase text-slate-400">Contraseña Docente:</label>
+          <input type="password" id="inputTeacherPass" placeholder="Clave..." 
+                 class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded text-cyan-300 text-sm focus:outline-none focus:border-cyan-400">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="authenticateTeacher()" class="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-mono font-bold">
+            Desbloquear Modo
+          </button>
+        </div>
+      </div>
+
+      <!-- Unlocked Teacher Controls view -->
+      <div id="teacherControlsBox" class="hidden space-y-4 text-xs font-mono">
+        <div class="p-2.5 rounded bg-emerald-950/60 border border-emerald-500/50 text-emerald-300 text-[11px]">
+          ✓ Modo Profesor Activado: Puedes saltar a cualquier pantalla sin restricciones de validación.
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-slate-300">Saltar directamente a la Etapa:</label>
+          <select id="teacherScreenSelect" onchange="jumpToScreenFromTeacher(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-cyan-300">
+            <!-- 18 options dynamically populated -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          <button onclick="unlockCurrentScreenOverride()" class="p-2 bg-blue-900/60 hover:bg-blue-800 text-blue-200 border border-blue-500 rounded text-[11px]">
+            🔓 Desbloquear Pantalla Actual
+          </button>
+          <button onclick="autofillCurrentScreen()" class="p-2 bg-amber-900/60 hover:bg-amber-800 text-amber-200 border border-amber-500 rounded text-[11px]">
+            ✨ Completar Respuestas
+          </button>
+        </div>
+
+        <div class="pt-2 border-t border-slate-700 flex justify-between">
+          <button onclick="resetCadetDataCompletely()" class="text-rose-400 hover:text-rose-300 text-[11px]">
+            ⚠️ Reiniciar Todo
+          </button>
+          <button onclick="closeTeacherModal()" class="px-3 py-1 bg-slate-800 text-slate-300 rounded text-xs">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="no-print border-t border-slate-800/80 bg-slate-950/60 py-3 px-4 text-center text-xs text-slate-400 font-mono">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <span>Estación Polar Base Escudero • Matemática 7° Básico</span>
+      <span class="text-slate-400">Unidad Geometría: Suma de Ángulos Interiores y Exteriores</span>
+    </div>
+  </footer>
+
+  <script>
+    // Global State Container
+    const state = {
+      currentScreen: 1,
+      maxUnlockedScreen: 1,
+      totalScreens: 18,
+      isTeacherMode: false,
+      attemptsCount: 0,
+      student: {
+        name: '',
+        grade: '',
+        startTime: null,
+        finishTime: null,
+      },
+      screensCompleted: {},
+      // Cached progress data for report
+      quizActivationScore: 0,
+      triangulationHistory: {},
+      exteriorHistory: {},
+      guidedHexDone: false,
+      guidedExtDone: false,
+      stationProblemsScore: 0,
+      screen11CurrentIdx: 0,
+      inverseDone: false,
+      auditsDone: false,
+      comparisonDone: false,
+      designSpecs: {},
+      matrixDone: false,
+      synthesisDone: false,
+      ticketDone: false,
+      ticketAnswers: {}
+    };
+
+    const STORAGE_KEY = 'Antarctica_Lab_Geo_7B_State';
+
+    // Tiered Hint Storage for Screen Problems
+    const tieredHints = {
+      default: [
+        "Revisa cuidadosamente los datos e hipótesis del problema.",
+        "Recuerda la diferencia: los interiores dependen de los lados con (n-2)×180°, mientras que los exteriores siempre totalizan 360°.",
+        "Paso intermedio: Descompón en subtareas (suma los valores que ya tienes y resta del total correspondiente)."
+      ],
+      s9Hex: [
+        "Revisa cuántos lados tiene un hexágono.",
+        "Un hexágono tiene n = 6. Para triangular desde un solo vértice, usa la regla: n - 2.",
+        "Paso intermedio: (6 - 2) = 4 triángulos. Ahora multiplica: 4 × 180° = 720°."
+      ],
+      s10Ext: [
+        "Revisa la suma de los cuatro giros conocidos: 60 + 70 + 85 + 65.",
+        "La suma exterior de todo polígono convexo (incluido el pentágono) es siempre 360°.",
+        "Paso intermedio: 60 + 70 + 85 + 65 = 280°. Para hallar x, calcula: 360° - 280°."
+      ]
+    };
+
+    let currentScreenHintsAttempt = 0;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStateFromLocalStorage();
+      populateTeacherScreenSelect();
+      initScreen2Quiz();
+      initScreen3Triangulation();
+      initScreen4StepCards();
+      setupRobotSimulation(5);
+      generateRandomExteriorExercises();
+      initScreen7Cards();
+      initScreen8Decisions();
+      initScreen11Problems();
+      initScreen12InverseTable();
+      initScreen13AuditCards();
+      renderCustomDomePanel();
+      updateNavigationUI();
+    });
+
+    function saveStateToLocalStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('LocalStorage no disponible');
+      }
+    }
+
+    function loadStateFromLocalStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.student && parsed.student.name) {
+            // Show resume prompt in screen 1
+            const alertBox = document.getElementById('savedStateAlert');
+            const desc = document.getElementById('savedStateDesc');
+            if (alertBox && desc) {
+              alertBox.classList.remove('hidden');
+              desc.textContent = `Cadete: ${parsed.student.name} (${parsed.student.grade}) - Progreso: Pantalla ${parsed.currentScreen} de 18.`;
+            }
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function resumeSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          Object.assign(state, parsed);
+          document.getElementById('inputCadetName').value = state.student.name;
+          document.getElementById('inputCadetGrade').value = state.student.grade;
+          document.getElementById('navCadetName').textContent = `Cadete: ${state.student.name}`;
+          document.getElementById('navCadetGrade').textContent = `Curso: ${state.student.grade}`;
+          switchScreen(state.currentScreen);
+          showToast('Misión reanudada con éxito', 'info');
+        }
+      } catch (e) {
+        showToast('Error al reanudar misión guardada', 'error');
+      }
+    }
+
+    function clearSavedState() {
+      localStorage.removeItem(STORAGE_KEY);
+      const alertBox = document.getElementById('savedStateAlert');
+      if (alertBox) alertBox.classList.add('hidden');
+      showToast('Registro anterior reiniciado', 'info');
+    }
+
+    function switchScreen(targetScreen) {
+      if (targetScreen < 1) targetScreen = 1;
+      if (targetScreen > state.totalScreens + 1) targetScreen = state.totalScreens + 1;
+
+      // Restrict advance if not unlocked & not teacher
+      if (!state.isTeacherMode && targetScreen > state.maxUnlockedScreen && targetScreen > state.currentScreen) {
+        showToast('🔒 Debes completar y certificar todas las actividades de esta etapa antes de avanzar.', 'warn');
+        return;
+      }
+
+      state.currentScreen = targetScreen;
+      if (targetScreen > state.maxUnlockedScreen) {
+        state.maxUnlockedScreen = targetScreen;
+      }
+
+      // Hide all screens
+      document.querySelectorAll('.screen-view').forEach(s => s.classList.add('hidden'));
+
+      // Show target
+      if (targetScreen <= state.totalScreens) {
+        const active = document.getElementById(`screen-${targetScreen}`);
+        if (active) active.classList.remove('hidden');
+      } else {
+        // Report Screen
+        const report = document.getElementById('screen-report');
+        if (report) {
+          report.classList.remove('hidden');
+          generateFinalReportSummary();
+        }
+      }
+
+      // Hide hint card on new screen
+      hideHintCard();
+      currentScreenHintsAttempt = 0;
+
+      updateNavigationUI();
+      saveStateToLocalStorage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function navigateScreen(delta) {
+      switchScreen(state.currentScreen + delta);
+    }
+
+    function updateNavigationUI() {
+      // Mission counter & Bar
+      const displayScreen = Math.min(state.currentScreen, state.totalScreens);
+      document.getElementById('missionCounterText').textContent = `Misión ${displayScreen} de ${state.totalScreens}`;
+      const pct = Math.round((displayScreen / state.totalScreens) * 100);
+      document.getElementById('missionPercentText').textContent = `${pct}%`;
+      document.getElementById('missionProgressBar').style.width = `${pct}%`;
+
+      // Next / Prev button states
+      const prevBtn = document.getElementById('btnPrevScreen');
+      const nextBtn = document.getElementById('btnNextScreen');
+
+      prevBtn.disabled = (state.currentScreen === 1);
+
+      // Check if next screen is permissible
+      if (state.isTeacherMode) {
+        nextBtn.disabled = false;
+      } else {
+        const isCurrentCompleted = !!state.screensCompleted[state.currentScreen];
+        nextBtn.disabled = (state.currentScreen >= state.maxUnlockedScreen && !isCurrentCompleted);
+      }
+    }
+
+    function markScreenCompleted(screenNum) {
+      state.screensCompleted[screenNum] = true;
+      if (state.maxUnlockedScreen <= screenNum) {
+        state.maxUnlockedScreen = screenNum + 1;
+      }
+      updateNavigationUI();
+      saveStateToLocalStorage();
+      showToast(`✨ ¡Etapa ${screenNum} aprobada! Puedes avanzar a la siguiente misión.`, 'success');
+    }
+
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('systemToast');
+      const txt = document.getElementById('toastMsg');
+      const icon = document.getElementById('toastIcon');
+
+      txt.textContent = msg;
+      toast.className = 'mb-4 p-3 rounded-lg border text-xs sm:text-sm flex items-center justify-between transition duration-300 font-mono ';
+
+      if (type === 'success') {
+        toast.className += 'bg-emerald-950/80 border-emerald-500/80 text-emerald-200';
+        icon.textContent = '✅';
+      } else if (type === 'warn' || type === 'error') {
+        toast.className += 'bg-rose-950/80 border-rose-500/80 text-rose-200';
+        icon.textContent = '⚠️';
+      } else {
+        toast.className += 'bg-cyan-950/80 border-cyan-500/80 text-cyan-200';
+        icon.textContent = 'ℹ️';
+      }
+
+      toast.classList.remove('hidden');
+      clearTimeout(window._toastTimeout);
+      window._toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 5500);
+    }
+
+    function hideToast() {
+      document.getElementById('systemToast').classList.add('hidden');
+    }
+
+    function triggerTieredHint(customCategory = 'default') {
+      state.attemptsCount++;
+      currentScreenHintsAttempt++;
+
+      const container = document.getElementById('hintCardContainer');
+      const txt = document.getElementById('hintText');
+      const badge = document.getElementById('hintLevelBadge');
+
+      const hints = tieredHints[customCategory] || tieredHints.default;
+      let hintIndex = Math.min(currentScreenHintsAttempt - 1, hints.length - 1);
+      if (hintIndex < 0) hintIndex = 0;
+
+      badge.textContent = `Pista Nivel ${hintIndex + 1}`;
+      txt.textContent = hints[hintIndex];
+      container.classList.remove('hidden');
+    }
+
+    function hideHintCard() {
+      const container = document.getElementById('hintCardContainer');
+      if (container) container.classList.add('hidden');
+    }
+
+    function startCadetMission() {
+      const name = document.getElementById('inputCadetName').value.trim();
+      const grade = document.getElementById('inputCadetGrade').value.trim();
+
+      if (!name || !grade) {
+        showToast('Por favor ingresa tu nombre y curso completo.', 'warn');
+        return;
+      }
+
+      state.student.name = name;
+      state.student.grade = grade;
+      state.student.startTime = new Date().toLocaleString('es-CL');
+
+      document.getElementById('navCadetName').textContent = `Cadete: ${name}`;
+      document.getElementById('navCadetGrade').textContent = `Curso: ${grade}`;
+
+      markScreenCompleted(1);
+      switchScreen(2);
+    }
+
+    const screen2Questions = [
+      {
+        q: "1. ¿Qué caracteriza formalmente a un polígono?",
+        options: [
+          { text: "A) Es una figura cerrada formada exclusivamente por segmentos rectos.", correct: true },
+          { text: "B) Está formado únicamente por líneas curvas y arcos.", correct: false },
+          { text: "C) Siempre tiene cuatro lados de igual medida.", correct: false },
+          { text: "D) Siempre posee lados paralelos dos a dos.", correct: false }
+        ],
+        feedback: "¡Correcto! Los polígonos son figuras geométricas planas y cerradas delimitadas por lados rectos."
+      },
+      {
+        q: "2. En las fórmulas de geometría de polígonos, ¿qué representa la letra n?",
+        options: [
+          { text: "A) El número de diagonales totales.", correct: false },
+          { text: "B) El número de vértices exteriores solamente.", correct: false },
+          { text: "C) El número de lados (o de vértices) del polígono.", correct: true },
+          { text: "D) El número de grados sexagesimales.", correct: false }
+        ],
+        feedback: "¡Excelente! n representa la cantidad de lados (que siempre equivale al número de vértices)."
+      },
+      {
+        q: "3. ¿Qué instrumento geométrico utilizamos habitualmente para medir la amplitud de los ángulos?",
+        options: [
+          { text: "A) Compás.", correct: false },
+          { text: "B) Transportador.", correct: true },
+          { text: "C) Cronómetro.", correct: false },
+          { text: "D) Cinta de pesaje.", correct: false }
+        ],
+        feedback: "¡Muy bien! El transportador graduado permite medir aperturas angulares en grados."
+      },
+      {
+        q: "4. ¿Cuánto suman siempre los ángulos interiores de cualquier triángulo?",
+        options: [
+          { text: "A) 90°", correct: false },
+          { text: "B) 180°", correct: true },
+          { text: "C) 270°", correct: false },
+          { text: "D) 360°", correct: false }
+        ],
+        feedback: "¡Exacto! El triángulo es la unidad base angular y sus tres ángulos interiores siempre suman 180°."
+      },
+      {
+        q: "5. ¿Cuántos grados sexagesimales corresponden a una vuelta completa alrededor de un punto?",
+        options: [
+          { text: "A) 90°", correct: false },
+          { text: "B) 180°", correct: false },
+          { text: "C) 270°", correct: false },
+          { text: "D) 360°", correct: true }
+        ],
+        feedback: "¡Impecable! Un giro cerrado o vuelta completa alrededor de un centro equivale a 360°."
+      }
+    ];
+
+    const screen2UserAnswers = {};
+
+    function initScreen2Quiz() {
+      const container = document.getElementById('quizActivationContainer');
+      container.innerHTML = '';
+
+      screen2Questions.forEach((item, qIdx) => {
+        const qBox = document.createElement('div');
+        qBox.className = 'p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-2';
+
+        const title = document.createElement('div');
+        title.className = 'font-mono text-xs text-cyan-300 font-bold';
+        title.textContent = item.q;
+        qBox.appendChild(title);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1';
+
+        item.options.forEach((opt, optIdx) => {
+          const btn = document.createElement('button');
+          btn.className = `btn-quiz-opt-${qIdx} text-left text-xs p-2.5 rounded-lg border border-slate-700 bg-slate-950/60 hover:border-cyan-500 text-slate-300 transition duration-150`;
+          btn.textContent = opt.text;
+          btn.onclick = () => handleScreen2Answer(qIdx, optIdx, btn);
+          optionsDiv.appendChild(btn);
+        });
+
+        qBox.appendChild(optionsDiv);
+
+        const feedbackBox = document.createElement('div');
+        feedbackBox.id = `qFeedback_${qIdx}`;
+        feedbackBox.className = 'hidden text-xs font-mono p-2 rounded';
+        qBox.appendChild(feedbackBox);
+
+        container.appendChild(qBox);
+      });
+    }
+
+    function handleScreen2Answer(qIdx, optIdx, btnElem) {
+      const question = screen2Questions[qIdx];
+      const isCorrect = question.options[optIdx].correct;
+      const feedback = document.getElementById(`qFeedback_${qIdx}`);
+
+      // Visual button cues
+      document.querySelectorAll(`.btn-quiz-opt-${qIdx}`).forEach(b => {
+        b.classList.remove('border-emerald-500', 'bg-emerald-950/50', 'border-rose-500', 'bg-rose-950/50');
+      });
+
+      if (isCorrect) {
+        btnElem.classList.add('border-emerald-500', 'bg-emerald-950/50', 'text-white');
+        feedback.className = 'text-xs font-mono p-2 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 block';
+        feedback.textContent = `✓ ${question.feedback}`;
+        screen2UserAnswers[qIdx] = true;
+      } else {
+        btnElem.classList.add('border-rose-500', 'bg-rose-950/50', 'text-rose-200');
+        feedback.className = 'text-xs font-mono p-2 rounded bg-rose-950/60 border border-rose-500/40 text-rose-200 block';
+        feedback.textContent = `✕ Respuesta incorrecta. Revisa el concepto y vuelve a intentar.`;
+        screen2UserAnswers[qIdx] = false;
+        triggerTieredHint();
+      }
+
+      // Check if all 5 answered correctly
+      const correctCount = Object.values(screen2UserAnswers).filter(Boolean).length;
+      if (correctCount === 5) {
+        document.getElementById('screen2LockNotice').className = 'text-xs font-mono text-emerald-300 bg-emerald-950/40 border border-emerald-500/40 p-3 rounded-lg flex items-center gap-2';
+        document.getElementById('screen2LockNotice').innerHTML = '<span>✅</span> ¡Los 5 reactivos diagnósticos han sido aprobados! Sistemas calibrados.';
+        markScreenCompleted(2);
+      }
+    }
+
+    let currentTriangulationN = 5;
+    let selectedTriVertex = 0;
+    let hasTriangulatedCurrent = false;
+
+    function initScreen3Triangulation() {
+      drawTriangulationPolygon(currentTriangulationN, false);
+    }
+
+    function setTriangulationPoly(n) {
+      currentTriangulationN = n;
+      selectedTriVertex = 0;
+      hasTriangulatedCurrent = false;
+
+      const polyNames = { 3: 'Triángulo (3)', 4: 'Cuadrilátero (4)', 5: 'Pentágono (5)', 6: 'Hexágono (6)' };
+      document.getElementById('lblActivePolyName').textContent = polyNames[n];
+      document.getElementById('lblVertexSelected').textContent = `Haz clic en un vértice`;
+
+      drawTriangulationPolygon(n, false);
+    }
+
+    function getPolygonVertices(n, cx = 160, cy = 140, r = 105) {
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        // Start top-centered with rotation
+        const angle = (2 * Math.PI / n) * i - Math.PI / 2;
+        pts.push({
+          x: cx + r * Math.cos(angle),
+          y: cy + r * Math.sin(angle)
+        });
+      }
+      return pts;
+    }
+
+    function drawTriangulationPolygon(n, showDiagonals = false) {
+      const svg = document.getElementById('svgTriangulation');
+      svg.innerHTML = '';
+
+      const pts = getPolygonVertices(n);
+      const pointsStr = pts.map(p => `${p.x},${p.y}`).join(' ');
+
+      // Base polygon fill
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      poly.setAttribute('points', pointsStr);
+      poly.setAttribute('fill', 'rgba(14, 165, 233, 0.12)');
+      poly.setAttribute('stroke', '#38bdf8');
+      poly.setAttribute('stroke-width', '2.5');
+      svg.appendChild(poly);
+
+      // Draw Diagonals from selected vertex if triggered
+      if (showDiagonals) {
+        const vMaster = pts[selectedTriVertex];
+        for (let i = 0; i < n; i++) {
+          // A diagonal goes to non-adjacent vertices
+          const diff = Math.abs(i - selectedTriVertex);
+          if (diff > 1 && diff < (n - 1)) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', vMaster.x);
+            line.setAttribute('y1', vMaster.y);
+            line.setAttribute('x2', pts[i].x);
+            line.setAttribute('y2', pts[i].y);
+            line.setAttribute('stroke', '#f59e0b');
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('stroke-dasharray', '5,4');
+            svg.appendChild(line);
+          }
+        }
+      }
+
+      // Draw clickable Vertex Handles
+      pts.forEach((p, idx) => {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', p.x);
+        circle.setAttribute('cy', p.y);
+        circle.setAttribute('r', idx === selectedTriVertex ? '9' : '7');
+        circle.setAttribute('fill', idx === selectedTriVertex ? '#f59e0b' : '#38bdf8');
+        circle.setAttribute('stroke', '#082f49');
+        circle.setAttribute('stroke-width', '2');
+        circle.classList.add('cursor-pointer', 'hover:scale-125', 'transition');
+
+        circle.onclick = () => {
+          selectedTriVertex = idx;
+          document.getElementById('lblVertexSelected').textContent = `Vértice V${idx + 1} seleccionado`;
+          drawTriangulationPolygon(currentTriangulationN, false);
+          hasTriangulatedCurrent = false;
+        };
+
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', p.x);
+        label.setAttribute('y', p.y - 12);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('fill', '#94a3b8');
+        label.setAttribute('font-size', '10');
+        label.setAttribute('font-family', 'monospace');
+        label.textContent = `V${idx + 1}`;
+
+        svg.appendChild(circle);
+        svg.appendChild(label);
+      });
+    }
+
+    function executeTriangulate() {
+      drawTriangulationPolygon(currentTriangulationN, true);
+      hasTriangulatedCurrent = true;
+      const countTri = currentTriangulationN - 2;
+      showToast(`✨ Diagonales trazadas desde V${selectedTriVertex + 1}. Se formaron ${countTri} triángulos. Registra el valor en la tabla.`, 'info');
+    }
+
+    function resetTriangulationCanvas() {
+      drawTriangulationPolygon(currentTriangulationN, false);
+      hasTriangulatedCurrent = false;
+    }
+
+    function validateTriangulationTable() {
+      const v3 = parseInt(document.getElementById('tblTri3').value);
+      const v4 = parseInt(document.getElementById('tblTri4').value);
+      const v5 = parseInt(document.getElementById('tblTri5').value);
+      const v6 = parseInt(document.getElementById('tblTri6').value);
+
+      if (v3 === 1) document.getElementById('lblSuma3').textContent = '1 × 180° = 180°';
+      if (v4 === 2) document.getElementById('lblSuma4').textContent = '2 × 180° = 360°';
+      if (v5 === 3) document.getElementById('lblSuma5').textContent = '3 × 180° = 540°';
+      if (v6 === 4) document.getElementById('lblSuma6').textContent = '4 × 180° = 720°';
+
+      if (v3 === 1 && v4 === 2 && v5 === 3 && v6 === 4) {
+        showToast('¡Tabla completada con exactitud! Ahora deduce la regla de la constante.', 'success');
+      }
+    }
+
+    function checkDeductionFormula() {
+      const cVal = parseInt(document.getElementById('inputConstantDeduction').value);
+      const box = document.getElementById('boxFormulaRevealed');
+
+      if (cVal === 2) {
+        box.classList.remove('hidden');
+        markScreenCompleted(3);
+      } else if (cVal && cVal !== 2) {
+        triggerTieredHint();
+      }
+    }
+
+    const screen4Panels = [
+      { name: 'Cuadrilátero', n: 4, tri: 2, sum: 360 },
+      { name: 'Pentágono', n: 5, tri: 3, sum: 540 },
+      { name: 'Hexágono', n: 6, tri: 4, sum: 720 },
+      { name: 'Octágono', n: 8, tri: 6, sum: 1080 }
+    ];
+
+    function initScreen4StepCards() {
+      const container = document.getElementById('cardsStepByStepContainer');
+      container.innerHTML = '';
+
+      screen4Panels.forEach((p, idx) => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl bg-slate-900/80 border border-slate-700 space-y-2.5 font-mono text-xs';
+        card.innerHTML = `
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <span class="text-cyan-300 font-bold">${p.name}</span>
+            <span id="s4Badge_${idx}" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Pendiente</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 items-center">
+            <label class="text-slate-400">1. Lados (n):</label>
+            <input type="number" id="s4_n_${idx}" placeholder="n" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-cyan-300">
+          </div>
+          <div class="grid grid-cols-2 gap-2 items-center">
+            <label class="text-slate-400">2. Triángulos (n - 2):</label>
+            <input type="number" id="s4_tri_${idx}" placeholder="Triángulos" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-cyan-300">
+          </div>
+          <div class="grid grid-cols-2 gap-2 items-center">
+            <label class="text-slate-400">3. Multiplicación:</label>
+            <div class="flex items-center gap-1 text-[11px]">
+              <span id="s4_mul_lbl_${idx}">?</span> × 180°
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 items-center">
+            <label class="text-slate-400 font-bold text-amber-300">4. Suma Interior S:</label>
+            <input type="number" id="s4_sum_${idx}" placeholder="Total °" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-center text-amber-300 font-bold">
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function checkAllScreen4Panels() {
+      let correct = 0;
+
+      screen4Panels.forEach((p, idx) => {
+        const inN = parseInt(document.getElementById(`s4_n_${idx}`).value);
+        const inTri = parseInt(document.getElementById(`s4_tri_${idx}`).value);
+        const inSum = parseInt(document.getElementById(`s4_sum_${idx}`).value);
+        const badge = document.getElementById(`s4Badge_${idx}`);
+
+        if (inTri) {
+          document.getElementById(`s4_mul_lbl_${idx}`).textContent = inTri;
+        }
+
+        if (inN === p.n && inTri === p.tri && inSum === p.sum) {
+          badge.className = 'text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600';
+          badge.textContent = 'Certificado ✓';
+          correct++;
+        } else {
+          badge.className = 'text-[10px] px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-600';
+          badge.textContent = 'Error';
+        }
+      });
+
+      document.getElementById('screen4StatusText').textContent = `Completados: ${correct} de 4 paneles certificados.`;
+
+      if (correct === 4) {
+        markScreenCompleted(4);
+      } else {
+        triggerTieredHint();
+        showToast('Hay inconsistencias en los cálculos de los paneles. Revisa cada paso.', 'error');
+      }
+    }
+
+    let robotSimN = 5;
+    let robotAnimId = null;
+    let robotCurrentVertex = 0;
+    let robotProgress = 0; // 0 to 1 between vertices
+    let robotAccumulatedTurn = 0;
+    let isRobotInspecting = false;
+
+    function setupRobotSimulation(n) {
+      if (robotAnimId) cancelAnimationFrame(robotAnimId);
+      isRobotInspecting = false;
+      robotSimN = n;
+      robotCurrentVertex = 0;
+      robotProgress = 0;
+      robotAccumulatedTurn = 0;
+
+      const polyNames = { 3: 'Triángulo (3)', 4: 'Cuadrilátero (4)', 5: 'Pentágono (5)', 6: 'Hexágono (6)' };
+      document.getElementById('lblRobotPolyName').textContent = polyNames[n];
+      document.getElementById('lblGiroAcumulado').textContent = `Giro acumulado: 0°`;
+
+      drawRobotCanvas();
+    }
+
+    function drawRobotCanvas() {
+      const canvas = document.getElementById('robotCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Polygon points in canvas coords
+      const cx = w / 2;
+      const cy = h / 2;
+      const r = 90;
+      const pts = [];
+
+      for (let i = 0; i < robotSimN; i++) {
+        const ang = (2 * Math.PI / robotSimN) * i - Math.PI / 2;
+        pts.push({ x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) });
+      }
+
+      // Draw Polygon Path
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < robotSimN; i++) {
+        ctx.lineTo(pts[i].x, pts[i].y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(14, 165, 233, 0.15)';
+      ctx.fill();
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Draw Extended Vectors for Exterior Angles at each vertex
+      const extTurnAngleDeg = 360 / robotSimN;
+      pts.forEach((p, i) => {
+        const pNext = pts[(i + 1) % robotSimN];
+        const segAngle = Math.atan2(pNext.y - p.y, pNext.x - p.x);
+        
+        ctx.save();
+        ctx.beginPath();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.moveTo(pNext.x, pNext.y);
+        ctx.lineTo(pNext.x + 35 * Math.cos(segAngle), pNext.y + 35 * Math.sin(segAngle));
+        ctx.stroke();
+        ctx.restore();
+
+        // Vertex node
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#38bdf8';
+        ctx.fill();
+      });
+
+      // Calculate Current Robot Position & Heading
+      const pA = pts[robotCurrentVertex];
+      const pB = pts[(robotCurrentVertex + 1) % robotSimN];
+      const rx = pA.x + (pB.x - pA.x) * robotProgress;
+      const ry = pA.y + (pB.y - pA.y) * robotProgress;
+      const segAngle = Math.atan2(pB.y - pA.y, pB.x - pA.x);
+
+      // Draw Circular Giro Indicator at Center
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 28, -Math.PI / 2, -Math.PI / 2 + (robotAccumulatedTurn * Math.PI / 180));
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${Math.round(robotAccumulatedTurn)}°`, cx, cy);
+      ctx.restore();
+
+      // Draw Mini Robot Inspector Icon
+      ctx.save();
+      ctx.translate(rx, ry);
+      ctx.rotate(segAngle);
+
+      // Robot chassis
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(-10, -8, 20, 16);
+      ctx.fillStyle = '#0284c7';
+      ctx.fillRect(4, -6, 5, 12);
+      // Robot eye
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(6, 0, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function runRobotInspection() {
+      if (isRobotInspecting) return;
+      isRobotInspecting = true;
+      robotCurrentVertex = 0;
+      robotProgress = 0;
+      robotAccumulatedTurn = 0;
+
+      const extAnglePerVertex = 360 / robotSimN;
+
+      function step() {
+        robotProgress += 0.025;
+        if (robotProgress >= 1) {
+          robotProgress = 0;
+          robotCurrentVertex++;
+          robotAccumulatedTurn += extAnglePerVertex;
+          document.getElementById('lblGiroAcumulado').textContent = `Giro acumulado: ${Math.round(robotAccumulatedTurn)}°`;
+
+          if (robotCurrentVertex >= robotSimN) {
+            // Loop finished!
+            robotCurrentVertex = 0;
+            robotAccumulatedTurn = 360;
+            document.getElementById('lblGiroAcumulado').textContent = `Giro acumulado: 360° (Vuelta Completa)`;
+            drawRobotCanvas();
+            isRobotInspecting = false;
+            showToast('🤖 ¡El robot completó la vuelta! Observa el giro total de 360° acumulado.', 'success');
+            return;
+          }
+        }
+        drawRobotCanvas();
+        robotAnimId = requestAnimationFrame(step);
+      }
+      robotAnimId = requestAnimationFrame(step);
+    }
+
+    function checkRobotTelemetry() {
+      const radios = document.getElementsByName('robotTurnQuestion');
+      let chosenRadio = '';
+      for (let r of radios) {
+        if (r.checked) chosenRadio = r.value;
+      }
+
+      const degrees = parseInt(document.getElementById('inputFullTurnDegrees').value);
+      const box = document.getElementById('boxExteriorTheorem');
+
+      if (chosenRadio === 'completa' && degrees === 360) {
+        box.classList.remove('hidden');
+        markScreenCompleted(5);
+      } else if (degrees && degrees !== 360) {
+        triggerTieredHint();
+      }
+    }
+
+    let screen6Exercises = [];
+
+    function generateRandomExteriorExercises() {
+      screen6Exercises = [
+        generateExteriorProblemForPolygon(4), // Quadrilateral
+        generateExteriorProblemForPolygon(5), // Pentagon
+        generateExteriorProblemForPolygon(6)  // Hexagon
+      ];
+
+      const container = document.getElementById('exteriorExercisesGrid');
+      container.innerHTML = '';
+
+      screen6Exercises.forEach((ex, idx) => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl bg-slate-900/80 border border-slate-700 space-y-3 font-mono text-xs';
+        card.innerHTML = `
+          <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+            <span class="text-cyan-300 font-bold">${ex.title}</span>
+            <span id="s6Badge_${idx}" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">Pendiente</span>
+          </div>
+          <div class="text-[11px] text-slate-300">
+            Giros registrados: <strong>${ex.knownAngles.join('°, ')}°</strong> y <strong>x</strong>.
+          </div>
+          <div class="space-y-1.5 pt-1">
+            <div class="flex justify-between items-center">
+              <label class="text-slate-400">Suma conocidos:</label>
+              <input type="number" id="s6_sumKnown_${idx}" placeholder="Suma" class="w-20 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+            </div>
+            <div class="flex justify-between items-center">
+              <label class="text-slate-400">360° &minus; suma:</label>
+              <input type="number" id="s6_diff_${idx}" placeholder="Resta" class="w-20 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+            </div>
+            <div class="flex justify-between items-center">
+              <label class="text-amber-300 font-bold">x =</label>
+              <input type="number" id="s6_x_${idx}" placeholder="x °" class="w-20 text-center py-1 bg-slate-950 border border-amber-500 rounded text-amber-300 font-bold">
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function generateExteriorProblemForPolygon(n) {
+      const names = { 4: 'Cuadrilátero', 5: 'Pentágono', 6: 'Hexágono' };
+      // Generate n - 1 integer angles such that sum is less than 360 and remaining angle x > 20
+      let angles = [];
+      let sum = 0;
+      const targetSumKnown = 360 - (30 + Math.floor(Math.random() * 60)); // x between 30 and 90
+
+      // partition targetSumKnown into (n-1) parts
+      for (let i = 0; i < n - 2; i++) {
+        const val = Math.floor(targetSumKnown / (n - 1)) + (Math.floor(Math.random() * 16) - 8);
+        angles.push(val);
+        sum += val;
+      }
+      angles.push(targetSumKnown - sum);
+
+      const knownSum = angles.reduce((a, b) => a + b, 0);
+      const missingX = 360 - knownSum;
+
+      return {
+        n,
+        title: `${names[n]} (${n} lados)`,
+        knownAngles: angles,
+        knownSum,
+        missingX
+      };
+    }
+
+    function validateAllScreen6Exercises() {
+      let allCorrect = true;
+
+      screen6Exercises.forEach((ex, idx) => {
+        const sumKnown = parseInt(document.getElementById(`s6_sumKnown_${idx}`).value);
+        const diff = parseInt(document.getElementById(`s6_diff_${idx}`).value);
+        const x = parseInt(document.getElementById(`s6_x_${idx}`).value);
+        const badge = document.getElementById(`s6Badge_${idx}`);
+
+        if (sumKnown === ex.knownSum && diff === ex.missingX && x === ex.missingX) {
+          badge.className = 'text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600';
+          badge.textContent = 'Válido ✓';
+        } else {
+          badge.className = 'text-[10px] px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-600';
+          badge.textContent = 'Error';
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        document.getElementById('screen6ValidationStatus').textContent = '¡Todos los giros exteriores han sido calibrados con exactitud!';
+        markScreenCompleted(6);
+      } else {
+        triggerTieredHint();
+        showToast('Revisa tus sumas o restas de 360° en los polígonos marcados con error.', 'error');
+      }
+    }
+
+    const screen7CardsData = [
+      { id: 'c1', text: "Quiero saber cuánto suman todos los ángulos que están dentro de un octágono.", category: 'interior' },
+      { id: 'c2', text: "Conozco todos los giros exteriores de un polígono menos uno y debo hallarlo.", category: 'exterior' },
+      { id: 'c3', text: "Necesito calcular la suma interior de un panel pentagonal del domo.", category: 'interior' },
+      { id: 'c4', text: "Un robot inspector dio una vuelta completa alrededor del panel cerrado.", category: 'exterior' },
+      { id: 'c5', text: "Debo triangular desde un vértice para saber cuántos 180° caben.", category: 'interior' },
+      { id: 'c6', text: "La suma no cambia aunque el polígono tenga 10 o 50 lados; siempre es 360°.", category: 'exterior' },
+      { id: 'c7', text: "La fórmula a aplicar es S = (n - 2) × 180°.", category: 'interior' },
+      { id: 'c8', text: "El sensor mide el desvío hacia afuera en cada unión del perímetro.", category: 'exterior' }
+    ];
+
+    const screen7PlacedCards = {};
+
+    function initScreen7Cards() {
+      const pool = document.getElementById('sourceCardsPool');
+      pool.innerHTML = '';
+
+      screen7CardsData.forEach(card => {
+        const div = document.createElement('div');
+        div.id = `card_${card.id}`;
+        div.draggable = true;
+        div.ondragstart = (e) => handleDragStart(e, card.id);
+        div.className = 'p-3 rounded-lg bg-slate-950/90 border border-slate-700 text-xs text-slate-300 shadow cursor-grab active:cursor-grabbing hover:border-cyan-400 flex flex-col justify-between gap-2';
+
+        div.innerHTML = `
+          <span>${card.text}</span>
+          <div class="flex gap-1 justify-end pt-1">
+            <button onclick="placeCardDirectly('${card.id}', 'interior')" class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-700/60 hover:bg-cyan-900">
+              → Interior
+            </button>
+            <button onclick="placeCardDirectly('${card.id}', 'exterior')" class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-950 text-blue-300 border border-blue-700/60 hover:bg-blue-900">
+              → Exterior
+            </button>
+          </div>
+        `;
+        pool.appendChild(div);
+      });
+      updateScreen7Status();
+    }
+
+    function handleDragStart(e, cardId) {
+      e.dataTransfer.setData('text/plain', cardId);
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+    }
+
+    function handleDrop(e, targetCategory) {
+      e.preventDefault();
+      const cardId = e.dataTransfer.getData('text/plain');
+      if (cardId) placeCardDirectly(cardId, targetCategory);
+    }
+
+    function placeCardDirectly(cardId, targetCategory) {
+      const cardDef = screen7CardsData.find(c => c.id === cardId);
+      if (!cardDef) return;
+
+      const originalElem = document.getElementById(`card_${cardId}`);
+      if (originalElem) originalElem.remove();
+
+      // Remove previous placement if exists
+      const existingInTarget = document.getElementById(`placed_${cardId}`);
+      if (existingInTarget) existingInTarget.remove();
+
+      screen7PlacedCards[cardId] = targetCategory;
+
+      const targetList = (targetCategory === 'interior') 
+        ? document.getElementById('binInteriorList') 
+        : document.getElementById('binExteriorList');
+
+      const isRight = (cardDef.category === targetCategory);
+
+      const placedElem = document.createElement('div');
+      placedElem.id = `placed_${cardId}`;
+      placedElem.className = `p-2 rounded text-xs border flex items-center justify-between ${
+        isRight ? 'bg-slate-900/90 border-slate-700 text-slate-200' : 'bg-rose-950/60 border-rose-500 text-rose-200'
+      }`;
+      placedElem.innerHTML = `
+        <span>${isRight ? '✓' : '⚠️'} ${cardDef.text}</span>
+        <button onclick="returnCardToPool('${cardId}')" class="text-[10px] text-slate-400 hover:text-white ml-2">✕</button>
+      `;
+      targetList.appendChild(placedElem);
+
+      updateScreen7Status();
+    }
+
+    function returnCardToPool(cardId) {
+      delete screen7PlacedCards[cardId];
+      const placed = document.getElementById(`placed_${cardId}`);
+      if (placed) placed.remove();
+
+      const cardDef = screen7CardsData.find(c => c.id === cardId);
+      const pool = document.getElementById('sourceCardsPool');
+
+      const div = document.createElement('div');
+      div.id = `card_${cardDef.id}`;
+      div.draggable = true;
+      div.ondragstart = (e) => handleDragStart(e, cardDef.id);
+      div.className = 'p-3 rounded-lg bg-slate-950/90 border border-slate-700 text-xs text-slate-300 shadow cursor-grab active:cursor-grabbing hover:border-cyan-400 flex flex-col justify-between gap-2';
+
+      div.innerHTML = `
+        <span>${cardDef.text}</span>
+        <div class="flex gap-1 justify-end pt-1">
+          <button onclick="placeCardDirectly('${cardDef.id}', 'interior')" class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-700/60">→ Interior</button>
+          <button onclick="placeCardDirectly('${cardDef.id}', 'exterior')" class="px-2 py-0.5 rounded text-[10px] font-mono bg-blue-950 text-blue-300 border border-blue-700/60">→ Exterior</button>
+        </div>
+      `;
+      pool.appendChild(div);
+      updateScreen7Status();
+    }
+
+    function updateScreen7Status() {
+      const total = screen7CardsData.length;
+      const placedCount = Object.keys(screen7PlacedCards).length;
+      const remaining = total - placedCount;
+
+      document.getElementById('lblClassifyPendingCount').textContent = `${remaining} pendientes`;
+
+      if (placedCount === total) {
+        // Check correctness
+        let errors = 0;
+        screen7CardsData.forEach(c => {
+          if (screen7PlacedCards[c.id] !== c.category) errors++;
+        });
+
+        if (errors === 0) {
+          markScreenCompleted(7);
+        } else {
+          triggerTieredHint();
+          showToast(`Hay ${errors} tarjetas clasificadas erróneamente en el panel opuesto.`, 'warn');
+        }
+      }
+    }
+
+    const screen8Scenarios = [
+      {
+        id: 1,
+        title: "Caso 1: Domo Hexagonal Principal",
+        desc: "Un panel hexagonal de la estructura exterior necesita ser revisado por dilatación térmica. ¿Cuánto suman todos sus ángulos interiores?",
+        target: "interior"
+      },
+      {
+        id: 2,
+        title: "Caso 2: Giro Faltante en Junta Pentagonal",
+        desc: "En una unión exterior de un módulo pentagonal, los sensores ópticos registraron cuatro giros: 65°, 80°, 70° y 75°. Se requiere calcular el quinto giro faltante.",
+        target: "exterior"
+      },
+      {
+        id: 3,
+        title: "Caso 3: Marco Octagonal de Refuerzo",
+        desc: "Se construye un marco de 8 lados para una compuerta estanca y se debe comprobar la suma de sus ángulos internos para asegurar el sellado hermético.",
+        target: "interior"
+      },
+      {
+        id: 4,
+        title: "Caso 4: Calibración del Escáner Perimetral",
+        desc: "El dron supervisor da una vuelta completa bordeando el perímetro de un módulo de 10 lados y registra los desvíos angulares en cada vértice.",
+        target: "exterior"
+      },
+      {
+        id: 5,
+        title: "Caso 5: Ventanal Heptagonal Panorámico",
+        desc: "Para diseñar los vidrios templados de un mirador de 7 lados, el vidriero necesita calcular cuántos grados sexagesimales encierran en total sus vértices interiores.",
+        target: "interior"
+      },
+      {
+        id: 6,
+        title: "Caso 6: Eje de Rotación del Domo Eólico",
+        desc: "Para ensamblar las aspas protectoras exteriores en un nodo de titanio, se requiere certificar que la sumatoria de todos los giros alrededor del nodo cierre exactamente en 360°.",
+        target: "exterior"
+      }
+    ];
+
+    function initScreen8Decisions() {
+      const container = document.getElementById('screen8DecisionsContainer');
+      container.innerHTML = '';
+
+      screen8Scenarios.forEach((sc) => {
+        const box = document.createElement('div');
+        box.className = 'p-3.5 rounded-xl bg-slate-900/80 border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs';
+        box.innerHTML = `
+          <div class="space-y-1 max-w-xl">
+            <span class="font-mono text-cyan-300 font-bold block">${sc.title}</span>
+            <p class="text-slate-300 leading-relaxed">${sc.desc}</p>
+          </div>
+          <div class="flex-shrink-0">
+            <select id="s8Select_${sc.id}" class="w-full sm:w-auto bg-slate-950 border border-slate-700 text-xs text-cyan-300 rounded-lg px-3 py-1.5 font-mono focus:border-cyan-400">
+              <option value="">Selecciona propiedad...</option>
+              <option value="interior">Ángulos Interiores: (n - 2) × 180°</option>
+              <option value="exterior">Ángulos Exteriores: 360°</option>
+            </select>
+          </div>
+        `;
+        container.appendChild(box);
+      });
+    }
+
+    function checkAllScreen8Decisions() {
+      let correct = 0;
+      screen8Scenarios.forEach(sc => {
+        const val = document.getElementById(`s8Select_${sc.id}`).value;
+        const sel = document.getElementById(`s8Select_${sc.id}`);
+        if (val === sc.target) {
+          sel.className = 'w-full sm:w-auto bg-slate-950 border border-emerald-500 text-xs text-emerald-300 rounded-lg px-3 py-1.5 font-mono';
+          correct++;
+        } else {
+          sel.className = 'w-full sm:w-auto bg-slate-950 border border-rose-500 text-xs text-rose-300 rounded-lg px-3 py-1.5 font-mono';
+        }
+      });
+
+      document.getElementById('screen8StatusCount').textContent = `Decisiones validadas: ${correct} de 6`;
+
+      if (correct === 6) {
+        markScreenCompleted(8);
+      } else {
+        triggerTieredHint();
+        showToast('Identificaste erróneamente la propiedad en uno o más casos. Fíjate si la incógnita está "dentro" o "afuera" de la estructura.', 'error');
+      }
+    }
+
+    function validateScreen9Hexagon() {
+      const step1 = parseInt(document.getElementById('s9Step1').value);
+      const step2 = document.getElementById('s9Step2').value;
+      const step3 = parseInt(document.getElementById('s9Step3').value);
+      const step4 = parseInt(document.getElementById('s9Step4').value);
+      const step5 = parseInt(document.getElementById('s9Step5').value);
+      const explanation = document.getElementById('s9Step6Explanation').value.trim();
+
+      if (step3) {
+        document.getElementById('lblS9TriDisplay').textContent = step3;
+      }
+
+      if (step1 !== 6 || step2 !== 'interior' || step3 !== 4 || step4 !== 720 || step5 !== 720) {
+        triggerTieredHint('s9Hex');
+        showToast('Revisa los cálculos del hexágono: n = 6, triángulos = 6 - 2 = 4, suma = 4 × 180° = 720°.', 'error');
+        return;
+      }
+
+      if (explanation.length < 15) {
+        showToast('Debes redactar una justificación técnica más completa en el Paso 6 antes de certificar.', 'warn');
+        return;
+      }
+
+      state.guidedHexDone = true;
+      markScreenCompleted(9);
+    }
+
+    function validateScreen10Exterior() {
+      const step1 = parseInt(document.getElementById('s10Step1').value);
+      const step2 = parseInt(document.getElementById('s10Step2').value);
+      const step3 = parseInt(document.getElementById('s10Step3').value);
+      const step4 = parseInt(document.getElementById('s10Step4').value);
+      const explanation = document.getElementById('s10Step5Explanation').value.trim();
+
+      if (step1 !== 360 || step2 !== 280 || step3 !== 80 || step4 !== 80) {
+        triggerTieredHint('s10Ext');
+        showToast('Error en la calibración angular: Total = 360°, suma conocidos = 280°, x = 360° - 280° = 80°.', 'error');
+        return;
+      }
+
+      if (explanation.length < 15) {
+        showToast('Por favor justifica por escrito cómo el valor hallado garantiza el cierre geométrico del panel.', 'warn');
+        return;
+      }
+
+      state.guidedExtDone = true;
+      markScreenCompleted(10);
+    }
+
+    const screen11Problems = [
+      {
+        id: 0,
+        type: 'calc_interior',
+        title: "Problema A: Módulo Heptagonal Polar",
+        prompt: "Calcula la suma de los ángulos interiores de un heptágono regular (7 lados) destinado a la torre meteorológica.",
+        field: "Suma interior (°):",
+        answer: 900,
+        hint: "Usa S = (7 - 2) × 180° = 5 × 180°."
+      },
+      {
+        id: 1,
+        type: 'calc_interior',
+        title: "Problema B: Soporte Octagonal de Carga",
+        prompt: "Un soporte octagonal (8 lados) distribuye el peso de los generadores. ¿Cuánto deben sumar sus ángulos interiores?",
+        field: "Suma interior (°):",
+        answer: 1080,
+        hint: "Usa S = (8 - 2) × 180° = 6 × 180°."
+      },
+      {
+        id: 2,
+        type: 'calc_exterior',
+        title: "Problema C: Giro Faltante en Junta Cuadrilátera",
+        prompt: "En un panel de 4 lados, tres ángulos exteriores miden 95°, 85° y 110°. ¿Cuánto mide el cuarto ángulo exterior x?",
+        field: "Ángulo x (°):",
+        answer: 70,
+        hint: "La suma exterior es 360°. Resta: 360 - (95 + 85 + 110)."
+      },
+      {
+        id: 3,
+        type: 'validity',
+        title: "Problema D: Diagnóstico de Suma Teórica",
+        prompt: "¿Es matemáticamente posible que la suma de los ángulos interiores de un polígono convexo sea exactamente 1000°?",
+        field: "Respuesta (si/no):",
+        isRadio: true,
+        options: ["Sí, es posible", "No, porque 1000 no es múltiplo entero de 180"],
+        answer: 1,
+        hint: "Divide 1000 ÷ 180. ¿Da un número entero de triángulos?"
+      },
+      {
+        id: 4,
+        type: 'correction',
+        title: "Problema E: Corrección de Cálculo en Nonágono",
+        prompt: "Un informe afirma que para un nonágono (9 lados) la suma es: 9 × 180° = 1620°. ¿Cuál es la suma interior REAL?",
+        field: "Suma interior real (°):",
+        answer: 1260,
+        hint: "Olvidaron restar 2: S = (9 - 2) × 180° = 7 × 180°."
+      },
+      {
+        id: 5,
+        type: 'compare',
+        title: "Problema F: Comparación de Paneles 6 vs 8 Lados",
+        prompt: "¿Por cuántos grados sexagesimales supera la suma interior de un octágono a la de un hexágono?",
+        field: "Diferencia angular (°):",
+        answer: 360,
+        hint: "Octágono = 1080°, Hexágono = 720°. Resta 1080 - 720 (equivale a 2 triángulos más: 2 × 180°)."
+      },
+      {
+        id: 6,
+        type: 'reverse',
+        title: "Problema G: Identificación de Polígono",
+        prompt: "Si la suma de los ángulos interiores de un panel es 540°, ¿cuántos lados (n) tiene este polígono?",
+        field: "Número de lados (n):",
+        answer: 5,
+        hint: "540 ÷ 180 = 3 triángulos. n = 3 + 2 = 5."
+      },
+      {
+        id: 7,
+        type: 'exterior_audit',
+        title: "Problema H: Auditoría de Giros Exteriores",
+        prompt: "Tres sensores marcan giros exteriores de 120°, 130° y 110°. ¿Corresponden a un polígono convexo cerrado?",
+        field: "Evaluación:",
+        isRadio: true,
+        options: ["Sí, porque 120 + 130 + 110 = 360°", "No, porque supera 360°"],
+        answer: 0,
+        hint: "120 + 130 + 110 = 360°. Cierra exactamente una vuelta completa."
+      }
+    ];
+
+    function initScreen11Problems() {
+      renderCurrentS11Problem();
+    }
+
+    function renderCurrentS11Problem() {
+      const idx = state.screen11CurrentIdx;
+      const prob = screen11Problems[idx];
+      document.getElementById('screen11ProblemIndex').textContent = `Problema ${idx + 1} de 8`;
+
+      const card = document.getElementById('screen11ProblemCard');
+      card.innerHTML = `
+        <div class="border-b border-slate-800 pb-2 flex justify-between items-center">
+          <span class="font-mono text-cyan-300 font-bold text-sm">${prob.title}</span>
+          <span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">Reactivo ${idx + 1}</span>
+        </div>
+        <p class="text-xs text-slate-200 leading-relaxed font-sans">${prob.prompt}</p>
+        <div class="pt-2" id="s11InputFieldContainer">
+          <!-- Rendered input or radios -->
+        </div>
+      `;
+
+      const inputContainer = document.getElementById('s11InputFieldContainer');
+      if (prob.isRadio) {
+        let html = '<div class="space-y-1.5 font-sans">';
+        prob.options.forEach((opt, optIdx) => {
+          html += `
+            <label class="flex items-center gap-2 p-2 rounded bg-slate-950/70 border border-slate-800 hover:border-cyan-500 cursor-pointer text-xs text-slate-300">
+              <input type="radio" name="s11RadioOpt" value="${optIdx}"> ${opt}
+            </label>
+          `;
+        });
+        html += '</div>';
+        inputContainer.innerHTML = html;
+      } else {
+        inputContainer.innerHTML = `
+          <div class="flex items-center gap-2 font-mono text-xs">
+            <label class="text-slate-300">${prob.field}</label>
+            <input type="number" id="s11NumberInput" placeholder="Valor" class="px-3 py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300 font-bold w-32 focus:border-cyan-400">
+          </div>
+        `;
+      }
+
+      document.getElementById('btnNextS11Problem').classList.add('hidden');
+      document.getElementById('btnCheckS11Problem').classList.remove('hidden');
+    }
+
+    function checkCurrentS11Problem() {
+      const idx = state.screen11CurrentIdx;
+      const prob = screen11Problems[idx];
+      let isCorrect = false;
+
+      if (prob.isRadio) {
+        const radios = document.getElementsByName('s11RadioOpt');
+        let selected = -1;
+        for (let r of radios) {
+          if (r.checked) selected = parseInt(r.value);
+        }
+        isCorrect = (selected === prob.answer);
+      } else {
+        const val = parseInt(document.getElementById('s11NumberInput').value);
+        isCorrect = (val === prob.answer);
+      }
+
+      if (isCorrect) {
+        showToast('✓ ¡Problema resuelto con precisión matemática!', 'success');
+        document.getElementById('btnCheckS11Problem').classList.add('hidden');
+        document.getElementById('btnNextS11Problem').classList.remove('hidden');
+      } else {
+        triggerTieredHint();
+        showToast(`Respuesta incorrecta. Pista: ${prob.hint}`, 'error');
+      }
+    }
+
+    function nextS11Problem() {
+      if (state.screen11CurrentIdx < screen11Problems.length - 1) {
+        state.screen11CurrentIdx++;
+        renderCurrentS11Problem();
+      } else {
+        // All 8 done
+        state.stationProblemsScore = 8;
+        markScreenCompleted(11);
+      }
+    }
+
+    const inverseData = [
+      { sum: 720, groups: 4, tri: 4, sides: 6, name: 'Hexágono' },
+      { sum: 540, groups: 3, tri: 3, sides: 5, name: 'Pentágono' },
+      { sum: 900, groups: 5, tri: 5, sides: 7, name: 'Heptágono' },
+      { sum: 1080, groups: 6, tri: 6, sides: 8, name: 'Octágono' },
+      { sum: 1260, groups: 7, tri: 7, sides: 9, name: 'Nonágono' }
+    ];
+
+    function initScreen12InverseTable() {
+      const tbody = document.getElementById('inverseProblemsTbody');
+      tbody.innerHTML = '';
+
+      inverseData.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="p-3 text-cyan-300 font-bold">${row.sum}°</td>
+          <td class="p-3 text-center">
+            <input type="number" id="s12_grp_${i}" placeholder="?" class="w-16 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+          </td>
+          <td class="p-3 text-center">
+            <input type="number" id="s12_tri_${i}" placeholder="?" class="w-16 text-center py-1 bg-slate-950 border border-slate-700 rounded text-cyan-300">
+          </td>
+          <td class="p-3 text-center">
+            <input type="number" id="s12_sides_${i}" placeholder="n" class="w-16 text-center py-1 bg-slate-950 border border-slate-700 rounded text-amber-300 font-bold">
+          </td>
+          <td class="p-3 text-center">
+            <select id="s12_name_${i}" class="bg-slate-950 border border-slate-700 rounded py-1 px-2 text-xs text-slate-200">
+              <option value="">Elegir...</option>
+              <option value="Pentágono">Pentágono</option>
+              <option value="Hexágono">Hexágono</option>
+              <option value="Heptágono">Heptágono</option>
+              <option value="Octágono">Octágono</option>
+              <option value="Nonágono">Nonágono</option>
+              <option value="Decágono">Decágono</option>
+            </select>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function checkAllScreen12Inverse() {
+      let correct = 0;
+      inverseData.forEach((row, i) => {
+        const grp = parseInt(document.getElementById(`s12_grp_${i}`).value);
+        const tri = parseInt(document.getElementById(`s12_tri_${i}`).value);
+        const sides = parseInt(document.getElementById(`s12_sides_${i}`).value);
+        const name = document.getElementById(`s12_name_${i}`).value;
+
+        if (grp === row.groups && tri === row.tri && sides === row.sides && name === row.name) {
+          correct++;
+        }
+      });
+
+      if (correct === inverseData.length) {
+        document.getElementById('s12FeedbackMsg').textContent = '✓ ¡Bitácora de deducción inversa completada exitosamente!';
+        state.inverseDone = true;
+        markScreenCompleted(12);
+      } else {
+        triggerTieredHint();
+        showToast(`Tienes campos pendientes o erróneos (${correct} de ${inverseData.length} validados).`, 'error');
+      }
+    }
+
+    const screen13Errors = [
+      {
+        id: 1,
+        title: "Caso de Error N° 1",
+        claim: "“Un hexágono tiene 6 lados, por lo tanto su suma de ángulos interiores es 6 × 180° = 1080°.”",
+        question: "¿Qué error cometió este ingeniero novato?",
+        options: [
+          { text: "Multiplicó n directamente por 180° olvidando que la triangulación forma (n - 2) triángulos.", correct: true },
+          { text: "Confundió hexágono con pentágono.", correct: false },
+          { text: "Debió multiplicar por 360° en lugar de 180°.", correct: false }
+        ]
+      },
+      {
+        id: 2,
+        title: "Caso de Error N° 2",
+        claim: "“Como un pentágono tiene 5 lados y su suma interior es 540°, sus ángulos exteriores también suman 540°.”",
+        question: "¿Cuál es la corrección científica?",
+        options: [
+          { text: "Los exteriores de un pentágono suman 720°.", correct: false },
+          { text: "Falso: La suma de los ángulos exteriores de CUALQUIER polígono convexo es siempre 360°.", correct: true },
+          { text: "Los ángulos exteriores suman la mitad de los interiores.", correct: false }
+        ]
+      },
+      {
+        id: 3,
+        title: "Caso de Error N° 3",
+        claim: "“Para un octágono: (8 - 2) × 180° = 6 × 180° = 980°.”",
+        question: "¿Dónde radica la falla en este cálculo?",
+        options: [
+          { text: "Cometió un error aritmético de multiplicación: 6 × 180° es exactamente 1080°.", correct: true },
+          { text: "Un octágono tiene 7 lados.", correct: false },
+          { text: "Debió restar 8 - 3 en lugar de 8 - 2.", correct: false }
+        ]
+      },
+      {
+        id: 4,
+        title: "Caso de Error N° 4",
+        claim: "“A medida que un polígono tiene más y más lados, la suma de sus ángulos exteriores se vuelve cada vez mayor.”",
+        question: "¿Por qué esta afirmación es geométricamente falsa?",
+        options: [
+          { text: "Porque dar la vuelta completa al polígono siempre totaliza un giro cerrado de 360°.", correct: true },
+          { text: "Porque los ángulos exteriores disminuyen a cero.", correct: false },
+          { text: "Porque solo se aplica a cuadriláteros.", correct: false }
+        ]
+      }
+    ];
+
+    function initScreen13AuditCards() {
+      const grid = document.getElementById('errorAuditCardsGrid');
+      grid.innerHTML = '';
+
+      screen13Errors.forEach(err => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-xl bg-slate-900/80 border border-slate-700 space-y-2.5 text-xs';
+        card.innerHTML = `
+          <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+            <span class="font-mono text-cyan-300 font-bold">${err.title}</span>
+            <span id="s13Badge_${err.id}" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">Por auditar</span>
+          </div>
+          <div class="p-2.5 rounded bg-slate-950/80 border border-rose-900/40 text-rose-200/90 font-mono text-[11px] italic">
+            ${err.claim}
+          </div>
+          <label class="block font-mono text-slate-300 text-[11px]">${err.question}</label>
+          <div class="space-y-1 font-sans">
+            ${err.options.map((opt, oIdx) => `
+              <label class="flex items-center gap-2 p-2 rounded bg-slate-950/60 border border-slate-800 hover:border-cyan-500 cursor-pointer text-slate-300">
+                <input type="radio" name="s13Radio_${err.id}" value="${oIdx}">
+                <span>${opt.text}</span>
+              </label>
+            `).join('')}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function checkAllScreen13Audits() {
+      let correct = 0;
+
+      screen13Errors.forEach(err => {
+        const radios = document.getElementsByName(`s13Radio_${err.id}`);
+        let sel = -1;
+        for (let r of radios) {
+          if (r.checked) sel = parseInt(r.value);
+        }
+        const badge = document.getElementById(`s13Badge_${err.id}`);
+        if (sel !== -1 && err.options[sel].correct) {
+          badge.className = 'text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600 font-mono';
+          badge.textContent = 'Auditado ✓';
+          correct++;
+        } else {
+          badge.className = 'text-[10px] px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-600 font-mono';
+          badge.textContent = 'Falla';
+        }
+      });
+
+      document.getElementById('screen13StatusText').textContent = `Casos auditados: ${correct} de 4`;
+
+      if (correct === 4) {
+        state.auditsDone = true;
+        markScreenCompleted(13);
+      } else {
+        triggerTieredHint();
+        showToast('Identificaste erróneamente la causa del error en uno de los planos auditados.', 'error');
+      }
+    }
+
+    function validateScreen14Comparison() {
+      const pentInt = parseInt(document.getElementById('s14PentInt').value);
+      const pentExt = parseInt(document.getElementById('s14PentExt').value);
+      const octInt = parseInt(document.getElementById('s14OctInt').value);
+      const octExt = parseInt(document.getElementById('s14OctExt').value);
+
+      const mayorInt = document.getElementById('s14SelectMayorInt').value;
+      const mayorExt = document.getElementById('s14SelectMayorExt').value;
+      const just = document.getElementById('s14ComparisonJustification').value.trim();
+
+      if (pentInt !== 540 || pentExt !== 360 || octInt !== 1080 || octExt !== 360) {
+        triggerTieredHint();
+        showToast('Verifica los valores numéricos: Pentágono = 540° int / 360° ext; Octágono = 1080° int / 360° ext.', 'error');
+        return;
+      }
+
+      if (mayorInt !== 'B' || mayorExt !== 'igual') {
+        showToast('Revisa las selecciones: El octágono tiene mayor suma interior, pero en la exterior ambos suman 360°.', 'warn');
+        return;
+      }
+
+      if (just.length < 15) {
+        showToast('Por favor escribe una justificación reflexiva sobre el principio invariante en la caja de texto.', 'warn');
+        return;
+      }
+
+      state.comparisonDone = true;
+      markScreenCompleted(14);
+    }
+
+    function renderCustomDomePanel() {
+      const n = parseInt(document.getElementById('s15PolygonChoice').value);
+      document.getElementById('s15SidesInput').value = n;
+
+      const svg = document.getElementById('s15BlueprintSvg');
+      svg.innerHTML = '';
+
+      const pts = getPolygonVertices(n, 120, 120, 85);
+      const ptsStr = pts.map(p => `${p.x},${p.y}`).join(' ');
+
+      // Interior triangulation lines from vertex 0 to help student observe
+      for (let i = 2; i < n - 1; i++) {
+        const diag = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        diag.setAttribute('x1', pts[0].x);
+        diag.setAttribute('y1', pts[0].y);
+        diag.setAttribute('x2', pts[i].x);
+        diag.setAttribute('y2', pts[i].y);
+        diag.setAttribute('stroke', '#38bdf8');
+        diag.setAttribute('stroke-width', '1');
+        diag.setAttribute('stroke-dasharray', '3,3');
+        svg.appendChild(diag);
+      }
+
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      poly.id = 's15PolyElem';
+      poly.setAttribute('points', ptsStr);
+      poly.setAttribute('fill', 'rgba(14, 165, 233, 0.2)');
+      poly.setAttribute('stroke', '#38bdf8');
+      poly.setAttribute('stroke-width', '2.5');
+      svg.appendChild(poly);
+
+      pts.forEach((p, i) => {
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', p.x);
+        c.setAttribute('cy', p.y);
+        c.setAttribute('r', '4');
+        c.setAttribute('fill', '#f59e0b');
+        svg.appendChild(c);
+      });
+    }
+
+    function toggleDesignHighlight(mode) {
+      const poly = document.getElementById('s15PolyElem');
+      if (!poly) return;
+      if (mode === 'interior') {
+        poly.setAttribute('fill', 'rgba(6, 182, 212, 0.45)');
+        poly.setAttribute('stroke', '#22d3ee');
+        showToast('Ángulos interiores resaltados en cian.', 'info');
+      } else {
+        poly.setAttribute('fill', 'rgba(59, 130, 246, 0.1)');
+        poly.setAttribute('stroke', '#f59e0b');
+        showToast('Giros exteriores resaltados en ámbar.', 'info');
+      }
+    }
+
+    function validateScreen15Design() {
+      const n = parseInt(document.getElementById('s15PolygonChoice').value);
+      const name = document.getElementById('s15PanelName').value.trim();
+      const tri = parseInt(document.getElementById('s15TrianglesInput').value);
+      const sumInt = parseInt(document.getElementById('s15InteriorSumInput').value);
+      const sumExt = parseInt(document.getElementById('s15ExteriorSumInput').value);
+
+      const expInt = document.getElementById('s15ExplainInterior').value.trim();
+      const expExt = document.getElementById('s15ExplainExterior').value.trim();
+      const expSec = document.getElementById('s15ExplainSector').value.trim();
+
+      const expectedTri = n - 2;
+      const expectedInt = (n - 2) * 180;
+
+      if (!name) {
+        showToast('Asigna un nombre técnico a tu panel del domo.', 'warn');
+        return;
+      }
+
+      if (tri !== expectedTri || sumInt !== expectedInt || sumExt !== 360) {
+        triggerTieredHint();
+        showToast(`Cálculo discordante para n = ${n}: se forman ${expectedTri} triángulos y la suma interior es ${expectedInt}°.`, 'error');
+        return;
+      }
+
+      if (expInt.length < 10 || expExt.length < 10 || expSec.length < 4) {
+        showToast('Debes responder obligatoriamente las tres preguntas de ingeniería polar en la ficha.', 'warn');
+        return;
+      }
+
+      // Store in state for official certificate
+      state.designSpecs = { n, name, tri, sumInt, sumExt, expInt, expExt, expSec };
+      markScreenCompleted(15);
+    }
+
+    function validateScreen16Matrix() {
+      const aSides = parseInt(document.getElementById('s16A_sides').value);
+      const aInt = parseInt(document.getElementById('s16A_int').value);
+      const aExt = parseInt(document.getElementById('s16A_ext').value);
+
+      const bSides = parseInt(document.getElementById('s16B_sides').value);
+      const bInt = parseInt(document.getElementById('s16B_int').value);
+      const bExt = parseInt(document.getElementById('s16B_ext').value);
+
+      const cSides = parseInt(document.getElementById('s16C_sides').value);
+      const cInt = parseInt(document.getElementById('s16C_int').value);
+      const cExt = parseInt(document.getElementById('s16C_ext').value);
+
+      const q1 = document.getElementById('s16Q1').value;
+      const q2 = document.getElementById('s16Q2').value;
+      const q3 = document.getElementById('s16Q3').value.trim();
+      const q4 = document.getElementById('s16Q4').value.trim();
+
+      const validA = (aSides === 5 && aInt === 540 && aExt === 360);
+      const validB = (bSides === 6 && bInt === 720 && bExt === 360);
+      const validC = (cSides === 8 && cInt === 1080 && cExt === 360);
+
+      if (!validA || !validB || !validC) {
+        triggerTieredHint();
+        showToast('Hay inconsistencias en los valores angulares de la matriz tri-módulo.', 'error');
+        return;
+      }
+
+      if (q1 !== 'C' || q2 !== 'invariante') {
+        showToast('Revisa las selecciones de análisis: El octágono tiene mayor suma interior y las sumas exteriores son invariantes.', 'warn');
+        return;
+      }
+
+      if (q3.length < 8 || q4.length < 15) {
+        showToast('Completa las explicaciones escritas de los patrones para la bitácora de ingeniería.', 'warn');
+        return;
+      }
+
+      state.matrixDone = true;
+      markScreenCompleted(16);
+    }
+
+    function validateScreen17Synthesis() {
+      const b1 = document.getElementById('s17Blank1').value;
+      const b2 = document.getElementById('s17Blank2').value;
+      const b3 = document.getElementById('s17Blank3').value;
+      const b4 = document.getElementById('s17Blank4').value;
+      const b5 = document.getElementById('s17Blank5').value;
+      const personal = document.getElementById('s17PersonalConclusion').value.trim();
+
+      if (b1 !== 'aumenta' || b2 !== '360' || b3 !== 'n-2_180' || b4 !== 'n-2' || b5 !== '360') {
+        triggerTieredHint();
+        showToast('Uno o más enunciados de síntesis no concuerdan con los principios demostrados.', 'error');
+        return;
+      }
+
+      if (personal.length < 20) {
+        showToast('Escribe una conclusión personal reflexiva explicando la diferencia fundamental entre ángulos interiores y exteriores.', 'warn');
+        return;
+      }
+
+      state.synthesisDone = true;
+      state.personalConclusion = personal;
+      markScreenCompleted(17);
+    }
+
+    function submitTicketDeSalida() {
+      const q1 = parseInt(document.getElementById('ticketQ1').value);
+      const q2 = parseInt(document.getElementById('ticketQ2').value);
+      const q3 = parseInt(document.getElementById('ticketQ3').value);
+
+      const radiosQ4 = document.getElementsByName('ticketQ4');
+      let valQ4 = '';
+      for (let r of radiosQ4) {
+        if (r.checked) valQ4 = r.value;
+      }
+
+      const q5 = document.getElementById('ticketQ5').value.trim();
+
+      if (isNaN(q1) || isNaN(q2) || isNaN(q3) || !valQ4 || q5.length < 10) {
+        showToast('Debes responder las 5 preguntas del Ticket de Salida antes de culminar.', 'warn');
+        return;
+      }
+
+      // Check key mathematical correctness
+      let score = 0;
+      if (q1 === 720) score++;
+      if (q2 === 1080) score++;
+      if (q3 === 75) score++; // 360 - (75+60+80+70) = 360 - 285 = 75
+      if (valQ4 === 'interior') score++;
+      if (q5.length >= 10) score++;
+
+      state.ticketDone = true;
+      state.ticketScore = score;
+      state.student.finishTime = new Date().toLocaleString('es-CL');
+      state.ticketAnswers = { q1, q2, q3, q4: valQ4, q5 };
+
+      markScreenCompleted(18);
+      switchScreen(19); // Moves to final report screen
+    }
+
+    function generateFinalReportSummary() {
+      document.getElementById('rptStudentName').textContent = state.student.name || 'Cadete no registrado';
+      document.getElementById('rptStudentGrade').textContent = state.student.grade || '7° Básico';
+      document.getElementById('rptTotalAttempts').textContent = state.attemptsCount;
+
+      const now = new Date();
+      document.getElementById('rptDateDisplay').textContent = now.toLocaleDateString('es-CL');
+      document.getElementById('rptTimeDisplay').textContent = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} hrs`;
+
+      // Design Box
+      const d = state.designSpecs;
+      const designBox = document.getElementById('rptSec6DesignBox');
+      if (d && d.name) {
+        designBox.innerHTML = `
+          <div><strong>Panel:</strong> ${d.name} (${d.n} lados)</div>
+          <div><strong>Triangulación:</strong> ${d.tri} triángulos formados | <strong>Suma Interior:</strong> ${d.sumInt}° | <strong>Suma Exterior:</strong> ${d.sumExt}°</div>
+          <div><strong>Sector de Instalación:</strong> ${d.expSec}</div>
+          <div class="pt-1 text-[11px] text-slate-300"><strong>Justificación geométrica:</strong> "${d.expInt}"</div>
+        `;
+      } else {
+        designBox.innerHTML = `<div>Diseño estándar aprobado de panel polar.</div>`;
+      }
+
+      // Personal Conclusion
+      const rptConc = document.getElementById('rptSec7Conclusion');
+      rptConc.textContent = `"${state.personalConclusion || 'La suma interior aumenta con cada lado porque cada vértice adicional suma un nuevo triángulo de 180°, mientras que la suma exterior siempre totaliza 360° porque equivale a dar un giro cerrado completo sobre el perímetro.'}"`;
+
+      // Ticket Answers
+      const t = state.ticketAnswers;
+      const ticketBox = document.getElementById('rptSec8Ticket');
+      if (t) {
+        ticketBox.innerHTML = `
+          <div>1. Suma interior Hexágono: <strong>${t.q1}°</strong></div>
+          <div>2. Suma interior Octágono: <strong>${t.q2}°</strong></div>
+          <div>3. Ángulo exterior x pentagonal: <strong>${t.q3}°</strong></div>
+          <div>4. Propiedad para decágono interior: <strong>${t.q4 === 'interior' ? 'Interiores: (n-2)×180°' : 'Exterior'}</strong></div>
+          <div>5. Fundamentación exterior 360°: "${t.q5}"</div>
+        `;
+      }
+    }
+
+    function exportReportJSON() {
+      const summaryText = `
+BASE ANTÁRTICA - LABORATORIO DE INGENIERÍA GEOMÉTRICA
+INFORME DE CERTIFICACIÓN DE ÁNGULOS EN POLÍGONOS (7° BÁSICO)
+============================================================
+Cadete: ${state.student.name}
+Curso: ${state.student.grade}
+Fecha: ${new Date().toLocaleString('es-CL')}
+Progreso: 18 de 18 Etapas Superadas (100%)
+Intentos Registrados: ${state.attemptsCount}
+
+PROPIEDADES CERTIFICADAS:
+1. Suma de Ángulos Interiores: S = (n - 2) * 180°
+2. Suma de Ángulos Exteriores: S = 360° (Constante para cualquier polígono convexo)
+
+FICHA DEL DISEÑO POLAR:
+Panel: ${state.designSpecs.name || 'Módulo Diseñado'}
+Lados: ${state.designSpecs.n || 6}
+Triángulos formados: ${state.designSpecs.tri || 4}
+Suma Interior: ${state.designSpecs.sumInt || 720}°
+Suma Exterior: 360°
+
+CONCLUSIÓN DEL ESTUDIANTE:
+"${state.personalConclusion || 'Completado'}"
+
+TICKET DE SALIDA:
+P1: ${state.ticketAnswers.q1 || 720}°
+P2: ${state.ticketAnswers.q2 || 1080}°
+P3: ${state.ticketAnswers.q3 || 75}°
+P4: ${state.ticketAnswers.q4 || 'interior'}
+P5: "${state.ticketAnswers.q5 || ''}"
+============================================================
+      `;
+
+      const blob = new Blob([summaryText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Certificado_Antartica_${(state.student.name || 'Cadete').replace(/\s+/g, '_')}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    const TEACHER_PASSWORD = "Stik";
+
+    function openTeacherModal() {
+      document.getElementById('teacherModal').classList.remove('hidden');
+    }
+
+    function closeTeacherModal() {
+      document.getElementById('teacherModal').classList.add('hidden');
+    }
+
+    function authenticateTeacher() {
+      const pass = document.getElementById('inputTeacherPass').value.trim();
+      if (pass === TEACHER_PASSWORD) {
+        state.isTeacherMode = true;
+        document.getElementById('teacherAuthBox').classList.add('hidden');
+        document.getElementById('teacherControlsBox').classList.remove('hidden');
+        document.getElementById('profBadge').classList.remove('hidden');
+        updateNavigationUI();
+        showToast('Modo Profesor activado: Restricciones de navegación deshabilitadas.', 'info');
+      } else {
+        showToast('Contraseña incorrecta.', 'error');
+      }
+    }
+
+    function populateTeacherScreenSelect() {
+      const sel = document.getElementById('teacherScreenSelect');
+      sel.innerHTML = '';
+      for (let i = 1; i <= state.totalScreens; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `Etapa ${i} de 18`;
+        sel.appendChild(opt);
+      }
+      const optRep = document.createElement('option');
+      optRep.value = 19;
+      optRep.textContent = `Informe Final y Certificado`;
+      sel.appendChild(optRep);
+    }
+
+    function jumpToScreenFromTeacher(screenVal) {
+      const s = parseInt(screenVal);
+      state.maxUnlockedScreen = Math.max(state.maxUnlockedScreen, s);
+      switchScreen(s);
+      closeTeacherModal();
+    }
+
+    function unlockCurrentScreenOverride() {
+      markScreenCompleted(state.currentScreen);
+      showToast(`Etapa ${state.currentScreen} desbloqueada manualmente.`, 'info');
+      closeTeacherModal();
+    }
+
+    function autofillCurrentScreen() {
+      const s = state.currentScreen;
+      if (s === 2) {
+        screen2Questions.forEach((q, i) => {
+          screen2UserAnswers[i] = true;
+          const fb = document.getElementById(`qFeedback_${i}`);
+          if (fb) {
+            fb.className = 'text-xs font-mono p-2 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-200 block';
+            fb.textContent = `✓ ${q.feedback}`;
+          }
+        });
+        markScreenCompleted(2);
+      } else if (s === 3) {
+        document.getElementById('tblTri3').value = 1;
+        document.getElementById('tblTri4').value = 2;
+        document.getElementById('tblTri5').value = 3;
+        document.getElementById('tblTri6').value = 4;
+        validateTriangulationTable();
+        document.getElementById('inputConstantDeduction').value = 2;
+        checkDeductionFormula();
+      } else if (s === 4) {
+        screen4Panels.forEach((p, idx) => {
+          document.getElementById(`s4_n_${idx}`).value = p.n;
+          document.getElementById(`s4_tri_${idx}`).value = p.tri;
+          document.getElementById(`s4_sum_${idx}`).value = p.sum;
+        });
+        checkAllScreen4Panels();
+      } else if (s === 5) {
+        const radios = document.getElementsByName('robotTurnQuestion');
+        for (let r of radios) if (r.value === 'completa') r.checked = true;
+        document.getElementById('inputFullTurnDegrees').value = 360;
+        checkRobotTelemetry();
+      } else if (s === 6) {
+        screen6Exercises.forEach((ex, idx) => {
+          document.getElementById(`s6_sumKnown_${idx}`).value = ex.knownSum;
+          document.getElementById(`s6_diff_${idx}`).value = ex.missingX;
+          document.getElementById(`s6_x_${idx}`).value = ex.missingX;
+        });
+        validateAllScreen6Exercises();
+      } else if (s === 7) {
+        screen7CardsData.forEach(c => {
+          placeCardDirectly(c.id, c.category);
+        });
+      } else if (s === 8) {
+        screen8Scenarios.forEach(sc => {
+          document.getElementById(`s8Select_${sc.id}`).value = sc.target;
+        });
+        checkAllScreen8Decisions();
+      } else if (s === 9) {
+        document.getElementById('s9Step1').value = 6;
+        document.getElementById('s9Step2').value = 'interior';
+        document.getElementById('s9Step3').value = 4;
+        document.getElementById('s9Step4').value = 720;
+        document.getElementById('s9Step5').value = 720;
+        document.getElementById('s9Step6Explanation').value = "El panel hexagonal de 6 lados se descompone en 4 triángulos interiores aportando 720°.";
+        validateScreen9Hexagon();
+      } else if (s === 10) {
+        document.getElementById('s10Step1').value = 360;
+        document.getElementById('s10Step2').value = 280;
+        document.getElementById('s10Step3').value = 80;
+        document.getElementById('s10Step4').value = 80;
+        document.getElementById('s10Step5Explanation').value = "La suma exterior debe ser 360°, por lo que 360 menos 280 da 80° exactos.";
+        validateScreen10Exterior();
+      } else if (s === 12) {
+        inverseData.forEach((row, i) => {
+          document.getElementById(`s12_grp_${i}`).value = row.groups;
+          document.getElementById(`s12_tri_${i}`).value = row.tri;
+          document.getElementById(`s12_sides_${i}`).value = row.sides;
+          document.getElementById(`s12_name_${i}`).value = row.name;
+        });
+        checkAllScreen12Inverse();
+      } else if (s === 13) {
+        screen13Errors.forEach(err => {
+          const radios = document.getElementsByName(`s13Radio_${err.id}`);
+          err.options.forEach((opt, oIdx) => {
+            if (opt.correct) radios[oIdx].checked = true;
+          });
+        });
+        checkAllScreen13Audits();
+      } else if (s === 14) {
+        document.getElementById('s14PentInt').value = 540;
+        document.getElementById('s14PentExt').value = 360;
+        document.getElementById('s14OctInt').value = 1080;
+        document.getElementById('s14OctExt').value = 360;
+        document.getElementById('s14SelectMayorInt').value = 'B';
+        document.getElementById('s14SelectMayorExt').value = 'igual';
+        document.getElementById('s14ComparisonJustification').value = "La suma interior aumenta al agregar lados y triángulos, pero el giro exterior siempre cierra una vuelta de 360°.";
+        validateScreen14Comparison();
+      } else if (s === 15) {
+        document.getElementById('s15PanelName').value = "Domo Polar Alpha";
+        document.getElementById('s15TrianglesInput').value = 4;
+        document.getElementById('s15InteriorSumInput').value = 720;
+        document.getElementById('s15ExteriorSumInput').value = 360;
+        document.getElementById('s15ExplainInterior').value = "Comprobado mediante 4 triángulos de 180° cada uno.";
+        document.getElementById('s15ExplainExterior').value = "La suma exterior es un giro completo cerrado de 360°.";
+        document.getElementById('s15ExplainSector').value = "Cúpula Central de Telecomunicaciones";
+        validateScreen15Design();
+      } else if (s === 16) {
+        document.getElementById('s16A_sides').value = 5; document.getElementById('s16A_int').value = 540; document.getElementById('s16A_ext').value = 360;
+        document.getElementById('s16B_sides').value = 6; document.getElementById('s16B_int').value = 720; document.getElementById('s16B_ext').value = 360;
+        document.getElementById('s16C_sides').value = 8; document.getElementById('s16C_int').value = 1080; document.getElementById('s16C_ext').value = 360;
+        document.getElementById('s16Q1').value = 'C';
+        document.getElementById('s16Q2').value = 'invariante';
+        document.getElementById('s16Q3').value = "Cada lado adicional añade 180° a la suma interior.";
+        document.getElementById('s16Q4').value = "Los ángulos interiores dependen del número de lados y los exteriores se mantienen fijos en 360°.";
+        validateScreen16Matrix();
+      } else if (s === 17) {
+        document.getElementById('s17Blank1').value = 'aumenta';
+        document.getElementById('s17Blank2').value = '360';
+        document.getElementById('s17Blank3').value = 'n-2_180';
+        document.getElementById('s17Blank4').value = 'n-2';
+        document.getElementById('s17Blank5').value = '360';
+        document.getElementById('s17PersonalConclusion').value = "La suma interior cambia cuando cambia la cantidad de lados, mientras que la suma exterior se mantiene siempre en 360°.";
+        validateScreen17Synthesis();
+      } else if (s === 18) {
+        document.getElementById('ticketQ1').value = 720;
+        document.getElementById('ticketQ2').value = 1080;
+        document.getElementById('ticketQ3').value = 75;
+        const radiosQ4 = document.getElementsByName('ticketQ4');
+        for (let r of radiosQ4) if (r.value === 'interior') r.checked = true;
+        document.getElementById('ticketQ5').value = "Porque recorrer el contorno de cualquier polígono cerrado equivale siempre a realizar un giro completo sobre sí mismo.";
+        submitTicketDeSalida();
+      }
+      closeTeacherModal();
+    }
+
+    function resetCadetDataCompletely() {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  </script>
+</body>
+</html>
