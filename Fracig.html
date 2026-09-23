@@ -1,0 +1,2814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión Fracciones: Representa, Suma y Resta - 5° Básico</title>
+    <style>
+        :root {
+            --bg-deep: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-surface-elevated: #334155;
+            --color-num: #0284c7;        /* Numerador - Azul principal */
+            --color-num-light: #38bdf8;  /* Numerador - Tono brillante */
+            --color-den: #ea580c;        /* Denominador - Naranja principal */
+            --color-den-light: #f97316;  /* Denominador - Tono cálido */
+            --color-success: #22c55e;
+            --color-danger: #ef4444;
+            --color-star: #eab308;
+            --color-neutral-unpainted: #cbd5e1;
+            --color-unpainted-bg: #e2e8f0;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --radius-md: 14px;
+            --radius-lg: 22px;
+            --shadow-card: 0 12px 30px -6px rgba(0, 0, 0, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(249, 115, 22, 0.12) 0%, transparent 40%);
+        }
+
+        header {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+            padding: 0.9rem 1.4rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--color-num-light), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.4);
+        }
+
+        .header-text h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .header-text p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .header-status-pills {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pill-stars {
+            color: var(--color-star);
+        }
+
+        .progress-bar-wrapper {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 8px 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .progress-subtext {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 5px;
+        }
+
+        .label-b1 { color: var(--color-num-light); }
+        .label-b2 { color: var(--color-den-light); }
+
+        .progress-groove {
+            position: relative;
+            height: 12px;
+            background: #334155;
+            border-radius: 9999px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .groove-mid-marker {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ffffff;
+            opacity: 0.6;
+            z-index: 2;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.35s ease;
+        }
+
+        .progress-fill-b1 {
+            background: linear-gradient(90deg, #0284c7, #38bdf8);
+            width: 0%;
+        }
+
+        .progress-fill-b2 {
+            background: linear-gradient(90deg, #ea580c, #f97316);
+            width: 0%;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1020px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-screen {
+            display: none;
+            width: 100%;
+            animation: fadeInScreen 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .app-screen.active {
+            display: block;
+        }
+
+        @keyframes fadeInScreen {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: var(--shadow-card);
+            position: relative;
+        }
+
+        .robo-guide-row {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .robo-icon-avatar {
+            width: 72px;
+            height: 72px;
+            flex-shrink: 0;
+        }
+
+        .robo-dialog {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e2e8f0;
+        }
+
+        .color-legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.2rem;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 0.6rem 1rem;
+            border-radius: 9999px;
+            margin-bottom: 1.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .legend-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .dot-num { background-color: var(--color-num-light); }
+        .dot-den { background-color: var(--color-den-light); }
+        .dot-unpainted { background-color: var(--color-neutral-unpainted); }
+
+        /* Renderizado tipográfico exacto de fracciones */
+        .frac-visual {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-weight: 800;
+            padding: 0 4px;
+            line-height: 1;
+        }
+
+        .frac-num {
+            color: var(--color-num-light);
+            border-bottom: 3.5px solid rgba(255, 255, 255, 0.7);
+            padding-bottom: 3px;
+            font-size: 1.8rem;
+        }
+
+        .frac-den {
+            color: var(--color-den-light);
+            padding-top: 3px;
+            font-size: 1.8rem;
+        }
+
+        .frac-visual.large .frac-num,
+        .frac-visual.large .frac-den {
+            font-size: 2.5rem;
+        }
+
+        /* Botones de acción */
+        .btn {
+            background: linear-gradient(135deg, var(--color-num), var(--color-num-light));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-orange {
+            background: linear-gradient(135deg, var(--color-den), var(--color-den-light));
+            box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+        }
+        .btn-orange:hover {
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+        }
+
+        .btn-green {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+            color: #052e16;
+            font-weight: 800;
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, #9333ea, #c084fc);
+            box-shadow: 0 4px 14px rgba(192, 132, 252, 0.35);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.22);
+            color: var(--text-light);
+            box-shadow: none;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.45);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.88rem;
+            border-radius: 10px;
+        }
+
+        .btn-lg {
+            padding: 16px 36px;
+            font-size: 1.2rem;
+            border-radius: 18px;
+        }
+
+        input[type="text"], input[type="number"] {
+            background: #0f172a;
+            border: 2px solid #475569;
+            color: #ffffff;
+            padding: 10px 14px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-radius: 12px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--color-num-light);
+        }
+
+        .frac-input-stack {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .frac-input-stack input {
+            width: 72px;
+            height: 48px;
+        }
+
+        .frac-input-divider {
+            width: 78px;
+            height: 4px;
+            background: #f8fafc;
+            border-radius: 2px;
+        }
+
+        /* Tableros SVG Interactivos */
+        .svg-canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 1.2rem auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.4rem;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .interactive-part {
+            cursor: pointer;
+            transition: fill 0.15s ease, filter 0.15s ease;
+        }
+
+        .interactive-part:hover {
+            filter: brightness(0.92);
+        }
+
+        .feedback-banner {
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin: 1.2rem 0;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.96rem;
+            font-weight: 600;
+            animation: bounceIn 0.25s ease-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.95); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .feedback-banner.success {
+            display: flex;
+            background: rgba(34, 197, 94, 0.18);
+            border: 2px solid var(--color-success);
+            color: #bbf7d0;
+        }
+
+        .feedback-banner.danger {
+            display: flex;
+            background: rgba(239, 68, 68, 0.18);
+            border: 2px solid var(--color-danger);
+            color: #fecaca;
+        }
+
+        .feedback-banner.info {
+            display: flex;
+            background: rgba(56, 189, 248, 0.18);
+            border: 2px solid var(--color-num-light);
+            color: #bae6fd;
+        }
+
+        .grid-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.85rem;
+            width: 100%;
+            margin: 1.2rem 0;
+        }
+
+        .option-card-btn {
+            background: var(--bg-surface-elevated);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            text-align: left;
+            font-size: 0.98rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .option-card-btn:hover {
+            border-color: var(--color-num-light);
+            background: #475569;
+            transform: translateY(-2px);
+        }
+
+        .option-card-btn.selected {
+            border-color: var(--color-num-light);
+            background: rgba(56, 189, 248, 0.2);
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+        }
+
+        .fab-help-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: #451a03;
+            font-size: 1.9rem;
+            font-weight: 900;
+            border: none;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+            cursor: pointer;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .fab-help-btn:hover {
+            transform: scale(1.08) rotate(6deg);
+        }
+
+        .teacher-mode-launcher {
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(30, 41, 59, 0.7);
+            color: #64748b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 10px;
+            font-size: 0.74rem;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 90;
+            transition: all 0.2s;
+        }
+
+        .teacher-mode-launcher:hover {
+            color: #cbd5e1;
+            background: #334155;
+        }
+
+        /* Modal Base */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-lg);
+            max-width: 620px;
+            width: 100%;
+            padding: 1.8rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.6rem;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.6rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close-btn:hover { color: #ffffff; }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.2rem 0;
+            font-size: 0.88rem;
+        }
+
+        .report-table th, .report-table td {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 9px 12px;
+            text-align: left;
+        }
+
+        .report-table th {
+            background: #0f172a;
+            color: var(--color-num-light);
+            font-weight: 700;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            font-weight: 800;
+        }
+
+        .status-badge.ok {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+        }
+
+        .status-badge.fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                background-image: none !important;
+            }
+            header, .progress-bar-wrapper, .fab-help-btn, .teacher-mode-launcher, .btn-no-print {
+                display: none !important;
+            }
+            .card {
+                background: #ffffff !important;
+                color: #000000 !important;
+                border: 1px solid #94a3b8 !important;
+                box-shadow: none !important;
+                padding: 0.8rem !important;
+            }
+            .report-table th, .report-table td {
+                border: 1px solid #475569 !important;
+                color: #000000 !important;
+            }
+            .report-table th {
+                background: #f1f5f9 !important;
+            }
+            .app-screen {
+                display: none !important;
+            }
+            #screen-report, #screen-report * {
+                display: block !important;
+            }
+            #screen-report table, #screen-report tr, #screen-report td, #screen-report th {
+                display: table-cell !important;
+            }
+            #screen-report tr {
+                display: table-row !important;
+            }
+            #screen-report table {
+                display: table !important;
+            }
+            .status-badge.ok {
+                color: #166534 !important;
+                background: none !important;
+            }
+            .status-badge.fail {
+                color: #991b1b !important;
+                background: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title-box">
+            <div class="header-icon">🚀</div>
+            <div class="header-text">
+                <h1>MISIÓN FRACCIONES</h1>
+                <p>5° Básico • Representa, Suma y Resta</p>
+            </div>
+        </div>
+        <div class="header-status-pills">
+            <div class="pill">
+                <span>👤</span>
+                <span id="nav-student-name">Cadete Espacial</span>
+            </div>
+            <div class="pill pill-stars">
+                <span>⭐</span>
+                <span id="nav-stars-count">0</span>
+            </div>
+            <div class="pill">
+                <span>📍</span>
+                <span id="nav-station-step">Estación 0/14</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="progress-bar-wrapper">
+        <div class="progress-subtext">
+            <span class="label-b1">Bloque 1: Representación (Est. 1 - 7)</span>
+            <span class="label-b2">Bloque 2: Suma y Resta (Est. 8 - 14)</span>
+        </div>
+        <div class="progress-groove">
+            <div id="bar-fill-b1" class="progress-fill progress-fill-b1"></div>
+            <div class="groove-mid-marker"></div>
+            <div id="bar-fill-b2" class="progress-fill progress-fill-b2"></div>
+        </div>
+    </div>
+
+    <main>
+        <!-- PANTALLA 1: INICIAL / BIENVENIDA -->
+        <section id="screen-welcome" class="app-screen active">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🪐</div>
+                <h1 style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.4rem;">
+                    MISIÓN FRACCIONES
+                </h1>
+                <h2 style="font-size: 1.15rem; color: var(--text-muted); font-weight: 600; margin-bottom: 1.4rem;">
+                    Representa, suma y resta con igual denominador
+                </h2>
+
+                <div class="robo-guide-row" style="text-align: left;">
+                    <div class="robo-icon-avatar" id="avatar-welcome"></div>
+                    <div class="robo-dialog">
+                        ¡Saludos, cadete! Soy <strong>Robo-Frac</strong>, tu guía y copiloto intergaláctico.
+                        Hoy exploraremos el universo de las fracciones: aprenderás a representarlas visualmente y a sumar o restar porciones con total seguridad.
+                        <strong>¿Estás listo para convertirte en experto en fracciones?</strong>
+                    </div>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.6); padding: 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; text-align: left; border: 1px solid rgba(255, 255, 255, 0.05);">
+                    <h3 style="font-size: 0.95rem; color: var(--color-num-light); font-weight: 700; margin-bottom: 0.5rem;">🎯 OBJETIVOS DE LA MISIÓN:</h3>
+                    <ul style="padding-left: 1.25rem; font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
+                        <li><strong>Objetivo 1:</strong> Representar fracciones propias de manera pictórica y simbólica de forma bidireccional.</li>
+                        <li><strong>Objetivo 2:</strong> Resolver adiciones y sustracciones de fracciones con igual denominador utilizando modelos visuales y cálculo directo.</li>
+                    </ul>
+                </div>
+
+                <div style="max-width: 420px; margin: 0 auto 1.5rem auto; text-align: left;">
+                    <label style="font-size: 0.9rem; font-weight: 700; color: #e2e8f0; display: block; margin-bottom: 6px;">
+                        Ingresa tu nombre para tu bitácora de vuelo:
+                    </label>
+                    <input type="text" id="input-student-name" placeholder="Ej: Sofía González" style="width: 100%; text-align: left; padding: 12px 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.8rem; color: var(--text-muted);">
+                        <span>Curso: <strong>5° Básico</strong></span>
+                        <span>Fecha: <strong id="lbl-mission-date">--/--/----</strong></span>
+                    </div>
+                </div>
+
+                <button class="btn btn-lg btn-orange" onclick="App.startMission()" style="width: 100%; max-width: 420px;">
+                    🚀 INICIAR MISIÓN
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 2: INTRODUCCIÓN CONCEPTUAL BLOQUE 1 -->
+        <section id="screen-intro-b1" class="app-screen">
+            <div class="card">
+                <div class="robo-guide-row">
+                    <div class="robo-icon-avatar" id="avatar-intro1"></div>
+                    <div class="robo-dialog">
+                        ¡Antes del despegue, recordemos las partes esenciales de una fracción! Cada término cumple una función matemática vital.
+                    </div>
+                </div>
+
+                <h2 style="color: var(--color-num-light); font-size: 1.4rem; margin-bottom: 0.8rem;">Anatomía de una Fracción Propia</h2>
+
+                <div class="color-legend-bar">
+                    <span class="legend-tag" style="color: var(--color-num-light);"><span class="legend-dot dot-num"></span> NUMERADOR: Partes consideradas o coloreadas</span>
+                    <span class="legend-tag" style="color: var(--color-den-light);"><span class="legend-dot dot-den"></span> DENOMINADOR: Partes iguales en que se divide el todo</span>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2rem; margin: 1.5rem 0; background: rgba(15, 23, 42, 0.6); padding: 1.5rem; border-radius: var(--radius-md);">
+                    <div style="text-align: center;">
+                        <div class="frac-visual large">
+                            <span class="frac-num">3</span>
+                            <span class="frac-den">5</span>
+                        </div>
+                    </div>
+                    <div style="max-width: 420px; font-size: 1rem; line-height: 1.6;">
+                        <p style="margin-bottom: 8px;"><strong style="color: var(--color-num-light);">3 (NUMERADOR):</strong> Indica que tomamos, consideramos o coloreamos exactamente 3 partes.</p>
+                        <p><strong style="color: var(--color-den-light);">5 (DENOMINADOR):</strong> Indica que el entero o unidad completa se dividió en 5 partes <strong>EXACTAMENTE IGUALES</strong>.</p>
+                    </div>
+                    <div id="svg-intro1-sample"></div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-lg" onclick="App.goToStation(1)">
+                        Comenzar Estación 1: Descubre la Fracción ➔
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 3: ESTACIÓN INTERACTIVA DINÁMICA (1 - 14) -->
+        <section id="screen-workspace" class="app-screen">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.9rem; margin-bottom: 1rem;">
+                    <div>
+                        <span id="st-badge-block" style="font-size: 0.76rem; font-weight: 800; padding: 4px 10px; border-radius: 6px;">BLOQUE 1</span>
+                        <h2 id="st-header-title" style="font-size: 1.35rem; margin-top: 4px; font-weight: 800;">Estación</h2>
+                    </div>
+                    <div style="text-align: right;">
+                        <span id="st-exercise-counter" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Ejercicio 1 de 5</span>
+                    </div>
+                </div>
+
+                <div class="robo-guide-row">
+                    <div class="robo-icon-avatar" id="avatar-station"></div>
+                    <div class="robo-dialog" id="st-instructions-text">Instrucciones de la estación.</div>
+                </div>
+
+                <!-- Zona de Trabajo Específica -->
+                <div id="station-interactive-zone" style="min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%;">
+                    <!-- Inyección dinámica de ejercicios -->
+                </div>
+
+                <!-- Banner de retroalimentación inmediata -->
+                <div id="st-feedback-banner" class="feedback-banner"></div>
+
+                <!-- Barra de acciones -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.4rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
+                    <button id="btn-check-solution" class="btn btn-green" onclick="App.verifyAnswer()">
+                        ✓ COMPROBAR
+                    </button>
+                    <button id="btn-next-step" class="btn" onclick="App.proceedNext()" style="display: none;">
+                        Siguiente Ejercicio ➔
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 4: TRANSICIÓN E INTRODUCCIÓN BLOQUE 2 -->
+        <section id="screen-intro-b2" class="app-screen">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🌟 🚀 🌟</div>
+                <h2 style="font-size: 1.8rem; color: #4ade80; margin-bottom: 0.4rem; font-weight: 800;">
+                    ¡BLOQUE 1 COMPLETADO CON ÉXITO!
+                </h2>
+                <p style="color: var(--text-muted); margin-bottom: 1.4rem;">
+                    Has dominado la lectura y representación de fracciones. ¡Ahora entramos al hiperespacio de las operaciones!
+                </p>
+
+                <div class="robo-guide-row" style="text-align: left;">
+                    <div class="robo-icon-avatar" id="avatar-intro2"></div>
+                    <div class="robo-dialog">
+                        ¡Regla estelar inquebrantable! Al sumar o restar fracciones con <strong>IGUAL DENOMINADOR</strong>:
+                        <br>1) <strong>Solo sumamos o restamos los numeradores</strong> (las partes que tenemos o retiramos).
+                        <br>2) <strong>El denominador SE MANTIENE EXACTAMENTE IGUAL</strong>, porque las porciones continúan teniendo el mismo tamaño. <strong>¡Nunca sumes ni restes los denominadores!</strong>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin: 1.5rem 0;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1.25rem 1.8rem; border-radius: var(--radius-md); border: 1px solid rgba(56, 189, 248, 0.3);">
+                        <h4 style="color: var(--color-num-light); margin-bottom: 0.6rem; font-size: 1rem;">Ejemplo de Suma:</h4>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <div class="frac-visual"><span class="frac-num">2</span><span class="frac-den">7</span></div>
+                            <span style="font-size: 1.5rem;">+</span>
+                            <div class="frac-visual"><span class="frac-num">3</span><span class="frac-den">7</span></div>
+                            <span style="font-size: 1.5rem;">=</span>
+                            <div class="frac-visual"><span class="frac-num">5</span><span class="frac-den">7</span></div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1.25rem 1.8rem; border-radius: var(--radius-md); border: 1px solid rgba(249, 115, 22, 0.3);">
+                        <h4 style="color: var(--color-den-light); margin-bottom: 0.6rem; font-size: 1rem;">Ejemplo de Resta:</h4>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <div class="frac-visual"><span class="frac-num">6</span><span class="frac-den">8</span></div>
+                            <span style="font-size: 1.5rem;">-</span>
+                            <div class="frac-visual"><span class="frac-num">2</span><span class="frac-den">8</span></div>
+                            <span style="font-size: 1.5rem;">=</span>
+                            <div class="frac-visual"><span class="frac-num">4</span><span class="frac-den">8</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-lg btn-orange" onclick="App.goToStation(8)">
+                    Continuar al Bloque 2 (Estación 8) ➔
+                </button>
+            </div>
+        </section>
+
+        <!-- PANTALLA 5: MISIÓN COMPLETADA -->
+        <section id="screen-completed" class="app-screen">
+            <div class="card" style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 0.4rem;">🏆</div>
+                <h1 style="font-size: 2.3rem; font-weight: 800; background: linear-gradient(135deg, #facc15, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    ¡MISIÓN COMPLETADA!
+                </h1>
+                <p style="font-size: 1.2rem; margin: 0.4rem 0 1.4rem 0;">
+                    ¡Felicitaciones, Cadete <strong id="lbl-finished-student-name" style="color: var(--color-num-light);">--</strong>!
+                </p>
+
+                <!-- Insignia Oficial -->
+                <div style="display: inline-block; background: radial-gradient(circle, #0284c7 0%, #1e1b4b 100%); padding: 1.4rem 2.2rem; border-radius: 20px; border: 3px solid #facc15; box-shadow: 0 0 30px rgba(250, 204, 21, 0.35); margin-bottom: 1.5rem;">
+                    <div style="font-size: 2.8rem;">🎖️</div>
+                    <h3 style="color: #facc15; font-size: 1.25rem; font-weight: 800; margin-top: 4px;">INSIGNIA OFICIAL</h3>
+                    <p style="font-size: 1.15rem; font-weight: 800; color: white; letter-spacing: 1px;">EXPERTO EN FRACCIONES</p>
+                    <p style="font-size: 0.8rem; color: #e2e8f0; margin-top: 2px;">5° Básico • Matemática</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: var(--radius-md);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Porcentaje de Logro</span>
+                        <h3 id="lbl-final-accuracy" style="font-size: 1.9rem; color: #4ade80; margin-top: 4px;">0%</h3>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: var(--radius-md);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Estrellas Ganadas</span>
+                        <h3 id="lbl-final-stars-total" style="font-size: 1.9rem; color: var(--color-star); margin-top: 4px;">⭐ 0</h3>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 1rem; border-radius: var(--radius-md);">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Ejercicios Aprobados</span>
+                        <h3 id="lbl-final-score-fraction" style="font-size: 1.9rem; color: var(--color-num-light); margin-top: 4px;">0 / 0</h3>
+                    </div>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.5); padding: 1.2rem; border-radius: var(--radius-md); text-align: left; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--color-num-light); font-size: 0.95rem; margin-bottom: 0.6rem;">Logros Académicos Demostrados:</h4>
+                    <ul style="list-style: none; font-size: 0.92rem; line-height: 1.7; color: #e2e8f0;">
+                        <li>✓ Representación pictórica y simbólica de fracciones propias.</li>
+                        <li>✓ Comprensión de los roles de numerador y denominador.</li>
+                        <li>✓ Detección de errores en particiones desiguales o cantidades alteradas.</li>
+                        <li>✓ Suma y resta de fracciones con igual denominador manteniendo el todo.</li>
+                        <li>✓ Resolución de problemas matemáticos de la vida real.</li>
+                    </ul>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
+                    <button class="btn btn-purple" onclick="App.showPedagogicalReport()">
+                        📄 VER INFORME COMPLETO
+                    </button>
+                    <button class="btn btn-outline" onclick="App.restartSession()">
+                        🔄 VOLVER A PRACTICAR
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PANTALLA 6: INFORME PEDAGÓGICO COMPLETO -->
+        <section id="screen-report" class="app-screen">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid rgba(255, 255, 255, 0.1); padding-bottom: 1rem; margin-bottom: 1.2rem;">
+                    <div>
+                        <h1 style="font-size: 1.7rem; color: var(--color-num-light); font-weight: 800;">INFORME DEL ESTUDIANTE</h1>
+                        <p style="color: var(--text-muted); font-size: 0.88rem;">Misión Fracciones: Representa, Suma y Resta (5° Básico)</p>
+                    </div>
+                    <button class="btn btn-outline btn-sm btn-no-print" onclick="App.returnToCompletedScreen()">
+                        ⬅ Volver
+                    </button>
+                </div>
+
+                <!-- Tarjeta Estudiante -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: rgba(15, 23, 42, 0.7); padding: 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.4rem;">
+                    <div>
+                        <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Estudiante</span>
+                        <strong id="rep-student-name" style="font-size: 1.15rem; color: #ffffff;">--</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Curso</span>
+                        <strong style="font-size: 1.15rem; color: #ffffff;">5° Básico</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Fecha</span>
+                        <strong id="rep-mission-date" style="font-size: 1.15rem; color: #ffffff;">--</strong>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Logro Global</span>
+                        <strong id="rep-total-accuracy" style="font-size: 1.15rem; color: #4ade80;">--%</strong>
+                    </div>
+                </div>
+
+                <!-- Tabla por Contenidos -->
+                <h3 style="color: var(--color-den-light); font-size: 1.1rem; margin-bottom: 0.5rem;">1. Resumen por Habilidad Evaluada</h3>
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Contenido / Habilidad</th>
+                            <th>Ejercicios</th>
+                            <th>Aciertos</th>
+                            <th>Errores</th>
+                            <th>% Logro</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rep-skills-tbody"></tbody>
+                </table>
+
+                <!-- Tabla Detalle de Respuestas -->
+                <h3 style="color: var(--color-num-light); font-size: 1.1rem; margin: 1.6rem 0 0.5rem 0;">2. Detalle de Respuestas Ítem por Ítem</h3>
+                <div style="overflow-x: auto;">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Estación</th>
+                                <th>Pregunta / Planteamiento</th>
+                                <th>Respuesta del Alumno</th>
+                                <th>Respuesta Correcta</th>
+                                <th>Intentos</th>
+                                <th>Ayuda</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rep-detail-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Botones del Informe -->
+                <div class="btn-no-print" style="display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; margin-top: 2rem;">
+                    <button class="btn btn-outline" onclick="App.printReport()">
+                        🖨️ IMPRIMIR INFORME
+                    </button>
+                    <button class="btn btn-outline" onclick="App.savePdfReport()">
+                        📑 GUARDAR COMO PDF
+                    </button>
+                    <button class="btn btn-orange" onclick="App.downloadHtmlReport()">
+                        💾 DESCARGAR INFORME (HTML)
+                    </button>
+                    <button class="btn btn-green" onclick="App.downloadCsvReport()">
+                        📊 DESCARGAR CSV (EXCEL)
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Botón flotante permanente Necesito Ayuda -->
+    <button class="fab-help-btn" onclick="App.openHelpModal()" title="¿Necesitas ayuda?">?</button>
+
+    <!-- Botón discreto Modo Profesor -->
+    <button class="teacher-mode-launcher" onclick="TeacherModule.requestAccess()">Profesor ⚙️</button>
+
+    <!-- Modal de Ayuda Dinámica -->
+    <div id="modal-help-dialog" class="modal-backdrop">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 style="display:flex; align-items:center; gap:8px; color: var(--color-num-light); font-size: 1.2rem;">
+                    <span>💡 Base de Datos de Ayuda</span>
+                </h3>
+                <button class="modal-close-btn" onclick="App.closeHelpModal()">&times;</button>
+            </div>
+            <div id="modal-help-content" style="font-size: 0.95rem; line-height: 1.6; color: #cbd5e1;"></div>
+            <div style="text-align: right; margin-top: 1.4rem;">
+                <button class="btn btn-sm btn-outline" onclick="App.closeHelpModal()">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modo Profesor: Clave -->
+    <div id="modal-pwd-dialog" class="modal-backdrop">
+        <div class="modal-box" style="max-width: 380px; text-align: center;">
+            <h3 style="margin-bottom: 0.6rem; color: var(--color-den-light);">Acceso Docente</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.2rem;">Ingresa la contraseña de profesor para gestionar la sesión.</p>
+            <input type="password" id="input-teacher-pwd" placeholder="Contraseña..." style="width: 100%; margin-bottom: 1.2rem;">
+            <div style="display: flex; justify-content: center; gap: 10px;">
+                <button class="btn btn-sm btn-outline" onclick="TeacherModule.closePwd()">Cancelar</button>
+                <button class="btn btn-sm btn-orange" onclick="TeacherModule.checkPwd()">Ingresar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modo Profesor: Panel de Control -->
+    <div id="modal-teacher-panel" class="modal-backdrop">
+        <div class="modal-box" style="max-width: 680px;">
+            <div class="modal-header">
+                <h3 style="color: var(--color-den-light); font-size: 1.2rem;">⚙️ Consola de Control Docente</h3>
+                <button class="modal-close-btn" onclick="TeacherModule.closePanel()">&times;</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 1.2rem;">
+                <div style="background: rgba(15,23,42,0.8); padding: 1rem; border-radius: var(--radius-md);">
+                    <h4 style="color: var(--color-num-light); font-size: 0.95rem; margin-bottom: 8px;">Saltar a cualquier Estación:</h4>
+                    <div id="teacher-station-jump-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 6px;"></div>
+                </div>
+                <div style="background: rgba(15,23,42,0.8); padding: 1rem; border-radius: var(--radius-md);">
+                    <h4 style="color: var(--color-den-light); font-size: 0.95rem; margin-bottom: 8px;">Acciones Rápidas en el Ejercicio:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <button class="btn btn-sm btn-outline" onclick="TeacherModule.autoSolve()">Mostrar Respuesta</button>
+                        <button class="btn btn-sm btn-outline" onclick="TeacherModule.skip()">Saltar Ejercicio</button>
+                        <button class="btn btn-sm btn-outline" onclick="TeacherModule.reset()">Reiniciar Ejercicio</button>
+                    </div>
+                </div>
+                <div style="background: rgba(15,23,42,0.8); padding: 1rem; border-radius: var(--radius-md);">
+                    <h4 style="color: #4ade80; font-size: 0.95rem; margin-bottom: 8px;">Supervisión:</h4>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-sm btn-purple" onclick="TeacherModule.openLiveReport()">Ver Informe Actual</button>
+                        <button class="btn btn-sm btn-outline" onclick="TeacherModule.jumpToCompleted()">Finalizar Misión</button>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: right; margin-top: 1.4rem;">
+                <button class="btn btn-sm btn-orange" onclick="TeacherModule.closePanel()">CERRAR MODO PROFESOR</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /* Estado Central de la Misión */
+    const State = {
+        studentName: "Cadete Espacial",
+        dateString: new Date().toLocaleDateString('es-CL'),
+        currentStation: 0,
+        currentExerciseIndex: 0,
+        stars: 0,
+        attemptsOnCurrent: 0,
+        helpUsedOnCurrent: false,
+        totalItemsAssessed: 0,
+        totalItemsCorrect: 0,
+        
+        // Historial completo para el informe
+        records: [],
+
+        // Resumen por contenidos
+        skillMap: {
+            "Representación simbólica": { total: 0, ok: 0, fail: 0 },
+            "Representación pictórica": { total: 0, ok: 0, fail: 0 },
+            "Identificación de numerador": { total: 0, ok: 0, fail: 0 },
+            "Identificación de denominador": { total: 0, ok: 0, fail: 0 },
+            "Suma de fracciones": { total: 0, ok: 0, fail: 0 },
+            "Resta de fracciones": { total: 0, ok: 0, fail: 0 },
+            "Resolución de problemas": { total: 0, ok: 0, fail: 0 },
+            "Detección de errores": { total: 0, ok: 0, fail: 0 }
+        }
+    };
+
+    /* Generador SVG de Personaje y Geometría Precisa */
+    const SVGDrawer = {
+        getRoboFracAvatar: function() {
+            return `
+            <svg viewBox="0 0 100 100" width="100%" height="100%">
+                <defs>
+                    <linearGradient id="roboGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="#38bdf8"/>
+                        <stop offset="100%" stop-color="#0369a1"/>
+                    </linearGradient>
+                </defs>
+                <line x1="50" y1="20" x2="50" y2="10" stroke="#facc15" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="50" cy="8" r="6" fill="#facc15"/>
+                <rect x="25" y="20" width="50" height="42" rx="12" fill="url(#roboGrad)" stroke="#7dd3fc" stroke-width="2.5"/>
+                <rect x="33" y="30" width="34" height="18" rx="6" fill="#0f172a"/>
+                <circle cx="42" cy="39" r="4.5" fill="#4ade80"/>
+                <circle cx="58" cy="39" r="4.5" fill="#4ade80"/>
+                <line x1="43" y1="52" x2="57" y2="52" stroke="#f8fafc" stroke-width="3" stroke-linecap="round"/>
+                <path d="M30 65 L70 65 L78 85 L22 85 Z" fill="#334155" stroke="#475569" stroke-width="2"/>
+                <text x="50" y="78" font-size="11" font-weight="900" fill="#facc15" text-anchor="middle" font-family="sans-serif">½</text>
+            </svg>`;
+        },
+
+        /* Genera un círculo matemáticamente dividido en sectores exactos */
+        createCircle: function(totalParts, coloredIndices, isInteractive) {
+            const size = 220;
+            const center = size / 2;
+            const radius = 95;
+            const angleStep = (2 * Math.PI) / totalParts;
+            let paths = '';
+
+            for (let i = 0; i < totalParts; i++) {
+                const startAngle = i * angleStep - Math.PI / 2;
+                const endAngle = (i + 1) * angleStep - Math.PI / 2;
+
+                const x1 = center + radius * Math.cos(startAngle);
+                const y1 = center + radius * Math.sin(startAngle);
+                const x2 = center + radius * Math.cos(endAngle);
+                const y2 = center + radius * Math.sin(endAngle);
+
+                const isColored = coloredIndices.has(i);
+                const fill = isColored ? '#38bdf8' : '#e2e8f0';
+                const clickAttr = isInteractive ? `onclick="App.toggleInteractivePart(${i})"` : '';
+                const partClass = isInteractive ? 'class="interactive-part"' : '';
+
+                const d = [
+                    `M ${center} ${center}`,
+                    `L ${x1} ${y1}`,
+                    `A ${radius} ${radius} 0 0 1 ${x2} ${y2}`,
+                    'Z'
+                ].join(' ');
+
+                paths += `<path id="slice-${i}" ${partClass} d="${d}" fill="${fill}" stroke="#0f172a" stroke-width="2.5" ${clickAttr} />`;
+            }
+
+            return `
+            <svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+                ${paths}
+                <circle cx="${center}" cy="${center}" r="4" fill="#0f172a"/>
+            </svg>`;
+        },
+
+        /* Barra rectangular dividida en partes equitativas */
+        createBar: function(totalParts, coloredIndices, isInteractive) {
+            const width = 360;
+            const height = 75;
+            const partWidth = width / totalParts;
+            let rects = '';
+
+            for (let i = 0; i < totalParts; i++) {
+                const isColored = coloredIndices.has(i);
+                const fill = isColored ? '#38bdf8' : '#e2e8f0';
+                const clickAttr = isInteractive ? `onclick="App.toggleInteractivePart(${i})"` : '';
+                const partClass = isInteractive ? 'class="interactive-part"' : '';
+
+                rects += `
+                <rect id="slice-${i}" ${partClass} x="${i * partWidth}" y="0" width="${partWidth}" height="${height}"
+                      fill="${fill}" stroke="#0f172a" stroke-width="2.5" ${clickAttr} rx="2" />
+                `;
+            }
+
+            return `
+            <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+                ${rects}
+            </svg>`;
+        },
+
+        /* Cuadrícula rectangular perfectamente dividida */
+        createGrid: function(rows, cols, coloredIndices, isInteractive) {
+            const cellW = 54;
+            const cellH = 54;
+            const width = cols * cellW;
+            const height = rows * cellH;
+            let cells = '';
+            let idx = 0;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const isColored = coloredIndices.has(idx);
+                    const fill = isColored ? '#38bdf8' : '#e2e8f0';
+                    const clickAttr = isInteractive ? `onclick="App.toggleInteractivePart(${idx})"` : '';
+                    const partClass = isInteractive ? 'class="interactive-part"' : '';
+
+                    cells += `
+                    <rect id="slice-${idx}" ${partClass} x="${c * cellW}" y="${r * cellH}" width="${cellW}" height="${cellH}"
+                          fill="${fill}" stroke="#0f172a" stroke-width="2.5" ${clickAttr} rx="3" />
+                    `;
+                    idx++;
+                }
+            }
+
+            return `
+            <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+                ${cells}
+            </svg>`;
+        },
+
+        /* Barra intencionalmente desigual para el detector de errores */
+        createUnequalBar: function() {
+            return `
+            <svg viewBox="0 0 360 75" width="360" height="75">
+                <rect x="0" y="0" width="180" height="75" fill="#38bdf8" stroke="#0f172a" stroke-width="2.5" rx="2"/>
+                <rect x="180" y="0" width="110" height="75" fill="#38bdf8" stroke="#0f172a" stroke-width="2.5" rx="2"/>
+                <rect x="290" y="0" width="70" height="75" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5" rx="2"/>
+            </svg>`;
+        }
+    };
+
+    const Bank = [
+        null, // índice 0 deshabilitado
+        // ESTACIÓN 1: Descubre la Fracción (Lectura de figuras)
+        {
+            id: 1, block: 1, title: "Estación 1: Descubre la Fracción",
+            instruction: "Observa la figura dividida en partes iguales. Escribe el <strong>numerador</strong> (partes coloreadas) y el <strong>denominador</strong> (partes totales).",
+            skill: "Representación simbólica",
+            exercises: [
+                { type: 'read', shape: 'circle', total: 4, colored: 3 },
+                { type: 'read', shape: 'bar', total: 6, colored: 2 },
+                { type: 'read', shape: 'grid', rows: 2, cols: 4, total: 8, colored: 5 },
+                { type: 'read', shape: 'bar', total: 10, colored: 7 }
+            ]
+        },
+        // ESTACIÓN 2: Dibuja la Fracción (Herramienta interactiva con cambio libre de forma)
+        {
+            id: 2, block: 1, title: "Estación 2: Dibuja la Fracción",
+            instruction: "Se te da una fracción. Puedes alternar la figura (barra, círculo o cuadrícula) y <strong>hacer clic libremente para pintar o despintar cualquier parte</strong>. Cuando estés listo, presiona COMPROBAR.",
+            skill: "Representación pictórica",
+            exercises: [
+                { type: 'draw_free', num: 1, den: 2, defaultShape: 'bar' },
+                { type: 'draw_free', num: 2, den: 3, defaultShape: 'bar' },
+                { type: 'draw_free', num: 3, den: 4, defaultShape: 'circle' },
+                { type: 'draw_free', num: 4, den: 5, defaultShape: 'bar' },
+                { type: 'draw_free', num: 5, den: 8, defaultShape: 'grid', rows: 2, cols: 4 },
+                { type: 'draw_free', num: 7, den: 10, defaultShape: 'bar' }
+            ]
+        },
+        // ESTACIÓN 3: Numerador o Denominador (Conceptos con Selección Múltiple)
+        {
+            id: 3, block: 1, title: "Estación 3: Numerador o Denominador",
+            instruction: "Analiza la fracción mostrada y selecciona la alternativa matemáticamente correcta.",
+            skill: "Identificación de numerador",
+            exercises: [
+                {
+                    type: 'mc', frac: { n: 4, d: 7 },
+                    question: "En la fracción 4/7, ¿cuál es el NUMERADOR?",
+                    options: ["4", "7", "11", "3"], correct: "4",
+                    skillKey: "Identificación de numerador",
+                    explain: "El numerador es el número de arriba (4) e indica las partes que se consideran."
+                },
+                {
+                    type: 'mc', frac: { n: 4, d: 7 },
+                    question: "En la fracción 4/7, ¿cuál es el DENOMINADOR?",
+                    options: ["4", "7", "1", "14"], correct: "7",
+                    skillKey: "Identificación de denominador",
+                    explain: "El denominador es el número inferior (7) e indica el total de partes iguales."
+                },
+                {
+                    type: 'mc', frac: { n: 3, d: 8 },
+                    question: "¿Qué representa el número 8 en la fracción 3/8?",
+                    options: [
+                        "En cuántas partes iguales se divide el todo.",
+                        "Cuántas partes se toman o colorean.",
+                        "La suma de los términos.",
+                        "El total de figuras enteras."
+                    ], correct: "En cuántas partes iguales se divide el todo.",
+                    skillKey: "Identificación de denominador",
+                    explain: "El denominador siempre indica en cuántas partes iguales se particiona la unidad."
+                },
+                {
+                    type: 'mc', frac: { n: 5, d: 9 },
+                    question: "¿Qué representa el número 5 en la fracción 5/9?",
+                    options: [
+                        "Las partes que se toman, consideran o colorean.",
+                        "En cuántas partes se dividió el entero.",
+                        "Las partes que quedaron sin pintar.",
+                        "El número de denominadores."
+                    ], correct: "Las partes que se toman, consideran o colorean.",
+                    skillKey: "Identificación de numerador",
+                    explain: "El numerador cuenta cuántas partes del total estamos considerando."
+                }
+            ]
+        },
+        // ESTACIÓN 4: Del Dibujo al Símbolo (Conteo en pasos guiados)
+        {
+            id: 4, block: 1, title: "Estación 4: Del Dibujo al Símbolo",
+            instruction: "Cuenta rigurosamente las partes totales iguales y las coloreadas para construir la fracción exacta.",
+            skill: "Representación simbólica",
+            exercises: [
+                { type: 'read_steps', shape: 'grid', rows: 3, cols: 3, total: 9, colored: 4 },
+                { type: 'read_steps', shape: 'bar', total: 7, colored: 3 },
+                { type: 'read_steps', shape: 'circle', total: 6, colored: 5 },
+                { type: 'read_steps', shape: 'grid', rows: 2, cols: 5, total: 10, colored: 3 },
+                { type: 'read_steps', shape: 'circle', total: 8, colored: 7 }
+            ]
+        },
+        // ESTACIÓN 5: Del Símbolo al Dibujo (Pintado libre con validación)
+        {
+            id: 5, block: 1, title: "Estación 5: Del Símbolo al Dibujo",
+            instruction: "Se te entrega una fracción. Haz clic en las piezas de la figura para pintar la cantidad justa.",
+            skill: "Representación pictórica",
+            exercises: [
+                { type: 'paint_free', num: 2, den: 5, shape: 'bar' },
+                { type: 'paint_free', num: 3, den: 6, shape: 'circle' },
+                { type: 'paint_free', num: 4, den: 8, shape: 'grid', rows: 2, cols: 4 },
+                { type: 'paint_free', num: 5, den: 9, shape: 'grid', rows: 3, cols: 3 },
+                { type: 'paint_free', num: 7, den: 10, shape: 'bar' }
+            ]
+        },
+        // ESTACIÓN 6: Detector de Errores Geométricos
+        {
+            id: 6, block: 1, title: "Estación 6: Detector de Errores",
+            instruction: "Robo-Frac detectó una gráfica. ¿La figura representa correctamente la fracción señalada?",
+            skill: "Detección de errores",
+            exercises: [
+                {
+                    type: 'detect_error_shape',
+                    targetFrac: { n: 3, den: 5 },
+                    actualShape: { shape: 'bar', total: 5, colored: 4 },
+                    isCorrect: false,
+                    errorReason: "Tiene 4 partes pintadas en lugar de 3 (numerador incorrecto).",
+                    optionsReason: [
+                        "Tiene 4 partes pintadas en lugar de 3.",
+                        "El denominador debería ser 10.",
+                        "Las partes no son del mismo tamaño.",
+                        "La figura está al revés."
+                    ]
+                },
+                {
+                    type: 'detect_error_shape',
+                    targetFrac: { n: 2, den: 4 },
+                    actualShape: { shape: 'circle', total: 4, colored: 2 },
+                    isCorrect: true,
+                    errorReason: "Ninguno, la figura es 100% correcta.",
+                    optionsReason: []
+                },
+                {
+                    type: 'detect_error_shape',
+                    targetFrac: { n: 5, den: 8 },
+                    actualShape: { shape: 'bar', total: 7, colored: 5 },
+                    isCorrect: false,
+                    errorReason: "El entero está dividido en 7 partes en vez de 8 (denominador incorrecto).",
+                    optionsReason: [
+                        "El entero está dividido en 7 partes en vez de 8.",
+                        "Tiene más partes coloreadas de lo pedido.",
+                        "El numerador debería ser 2.",
+                        "Las partes no son de igual tamaño."
+                    ]
+                },
+                {
+                    type: 'detect_error_shape',
+                    targetFrac: { n: 2, den: 3 },
+                    actualShape: { shape: 'unequal_bar', total: 3, colored: 2 },
+                    isCorrect: false,
+                    errorReason: "Las partes NO son de igual tamaño.",
+                    optionsReason: [
+                        "Las partes NO son de igual tamaño (no son equivalentes).",
+                        "El denominador es muy pequeño.",
+                        "Se pintó una parte de menos.",
+                        "Debería ser un círculo."
+                    ]
+                }
+            ]
+        },
+        // ESTACIÓN 7: Desafío de Representación (Cierre Bloque 1)
+        {
+            id: 7, block: 1, title: "Estación 7: Desafío de Representación",
+            instruction: "Demuestra tu dominio del Bloque 1 combinando lectura, coloreo e identificación.",
+            skill: "Representación simbólica",
+            exercises: [
+                { type: 'read', shape: 'circle', total: 5, colored: 4 },
+                { type: 'paint_free', num: 3, den: 7, shape: 'bar' },
+                {
+                    type: 'mc', frac: { n: 6, d: 11 },
+                    question: "¿Qué número representa el TOTAL de partes iguales en 6/11?",
+                    options: ["11", "6", "17", "5"], correct: "11",
+                    skillKey: "Identificación de denominador",
+                    explain: "El denominador (11) indica las partes iguales en que se divide el todo."
+                },
+                { type: 'read', shape: 'grid', rows: 2, cols: 3, total: 6, colored: 5 },
+                {
+                    type: 'detect_error_shape',
+                    targetFrac: { n: 4, den: 9 },
+                    actualShape: { shape: 'bar', total: 9, colored: 4 },
+                    isCorrect: true,
+                    errorReason: "Ninguno, es correcta.",
+                    optionsReason: []
+                }
+            ]
+        },
+        // ESTACIÓN 8: Suma con Dibujos
+        {
+            id: 8, block: 2, title: "Estación 8: Suma con Dibujos",
+            instruction: "Observa la suma pictórica con igual denominador y deduce la fracción total resultante.",
+            skill: "Suma de fracciones",
+            exercises: [
+                { type: 'add_visual', n1: 1, n2: 2, den: 5, shape: 'bar' },
+                { type: 'add_visual', n1: 2, n2: 3, den: 7, shape: 'bar' },
+                { type: 'add_visual', n1: 3, n2: 2, den: 8, shape: 'grid', rows: 2, cols: 4 },
+                { type: 'add_visual', n1: 4, n2: 3, den: 10, shape: 'bar' },
+                { type: 'add_visual', n1: 2, n2: 5, den: 9, shape: 'grid', rows: 3, cols: 3 }
+            ]
+        },
+        // ESTACIÓN 9: Suma Simbólica Paso a Paso
+        {
+            id: 9, block: 2, title: "Estación 9: Suma Simbólica",
+            instruction: "Desglosa la suma: coloca los dos numeradores arriba, mantén el denominador abajo y obtén el resultado.",
+            skill: "Suma de fracciones",
+            exercises: [
+                { type: 'add_symbolic', n1: 1, n2: 3, den: 6 },
+                { type: 'add_symbolic', n1: 2, n2: 5, den: 8 },
+                { type: 'add_symbolic', n1: 3, n2: 4, den: 10 },
+                { type: 'add_symbolic', n1: 2, n2: 7, den: 12 },
+                { type: 'add_symbolic', n1: 4, n2: 6, den: 15 }
+            ]
+        },
+        // ESTACIÓN 10: Resta con Dibujos
+        {
+            id: 10, block: 2, title: "Estación 10: Resta con Dibujos",
+            instruction: "Observa la fracción inicial y las porciones tachadas que se restan. ¿Cuántas partes útiles quedan?",
+            skill: "Resta de fracciones",
+            exercises: [
+                { type: 'sub_visual', n1: 5, n2: 2, den: 6 },
+                { type: 'sub_visual', n1: 7, n2: 3, den: 9 },
+                { type: 'sub_visual', n1: 8, n2: 4, den: 10 },
+                { type: 'sub_visual', n1: 9, n2: 5, den: 12 },
+                { type: 'sub_visual', n1: 11, n2: 6, den: 15 }
+            ]
+        },
+        // ESTACIÓN 11: Resta Simbólica Paso a Paso
+        {
+            id: 11, block: 2, title: "Estación 11: Resta Simbólica",
+            instruction: "Completa el desarrollo de la resta manteniendo el denominador y calculando el nuevo numerador.",
+            skill: "Resta de fracciones",
+            exercises: [
+                { type: 'sub_symbolic', n1: 4, n2: 1, den: 7 },
+                { type: 'sub_symbolic', n1: 6, n2: 2, den: 8 },
+                { type: 'sub_symbolic', n1: 7, n2: 3, den: 10 },
+                { type: 'sub_symbolic', n1: 9, n2: 5, den: 11 },
+                { type: 'sub_symbolic', n1: 12, n2: 4, den: 15 }
+            ]
+        },
+        // ESTACIÓN 12: Problemas Contextualizados (Suma o Resta)
+        {
+            id: 12, block: 2, title: "Estación 12: Problemas Cotidianos",
+            instruction: "Lee la situación. Decide si corresponde a una SUMA o a una RESTA, y luego calcula la fracción final.",
+            skill: "Resolución de problemas",
+            exercises: [
+                {
+                    type: 'problem',
+                    text: "Sofía pintó 2/7 de un mural escolar y luego pintó 3/7 más. ¿Qué fracción del mural pintó en total?",
+                    op: '+', n1: 2, n2: 3, den: 7, ansNum: 5, ansDen: 7
+                },
+                {
+                    type: 'problem',
+                    text: "Había 8/10 de una pizza para compartir y los amigos se comieron 3/10. ¿Qué fracción de pizza quedó?",
+                    op: '-', n1: 8, n2: 3, den: 10, ansNum: 5, ansDen: 10
+                },
+                {
+                    type: 'problem',
+                    text: "Matías recorrió 3/8 de un camino en la mañana y 2/8 en la tarde. ¿Qué fracción recorrió en total?",
+                    op: '+', n1: 3, n2: 2, den: 8, ansNum: 5, ansDen: 8
+                },
+                {
+                    type: 'problem',
+                    text: "Una cinta tenía 9/12 de metro disponible y se usaron 4/12 en un proyecto. ¿Qué fracción de cinta quedó?",
+                    op: '-', n1: 9, n2: 4, den: 12, ansNum: 5, ansDen: 12
+                },
+                {
+                    type: 'problem',
+                    text: "En una cartulina cuadriculada, Camila coloreó 4/9 y luego 3/9 más. ¿Qué fracción coloreó en total?",
+                    op: '+', n1: 4, n2: 3, den: 9, ansNum: 7, ansDen: 9
+                },
+                {
+                    type: 'problem',
+                    text: "De una barra de cereal quedaban 7/10 y Tomás consumió 2/10. ¿Qué fracción representa lo que quedó?",
+                    op: '-', n1: 7, n2: 2, den: 10, ansNum: 5, ansDen: 10
+                }
+            ]
+        },
+        // ESTACIÓN 13: Detector de Errores Operacionales
+        {
+            id: 13, block: 2, title: "Estación 13: Detector de Errores en Operaciones",
+            instruction: "Determina si la operación mostrada está bien o mal resuelta, y corrige el resultado si es necesario.",
+            skill: "Detección de errores",
+            exercises: [
+                {
+                    type: 'detect_op', statement: "3/8 + 2/8 = 5/16", isCorrect: false,
+                    commonError: "¡Se sumaron los denominadores! 8 + 8 = 16.",
+                    correctNum: 5, correctDen: 8,
+                    explain: "El denominador se mantiene en 8; solo se suman los numeradores (3 + 2 = 5)."
+                },
+                {
+                    type: 'detect_op', statement: "7/10 - 4/10 = 3/0", isCorrect: false,
+                    commonError: "¡Se restaron los denominadores (10 - 10 = 0)! La división por cero no existe.",
+                    correctNum: 3, correctDen: 10,
+                    explain: "El denominador no cambia. Permanece en 10. El resultado es 3/10."
+                },
+                {
+                    type: 'detect_op', statement: "2/5 + 1/5 = 3/10", isCorrect: false,
+                    commonError: "Se sumaron los denominadores (5 + 5 = 10).",
+                    correctNum: 3, correctDen: 5,
+                    explain: "Se mantiene el denominador 5. El resultado correcto es 3/5."
+                },
+                {
+                    type: 'detect_op', statement: "6/9 - 2/9 = 4/9", isCorrect: true,
+                    commonError: "Ninguno. La resta es matemáticamente correcta.",
+                    correctNum: 4, correctDen: 9,
+                    explain: "¡Correcto! Se restaron los numeradores (6 - 2 = 4) y se mantuvo el 9."
+                }
+            ]
+        },
+        // ESTACIÓN 14: Desafío Final Integrador (10 preguntas variadas)
+        {
+            id: 14, block: 2, title: "Estación 14: Desafío Final",
+            instruction: "¡Prueba de graduación intergaláctica! 10 preguntas desafiantes que integran todos los aprendizajes.",
+            skill: "Resolución de problemas",
+            exercises: [
+                { type: 'read', shape: 'circle', total: 6, colored: 5 },
+                { type: 'paint_free', num: 3, den: 8, shape: 'grid', rows: 2, cols: 4 },
+                {
+                    type: 'mc', frac: { n: 5, d: 12 },
+                    question: "¿Qué número representa el NUMERADOR en 5/12?",
+                    options: ["5", "12", "17", "7"], correct: "5",
+                    skillKey: "Identificación de numerador",
+                    explain: "El 5 es el número superior e indica las partes tomadas."
+                },
+                { type: 'add_symbolic', n1: 2, n2: 4, den: 9 },
+                { type: 'sub_symbolic', n1: 8, n2: 3, den: 11 },
+                {
+                    type: 'problem',
+                    text: "Ignacio comió 2/6 de una torta y Martina comió 3/6. ¿Qué fracción de la torta comieron entre ambos?",
+                    op: '+', n1: 2, n2: 3, den: 6, ansNum: 5, ansDen: 6
+                },
+                {
+                    type: 'detect_op', statement: "6/11 - 2/11 = 4/22", isCorrect: false,
+                    commonError: "Duplicaron o sumaron denominadores en la resta.",
+                    correctNum: 4, correctDen: 11,
+                    explain: "El denominador se conserva; el resultado exacto es 4/11."
+                },
+                { type: 'sub_visual', n1: 6, n2: 2, den: 8 },
+                { type: 'add_visual', n1: 3, n2: 4, den: 10, shape: 'bar' },
+                {
+                    type: 'mc', frac: { n: 7, d: 15 },
+                    question: "¿Por qué al sumar 2/15 + 4/15 el denominador sigue siendo 15?",
+                    options: [
+                        "Porque las partes siguen teniendo el mismo tamaño exacto.",
+                        "Porque los denominadores se multiplican por 1.",
+                        "Porque los números de abajo nunca importan.",
+                        "Porque solo se pueden sumar números pares."
+                    ], correct: "Porque las partes siguen teniendo el mismo tamaño exacto.",
+                    skillKey: "Suma de fracciones",
+                    explain: "El denominador define el tamaño de las partes, el cual no se modifica al reunirlas."
+                }
+            ]
+        }
+    ];
+
+    const App = {
+        // Set reactivo de índices coloreados para pintar libremente
+        paintedParts: new Set(),
+        currentDrawShape: 'bar',
+
+        init: function() {
+            document.getElementById('lbl-mission-date').textContent = State.dateString;
+            document.getElementById('avatar-welcome').innerHTML = SVGDrawer.getRoboFracAvatar();
+            document.getElementById('avatar-intro1').innerHTML = SVGDrawer.getRoboFracAvatar();
+            document.getElementById('avatar-station').innerHTML = SVGDrawer.getRoboFracAvatar();
+            document.getElementById('avatar-intro2').innerHTML = SVGDrawer.getRoboFracAvatar();
+
+            // Muestra estática intro 1
+            const introSample = document.getElementById('svg-intro1-sample');
+            if (introSample) {
+                introSample.innerHTML = SVGDrawer.createBar(5, new Set([0, 1, 2]), false);
+            }
+
+            TeacherModule.init();
+        },
+
+        startMission: function() {
+            const name = document.getElementById('input-student-name').value.trim();
+            if (name.length > 0) {
+                State.studentName = name;
+            }
+            document.getElementById('nav-student-name').textContent = State.studentName;
+            this.showScreen('screen-intro-b1');
+        },
+
+        showScreen: function(screenId) {
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(screenId);
+            if (el) {
+                el.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        },
+
+        updateProgressBar: function() {
+            const st = State.currentStation;
+            let b1 = 0, b2 = 0;
+            if (st <= 7) {
+                b1 = (st / 7) * 50;
+            } else {
+                b1 = 50;
+                b2 = ((st - 7) / 7) * 50;
+            }
+            document.getElementById('bar-fill-b1').style.width = b1 + '%';
+            document.getElementById('bar-fill-b2').style.width = b2 + '%';
+            document.getElementById('nav-station-step').textContent = `Estación ${st}/14`;
+            document.getElementById('nav-stars-count').textContent = State.stars;
+        },
+
+        goToStation: function(stNum) {
+            State.currentStation = stNum;
+            State.currentExerciseIndex = 0;
+            this.updateProgressBar();
+
+            const st = Bank[stNum];
+            if (!st) return;
+
+            const badge = document.getElementById('st-badge-block');
+            badge.textContent = `BLOQUE ${st.block}`;
+            badge.style.background = st.block === 1 ? 'rgba(56, 189, 248, 0.2)' : 'rgba(249, 115, 22, 0.2)';
+            badge.style.color = st.block === 1 ? 'var(--color-num-light)' : 'var(--color-den-light)';
+
+            document.getElementById('st-header-title').textContent = st.title;
+            document.getElementById('st-instructions-text').innerHTML = st.instruction;
+
+            this.loadCurrentExercise();
+            this.showScreen('screen-workspace');
+        },
+
+        loadCurrentExercise: function() {
+            const st = Bank[State.currentStation];
+            const ex = st.exercises[State.currentExerciseIndex];
+            const total = st.exercises.length;
+
+            document.getElementById('st-exercise-counter').textContent = `Ejercicio ${State.currentExerciseIndex + 1} de ${total}`;
+            document.getElementById('btn-check-solution').style.display = 'inline-flex';
+            document.getElementById('btn-next-step').style.display = 'none';
+            this.hideFeedback();
+
+            // Reset de estado del ítem
+            this.paintedParts.clear();
+            State.attemptsOnCurrent = 0;
+            State.helpUsedOnCurrent = false;
+
+            const zone = document.getElementById('station-interactive-zone');
+            zone.innerHTML = '';
+
+            switch (ex.type) {
+                case 'read':
+                    this.renderRead(zone, ex);
+                    break;
+                case 'draw_free':
+                    this.renderDrawFree(zone, ex);
+                    break;
+                case 'mc':
+                    this.renderMC(zone, ex);
+                    break;
+                case 'read_steps':
+                    this.renderReadSteps(zone, ex);
+                    break;
+                case 'paint_free':
+                    this.renderPaintFree(zone, ex);
+                    break;
+                case 'detect_error_shape':
+                    this.renderDetectErrorShape(zone, ex);
+                    break;
+                case 'add_visual':
+                    this.renderAddVisual(zone, ex);
+                    break;
+                case 'add_symbolic':
+                    this.renderAddSymbolic(zone, ex);
+                    break;
+                case 'sub_visual':
+                    this.renderSubVisual(zone, ex);
+                    break;
+                case 'sub_symbolic':
+                    this.renderSubSymbolic(zone, ex);
+                    break;
+                case 'problem':
+                    this.renderProblem(zone, ex);
+                    break;
+                case 'detect_op':
+                    this.renderDetectOp(zone, ex);
+                    break;
+            }
+        },
+
+        renderRead: function(container, ex) {
+            let svg = '';
+            const set = new Set();
+            for (let i = 0; i < ex.colored; i++) set.add(i);
+
+            if (ex.shape === 'circle') svg = SVGDrawer.createCircle(ex.total, set, false);
+            else if (ex.shape === 'bar') svg = SVGDrawer.createBar(ex.total, set, false);
+            else if (ex.shape === 'grid') svg = SVGDrawer.createGrid(ex.rows, ex.cols, set, false);
+
+            container.innerHTML = `
+                <div class="svg-canvas-container">${svg}</div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <p style="margin-bottom: 0.6rem; font-weight: 700;">Escribe la fracción que representa la figura:</p>
+                    <div class="frac-input-stack">
+                        <input type="number" id="inp-num" min="1" max="30" placeholder="Num">
+                        <div class="frac-input-divider"></div>
+                        <input type="number" id="inp-den" min="1" max="30" placeholder="Den">
+                    </div>
+                </div>
+            `;
+        },
+
+        /* Dibuja libremente: permite alternar de 0 a Den partes sin límite artificial */
+        renderDrawFree: function(container, ex) {
+            this.currentDrawShape = ex.defaultShape || 'bar';
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 0.8rem;">
+                    <span style="font-size: 0.95rem; color: var(--text-muted);">Fracción que debes representar:</span>
+                    <div style="margin-top: 4px;">
+                        <div class="frac-visual large">
+                            <span class="frac-num">${ex.num}</span>
+                            <span class="frac-den">${ex.den}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 0.8rem;">
+                    <button class="btn btn-sm ${this.currentDrawShape === 'bar' ? 'btn-orange' : 'btn-outline'}" onclick="App.changeDrawShape('bar')">Barra</button>
+                    <button class="btn btn-sm ${this.currentDrawShape === 'circle' ? 'btn-orange' : 'btn-outline'}" onclick="App.changeDrawShape('circle')">Círculo</button>
+                    ${ex.rows && ex.cols ? `<button class="btn btn-sm ${this.currentDrawShape === 'grid' ? 'btn-orange' : 'btn-outline'}" onclick="App.changeDrawShape('grid')">Cuadrícula</button>` : ''}
+                </div>
+                <div class="svg-canvas-container" id="free-paint-svg-holder"></div>
+                <div style="text-align: center; margin-top: 6px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        Haz clic sobre <strong>cualquiera</strong> de las partes para pintar o despintar.
+                    </p>
+                    <p id="live-painted-counter" style="font-size: 0.9rem; font-weight: 700; color: var(--color-num-light); margin-top: 4px;">
+                        Partes coloreadas: 0 de ${ex.den}
+                    </p>
+                </div>
+            `;
+            this.redrawFreeCanvas();
+        },
+
+        changeDrawShape: function(shape) {
+            this.currentDrawShape = shape;
+            const ex = Bank[State.currentStation].exercises[State.currentExerciseIndex];
+            ex.defaultShape = shape;
+            this.renderDrawFree(document.getElementById('station-interactive-zone'), ex);
+        },
+
+        redrawFreeCanvas: function() {
+            const holder = document.getElementById('free-paint-svg-holder');
+            if (!holder) return;
+            const ex = Bank[State.currentStation].exercises[State.currentExerciseIndex];
+
+            if (this.currentDrawShape === 'circle') {
+                holder.innerHTML = SVGDrawer.createCircle(ex.den, this.paintedParts, true);
+            } else if (this.currentDrawShape === 'grid' && ex.rows && ex.cols) {
+                holder.innerHTML = SVGDrawer.createGrid(ex.rows, ex.cols, this.paintedParts, true);
+            } else {
+                holder.innerHTML = SVGDrawer.createBar(ex.den, this.paintedParts, true);
+            }
+
+            const counter = document.getElementById('live-painted-counter');
+            if (counter) {
+                counter.textContent = `Partes coloreadas: ${this.paintedParts.size} de ${ex.den}`;
+            }
+        },
+
+        /* Permite pintar y despintar libremente CUALQUIER sector */
+        toggleInteractivePart: function(index) {
+            if (this.paintedParts.has(index)) {
+                this.paintedParts.delete(index);
+            } else {
+                this.paintedParts.add(index);
+            }
+            this.redrawFreeCanvas();
+        },
+
+        renderMC: function(container, ex) {
+            let fracHtml = '';
+            if (ex.frac) {
+                fracHtml = `
+                <div style="margin-bottom: 0.8rem; text-align: center;">
+                    <div class="frac-visual large">
+                        <span class="frac-num">${ex.frac.n}</span>
+                        <span class="frac-den">${ex.frac.d}</span>
+                    </div>
+                </div>`;
+            }
+
+            let optsHtml = '';
+            ex.options.forEach((opt, idx) => {
+                optsHtml += `
+                <button class="option-card-btn" id="mc-btn-${idx}" onclick="App.selectMCOption(${idx}, '${opt.replace(/'/g, "\\'")}')">
+                    <span style="width:24px; height:24px; border-radius:50%; background:#475569; display:inline-flex; align-items:center; justify-content:center; font-size:0.8rem;">${String.fromCharCode(65 + idx)}</span>
+                    <span>${opt}</span>
+                </button>`;
+            });
+
+            container.innerHTML = `
+                ${fracHtml}
+                <p style="font-size: 1.15rem; font-weight: 700; text-align: center; margin-bottom: 1rem;">${ex.question}</p>
+                <div class="grid-options">${optsHtml}</div>
+                <input type="hidden" id="selected-mc-value" value="">
+            `;
+        },
+
+        selectMCOption: function(idx, val) {
+            document.querySelectorAll('.option-card-btn').forEach(b => b.classList.remove('selected'));
+            const btn = document.getElementById(`mc-btn-${idx}`);
+            if (btn) btn.classList.add('selected');
+            document.getElementById('selected-mc-value').value = val;
+        },
+
+        renderReadSteps: function(container, ex) {
+            const set = new Set();
+            for (let i = 0; i < ex.colored; i++) set.add(i);
+
+            let svg = '';
+            if (ex.shape === 'grid') svg = SVGDrawer.createGrid(ex.rows, ex.cols, set, false);
+            else if (ex.shape === 'bar') svg = SVGDrawer.createBar(ex.total, set, false);
+            else if (ex.shape === 'circle') svg = SVGDrawer.createCircle(ex.total, set, false);
+
+            container.innerHTML = `
+                <div class="svg-canvas-container">${svg}</div>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; max-width: 380px; width: 100%; margin-top: 0.8rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="font-size: 0.95rem;">1. Total de partes iguales:</label>
+                        <input type="number" id="inp-step-den" style="width: 70px;">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="font-size: 0.95rem;">2. Partes coloreadas:</label>
+                        <input type="number" id="inp-step-num" style="width: 70px;">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.6rem;">
+                        <label style="font-size: 0.95rem; font-weight: 700;">3. Fracción final:</label>
+                        <div class="frac-input-stack">
+                            <input type="number" id="inp-num" style="width: 55px; height: 38px;">
+                            <div class="frac-input-divider" style="width: 55px;"></div>
+                            <input type="number" id="inp-den" style="width: 55px; height: 38px;">
+                        </div>
+                    </div>
+                </div>
+            `;
+        },
+
+        renderPaintFree: function(container, ex) {
+            this.currentDrawShape = ex.shape || 'bar';
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 0.6rem;">
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Colorea la figura para representar exactamente:</p>
+                    <div style="margin-top: 4px;">
+                        <div class="frac-visual large">
+                            <span class="frac-num">${ex.num}</span>
+                            <span class="frac-den">${ex.den}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="svg-canvas-container" id="free-paint-svg-holder"></div>
+                <div style="text-align: center; margin-top: 6px;">
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">
+                        Haz clic libremente sobre las piezas para pintar o despintar.
+                    </p>
+                    <p id="live-painted-counter" style="font-size: 0.9rem; font-weight: 700; color: var(--color-num-light); margin-top: 4px;">
+                        Partes coloreadas: 0 de ${ex.den}
+                    </p>
+                </div>
+            `;
+            this.redrawFreeCanvas();
+        },
+
+        renderDetectErrorShape: function(container, ex) {
+            let svg = '';
+            const set = new Set();
+            for (let i = 0; i < ex.actualShape.colored; i++) set.add(i);
+
+            if (ex.actualShape.shape === 'bar') svg = SVGDrawer.createBar(ex.actualShape.total, set, false);
+            else if (ex.actualShape.shape === 'circle') svg = SVGDrawer.createCircle(ex.actualShape.total, set, false);
+            else if (ex.actualShape.shape === 'unequal_bar') svg = SVGDrawer.createUnequalBar();
+
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 0.5rem;">
+                    <p style="font-size: 0.95rem; color: var(--text-muted);">¿Esta figura representa correctamente la fracción?</p>
+                    <div style="margin-top: 4px;">
+                        <div class="frac-visual large">
+                            <span class="frac-num">${ex.targetFrac.n}</span>
+                            <span class="frac-den">${ex.targetFrac.den}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="svg-canvas-container">${svg}</div>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin: 1rem 0;">
+                    <button class="btn btn-outline" id="btn-detect-ok" onclick="App.selectDetectBool(true)">CORRECTA</button>
+                    <button class="btn btn-outline" id="btn-detect-bad" onclick="App.selectDetectBool(false)">INCORRECTA</button>
+                </div>
+                <input type="hidden" id="selected-detect-val" value="">
+                <div id="sub-error-reasons-box" style="display: none; max-width: 480px; width: 100%; margin: 0.8rem auto 0 auto;">
+                    <label style="font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; display: block;">¿Qué debería corregirse?</label>
+                    <div id="sub-reasons-list" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                </div>
+            `;
+        },
+
+        selectDetectBool: function(isCorrect) {
+            document.getElementById('btn-detect-ok').classList.remove('btn-green', 'btn-orange');
+            document.getElementById('btn-detect-bad').classList.remove('btn-green', 'btn-orange');
+            document.getElementById('selected-detect-val').value = isCorrect ? 'true' : 'false';
+
+            const ex = Bank[State.currentStation].exercises[State.currentExerciseIndex];
+
+            if (isCorrect) {
+                document.getElementById('btn-detect-ok').classList.add('btn-green');
+                document.getElementById('sub-error-reasons-box').style.display = 'none';
+            } else {
+                document.getElementById('btn-detect-bad').classList.add('btn-orange');
+                if (!ex.isCorrect && ex.optionsReason && ex.optionsReason.length > 0) {
+                    const box = document.getElementById('sub-reasons-list');
+                    box.innerHTML = '';
+                    ex.optionsReason.forEach((r, idx) => {
+                        box.innerHTML += `
+                        <button class="option-card-btn" id="opt-reason-${idx}" onclick="App.selectReasonOption(${idx}, '${r.replace(/'/g, "\\'")}')">
+                            <span>${r}</span>
+                        </button>`;
+                    });
+                    document.getElementById('sub-error-reasons-box').style.display = 'block';
+                }
+            }
+        },
+
+        selectReasonOption: function(idx, text) {
+            document.querySelectorAll('#sub-reasons-list .option-card-btn').forEach(b => b.classList.remove('selected'));
+            const btn = document.getElementById(`opt-reason-${idx}`);
+            if (btn) btn.classList.add('selected');
+            document.getElementById('selected-detect-val').setAttribute('data-reason', text);
+        },
+
+        renderAddVisual: function(container, ex) {
+            const set1 = new Set(); for (let i = 0; i < ex.n1; i++) set1.add(i);
+            const set2 = new Set(); for (let i = 0; i < ex.n2; i++) set2.add(i);
+
+            const svg1 = ex.shape === 'grid' ? SVGDrawer.createGrid(ex.rows, ex.cols, set1, false) : SVGDrawer.createBar(ex.den, set1, false);
+            const svg2 = ex.shape === 'grid' ? SVGDrawer.createGrid(ex.rows, ex.cols, set2, false) : SVGDrawer.createBar(ex.den, set2, false);
+
+            container.innerHTML = `
+                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="text-align: center;">
+                        <div class="frac-visual"><span class="frac-num">${ex.n1}</span><span class="frac-den">${ex.den}</span></div>
+                        <div style="margin-top: 6px;">${svg1}</div>
+                    </div>
+                    <span style="font-size: 2.2rem; font-weight: 800; color: var(--color-den-light);">+</span>
+                    <div style="text-align: center;">
+                        <div class="frac-visual"><span class="frac-num">${ex.n2}</span><span class="frac-den">${ex.den}</span></div>
+                        <div style="margin-top: 6px;">${svg2}</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 0.8rem;">
+                    <p style="font-weight: 700; margin-bottom: 0.6rem;">¿Cuál es la fracción resultante al juntar ambas figuras?</p>
+                    <div class="frac-input-stack">
+                        <input type="number" id="inp-num" placeholder="Num">
+                        <div class="frac-input-divider"></div>
+                        <input type="number" id="inp-den" placeholder="Den">
+                    </div>
+                </div>
+            `;
+        },
+
+        renderAddSymbolic: function(container, ex) {
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; font-size: 1.4rem; margin: 1.5rem 0; flex-wrap: wrap;">
+                    <div class="frac-visual large"><span class="frac-num">${ex.n1}</span><span class="frac-den">${ex.den}</span></div>
+                    <span style="font-size: 2.2rem; color: var(--color-den-light);">+</span>
+                    <div class="frac-visual large"><span class="frac-num">${ex.n2}</span><span class="frac-den">${ex.den}</span></div>
+                    <span style="font-size: 2.2rem;">=</span>
+                    <!-- Desglose Guiado -->
+                    <div style="display: inline-flex; flex-direction: column; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <input type="number" id="inp-step-n1" style="width: 55px;" placeholder="${ex.n1}">
+                            <span>+</span>
+                            <input type="number" id="inp-step-n2" style="width: 55px;" placeholder="${ex.n2}">
+                        </div>
+                        <div class="frac-input-divider" style="width: 140px; margin: 6px 0;"></div>
+                        <input type="number" id="inp-step-den" style="width: 70px;" placeholder="Den">
+                    </div>
+                    <span style="font-size: 2.2rem;">=</span>
+                    <!-- Resultado Final -->
+                    <div class="frac-input-stack">
+                        <input type="number" id="inp-num" placeholder="Num">
+                        <div class="frac-input-divider"></div>
+                        <input type="number" id="inp-den" placeholder="Den">
+                    </div>
+                </div>
+            `;
+        },
+
+        renderSubVisual: function(container, ex) {
+            // Representación con tachado visual exacto
+            const width = 360;
+            const height = 75;
+            const partW = width / ex.den;
+            let rects = '';
+
+            for (let i = 0; i < ex.den; i++) {
+                if (i < (ex.n1 - ex.n2)) {
+                    rects += `<rect x="${i * partW}" y="0" width="${partW}" height="${height}" fill="#38bdf8" stroke="#0f172a" stroke-width="2.5" rx="2" />`;
+                } else if (i < ex.n1) {
+                    rects += `
+                        <rect x="${i * partW}" y="0" width="${partW}" height="${height}" fill="#ef4444" opacity="0.6" stroke="#0f172a" stroke-width="2.5" rx="2" />
+                        <line x1="${i * partW + 6}" y1="6" x2="${(i+1) * partW - 6}" y2="${height - 6}" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="${(i+1) * partW - 6}" y1="6" x2="${i * partW + 6}" y2="${height - 6}" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+                    `;
+                } else {
+                    rects += `<rect x="${i * partW}" y="0" width="${partW}" height="${height}" fill="#e2e8f0" stroke="#0f172a" stroke-width="2.5" rx="2" />`;
+                }
+            }
+
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 0.8rem;">
+                    <p style="color: var(--text-muted); margin-bottom: 6px;">Habían <strong style="color: var(--color-num-light);">${ex.n1}/${ex.den}</strong> y se restaron <strong style="color: #f87171;">${ex.n2}/${ex.den}</strong> (partes con cruz):</p>
+                    <div class="frac-visual large"><span class="frac-num">${ex.n1}</span><span class="frac-den">${ex.den}</span></div>
+                    <span style="font-size: 1.8rem; font-weight: 800; margin: 0 10px;">-</span>
+                    <div class="frac-visual large"><span class="frac-num">${ex.n2}</span><span class="frac-den">${ex.den}</span></div>
+                </div>
+                <div class="svg-canvas-container">
+                    <svg viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">${rects}</svg>
+                </div>
+                <div style="text-align: center; margin-top: 0.8rem;">
+                    <p style="font-weight: 700; margin-bottom: 0.6rem;">¿Cuántas partes útiles quedaron?</p>
+                    <div class="frac-input-stack">
+                        <input type="number" id="inp-num" placeholder="Num">
+                        <div class="frac-input-divider"></div>
+                        <input type="number" id="inp-den" placeholder="Den">
+                    </div>
+                </div>
+            `;
+        },
+
+        renderSubSymbolic: function(container, ex) {
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; font-size: 1.4rem; margin: 1.5rem 0; flex-wrap: wrap;">
+                    <div class="frac-visual large"><span class="frac-num">${ex.n1}</span><span class="frac-den">${ex.den}</span></div>
+                    <span style="font-size: 2.2rem; color: var(--color-den-light);">-</span>
+                    <div class="frac-visual large"><span class="frac-num">${ex.n2}</span><span class="frac-den">${ex.den}</span></div>
+                    <span style="font-size: 2.2rem;">=</span>
+                    <!-- Desglose Guiado -->
+                    <div style="display: inline-flex; flex-direction: column; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <input type="number" id="inp-step-n1" style="width: 55px;" placeholder="${ex.n1}">
+                            <span>-</span>
+                            <input type="number" id="inp-step-n2" style="width: 55px;" placeholder="${ex.n2}">
+                        </div>
+                        <div class="frac-input-divider" style="width: 140px; margin: 6px 0;"></div>
+                        <input type="number" id="inp-step-den" style="width: 70px;" placeholder="Den">
+                    </div>
+                    <span style="font-size: 2.2rem;">=</span>
+                    <!-- Resultado Final -->
+                    <div class="frac-input-stack">
+                        <input type="number" id="inp-num" placeholder="Num">
+                        <div class="frac-input-divider"></div>
+                        <input type="number" id="inp-den" placeholder="Den">
+                    </div>
+                </div>
+            `;
+        },
+
+        renderProblem: function(container, ex) {
+            container.innerHTML = `
+                <div style="background: rgba(15,23,42,0.8); padding: 1.4rem; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08); font-size: 1.08rem; line-height: 1.6; max-width: 620px; margin-bottom: 1.2rem;">
+                    📖 ${ex.text}
+                </div>
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <p style="font-weight: 700; margin-bottom: 8px;">1. ¿Qué operación corresponde para resolver este problema?</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button class="btn btn-outline" id="btn-op-add" onclick="App.selectProblemOp('+')">SUMA (+)</button>
+                        <button class="btn btn-outline" id="btn-op-sub" onclick="App.selectProblemOp('-')">RESTA (-)</button>
+                    </div>
+                    <input type="hidden" id="selected-problem-op" value="">
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p style="font-weight: 700; margin-bottom: 8px;">2. Escribe la fracción resultante:</p>
+                    <div class="frac-input-stack">
+                        <input type="number" id="inp-num" placeholder="Num">
+                        <div class="frac-input-divider"></div>
+                        <input type="number" id="inp-den" placeholder="Den">
+                    </div>
+                </div>
+            `;
+        },
+
+        selectProblemOp: function(op) {
+            document.getElementById('btn-op-add').classList.remove('btn-orange');
+            document.getElementById('btn-op-sub').classList.remove('btn-orange');
+            if (op === '+') document.getElementById('btn-op-add').classList.add('btn-orange');
+            else document.getElementById('btn-op-sub').classList.add('btn-orange');
+            document.getElementById('selected-problem-op').value = op;
+        },
+
+        renderDetectOp: function(container, ex) {
+            container.innerHTML = `
+                <div style="text-align: center; margin-bottom: 1.2rem;">
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">Observa la siguiente operación resuelta:</p>
+                    <h3 style="font-size: 2.2rem; color: #facc15; margin: 0.6rem 0; letter-spacing: 1px;">${ex.statement}</h3>
+                    <p style="font-weight: 700; font-size: 1.05rem; margin-top: 0.8rem;">¿El resultado está CORRECTO o INCORRECTO?</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 0.8rem;">
+                        <button class="btn btn-outline" id="btn-op-ok" onclick="App.selectOpCorrectBool(true)">CORRECTO</button>
+                        <button class="btn btn-outline" id="btn-op-bad" onclick="App.selectOpCorrectBool(false)">INCORRECTO</button>
+                    </div>
+                    <input type="hidden" id="selected-op-bool" value="">
+                </div>
+                <div id="sub-op-correct-inputs" style="display: none; text-align: center; margin-top: 1rem;">
+                    <p style="font-weight: 700; color: var(--color-num-light); margin-bottom: 8px;">Escribe el resultado matemáticamente correcto:</p>
+                    <div class="frac-input-stack">
+                        <input type="number" id="inp-num" placeholder="Num">
+                        <div class="frac-input-divider"></div>
+                        <input type="number" id="inp-den" placeholder="Den">
+                    </div>
+                </div>
+            `;
+        },
+
+        selectOpCorrectBool: function(isOk) {
+            document.getElementById('btn-op-ok').classList.remove('btn-green', 'btn-orange');
+            document.getElementById('btn-op-bad').classList.remove('btn-green', 'btn-orange');
+            document.getElementById('selected-op-bool').value = isOk ? 'true' : 'false';
+
+            if (isOk) {
+                document.getElementById('btn-op-ok').classList.add('btn-green');
+                document.getElementById('sub-op-correct-inputs').style.display = 'none';
+            } else {
+                document.getElementById('btn-op-bad').classList.add('btn-orange');
+                document.getElementById('sub-op-correct-inputs').style.display = 'block';
+            }
+        },
+
+        verifyAnswer: function() {
+            State.attemptsOnCurrent++;
+            const st = Bank[State.currentStation];
+            const ex = st.exercises[State.currentExerciseIndex];
+
+            let isPassed = false;
+            let studentAnsStr = "";
+            let correctAnsStr = "";
+            let questionStr = "";
+            let feedback = "";
+            let skillKey = st.skill;
+
+            switch (ex.type) {
+                case 'read': {
+                    const uN = parseInt(document.getElementById('inp-num').value);
+                    const uD = parseInt(document.getElementById('inp-den').value);
+                    questionStr = `Figura de ${ex.total} partes con ${ex.colored} coloreadas.`;
+                    studentAnsStr = `${isNaN(uN)?'--':uN}/${isNaN(uD)?'--':uD}`;
+                    correctAnsStr = `${ex.colored}/${ex.total}`;
+
+                    if (uN === ex.colored && uD === ex.total) {
+                        isPassed = true;
+                        feedback = `¡Excelente! ${ex.colored} partes consideradas de un total de ${ex.total}.`;
+                    } else if (uN === ex.total && uD === ex.colored) {
+                        feedback = "Invertiste los números: el numerador (arriba) indica las partes coloreadas y el denominador (abajo) el total.";
+                    } else {
+                        feedback = `Cuenta de nuevo: hay ${ex.total} partes totales y se pintaron ${ex.colored}.`;
+                    }
+                    break;
+                }
+
+                case 'draw_free':
+                case 'paint_free': {
+                    const userCount = this.paintedParts.size;
+                    questionStr = `Pintar la fracción ${ex.num}/${ex.den}.`;
+                    studentAnsStr = `${userCount}/${ex.den} partes coloreadas`;
+                    correctAnsStr = `${ex.num}/${ex.den} partes coloreadas`;
+
+                    if (userCount === ex.num) {
+                        isPassed = true;
+                        feedback = `¡Exacto! Coloreaste con éxito ${ex.num} de las ${ex.den} partes iguales.`;
+                    } else if (userCount < ex.num) {
+                        feedback = `Coloreaste muy pocas partes (${userCount} de ${ex.den}). Te faltan por pintar ${ex.num - userCount} partes más.`;
+                    } else {
+                        feedback = `Te pasaste: coloreaste ${userCount} partes y la fracción solo pide pintar ${ex.num}. Haz clic en ${userCount - ex.num} partes para despintarlas.`;
+                    }
+                    break;
+                }
+
+                case 'mc': {
+                    const sel = document.getElementById('selected-mc-value').value;
+                    questionStr = ex.question;
+                    studentAnsStr = sel || "(Sin responder)";
+                    correctAnsStr = ex.correct;
+                    if (ex.skillKey) skillKey = ex.skillKey;
+
+                    if (sel === ex.correct) {
+                        isPassed = true;
+                        feedback = `¡Correcto! ${ex.explain}`;
+                    } else {
+                        feedback = `No es correcto. Recuerda: ${ex.explain}`;
+                    }
+                    break;
+                }
+
+                case 'read_steps': {
+                    const sDen = parseInt(document.getElementById('inp-step-den').value);
+                    const sNum = parseInt(document.getElementById('inp-step-num').value);
+                    const uN = parseInt(document.getElementById('inp-num').value);
+                    const uD = parseInt(document.getElementById('inp-den').value);
+
+                    questionStr = `Paso a paso con ${ex.total} partes y ${ex.colored} coloreadas.`;
+                    studentAnsStr = `Tot:${sDen}, Pint:${sNum}, Frac:${uN}/${uD}`;
+                    correctAnsStr = `Tot:${ex.total}, Pint:${ex.colored}, Frac:${ex.colored}/${ex.total}`;
+
+                    if (sDen === ex.total && sNum === ex.colored && uN === ex.colored && uD === ex.total) {
+                        isPassed = true;
+                        feedback = "¡Brillante conteo paso a paso! Has identificado ambos términos a la perfección.";
+                    } else {
+                        feedback = `Verifica: el total de particiones es ${ex.total} y las partes coloreadas son ${ex.colored}.`;
+                    }
+                    break;
+                }
+
+                case 'detect_error_shape': {
+                    const boolVal = document.getElementById('selected-detect-val').value;
+                    const reason = document.getElementById('selected-detect-val').getAttribute('data-reason');
+                    questionStr = `¿Es correcta la figura para ${ex.targetFrac.n}/${ex.targetFrac.den}?`;
+
+                    if (boolVal === "") {
+                        this.showFeedback('danger', "Debes indicar si la representación es CORRECTA o INCORRECTA.");
+                        return;
+                    }
+
+                    const isUserOk = boolVal === 'true';
+                    studentAnsStr = isUserOk ? "Correcta" : `Incorrecta (${reason || 'Sin motivo'})`;
+                    correctAnsStr = ex.isCorrect ? "Correcta" : `Incorrecta (${ex.errorReason})`;
+
+                    if (isUserOk === ex.isCorrect) {
+                        if (!ex.isCorrect && ex.optionsReason.length > 0 && (!reason || !reason.includes(ex.errorReason.slice(0, 15)))) {
+                            feedback = "Acertaste en que es incorrecta, pero selecciona el motivo de corrección exacto.";
+                            isPassed = false;
+                        } else {
+                            isPassed = true;
+                            feedback = "¡Detección acertada! " + (ex.isCorrect ? "La partición es equitativa y la cantidad exacta." : ex.errorReason);
+                        }
+                    } else {
+                        feedback = ex.isCorrect ? "En realidad la figura sí es correcta: todas las partes son de igual tamaño y coincide con la fracción." : `Cuidado: la figura contiene un error: ${ex.errorReason}`;
+                    }
+                    break;
+                }
+
+                case 'add_visual': {
+                    const uN = parseInt(document.getElementById('inp-num').value);
+                    const uD = parseInt(document.getElementById('inp-den').value);
+                    const targetN = ex.n1 + ex.n2;
+                    questionStr = `Suma visual: ${ex.n1}/${ex.den} + ${ex.n2}/${ex.den}`;
+                    studentAnsStr = `${isNaN(uN)?'--':uN}/${isNaN(uD)?'--':uD}`;
+                    correctAnsStr = `${targetN}/${ex.den}`;
+
+                    if (uN === targetN && uD === ex.den) {
+                        isPassed = true;
+                        feedback = `¡Muy bien! Se sumaron los numeradores (${ex.n1} + ${ex.n2} = ${targetN}) y se mantuvo el denominador común (${ex.den}).`;
+                    } else if (uD === (ex.den + ex.den)) {
+                        feedback = "¡Cuidado! Sumaste los denominadores. Recuerda que el tamaño de las partes no cambia, solo se suman los numeradores.";
+                    } else {
+                        feedback = `Suma solo los numeradores (${ex.n1} + ${ex.n2} = ${targetN}) y conserva el ${ex.den}.`;
+                    }
+                    break;
+                }
+
+                case 'add_symbolic': {
+                    const sn1 = parseInt(document.getElementById('inp-step-n1').value);
+                    const sn2 = parseInt(document.getElementById('inp-step-n2').value);
+                    const sDen = parseInt(document.getElementById('inp-step-den').value);
+                    const uN = parseInt(document.getElementById('inp-num').value);
+                    const uD = parseInt(document.getElementById('inp-den').value);
+                    const targetN = ex.n1 + ex.n2;
+
+                    questionStr = `Suma simbólica: ${ex.n1}/${ex.den} + ${ex.n2}/${ex.den}`;
+                    studentAnsStr = `Paso:(${sn1}+${sn2})/${sDen} -> Res:${uN}/${uD}`;
+                    correctAnsStr = `(${ex.n1}+${ex.n2})/${ex.den} = ${targetN}/${ex.den}`;
+
+                    if (uN === targetN && uD === ex.den && (isNaN(sDen) || sDen === ex.den)) {
+                        isPassed = true;
+                        feedback = `¡Desarrollo perfecto! ${ex.n1} + ${ex.n2} = ${targetN} sobre el denominador común ${ex.den}.`;
+                    } else if (uD === (ex.den + ex.den) || sDen === (ex.den + ex.den)) {
+                        feedback = "¡Alerta cósmica! Recuerda que en fracciones de igual denominador, el denominador NUNCA se suma.";
+                    } else {
+                        feedback = `Revisa: los numeradores son ${ex.n1} + ${ex.n2} = ${targetN} y el denominador se mantiene en ${ex.den}.`;
+                    }
+                    break;
+                }
+
+                case 'sub_visual': {
+                    const uN = parseInt(document.getElementById('inp-num').value);
+                    const uD = parseInt(document.getElementById('inp-den').value);
+                    const targetN = ex.n1 - ex.n2;
+                    questionStr = `Resta visual: ${ex.n1}/${ex.den} - ${ex.n2}/${ex.den}`;
+                    studentAnsStr = `${isNaN(uN)?'--':uN}/${isNaN(uD)?'--':uD}`;
+                    correctAnsStr = `${targetN}/${ex.den}`;
+
+                    if (uN === targetN && uD === ex.den) {
+                        isPassed = true;
+                        feedback = `¡Exacto! Retiramos las partes tachadas: quedan ${targetN}/${ex.den}.`;
+                    } else if (uD === 0) {
+                        feedback = "¡Atención! No restes los denominadores. El tamaño de cada parte sigue siendo el mismo.";
+                    } else {
+                        feedback = `Resta los numeradores (${ex.n1} - ${ex.n2} = ${targetN}) y conserva el denominador ${ex.den}.`;
+                    }
+                    break;
+                }
+
+                case 'sub_symbolic': {
+                    const sn1 = parseInt(document.getElementById('inp-step-n1').value);
+                    const sn2 = parseInt(document.getElementById('inp-step-n2').value);
+                    const sDen = parseInt(document.getElementById('inp-step-den').value);
+                    const uN = parseInt(document.getElementById('inp-num').value);
+                    const uD = parseInt(document.getElementById('inp-den').value);
+                    const targetN = ex.n1 - ex.n2;
+
+                    questionStr = `Resta simbólica: ${ex.n1}/${ex.den} - ${ex.n2}/${ex.den}`;
+                    studentAnsStr = `Paso:(${sn1}-${sn2})/${sDen} -> Res:${uN}/${uD}`;
+                    correctAnsStr = `(${ex.n1}-${ex.n2})/${ex.den} = ${targetN}/${ex.den}`;
+
+                    if (uN === targetN && uD === ex.den) {
+                        isPassed = true;
+                        feedback = `¡Impecable! ${ex.n1} - ${ex.n2} = ${targetN} sobre ${ex.den}.`;
+                    } else if (uD === 0 || sDen === 0) {
+                        feedback = "¡Error crítico! El denominador nunca da cero; se mantiene inalterado.";
+                    } else {
+                        feedback = `Calcula ${ex.n1} - ${ex.n2} = ${targetN} y conserva el denominador en ${ex.den}.`;
+                    }
+                    break;
+                }
+
+                case 'problem': {
+                    const op = document.getElementById('selected-problem-op').value;
+                    const uN = parseInt(document.getElementById('inp-num').value);
+                    const uD = parseInt(document.getElementById('inp-den').value);
+
+                    questionStr = ex.text;
+                    studentAnsStr = `Op:[${op||'?'}] Frac:${isNaN(uN)?'--':uN}/${isNaN(uD)?'--':uD}`;
+                    correctAnsStr = `Op:[${ex.op}] Frac:${ex.ansNum}/${ex.ansDen}`;
+
+                    if (op === ex.op && uN === ex.ansNum && uD === ex.ansDen) {
+                        isPassed = true;
+                        feedback = "¡Comprensión y cálculo excelentes! Determinaste la operación correcta y calculaste el valor exacto.";
+                    } else if (op !== ex.op) {
+                        feedback = `La operación adecuada para este contexto era ${ex.op === '+' ? 'SUMA' : 'RESTA'}. Revisa el enunciado.`;
+                    } else {
+                        feedback = `La operación es correcta (${op}), pero el cálculo debe dar ${ex.ansNum}/${ex.ansDen}.`;
+                    }
+                    break;
+                }
+
+                case 'detect_op': {
+                    const boolStr = document.getElementById('selected-op-bool').value;
+                    if (boolStr === "") {
+                        this.showFeedback('danger', "Indica si la operación es CORRECTA o INCORRECTA.");
+                        return;
+                    }
+
+                    const isUserOk = boolStr === 'true';
+                    questionStr = `Verificar: ${ex.statement}`;
+
+                    if (isUserOk === ex.isCorrect) {
+                        if (!ex.isCorrect) {
+                            const uN = parseInt(document.getElementById('inp-num').value);
+                            const uD = parseInt(document.getElementById('inp-den').value);
+                            studentAnsStr = `Incorrecto (Corrección: ${uN}/${uD})`;
+                            correctAnsStr = `Incorrecto (${ex.correctNum}/${ex.correctDen})`;
+
+                            if (uN === ex.correctNum && uD === ex.correctDen) {
+                                isPassed = true;
+                                feedback = `¡Detección y corrección perfectas! ${ex.explain}`;
+                            } else {
+                                feedback = `Identificaste el error, pero el resultado correcto es ${ex.correctNum}/${ex.correctDen}.`;
+                            }
+                        } else {
+                            studentAnsStr = "Correcto";
+                            correctAnsStr = "Correcto";
+                            isPassed = true;
+                            feedback = `¡Exacto! ${ex.explain}`;
+                        }
+                    } else {
+                        studentAnsStr = isUserOk ? "Correcto" : "Incorrecto";
+                        correctAnsStr = ex.isCorrect ? "Correcto" : "Incorrecto";
+                        feedback = ex.isCorrect ? "La operación sí es válida: no se sumaron denominadores." : `Había un error grave: ${ex.commonError}`;
+                    }
+                    break;
+                }
+            }
+
+            if (isPassed || State.attemptsOnCurrent >= 2) {
+                this.recordResult({
+                    stationNum: State.currentStation,
+                    stationTitle: st.title,
+                    skill: skillKey,
+                    question: questionStr,
+                    studentAns: studentAnsStr,
+                    correctAns: correctAnsStr,
+                    isCorrect: isPassed,
+                    attempts: State.attemptsOnCurrent,
+                    helpUsed: State.helpUsedOnCurrent
+                });
+
+                if (isPassed) {
+                    State.stars += 3;
+                    State.totalItemsCorrect++;
+                    this.showFeedback('success', feedback);
+                } else {
+                    this.showFeedback('danger', feedback);
+                }
+
+                document.getElementById('btn-check-solution').style.display = 'none';
+                document.getElementById('btn-next-step').style.display = 'inline-flex';
+                this.updateProgressBar();
+            } else {
+                this.showFeedback('danger', `Intento 1 incorrecto. ${feedback} ¡Haz otro intento!`);
+            }
+        },
+
+        recordResult: function(entry) {
+            State.records.push(entry);
+            State.totalItemsAssessed++;
+
+            if (State.skillMap[entry.skill]) {
+                State.skillMap[entry.skill].total++;
+                if (entry.isCorrect) State.skillMap[entry.skill].ok++;
+                else State.skillMap[entry.skill].fail++;
+            }
+        },
+
+        showFeedback: function(type, msg) {
+            const b = document.getElementById('st-feedback-banner');
+            b.className = `feedback-banner ${type}`;
+            b.innerHTML = `<span>${type === 'success' ? '🎉' : type === 'danger' ? '⚠️' : 'ℹ️'}</span> <span>${msg}</span>`;
+            b.style.display = 'flex';
+        },
+
+        hideFeedback: function() {
+            const b = document.getElementById('st-feedback-banner');
+            b.style.display = 'none';
+        },
+
+        proceedNext: function() {
+            const st = Bank[State.currentStation];
+            if (State.currentExerciseIndex + 1 < st.exercises.length) {
+                State.currentExerciseIndex++;
+                this.loadCurrentExercise();
+            } else {
+                if (State.currentStation === 7) {
+                    this.showScreen('screen-intro-b2');
+                } else if (State.currentStation === 14) {
+                    this.showMissionCompleted();
+                } else {
+                    this.goToStation(State.currentStation + 1);
+                }
+            }
+        },
+
+        showMissionCompleted: function() {
+            this.updateProgressBar();
+            document.getElementById('lbl-finished-student-name').textContent = State.studentName;
+
+            const accuracy = State.totalItemsAssessed > 0 ? Math.round((State.totalItemsCorrect / State.totalItemsAssessed) * 100) : 0;
+            document.getElementById('lbl-final-accuracy').textContent = `${accuracy}%`;
+            document.getElementById('lbl-final-stars-total').textContent = `⭐ ${State.stars}`;
+            document.getElementById('lbl-final-score-fraction').textContent = `${State.totalItemsCorrect} / ${State.totalItemsAssessed}`;
+
+            this.showScreen('screen-completed');
+        },
+
+        showPedagogicalReport: function() {
+            document.getElementById('rep-student-name').textContent = State.studentName;
+            document.getElementById('rep-mission-date').textContent = State.dateString;
+
+            const accuracy = State.totalItemsAssessed > 0 ? Math.round((State.totalItemsCorrect / State.totalItemsAssessed) * 100) : 0;
+            document.getElementById('rep-total-accuracy').textContent = `${accuracy}%`;
+
+            // Llenar tabla de contenidos
+            const tbodySkills = document.getElementById('rep-skills-tbody');
+            tbodySkills.innerHTML = '';
+            for (let k in State.skillMap) {
+                const s = State.skillMap[k];
+                const pct = s.total > 0 ? Math.round((s.ok / s.total) * 100) : 0;
+                tbodySkills.innerHTML += `
+                    <tr>
+                        <td style="font-weight:700;">${k}</td>
+                        <td>${s.total}</td>
+                        <td style="color:#4ade80;">${s.ok}</td>
+                        <td style="color:#f87171;">${s.fail}</td>
+                        <td><strong>${pct}%</strong></td>
+                    </tr>
+                `;
+            }
+
+            // Llenar tabla de detalle
+            const tbodyDetail = document.getElementById('rep-detail-tbody');
+            tbodyDetail.innerHTML = '';
+            State.records.forEach((r, idx) => {
+                tbodyDetail.innerHTML += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td><strong>${r.stationTitle}</strong><br><small style="color:var(--text-muted);">${r.skill}</small></td>
+                        <td>${r.question}</td>
+                        <td><code>${r.studentAns}</code></td>
+                        <td><code>${r.correctAns}</code></td>
+                        <td>${r.attempts}</td>
+                        <td>${r.helpUsed ? 'Sí' : 'No'}</td>
+                        <td>
+                            <span class="status-badge ${r.isCorrect ? 'ok' : 'fail'}">
+                                ${r.isCorrect ? '✓ Correcta' : '✗ Incorrecta'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            this.showScreen('screen-report');
+        },
+
+        returnToCompletedScreen: function() {
+            this.showScreen('screen-completed');
+        },
+
+        restartSession: function() {
+            State.currentStation = 1;
+            State.currentExerciseIndex = 0;
+            State.stars = 0;
+            State.totalItemsAssessed = 0;
+            State.totalItemsCorrect = 0;
+            State.records = [];
+            for (let k in State.skillMap) {
+                State.skillMap[k] = { total: 0, ok: 0, fail: 0 };
+            }
+            this.goToStation(1);
+        },
+
+        printReport: function() {
+            window.print();
+        },
+
+        savePdfReport: function() {
+            this.showFeedback('info', "Selecciona 'Guardar como PDF' en la ventana de impresión.");
+            setTimeout(() => { window.print(); }, 200);
+        },
+
+        downloadHtmlReport: function() {
+            const accuracy = State.totalItemsAssessed > 0 ? Math.round((State.totalItemsCorrect / State.totalItemsAssessed) * 100) : 0;
+            let rows = '';
+            State.records.forEach((r, idx) => {
+                rows += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e1; padding:8px;">${idx + 1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px;"><strong>${r.stationTitle}</strong><br><small>${r.skill}</small></td>
+                        <td style="border:1px solid #cbd5e1; padding:8px;">${r.question}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px;">${r.studentAns}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px;">${r.correctAns}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px;">${r.attempts}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px;">${r.helpUsed ? 'Sí' : 'No'}</td>
+                        <td style="border:1px solid #cbd5e1; padding:8px; font-weight:bold; color:${r.isCorrect ? '#16a34a' : '#dc2626'};">${r.isCorrect ? 'Correcta' : 'Incorrecta'}</td>
+                    </tr>
+                `;
+            });
+
+            const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe Fracciones - ${State.studentName}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; color: #0f172a; }
+        h1 { color: #0284c7; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Informe Pedagógico de Matemática - 5° Básico</h1>
+    <h2>Misión Fracciones: Representa, Suma y Resta</h2>
+    <hr>
+    <p><strong>Estudiante:</strong> ${State.studentName}</p>
+    <p><strong>Fecha:</strong> ${State.dateString}</p>
+    <p><strong>Logro Global:</strong> ${accuracy}% (${State.totalItemsCorrect} de ${State.totalItemsAssessed} correctos)</p>
+    <h3>Detalle de Respuestas</h3>
+    <table>
+        <thead>
+            <tr><th>#</th><th>Estación</th><th>Pregunta</th><th>Respuesta Estudiante</th><th>Respuesta Correcta</th><th>Intentos</th><th>Ayuda</th><th>Resultado</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+    </table>
+</body>
+</html>`;
+
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const clean = State.studentName.replace(/[^a-zA-Z0-9]/g, '_');
+            a.href = url;
+            a.download = `Informe_Fracciones_${clean}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        },
+
+        downloadCsvReport: function() {
+            let csv = '\uFEFF';
+            csv += "Nombre;Curso;Fecha;Estacion;Contenido;Pregunta;Respuesta_Estudiante;Respuesta_Correcta;Resultado;Intentos;Uso_Ayuda\r\n";
+
+            State.records.forEach(r => {
+                const c = (t) => `"${(t || '').toString().replace(/"/g, '""')}"`;
+                csv += [
+                    c(State.studentName),
+                    c("5° Básico"),
+                    c(State.dateString),
+                    c(r.stationTitle),
+                    c(r.skill),
+                    c(r.question),
+                    c(r.studentAns),
+                    c(r.correctAns),
+                    c(r.isCorrect ? "Correcta" : "Incorrecta"),
+                    r.attempts,
+                    c(r.helpUsed ? "Sí" : "No")
+                ].join(";") + "\r\n";
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const clean = State.studentName.replace(/[^a-zA-Z0-9]/g, '_');
+            a.href = url;
+            a.download = `Informe_Fracciones_${clean}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        },
+
+        /* Modal de Ayuda Dinámica */
+        openHelpModal: function() {
+            State.helpUsedOnCurrent = true;
+            const content = document.getElementById('modal-help-content');
+            const st = State.currentStation;
+
+            if (st <= 7) {
+                content.innerHTML = `
+                    <h4 style="color: var(--color-num-light); margin-bottom: 8px;">Guía de Representación de Fracciones</h4>
+                    <p style="margin-bottom: 8px;">Una fracción propia representa partes de un todo:</p>
+                    <ul style="padding-left: 20px; line-height: 1.6; margin-bottom: 10px;">
+                        <li><strong style="color: var(--color-num-light);">NUMERADOR (arriba):</strong> Indica cuántas partes se toman, se consideran o se colorean.</li>
+                        <li><strong style="color: var(--color-den-light);">DENOMINADOR (abajo):</strong> Indica en cuántas partes <strong>IGUALES</strong> se divide la figura entera.</li>
+                    </ul>
+                    <p><em>Ejemplo:</em> En <strong>3/5</strong>, la figura se divide en 5 partes iguales y se pintan 3.</p>
+                `;
+            } else {
+                content.innerHTML = `
+                    <h4 style="color: var(--color-den-light); margin-bottom: 8px;">Guía de Operaciones con Igual Denominador</h4>
+                    <div style="background: rgba(15,23,42,0.7); padding: 10px 14px; border-radius: 8px; margin-bottom: 10px;">
+                        <p><strong>Para sumar:</strong> Suma los numeradores y <strong>mantén</strong> el denominador común.</p>
+                        <p><strong>Para restar:</strong> Resta los numeradores y <strong>mantén</strong> el denominador común.</p>
+                    </div>
+                    <p><em>¿Por qué no se suman los de abajo?</em> Porque el denominador indica el tamaño de la partición. Si sumas rebanadas de pizza cortadas en octavos, ¡siguen siendo octavos!</p>
+                `;
+            }
+            document.getElementById('modal-help-dialog').classList.add('active');
+        },
+
+        closeHelpModal: function() {
+            document.getElementById('modal-help-dialog').classList.remove('active');
+        }
+    };
+
+    const TeacherModule = {
+        pin: "Stik",
+
+        init: function() {
+            const list = document.getElementById('teacher-station-jump-list');
+            if (!list) return;
+            list.innerHTML = '';
+            for (let i = 1; i <= 14; i++) {
+                list.innerHTML += `
+                    <button class="btn btn-sm btn-outline" style="padding: 4px 6px; font-size: 0.75rem;" onclick="TeacherModule.jumpTo(${i})">
+                        Est. ${i}
+                    </button>
+                `;
+            }
+        },
+
+        requestAccess: function() {
+            document.getElementById('modal-pwd-dialog').classList.add('active');
+            document.getElementById('input-teacher-pwd').value = '';
+            document.getElementById('input-teacher-pwd').focus();
+        },
+
+        closePwd: function() {
+            document.getElementById('modal-pwd-dialog').classList.remove('active');
+        },
+
+        checkPwd: function() {
+            const v = document.getElementById('input-teacher-pwd').value;
+            if (v === this.pin) {
+                this.closePwd();
+                document.getElementById('modal-teacher-panel').classList.add('active');
+            } else {
+                alert("Contraseña incorrecta.");
+            }
+        },
+
+        closePanel: function() {
+            document.getElementById('modal-teacher-panel').classList.remove('active');
+        },
+
+        jumpTo: function(num) {
+            this.closePanel();
+            App.goToStation(num);
+        },
+
+        autoSolve: function() {
+            const st = Bank[State.currentStation];
+            const ex = st.exercises[State.currentExerciseIndex];
+
+            if (ex.type === 'read' || ex.type === 'add_visual' || ex.type === 'sub_visual') {
+                const targetN = ex.colored !== undefined ? ex.colored : (ex.n1 !== undefined && ex.n2 !== undefined ? (ex.type.includes('add') ? ex.n1 + ex.n2 : ex.n1 - ex.n2) : 1);
+                const targetD = ex.total || ex.den;
+                document.getElementById('inp-num').value = targetN;
+                document.getElementById('inp-den').value = targetD;
+            } else if (ex.type === 'draw_free' || ex.type === 'paint_free') {
+                App.paintedParts.clear();
+                for (let i = 0; i < ex.num; i++) App.paintedParts.add(i);
+                App.redrawFreeCanvas();
+            } else if (ex.type === 'mc') {
+                document.getElementById('selected-mc-value').value = ex.correct;
+            } else if (ex.type === 'problem') {
+                App.selectProblemOp(ex.op);
+                document.getElementById('inp-num').value = ex.ansNum;
+                document.getElementById('inp-den').value = ex.ansDen;
+            } else if (ex.type === 'detect_op') {
+                App.selectOpCorrectBool(ex.isCorrect);
+                if (!ex.isCorrect) {
+                    document.getElementById('inp-num').value = ex.correctNum;
+                    document.getElementById('inp-den').value = ex.correctDen;
+                }
+            } else if (ex.type === 'detect_error_shape') {
+                App.selectDetectBool(ex.isCorrect);
+            }
+            App.showFeedback('info', 'Modo Profesor: Campos resueltos correctamente.');
+        },
+
+        skip: function() {
+            App.proceedNext();
+        },
+
+        reset: function() {
+            App.loadCurrentExercise();
+        },
+
+        openLiveReport: function() {
+            this.closePanel();
+            App.showPedagogicalReport();
+        },
+
+        jumpToCompleted: function() {
+            this.closePanel();
+            App.showMissionCompleted();
+        }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        App.init();
+    });
+    </script>
+</body>
+</html>
