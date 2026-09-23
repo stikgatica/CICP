@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>El Expreso de las Líneas - Maquinista Geométrico</title>
+<style>
+  :root {
+    --bg-main: #f3f7fa;
+    --card-bg: #ffffff;
+    --rail-wood: #795548;
+    --rail-iron: #37474f;
+    --train-blue: #1565c0;
+    --train-gold: #fbc02d;
+    --train-red: #d32f2f;
+    --train-green: #2e7d32;
+    --line-blue: #0288d1;
+    --line-orange: #f57c00;
+    --line-purple: #7b1fa2;
+    --shadow: 0 8px 24px rgba(0,0,0,0.1);
+    --border-radius: 20px;
+    --font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-main);
+    color: #263238;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* BARRA SUPERIOR / ESTACIÓN */
+  header {
+    background: linear-gradient(135deg, #0d47a1, #1976d2);
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative;
+    z-index: 10;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header-brand svg {
+    width: 44px;
+    height: 44px;
+    fill: var(--train-gold);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  }
+
+  .header-titles h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+
+  .header-titles span {
+    font-size: 0.9rem;
+    color: #bbdefb;
+    font-weight: 500;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-icon {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+  }
+
+  .btn-icon:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+  }
+
+  /* BARRA DE PROGRESO DE LA VÍA */
+  .rail-progress-container {
+    background: #e0e0e0;
+    height: 20px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background-image: repeating-linear-gradient(90deg, #b0bec5 0, #b0bec5 4px, transparent 4px, transparent 18px);
+  }
+
+  .rail-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #43a047, #66bb6a);
+    transition: width 0.4s ease;
+    position: relative;
+    border-right: 3px solid #2e7d32;
+  }
+
+  .station-indicator {
+    padding: 6px 16px;
+    background: #e3f2fd;
+    color: #0d47a1;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    border-bottom: 2px solid #bbdefb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* CONTENIDO PRINCIPAL */
+  main {
+    flex: 1;
+    max-width: 960px;
+    width: 100%;
+    margin: 16px auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .station-view {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.35s ease-out forwards;
+    border: 3px solid #e1e8ed;
+    min-height: 480px;
+  }
+
+  .station-view.active {
+    display: flex;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .station-title {
+    font-size: 1.4rem;
+    color: #1a237e;
+    text-align: center;
+    margin: 0 0 8px 0;
+    font-weight: 800;
+  }
+
+  .station-instruction {
+    font-size: 1.15rem;
+    color: #455a64;
+    text-align: center;
+    margin: 0 0 20px 0;
+    max-width: 700px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  /* BOTONES GRANDES Y AMIGABLES */
+  .btn {
+    font-size: 1.2rem;
+    font-weight: 800;
+    padding: 14px 28px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    transition: all 0.15s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    min-height: 54px;
+  }
+
+  .btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .btn-primary { background: linear-gradient(135deg, #1e88e5, #1565c0); color: white; }
+  .btn-success { background: linear-gradient(135deg, #43a047, #2e7d32); color: white; }
+  .btn-warning { background: linear-gradient(135deg, #fbc02d, #f57f17); color: #37474f; }
+  .btn-danger { background: linear-gradient(135deg, #e53935, #c62828); color: white; }
+  .btn-secondary { background: #eceff1; color: #455a64; box-shadow: none; border: 2px solid #cfd8dc; }
+
+  /* FEEDBACK Y MENSAJES */
+  .feedback-box {
+    margin: 16px 0;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-align: center;
+    display: none;
+    animation: popIn 0.3s ease;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .feedback-box.correct {
+    display: block;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 2px solid #81c784;
+  }
+
+  .feedback-box.try-again {
+    display: block;
+    background: #fff8e1;
+    color: #f57f17;
+    border: 2px solid #ffe082;
+  }
+
+  .hint-box {
+    background: #e1f5fe;
+    color: #0277bd;
+    border: 2px dashed #4fc3f7;
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin: 10px 0;
+    font-weight: 700;
+    font-size: 1.05rem;
+    display: none;
+    text-align: center;
+    max-width: 650px;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* BARRA DE NAVEGACIÓN INFERIOR */
+  .nav-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+    padding: 10px;
+  }
+
+  /* 0. BIENVENIDA Y RECORDATORIO VISUAL */
+  .cards-intro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .intro-card {
+    background: #fafafa;
+    border: 3px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+  }
+
+  .intro-card.paralelas { border-top: 8px solid var(--line-blue); }
+  .intro-card.perpendiculares { border-top: 8px solid var(--train-red); }
+  .intro-card.secantes { border-top: 8px solid var(--line-orange); }
+
+  .intro-card h3 {
+    margin: 8px 0;
+    font-size: 1.3rem;
+  }
+
+  .intro-card p {
+    font-size: 1rem;
+    color: #546e7a;
+    font-weight: 600;
+    min-height: 48px;
+    margin: 6px 0 12px 0;
+  }
+
+  .visual-preview {
+    width: 190px;
+    height: 140px;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #cfd8dc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ESTACIÓN 1 Y 2: VISUALIZADOR DE LÍNEAS */
+  .line-display-stage {
+    width: 320px;
+    height: 260px;
+    background: #ffffff;
+    border: 3px solid #b0bec5;
+    border-radius: 16px;
+    position: relative;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.06);
+    margin: 10px auto;
+  }
+
+  .line-canvas-fixed {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .btn-options-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin: 14px 0;
+    width: 100%;
+  }
+
+  .btn-choice {
+    font-size: 1.25rem;
+    font-weight: 800;
+    padding: 14px 26px;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 3px solid #90caf9;
+    color: #0d47a1;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-width: 150px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  }
+
+  .btn-choice:hover {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    transform: translateY(-2px);
+  }
+
+  /* ESTACIÓN 3: CLASIFICACIÓN (DRAG & DROP / TAP) */
+  .classify-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .classify-zones {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    width: 100%;
+  }
+
+  .drop-zone {
+    background: #f1f8e9;
+    border: 3px dashed #81c784;
+    border-radius: 16px;
+    min-height: 210px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background-color 0.2s;
+  }
+
+  .drop-zone.zone-perpendicular {
+    background: #ffebee;
+    border-color: #ef9a9a;
+  }
+
+  .drop-zone.zone-secante {
+    background: #fff8e1;
+    border-color: #ffe082;
+  }
+
+  .drop-zone.hovered {
+    background: #c8e6c9 !important;
+    border-style: solid;
+  }
+
+  .drop-zone-title {
+    font-weight: 800;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+    text-align: center;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.8);
+    width: 100%;
+  }
+
+  .drop-zone-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+    flex: 1;
+  }
+
+  .cards-deck {
+    background: #eceff1;
+    border: 2px solid #cfd8dc;
+    border-radius: 14px;
+    padding: 12px;
+    min-height: 110px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .drag-card {
+    width: 82px;
+    height: 82px;
+    background: white;
+    border: 3px solid #90a4ae;
+    border-radius: 12px;
+    cursor: grab;
+    touch-action: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: transform 0.15s, border-color 0.2s;
+  }
+
+  .drag-card:active {
+    cursor: grabbing;
+    transform: scale(1.08);
+  }
+
+  .drag-card.selected-touch {
+    border-color: #ff9800;
+    box-shadow: 0 0 0 4px rgba(255,152,0,0.4);
+    transform: scale(1.05);
+  }
+
+  /* ESTACIÓN 4, 5, 6, 7: ZONA DE DIBUJO / TRAZADO */
+  .draw-zone-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .draw-canvas-board {
+    background: #ffffff;
+    border: 3px solid #37474f;
+    border-radius: 16px;
+    cursor: crosshair;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    touch-action: none;
+  }
+
+  .draw-tools {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ESTACIÓN 8: EJEMPLOS COTIDIANOS */
+  .everyday-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .everyday-art-frame {
+    width: 280px;
+    height: 200px;
+    background: #ffffff;
+    border: 4px solid #455a64;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.08);
+  }
+
+  .everyday-legend {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #37474f;
+    text-align: center;
+  }
+
+  /* INFORME FINAL / DIPLOMA */
+  .certificate-box {
+    background: #fffde7;
+    border: 8px double #fbc02d;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 680px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
+
+  .cert-header {
+    font-size: 2rem;
+    color: #b78103;
+    font-weight: 900;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .cert-sub {
+    font-size: 1.1rem;
+    color: #6d4c41;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+
+  .student-name-input {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0d47a1;
+    border: none;
+    border-bottom: 3px solid #1976d2;
+    background: transparent;
+    text-align: center;
+    padding: 4px 10px;
+    width: 80%;
+    margin-bottom: 16px;
+    font-family: inherit;
+    outline: none;
+  }
+
+  .student-name-input:focus {
+    border-color: #ff9800;
+  }
+
+  .cert-report-table {
+    width: 100%;
+    margin: 16px 0;
+    border-collapse: collapse;
+    font-size: 1.05rem;
+  }
+
+  .cert-report-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #ffe082;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .cert-report-table td:last-child {
+    text-align: right;
+    font-weight: 800;
+    color: #1b5e20;
+  }
+
+  .badge-skill {
+    background: #ffffff;
+    border: 2px solid #ffd54f;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 8px 0;
+    text-align: left;
+    font-size: 1rem;
+  }
+
+  /* MEDIA QUERIES PARA CELULARES Y TABLETS */
+  @media (max-width: 768px) {
+    .classify-zones {
+      grid-template-columns: 1fr;
+    }
+    .drop-zone {
+      min-height: 120px;
+    }
+    .header-titles h1 {
+      font-size: 1.1rem;
+    }
+    .btn {
+      font-size: 1.05rem;
+      padding: 10px 18px;
+    }
+  }
+
+  /* ESTILOS DE IMPRESIÓN (DIPLOMA / INFORME) */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    #station-report, #station-report * {
+      visibility: visible;
+    }
+    #station-report {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      border: none;
+      box-shadow: none;
+    }
+    .nav-bar, header, .rail-progress-container, .station-indicator, .btn-print-hide {
+      display: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ENCABEZADO TREN -->
+  <header>
+    <div class="header-brand">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C7.5 2 4 4.5 4 8v9c0 2 1.5 3.5 3.5 3.5L6 22v1h12v-1l-1.5-1.5c2 0 3.5-1.5 3.5-3.5V8c0-3.5-3.5-6-8-6zm-5 14c-.83 0-1.5-.67-1.5-1.5S6.17 13 7 13s1.5.67 1.5 1.5S7.83 16 7 16zm10 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM18 10H6V7c0-1.5 2-3 6-3s6 1.5 6 3v3z"/>
+      </svg>
+      <div class="header-titles">
+        <h1>El Expreso de las Líneas</h1>
+        <span>Misión: Maquinista Geométrico</span>
+      </div>
+    </div>
+    <div class="header-controls">
+      <button class="btn-icon" id="btn-sound-toggle" title="Sonido">🔊</button>
+      <button class="btn-icon" id="btn-reset-all" title="Reiniciar todo">🔄</button>
+    </div>
+  </header>
+
+  <!-- BARRA DE PROGRESO DE LA VÍA -->
+  <div class="rail-progress-container">
+    <div class="rail-progress-bar" id="rail-progress"></div>
+  </div>
+
+  <div class="station-indicator" id="station-label">
+    🚉 Estación: Inicio del Recorrido
+  </div>
+
+  <main>
+    <!-- ESTACIÓN 0: BIENVENIDA Y RECORDATORIO VISUAL -->
+    <section class="station-view active" id="station-0">
+      <h2 class="station-title">🚂 ¡Bienvenidos a Bordo, Maquinistas!</h2>
+      <p class="station-instruction">Antes de poner en marcha el tren, revisa las 3 señales de las vías:</p>
+
+      <div class="cards-intro-grid">
+        <!-- PARALELAS -->
+        <div class="intro-card paralelas">
+          <div class="visual-preview">
+            <svg width="150" height="90" viewBox="0 0 150 90">
+              <line x1="15" y1="30" x2="135" y2="30" stroke="#0288d1" stroke-width="7" stroke-linecap="round"/>
+              <line x1="15" y1="60" x2="135" y2="60" stroke="#0288d1" stroke-width="7" stroke-linecap="round"/>
+              <!-- durmientes ferroviarios -->
+              <line x1="40" y1="30" x2="40" y2="60" stroke="#b0bec5" stroke-width="3"/>
+              <line x1="75" y1="30" x2="75" y2="60" stroke="#b0bec5" stroke-width="3"/>
+              <line x1="110" y1="30" x2="110" y2="60" stroke="#b0bec5" stroke-width="3"/>
+            </svg>
+          </div>
+          <h3 style="color:#0288d1;">PARALELAS</h3>
+          <p>Van en la misma dirección y <strong>nunca se cruzan</strong> (como los rieles del tren).</p>
+        </div>
+
+        <!-- PERPENDICULARES -->
+        <div class="intro-card perpendiculares">
+          <div class="visual-preview">
+            <svg width="150" height="90" viewBox="0 0 150 90">
+              <line x1="15" y1="50" x2="135" y2="50" stroke="#d32f2f" stroke-width="7" stroke-linecap="round"/>
+              <line x1="75" y1="10" x2="75" y2="80" stroke="#d32f2f" stroke-width="7" stroke-linecap="round"/>
+              <!-- Cuadrado de 90° -->
+              <rect x="75" y="32" width="18" height="18" fill="none" stroke="#ff8f00" stroke-width="3"/>
+              <circle cx="84" cy="41" r="2.5" fill="#ff8f00"/>
+            </svg>
+          </div>
+          <h3 style="color:#d32f2f;">PERPENDICULARES</h3>
+          <p>Se cruzan formando una <strong>esquina cuadrada perfecta de 90°</strong> (ángulo recto).</p>
+        </div>
+
+        <!-- SECANTES -->
+        <div class="intro-card secantes">
+          <div class="visual-preview">
+            <svg width="150" height="90" viewBox="0 0 150 90">
+              <line x1="20" y1="75" x2="130" y2="15" stroke="#f57c00" stroke-width="7" stroke-linecap="round"/>
+              <line x1="30" y1="20" x2="120" y2="70" stroke="#f57c00" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 style="color:#f57c00;">SECANTES</h3>
+          <p>Se cruzan en un punto, pero <strong>no forman esquina de 90°</strong> (inclinadas).</p>
+        </div>
+      </div>
+
+      <button class="btn btn-success" id="btn-start" style="font-size:1.35rem; padding: 16px 40px;">
+        🚦 ¡Comenzar el Viaje!
+      </button>
+    </section>
+
+    <!-- ESTACIÓN 1: ¿SE CRUZAN O NO? -->
+    <section class="station-view" id="station-1">
+      <h2 class="station-title">Estación 1: ¿Se cruzan o no?</h2>
+      <p class="station-instruction">Observa bien las líneas. Si continuaran avanzando sin fin, ¿se cruzan en algún punto?</p>
+      
+      <div class="line-display-stage">
+        <canvas id="canvas-s1" width="320" height="260" class="line-canvas-fixed"></canvas>
+      </div>
+
+      <div class="feedback-box" id="feedback-s1"></div>
+      <div class="hint-box" id="hint-s1"></div>
+
+      <div class="btn-options-row">
+        <button class="btn btn-choice" onclick="checkStation1(true)">✅ Sí, se cruzan</button>
+        <button class="btn btn-choice" onclick="checkStation1(false)">❌ No se cruzan</button>
+      </div>
+    </section>
+
+    <!-- ESTACIÓN 2: IDENTIFICA LAS LÍNEAS -->
+    <section class="station-view" id="station-2">
+      <h2 class="station-title">Estación 2: Identifica las Vías</h2>
+      <p class="station-instruction">¿Qué tipo de líneas son? Fíjate muy bien si forman una esquina recta o si están inclinadas.</p>
+      
+      <div class="line-display-stage">
+        <canvas id="canvas-s2" width="320" height="260" class="line-canvas-fixed"></canvas>
+      </div>
+
+      <div class="feedback-box" id="feedback-s2"></div>
+      <div class="hint-box" id="hint-s2"></div>
+      <button class="btn btn-secondary" id="btn-help-s2" style="display:none; margin-bottom:10px;" onclick="showVisualAidStation2()">
+        🔍 Ver ayuda de vías (alargar trazos)
+      </button>
+
+      <div class="btn-options-row">
+        <button class="btn btn-choice" onclick="checkStation2('paralelas')">Paralelas</button>
+        <button class="btn btn-choice" onclick="checkStation2('perpendiculares')">Perpendiculares</button>
+        <button class="btn btn-choice" onclick="checkStation2('secantes')">Secantes</button>
+      </div>
+    </section>
+
+    <!-- ESTACIÓN 3: CLASIFICA EN VAGONES -->
+    <section class="station-view" id="station-3">
+      <h2 class="station-title">Estación 3: Clasifica los Rieles</h2>
+      <p class="station-instruction">Arrastra (o toca una tarjeta y luego toca la casilla) para clasificar cada par de líneas en su vagón.</p>
+
+      <div class="classify-container">
+        <!-- ZONAS DE DESTINO -->
+        <div class="classify-zones">
+          <div class="drop-zone zone-paralela" data-category="paralelas" id="zone-paralelas" ondragover="allowDrop(event)" ondrop="handleDrop(event)">
+            <div class="drop-zone-title" style="color:#0288d1;">PARALELAS</div>
+            <div class="drop-zone-content" id="drop-content-paralelas"></div>
+          </div>
+
+          <div class="drop-zone zone-perpendicular" data-category="perpendiculares" id="zone-perpendiculares" ondragover="allowDrop(event)" ondrop="handleDrop(event)">
+            <div class="drop-zone-title" style="color:#c62828;">PERPENDICULARES (90°)</div>
+            <div class="drop-zone-content" id="drop-content-perpendiculares"></div>
+          </div>
+
+          <div class="drop-zone zone-secante" data-category="secantes" id="zone-secantes" ondragover="allowDrop(event)" ondrop="handleDrop(event)">
+            <div class="drop-zone-title" style="color:#f57f17;">SECANTES</div>
+            <div class="drop-zone-content" id="drop-content-secantes"></div>
+          </div>
+        </div>
+
+        <div style="font-weight:700; color:#546e7a; text-align:center;">Tarjetas por clasificar:</div>
+        <!-- MAZO DE TARJETAS -->
+        <div class="cards-deck" id="cards-deck-s3"></div>
+
+        <div class="feedback-box" id="feedback-s3"></div>
+
+        <div style="text-align:center;">
+          <button class="btn btn-primary" onclick="checkClassificationStation3()">🔍 Revisar Vagones</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESTACIÓN 4: TRAZA LÍNEAS PARALELAS -->
+    <section class="station-view" id="station-4">
+      <h2 class="station-title">Estación 4: Traza Líneas Paralelas</h2>
+      <p class="station-instruction">Arrastra tu dedo o el ratón en la pizarra para dibujar una nueva línea <strong>paralela a la línea azul</strong>.</p>
+
+      <div class="draw-zone-container">
+        <canvas id="canvas-draw-s4" width="360" height="260" class="draw-canvas-board"></canvas>
+        <div class="draw-tools">
+          <button class="btn btn-secondary" onclick="clearDrawCanvas(4)">🧹 Borrar mi línea</button>
+          <button class="btn btn-success" onclick="evaluateDrawStation4()">⭐ Comprobar trazo</button>
+        </div>
+      </div>
+      <div class="feedback-box" id="feedback-s4"></div>
+    </section>
+
+    <!-- ESTACIÓN 5: TRAZA UNA PERPENDICULAR -->
+    <section class="station-view" id="station-5">
+      <h2 class="station-title">Estación 5: Traza una Perpendicular</h2>
+      <p class="station-instruction">Dibuja una línea que cruce a la línea azul formando una <strong>esquina cuadrada (90°)</strong>.</p>
+
+      <div class="draw-zone-container">
+        <canvas id="canvas-draw-s5" width="360" height="260" class="draw-canvas-board"></canvas>
+        <div class="draw-tools">
+          <button class="btn btn-secondary" onclick="clearDrawCanvas(5)">🧹 Borrar mi línea</button>
+          <button class="btn btn-success" onclick="evaluateDrawStation5()">⭐ Comprobar trazo</button>
+        </div>
+      </div>
+      <div class="feedback-box" id="feedback-s5"></div>
+    </section>
+
+    <!-- ESTACIÓN 6: TRAZA UNA SECANTE -->
+    <section class="station-view" id="station-6">
+      <h2 class="station-title">Estación 6: Traza una Secante</h2>
+      <p class="station-instruction">Dibuja una línea que <strong>cruce a la azul</strong>, pero que <strong>no sea perpendicular (no forme 90°)</strong>.</p>
+
+      <div class="draw-zone-container">
+        <canvas id="canvas-draw-s6" width="360" height="260" class="draw-canvas-board"></canvas>
+        <div class="draw-tools">
+          <button class="btn btn-secondary" onclick="clearDrawCanvas(6)">🧹 Borrar mi línea</button>
+          <button class="btn btn-success" onclick="evaluateDrawStation6()">⭐ Comprobar trazo</button>
+        </div>
+      </div>
+      <div class="feedback-box" id="feedback-s6"></div>
+    </section>
+
+    <!-- ESTACIÓN 7: DESAFÍO EN CUADRÍCULA -->
+    <section class="station-view" id="station-7">
+      <h2 class="station-title">Estación 7: Gran Desafío en Cuadrícula</h2>
+      <p class="station-instruction" id="instruct-s7">Misión: Traza una línea en la cuadrícula siguiendo la orden del jefe de estación.</p>
+
+      <div class="draw-zone-container">
+        <canvas id="canvas-draw-s7" width="360" height="280" class="draw-canvas-board"></canvas>
+        <div class="draw-tools">
+          <button class="btn btn-secondary" onclick="clearDrawCanvas(7)">🧹 Borrar mi línea</button>
+          <button class="btn btn-success" onclick="evaluateDrawStation7()">⭐ Comprobar desafío</button>
+        </div>
+      </div>
+      <div class="feedback-box" id="feedback-s7"></div>
+    </section>
+
+    <!-- ESTACIÓN 8: ¿DÓNDE LAS VEMOS? (COTIDIANO) -->
+    <section class="station-view" id="station-8">
+      <h2 class="station-title">Estación 8: ¿Dónde las Vemos?</h2>
+      <p class="station-instruction">En la ciudad y en los trenes encontramos líneas por todas partes. ¿Qué tipo de líneas se destacan en este dibujo?</p>
+
+      <div class="everyday-container">
+        <div class="everyday-art-frame" id="everyday-svg-frame"></div>
+        <div class="everyday-legend" id="everyday-title"></div>
+      </div>
+
+      <div class="feedback-box" id="feedback-s8"></div>
+
+      <div class="btn-options-row">
+        <button class="btn btn-choice" onclick="checkEveryday('paralelas')">Paralelas</button>
+        <button class="btn btn-choice" onclick="checkEveryday('perpendiculares')">Perpendiculares</button>
+        <button class="btn btn-choice" onclick="checkEveryday('secantes')">Secantes</button>
+      </div>
+    </section>
+
+    <!-- ESTACIÓN 9: DESAFÍO FINAL -->
+    <section class="station-view" id="station-9">
+      <h2 class="station-title">Estación 9: Examen de Maquinista</h2>
+      <p class="station-instruction" id="instruct-s9">Pregunta del examen final</p>
+
+      <div id="final-challenge-container" style="display:flex; flex-direction:column; align-items:center; width:100%;">
+        <!-- Render dinámico según tipo de pregunta -->
+        <div class="line-display-stage" id="stage-s9">
+          <canvas id="canvas-s9" width="320" height="260" class="line-canvas-fixed"></canvas>
+        </div>
+        <div class="feedback-box" id="feedback-s9"></div>
+        <div class="btn-options-row" id="buttons-s9"></div>
+      </div>
+    </section>
+
+    <!-- ESTACIÓN 10: INFORME FINAL / DIPLOMA -->
+    <section class="station-view" id="station-report">
+      <div class="certificate-box">
+        <div class="cert-header">🎖️ Licencia Oficial de Maquinista</div>
+        <div class="cert-sub">Expedida por el Ferrocarril Geométrico Escolar</div>
+
+        <div>
+          <label style="font-weight:700; color:#5d4037; font-size:1.1rem;">Nombre del Estudiante:</label><br>
+          <input type="text" id="student-name-field" class="student-name-input" value="Estudiante Conductor" onchange="saveStudentName()">
+        </div>
+
+        <div style="font-size:0.95rem; color:#795548; margin-bottom:12px;" id="cert-date-text"></div>
+
+        <table class="cert-report-table">
+          <tr><td>Identifica líneas Paralelas:</td><td id="rep-id-par">0 / 0</td></tr>
+          <tr><td>Identifica líneas Perpendiculares:</td><td id="rep-id-per">0 / 0</td></tr>
+          <tr><td>Identifica líneas Secantes:</td><td id="rep-id-sec">0 / 0</td></tr>
+          <tr><td>Traza líneas Paralelas:</td><td id="rep-dr-par">0 / 0</td></tr>
+          <tr><td>Traza líneas Perpendiculares:</td><td id="rep-dr-per">0 / 0</td></tr>
+          <tr><td>Traza líneas Secantes:</td><td id="rep-dr-sec">0 / 0</td></tr>
+        </table>
+
+        <div class="badge-skill" style="border-left: 6px solid #43a047;">
+          <strong style="color:#2e7d32;">🌟 Fortaleza destacada:</strong>
+          <span id="rep-strength">Reconoce con mucha facilidad la dirección de las vías.</span>
+        </div>
+
+        <div class="badge-skill" style="border-left: 6px solid #fb8c00;">
+          <strong style="color:#ef6c00;">🚂 Consejo para seguir practicando:</strong>
+          <span id="rep-practice">Sigue buscando esquinas rectas de 90° con tu escuadra en casa y en el aula.</span>
+        </div>
+
+        <div style="margin-top:24px; display:flex; flex-wrap:wrap; justify-content:center; gap:12px;" class="btn-print-hide">
+          <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Guardar Informe PDF</button>
+          <button class="btn btn-warning" onclick="resetAllProgress()">🔄 Reiniciar Recorrido</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BARRA DE NAVEGACIÓN COMÚN -->
+    <div class="nav-bar" id="global-nav" style="display:none;">
+      <button class="btn btn-secondary" id="btn-nav-prev" onclick="navigateStation(-1)">⬅️ Anterior</button>
+      <button class="btn btn-secondary" id="btn-nav-retry" onclick="retryCurrentActivity()">🔄 Intentar otra vez</button>
+      <button class="btn btn-secondary" id="btn-nav-skip" onclick="skipCurrentActivity()">⏭️ Saltar</button>
+      <button class="btn btn-primary" id="btn-nav-next" onclick="navigateStation(1)">Siguiente ➡️</button>
+    </div>
+  </main>
+
+<script>
+/* =========================================================
+   1. SISTEMA DE AUDIO SINTETIZADO (Web Audio API) - 100% OFFLINE
+   ========================================================= */
+let audioCtx = null;
+let soundEnabled = true;
+
+function initAudio() {
+  if (!audioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) audioCtx = new AudioContext();
+  }
+}
+
+function playSound(type) {
+  if (!soundEnabled) return;
+  initAudio();
+  if (!audioCtx) return;
+
+  const now = audioCtx.currentTime;
+
+  if (type === 'whistle') {
+    // Silbato de tren alegre
+    [520, 650].forEach((freq) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, now);
+      osc.frequency.linearRampToValueAtTime(freq + 40, now + 0.3);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    });
+  } else if (type === 'correct') {
+    // Fanfarria corta positiva
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + i * 0.08);
+      gain.gain.setValueAtTime(0.18, now + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + i * 0.08);
+      osc.stop(now + i * 0.08 + 0.25);
+    });
+  } else if (type === 'try-again') {
+    // Sonido suave de reflexión (no castigador)
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(330, now);
+    osc.frequency.linearRampToValueAtTime(260, now + 0.25);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.3);
+  } else if (type === 'click') {
+    // Clic sutil
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, now);
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+}
+
+document.getElementById('btn-sound-toggle').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  document.getElementById('btn-sound-toggle').textContent = soundEnabled ? '🔊' : '🔇';
+  if (soundEnabled) playSound('click');
+});
+
+/* =========================================================
+   2. ESTADO GENERAL Y PERSISTENCIA (localStorage)
+   ========================================================= */
+const TOTAL_STATIONS = 10;
+let currentStationIndex = 0;
+
+let stats = {
+  idParCorrect: 0, idParTotal: 0,
+  idPerCorrect: 0, idPerTotal: 0,
+  idSecCorrect: 0, idSecTotal: 0,
+  drParCorrect: 0, drParTotal: 0,
+  drPerCorrect: 0, drPerTotal: 0,
+  drSecCorrect: 0, drSecTotal: 0,
+  studentName: 'Estudiante Conductor'
+};
+
+function loadSavedProgress() {
+  try {
+    const raw = localStorage.getItem('expreso_lineas_stats');
+    if (raw) {
+      stats = Object.assign(stats, JSON.parse(raw));
+    }
+    const savedStation = localStorage.getItem('expreso_lineas_curr');
+    if (savedStation !== null) {
+      currentStationIndex = parseInt(savedStation, 10);
+    }
+  } catch (e) {
+    console.warn("Storage not available:", e);
+  }
+}
+
+function saveProgress() {
+  try {
+    localStorage.setItem('expreso_lineas_stats', JSON.stringify(stats));
+    localStorage.setItem('expreso_lineas_curr', currentStationIndex.toString());
+  } catch (e) {}
+}
+
+function resetAllProgress() {
+  if (confirm("¿Deseas reiniciar todo tu recorrido y puntuación desde el principio?")) {
+    stats = {
+      idParCorrect: 0, idParTotal: 0,
+      idPerCorrect: 0, idPerTotal: 0,
+      idSecCorrect: 0, idSecTotal: 0,
+      drParCorrect: 0, drParTotal: 0,
+      drPerCorrect: 0, drPerTotal: 0,
+      drSecCorrect: 0, drSecTotal: 0,
+      studentName: 'Estudiante Conductor'
+    };
+    saveProgress();
+    goToStation(0);
+  }
+}
+
+document.getElementById('btn-reset-all').addEventListener('click', resetAllProgress);
+
+function saveStudentName() {
+  stats.studentName = document.getElementById('student-name-field').value || 'Estudiante Conductor';
+  saveProgress();
+}
+
+/* =========================================================
+   3. NAVEGACIÓN ENTRE ESTACIONES
+   ========================================================= */
+const stationNames = [
+  "Inicio del Recorrido",
+  "Estación 1: ¿Se cruzan?",
+  "Estación 2: Identifica las Vías",
+  "Estación 3: Clasificación en Vagones",
+  "Estación 4: Traza Paralelas",
+  "Estación 5: Traza Perpendiculares",
+  "Estación 6: Traza Secantes",
+  "Estación 7: Desafío en Cuadrícula",
+  "Estación 8: Vías en la Ciudad",
+  "Estación 9: Examen de Maquinista",
+  "Estación Terminal: Tu Licencia"
+];
+
+function goToStation(index) {
+  if (index < 0) index = 0;
+  if (index > TOTAL_STATIONS) index = TOTAL_STATIONS;
+  currentStationIndex = index;
+
+  document.querySelectorAll('.station-view').forEach((sec, idx) => {
+    sec.classList.remove('active');
+  });
+
+  const activeView = document.getElementById(`station-${index}`);
+  if (activeView) activeView.classList.add('active');
+
+  // Actualizar barra de progreso
+  const pct = (index / TOTAL_STATIONS) * 100;
+  document.getElementById('rail-progress').style.width = pct + '%';
+  document.getElementById('station-label').textContent = `🚉 ${stationNames[index] || ''}`;
+
+  // Manejo de la barra de navegación global
+  const globalNav = document.getElementById('global-nav');
+  if (index === 0) {
+    globalNav.style.display = 'none';
+  } else if (index === 10) {
+    globalNav.style.display = 'none';
+    buildFinalReport();
+  } else {
+    globalNav.style.display = 'flex';
+  }
+
+  saveProgress();
+
+  // Inicializar estación según corresponda
+  if (index === 1) initStation1();
+  if (index === 2) initStation2();
+  if (index === 3) initStation3();
+  if (index === 4) initDrawStation(4);
+  if (index === 5) initDrawStation(5);
+  if (index === 6) initDrawStation(6);
+  if (index === 7) initStation7();
+  if (index === 8) initStation8();
+  if (index === 9) initStation9();
+}
+
+function navigateStation(delta) {
+  playSound('click');
+  goToStation(currentStationIndex + delta);
+}
+
+function skipCurrentActivity() {
+  playSound('click');
+  goToStation(currentStationIndex + 1);
+}
+
+function retryCurrentActivity() {
+  playSound('click');
+  goToStation(currentStationIndex);
+}
+
+document.getElementById('btn-start').addEventListener('click', () => {
+  playSound('whistle');
+  goToStation(1);
+});
+
+/* =========================================================
+   UTILIDADES GEOMÉTRICAS Y DE DIBUJO DE LÍNEAS
+   ========================================================= */
+// Dibuja una línea de vía férrea estilizada con traviesas/durmientes
+function drawRailroadTrack(ctx, x1, y1, x2, y2, color, isDashed = false) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  if (isDashed) {
+    ctx.setLineDash([8, 8]);
+  } else {
+    ctx.setLineDash([]);
+  }
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+
+  // Durmientes si no es punteada
+  if (!isDashed) {
+    ctx.strokeStyle = '#90a4ae';
+    ctx.lineWidth = 3;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    const steps = Math.floor(len / 22);
+    const perpX = (-dy / len) * 7;
+    const perpY = (dx / len) * 7;
+
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      const px = x1 + dx * t;
+      const py = y1 + dy * t;
+      ctx.beginPath();
+      ctx.moveTo(px - perpX, py - perpY);
+      ctx.lineTo(px + perpX, py + perpY);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+// Dibuja el símbolo angular de 90° perfectamente medido
+function drawRightAngleMarker(ctx, cx, cy, angle1, angle2, size = 16) {
+  ctx.save();
+  ctx.strokeStyle = '#ff8f00';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+
+  // Vector base 1
+  const u1x = Math.cos(angle1) * size;
+  const u1y = Math.sin(angle1) * size;
+  // Vector base 2
+  const u2x = Math.cos(angle2) * size;
+  const u2y = Math.sin(angle2) * size;
+
+  const p1x = cx + u1x;
+  const p1y = cy + u1y;
+  const cornerX = cx + u1x + u2x;
+  const cornerY = cy + u1y + u2y;
+  const p2x = cx + u2x;
+  const p2y = cy + u2y;
+
+  ctx.moveTo(p1x, p1y);
+  ctx.lineTo(cornerX, cornerY);
+  ctx.lineTo(p2x, p2y);
+  ctx.stroke();
+
+  // Pequeño punto interior
+  ctx.fillStyle = '#ff8f00';
+  ctx.beginPath();
+  ctx.arc(cx + (u1x + u2x) * 0.5, cy + (u1y + u2y) * 0.5, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/* =========================================================
+   ESTACIÓN 1: ¿SE CRUZAN O NO? (8 Ejercicios Progresivos)
+   ========================================================= */
+let s1Index = 0;
+let s1Data = [];
+
+function generateStation1Data() {
+  return [
+    { type: 'paralelas', cross: false, angle: 0, dist: 50 },
+    { type: 'secantes', cross: true, angle1: -25, angle2: 25 },
+    { type: 'paralelas', cross: false, angle: 90, dist: 55 },
+    { type: 'perpendiculares', cross: true, angle1: 0, angle2: 90 },
+    { type: 'paralelas', cross: false, angle: 45, dist: 45 },
+    { type: 'secantes', cross: true, angle1: -50, angle2: 15 },
+    { type: 'paralelas', cross: false, angle: -30, dist: 50 },
+    { type: 'perpendiculares', cross: true, angle1: 45, angle2: 135 }
+  ].sort(() => Math.random() - 0.5);
+}
+
+function initStation1() {
+  s1Data = generateStation1Data();
+  s1Index = 0;
+  renderStation1Exercise();
+}
+
+function renderStation1Exercise() {
+  const ex = s1Data[s1Index];
+  const cvs = document.getElementById('canvas-s1');
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+  document.getElementById('feedback-s1').className = 'feedback-box';
+  document.getElementById('feedback-s1').style.display = 'none';
+  document.getElementById('hint-s1').style.display = 'none';
+
+  const w = cvs.width, h = cvs.height;
+  const cx = w / 2, cy = h / 2;
+
+  if (ex.type === 'paralelas') {
+    const rad = (ex.angle * Math.PI) / 180;
+    const nx = -Math.sin(rad) * (ex.dist / 2);
+    const ny = Math.cos(rad) * (ex.dist / 2);
+    const vx = Math.cos(rad) * 110;
+    const vy = Math.sin(rad) * 110;
+
+    drawRailroadTrack(ctx, cx + nx - vx, cy + ny - vy, cx + nx + vx, cy + ny + vy, '#0288d1');
+    drawRailroadTrack(ctx, cx - nx - vx, cy - ny - vy, cx - nx + vx, cy - ny + vy, '#0288d1');
+  } else if (ex.type === 'perpendiculares') {
+    const rad1 = (ex.angle1 * Math.PI) / 180;
+    const rad2 = (ex.angle2 * Math.PI) / 180;
+    const len = 95;
+
+    drawRailroadTrack(ctx, cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len, cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len, '#d32f2f');
+    drawRailroadTrack(ctx, cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len, cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len, '#d32f2f');
+  } else {
+    // Secantes
+    const rad1 = (ex.angle1 * Math.PI) / 180;
+    const rad2 = (ex.angle2 * Math.PI) / 180;
+    const len = 95;
+
+    drawRailroadTrack(ctx, cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len, cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len, '#f57c00');
+    drawRailroadTrack(ctx, cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len, cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len, '#f57c00');
+  }
+}
+
+function checkStation1(userSaidYes) {
+  const ex = s1Data[s1Index];
+  const fb = document.getElementById('feedback-s1');
+  const isCorrect = (userSaidYes === ex.cross);
+
+  if (isCorrect) {
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '🌟 ¡Correcto! ' + (ex.cross ? 'Las vías se encuentran en un punto.' : 'Las vías nunca se tocan porque son paralelas.');
+    fb.style.display = 'block';
+
+    setTimeout(() => {
+      s1Index++;
+      if (s1Index < s1Data.length) {
+        renderStation1Exercise();
+      } else {
+        playSound('whistle');
+        goToStation(2);
+      }
+    }, 1200);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = '🧐 Observa nuevamente las líneas. Fíjate si se cruzan o si avanzan sin tocarse.';
+    fb.style.display = 'block';
+  }
+}
+
+/* =========================================================
+   ESTACIÓN 2: IDENTIFICA LAS LÍNEAS (20+ Casos sin confusión)
+   ========================================================= */
+/*
+   SOLUCIÓN DE DISEÑO:
+   - Las perpendiculares tienen ángulo EXACTO de 90° e incluyen el cuadrito indicador de 90°.
+   - Las secantes tienen ángulos marcadamente oblicuos (35° a 50° o 130° a 145°), jamás cercanos a 90°.
+   - Las paralelas están limpiamente separadas con ángulo idéntico.
+*/
+let s2Pool = [];
+let s2Current = null;
+let s2Errors = 0;
+
+function generateStation2Pool() {
+  const pool = [
+    // PARALELAS (múltiples orientaciones)
+    { type: 'paralelas', angle: 0, dist: 50 },
+    { type: 'paralelas', angle: 90, dist: 55 },
+    { type: 'paralelas', angle: 45, dist: 48 },
+    { type: 'paralelas', angle: 135, dist: 48 },
+    { type: 'paralelas', angle: 25, dist: 50 },
+    { type: 'paralelas', angle: -35, dist: 52 },
+    { type: 'paralelas', angle: 70, dist: 50 },
+
+    // PERPENDICULARES (con ángulo de 90° exacto y símbolo visual de 90°)
+    { type: 'perpendiculares', angle1: 0, angle2: 90 },
+    { type: 'perpendiculares', angle1: 45, angle2: 135 },
+    { type: 'perpendiculares', angle1: 30, angle2: 120 },
+    { type: 'perpendiculares', angle1: 60, angle2: 150 },
+    { type: 'perpendiculares', angle1: -20, angle2: 70 },
+    { type: 'perpendiculares', angle1: 15, angle2: 105 },
+    { type: 'perpendiculares', angle1: -45, angle2: 45 },
+
+    // SECANTES (Ángulos deliberadamente muy separados de 90°: 35°, 40°, 50°, etc.)
+    { type: 'secantes', angle1: -20, angle2: 25 },    // diferencia = 45°
+    { type: 'secantes', angle1: 10, angle2: 50 },     // diferencia = 40°
+    { type: 'secantes', angle1: 0, angle2: 35 },      // diferencia = 35°
+    { type: 'secantes', angle1: 20, angle2: 155 },    // obtuso = 135°
+    { type: 'secantes', angle1: -40, angle2: 10 },    // diferencia = 50°
+    { type: 'secantes', angle1: 40, angle2: 80 },     // diferencia = 40°
+    { type: 'secantes', angle1: 15, angle2: 150 }     // obtuso = 135°
+  ];
+  return pool.sort(() => Math.random() - 0.5);
+}
+
+function initStation2() {
+  s2Pool = generateStation2Pool();
+  nextStation2Exercise();
+}
+
+function nextStation2Exercise() {
+  if (s2Pool.length === 0) s2Pool = generateStation2Pool();
+  s2Current = s2Pool.pop();
+  s2Errors = 0;
+
+  document.getElementById('feedback-s2').className = 'feedback-box';
+  document.getElementById('feedback-s2').style.display = 'none';
+  document.getElementById('hint-s2').style.display = 'none';
+  document.getElementById('btn-help-s2').style.display = 'none';
+
+  renderStation2Canvas(false);
+}
+
+function renderStation2Canvas(showExtendedLines = false) {
+  const cvs = document.getElementById('canvas-s2');
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+  const cx = cvs.width / 2;
+  const cy = cvs.height / 2;
+  const ex = s2Current;
+
+  if (ex.type === 'paralelas') {
+    const rad = (ex.angle * Math.PI) / 180;
+    const nx = -Math.sin(rad) * (ex.dist / 2);
+    const ny = Math.cos(rad) * (ex.dist / 2);
+    const len = 90;
+    const vx = Math.cos(rad) * len;
+    const vy = Math.sin(rad) * len;
+
+    drawRailroadTrack(ctx, cx + nx - vx, cy + ny - vy, cx + nx + vx, cy + ny + vy, '#0288d1');
+    drawRailroadTrack(ctx, cx - nx - vx, cy - ny - vy, cx - nx + vx, cy - ny + vy, '#0288d1');
+
+    if (showExtendedLines) {
+      const ext = 140;
+      const exVx = Math.cos(rad) * ext;
+      const exVy = Math.sin(rad) * ext;
+      drawRailroadTrack(ctx, cx + nx - exVx, cy + ny - exVy, cx + nx + exVx, cy + ny + exVy, '#03a9f4', true);
+      drawRailroadTrack(ctx, cx - nx - exVx, cy - ny - exVy, cx - nx + exVx, cy - ny + exVy, '#03a9f4', true);
+    }
+  } else if (ex.type === 'perpendiculares') {
+    const rad1 = (ex.angle1 * Math.PI) / 180;
+    const rad2 = (ex.angle2 * Math.PI) / 180;
+    const len = 95;
+
+    drawRailroadTrack(ctx, cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len, cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len, '#d32f2f');
+    drawRailroadTrack(ctx, cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len, cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len, '#d32f2f');
+
+    // Símbolo de 90° siempre nítido
+    drawRightAngleMarker(ctx, cx, cy, rad1, rad2, 18);
+
+    if (showExtendedLines) {
+      const ext = 140;
+      drawRailroadTrack(ctx, cx - Math.cos(rad1)*ext, cy - Math.sin(rad1)*ext, cx + Math.cos(rad1)*ext, cy + Math.sin(rad1)*ext, '#e57373', true);
+      drawRailroadTrack(ctx, cx - Math.cos(rad2)*ext, cy - Math.sin(rad2)*ext, cx + Math.cos(rad2)*ext, cy + Math.sin(rad2)*ext, '#e57373', true);
+    }
+  } else {
+    // SECANTES: Ángulo marcadamente NO recto
+    const rad1 = (ex.angle1 * Math.PI) / 180;
+    const rad2 = (ex.angle2 * Math.PI) / 180;
+    const len = 95;
+
+    drawRailroadTrack(ctx, cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len, cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len, '#f57c00');
+    drawRailroadTrack(ctx, cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len, cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len, '#f57c00');
+
+    if (showExtendedLines) {
+      const ext = 140;
+      drawRailroadTrack(ctx, cx - Math.cos(rad1)*ext, cy - Math.sin(rad1)*ext, cx + Math.cos(rad1)*ext, cy + Math.sin(rad1)*ext, '#ffb74d', true);
+      drawRailroadTrack(ctx, cx - Math.cos(rad2)*ext, cy - Math.sin(rad2)*ext, cx + Math.cos(rad2)*ext, cy + Math.sin(rad2)*ext, '#ffb74d', true);
+    }
+  }
+}
+
+function showVisualAidStation2() {
+  renderStation2Canvas(true);
+  playSound('click');
+}
+
+function checkStation2(selectedType) {
+  const isCorrect = (selectedType === s2Current.type);
+  const fb = document.getElementById('feedback-s2');
+  const hint = document.getElementById('hint-s2');
+
+  // Registro de estadísticas
+  if (s2Current.type === 'paralelas') {
+    stats.idParTotal++;
+    if (isCorrect) stats.idParCorrect++;
+  } else if (s2Current.type === 'perpendiculares') {
+    stats.idPerTotal++;
+    if (isCorrect) stats.idPerCorrect++;
+  } else {
+    stats.idSecTotal++;
+    if (isCorrect) stats.idSecCorrect++;
+  }
+  saveProgress();
+
+  if (isCorrect) {
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '🎉 ¡Excelente maquinista! Son líneas ' + selectedType.toUpperCase() + '.';
+    fb.style.display = 'block';
+    hint.style.display = 'none';
+
+    setTimeout(() => {
+      // Avanzar tras 4 aciertos
+      const totalAnswered = stats.idParTotal + stats.idPerTotal + stats.idSecTotal;
+      if (totalAnswered >= 4 && totalAnswered % 4 === 0) {
+        goToStation(3);
+      } else {
+        nextStation2Exercise();
+      }
+    }, 1200);
+  } else {
+    s2Errors++;
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Fíjate con atención en cómo interactúan las dos líneas.';
+    fb.style.display = 'block';
+
+    // Pistas didácticas según el tipo de la tarjeta actual
+    if (s2Errors === 1) {
+      hint.style.display = 'block';
+      if (s2Current.type === 'paralelas') {
+        hint.innerHTML = '💡 <strong>Pista:</strong> Recuerda: las paralelas nunca se juntan aunque avancen mucho.';
+      } else if (s2Current.type === 'perpendiculares') {
+        hint.innerHTML = '💡 <strong>Pista:</strong> ¿Se cruzan formando una esquina cuadrada de 90° con el cuadrito?';
+      } else {
+        hint.innerHTML = '💡 <strong>Pista:</strong> ¿Se cruzan inclinadas sin formar esquina de 90°?';
+      }
+    } else if (s2Errors >= 2) {
+      document.getElementById('btn-help-s2').style.display = 'inline-flex';
+    }
+  }
+}
+
+/* =========================================================
+   ESTACIÓN 3: CLASIFICACIÓN (DRAG & DROP Y SOPORTE TOUCH)
+   ========================================================= */
+const s3CardDefs = [
+  // 3 Paralelas nítidas
+  { id: 'c1', type: 'paralelas', angle: 0, dist: 22 },
+  { id: 'c2', type: 'paralelas', angle: 90, dist: 22 },
+  { id: 'c3', type: 'paralelas', angle: 45, dist: 20 },
+
+  // 3 Perpendiculares (con esquina de 90° exacta y cuadradito visible)
+  { id: 'c4', type: 'perpendiculares', angle1: 0, angle2: 90 },
+  { id: 'c5', type: 'perpendiculares', angle1: 45, angle2: 135 },
+  { id: 'c6', type: 'perpendiculares', angle1: 30, angle2: 120 },
+
+  // 3 Secantes (ángulos marcadamente oblicuos: 40°, 45°, 135°, jamás 90°)
+  { id: 'c7', type: 'secantes', angle1: -20, angle2: 25 },
+  { id: 'c8', type: 'secantes', angle1: 0, angle2: 40 },
+  { id: 'c9', type: 'secantes', angle1: 20, angle2: 155 }
+];
+
+let selectedTouchCard = null;
+
+function initStation3() {
+  const deck = document.getElementById('cards-deck-s3');
+  deck.innerHTML = '';
+  document.getElementById('drop-content-paralelas').innerHTML = '';
+  document.getElementById('drop-content-perpendiculares').innerHTML = '';
+  document.getElementById('drop-content-secantes').innerHTML = '';
+
+  const fb = document.getElementById('feedback-s3');
+  fb.className = 'feedback-box';
+  fb.style.display = 'none';
+
+  // Mezclar tarjetas
+  const shuffled = [...s3CardDefs].sort(() => Math.random() - 0.5);
+
+  shuffled.forEach(card => {
+    const el = document.createElement('div');
+    el.className = 'drag-card';
+    el.id = 'card-' + card.id;
+    el.draggable = true;
+    el.dataset.category = card.type;
+
+    // Canvas miniatura de la tarjeta
+    const cvs = document.createElement('canvas');
+    cvs.width = 76;
+    cvs.height = 76;
+    drawMiniatureCard(cvs, card);
+    el.appendChild(cvs);
+
+    // Eventos drag standard
+    el.addEventListener('dragstart', handleDragStart);
+
+    // Soporte táctil amigable (Tap to select)
+    el.addEventListener('click', handleCardTouchSelect);
+
+    deck.appendChild(el);
+  });
+
+  // Habilitar tap en zonas para dispositivos móviles
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.onclick = () => {
+      if (selectedTouchCard) {
+        zone.querySelector('.drop-zone-content').appendChild(selectedTouchCard);
+        selectedTouchCard.classList.remove('selected-touch');
+        selectedTouchCard = null;
+        playSound('click');
+      }
+    };
+  });
+}
+
+function drawMiniatureCard(cvs, def) {
+  const ctx = cvs.getContext('2d');
+  const cx = cvs.width / 2;
+  const cy = cvs.height / 2;
+
+  if (def.type === 'paralelas') {
+    const rad = (def.angle * Math.PI) / 180;
+    const nx = -Math.sin(rad) * (def.dist / 2);
+    const ny = Math.cos(rad) * (def.dist / 2);
+    const vx = Math.cos(rad) * 26;
+    const vy = Math.sin(rad) * 26;
+
+    ctx.strokeStyle = '#0288d1';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx + nx - vx, cy + ny - vy);
+    ctx.lineTo(cx + nx + vx, cy + ny + vy);
+    ctx.moveTo(cx - nx - vx, cy - ny - vy);
+    ctx.lineTo(cx - nx + vx, cy - ny + vy);
+    ctx.stroke();
+  } else if (def.type === 'perpendiculares') {
+    const rad1 = (def.angle1 * Math.PI) / 180;
+    const rad2 = (def.angle2 * Math.PI) / 180;
+    const len = 28;
+
+    ctx.strokeStyle = '#d32f2f';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len);
+    ctx.lineTo(cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len);
+    ctx.moveTo(cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len);
+    ctx.lineTo(cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len);
+    ctx.stroke();
+
+    // Símbolo angular de 90° pequeño y claro
+    drawRightAngleMarker(ctx, cx, cy, rad1, rad2, 9);
+  } else {
+    // SECANTES: Ángulo claramente NO recto
+    const rad1 = (def.angle1 * Math.PI) / 180;
+    const rad2 = (def.angle2 * Math.PI) / 180;
+    const len = 28;
+
+    ctx.strokeStyle = '#f57c00';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len);
+    ctx.lineTo(cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len);
+    ctx.moveTo(cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len);
+    ctx.lineTo(cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len);
+    ctx.stroke();
+  }
+}
+
+function handleDragStart(e) {
+  e.dataTransfer.setData('text/plain', e.target.id);
+  playSound('click');
+}
+
+function allowDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('hovered');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const zone = e.currentTarget;
+  zone.classList.remove('hovered');
+  const cardId = e.dataTransfer.getData('text/plain');
+  const card = document.getElementById(cardId);
+  if (card) {
+    zone.querySelector('.drop-zone-content').appendChild(card);
+    playSound('click');
+  }
+}
+
+function handleCardTouchSelect(e) {
+  const card = e.currentTarget;
+  if (selectedTouchCard === card) {
+    card.classList.remove('selected-touch');
+    selectedTouchCard = null;
+  } else {
+    if (selectedTouchCard) selectedTouchCard.classList.remove('selected-touch');
+    selectedTouchCard = card;
+    card.classList.add('selected-touch');
+    playSound('click');
+  }
+}
+
+function checkClassificationStation3() {
+  const deck = document.getElementById('cards-deck-s3');
+  const fb = document.getElementById('feedback-s3');
+  let mistakes = 0;
+  let remainingInDeck = deck.children.length;
+
+  if (remainingInDeck > 0) {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = '¡Aún quedan tarjetas en el andén! Ubica todas las tarjetas en los vagones.';
+    fb.style.display = 'block';
+    return;
+  }
+
+  ['paralelas', 'perpendiculares', 'secantes'].forEach(cat => {
+    const zoneContent = document.getElementById(`drop-content-${cat}`);
+    const placedCards = Array.from(zoneContent.children);
+    placedCards.forEach(card => {
+      if (card.dataset.category !== cat) {
+        mistakes++;
+        // Devolver tarjeta incorrecta al mazo para reintentar
+        deck.appendChild(card);
+        card.style.animation = 'popIn 0.3s';
+      }
+    });
+  });
+
+  if (mistakes === 0) {
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '🎉 ¡Perfecto! Clasificaste todas las vías en el vagón correspondiente.';
+    fb.style.display = 'block';
+    setTimeout(() => goToStation(4), 1600);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = `Regresaron al andén las tarjetas que no correspondían a ese vagón. ¡Inténtalo de nuevo! Recuerda buscar la esquina de 90° en las perpendiculares.`;
+    fb.style.display = 'block';
+  }
+}
+
+/* =========================================================
+   ESTACIONES 4, 5, 6: TRAZADO LIBRE (Paralelas, Perpendiculares, Secantes)
+   ========================================================= */
+const drawExercises = {
+  4: [
+    { x1: 50, y1: 70, x2: 310, y2: 70, targetAngle: 0 },
+    { x1: 180, y1: 30, x2: 180, y2: 230, targetAngle: 90 },
+    { x1: 60, y1: 60, x2: 300, y2: 200, targetAngle: 30.2 },
+    { x1: 60, y1: 200, x2: 300, y2: 60, targetAngle: -30.2 },
+    { x1: 70, y1: 210, x2: 290, y2: 90, targetAngle: -28.6 }
+  ],
+  5: [
+    { x1: 50, y1: 130, x2: 310, y2: 130, baseAngle: 0 },
+    { x1: 180, y1: 30, x2: 180, y2: 230, baseAngle: 90 },
+    { x1: 70, y1: 70, x2: 290, y2: 190, baseAngle: 28.6 },
+    { x1: 70, y1: 190, x2: 290, y2: 70, baseAngle: -28.6 },
+    { x1: 100, y1: 50, x2: 260, y2: 210, baseAngle: 45 }
+  ],
+  6: [
+    { x1: 50, y1: 130, x2: 310, y2: 130, baseAngle: 0 },
+    { x1: 180, y1: 30, x2: 180, y2: 230, baseAngle: 90 },
+    { x1: 70, y1: 70, x2: 290, y2: 190, baseAngle: 28.6 },
+    { x1: 70, y1: 190, x2: 290, y2: 70, baseAngle: -28.6 },
+    { x1: 60, y1: 150, x2: 300, y2: 150, baseAngle: 0 }
+  ]
+};
+
+let drawState = {
+  4: { exIdx: 0, userLine: null, isDrawing: false, startPt: null },
+  5: { exIdx: 0, userLine: null, isDrawing: false, startPt: null },
+  6: { exIdx: 0, userLine: null, isDrawing: false, startPt: null },
+  7: { exIdx: 0, userLine: null, isDrawing: false, startPt: null }
+};
+
+function initDrawStation(stationNum) {
+  const cvs = document.getElementById(`canvas-draw-s${stationNum}`);
+  drawState[stationNum].userLine = null;
+  drawState[stationNum].isDrawing = false;
+  drawState[stationNum].startPt = null;
+
+  document.getElementById(`feedback-s${stationNum}`).className = 'feedback-box';
+  document.getElementById(`feedback-s${stationNum}`).style.display = 'none';
+
+  // Configurar eventos una sola vez
+  if (!cvs.dataset.eventsAttached) {
+    cvs.addEventListener('mousedown', (e) => startDraw(e, stationNum));
+    cvs.addEventListener('mousemove', (e) => moveDraw(e, stationNum));
+    window.addEventListener('mouseup', () => endDraw(stationNum));
+
+    cvs.addEventListener('touchstart', (e) => startDraw(e, stationNum), { passive: false });
+    cvs.addEventListener('touchmove', (e) => moveDraw(e, stationNum), { passive: false });
+    window.addEventListener('touchend', () => endDraw(stationNum));
+
+    cvs.dataset.eventsAttached = 'true';
+  }
+
+  renderDrawStation(stationNum);
+}
+
+function getCanvasCoords(e, cvs) {
+  const rect = cvs.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {
+    x: (clientX - rect.left) * (cvs.width / rect.width),
+    y: (clientY - rect.top) * (cvs.height / rect.height)
+  };
+}
+
+function startDraw(e, stNum) {
+  e.preventDefault();
+  const cvs = document.getElementById(`canvas-draw-s${stNum}`);
+  drawState[stNum].isDrawing = true;
+  drawState[stNum].startPt = getCanvasCoords(e, cvs);
+  drawState[stNum].userLine = {
+    x1: drawState[stNum].startPt.x,
+    y1: drawState[stNum].startPt.y,
+    x2: drawState[stNum].startPt.x,
+    y2: drawState[stNum].startPt.y
+  };
+}
+
+function moveDraw(e, stNum) {
+  if (!drawState[stNum].isDrawing) return;
+  e.preventDefault();
+  const cvs = document.getElementById(`canvas-draw-s${stNum}`);
+  const pt = getCanvasCoords(e, cvs);
+  drawState[stNum].userLine.x2 = pt.x;
+  drawState[stNum].userLine.y2 = pt.y;
+  renderDrawStation(stNum);
+}
+
+function endDraw(stNum) {
+  if (drawState[stNum].isDrawing) {
+    drawState[stNum].isDrawing = false;
+    playSound('click');
+  }
+}
+
+function clearDrawCanvas(stNum) {
+  drawState[stNum].userLine = null;
+  document.getElementById(`feedback-s${stNum}`).style.display = 'none';
+  renderDrawStation(stNum);
+  playSound('click');
+}
+
+function drawGrid(ctx, w, h) {
+  ctx.save();
+  ctx.strokeStyle = '#e0f2f1';
+  ctx.lineWidth = 1;
+  const step = 20;
+  for (let x = 0; x <= w; x += step) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, h);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= h; y += step) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function renderDrawStation(stNum) {
+  const cvs = document.getElementById(`canvas-draw-s${stNum}`);
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+  drawGrid(ctx, cvs.width, cvs.height);
+
+  if (stNum >= 4 && stNum <= 6) {
+    const list = drawExercises[stNum];
+    const ex = list[drawState[stNum].exIdx];
+    // Línea base azul de referencia
+    drawRailroadTrack(ctx, ex.x1, ex.y1, ex.x2, ex.y2, '#0288d1');
+  } else if (stNum === 7) {
+    renderChallengeStation7(ctx, cvs.width, cvs.height);
+  }
+
+  // Línea trazada por el alumno
+  const u = drawState[stNum].userLine;
+  if (u && Math.hypot(u.x2 - u.x1, u.y2 - u.y1) > 5) {
+    drawRailroadTrack(ctx, u.x1, u.y1, u.x2, u.y2, '#f57c00');
+  }
+}
+
+// Cálculo del ángulo en grados entre 0 y 180
+function getAngleDeg(x1, y1, x2, y2) {
+  let deg = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+  if (deg < 0) deg += 180;
+  return deg;
+}
+
+// Diferencia angular mínima entre dos pendientes (0° a 90°)
+function getAngleDiff(a1, a2) {
+  let diff = Math.abs(a1 - a2) % 180;
+  if (diff > 90) diff = 180 - diff;
+  return diff;
+}
+
+// Evalúa si dos segmentos se cruzan o intersecan aproximadamente
+function segmentsIntersect(a, b, c, d, p, q, r, s) {
+  const det = (c - a) * (s - q) - (r - p) * (d - b);
+  if (det === 0) return false;
+  const lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+  const gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+  return (-0.1 < lambda && lambda < 1.1) && (-0.1 < gamma && gamma < 1.1);
+}
+
+// Evaluación Estación 4: Paralelas
+function evaluateDrawStation4() {
+  const fb = document.getElementById('feedback-s4');
+  const u = drawState[4].userLine;
+  if (!u || Math.hypot(u.x2 - u.x1, u.y2 - u.y1) < 40) {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Traza una línea más larga para poder comprobar su dirección.';
+    fb.style.display = 'block';
+    return;
+  }
+
+  const ex = drawExercises[4][drawState[4].exIdx];
+  const refAngle = getAngleDeg(ex.x1, ex.y1, ex.x2, ex.y2);
+  const userAngle = getAngleDeg(u.x1, u.y1, u.x2, u.y2);
+  const diff = getAngleDiff(refAngle, userAngle);
+
+  stats.drParTotal++;
+
+  if (diff <= 15) {
+    stats.drParCorrect++;
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '¡Muy bien! Las dos líneas tienen la misma inclinación y nunca se cruzarán.';
+    fb.style.display = 'block';
+
+    setTimeout(() => {
+      drawState[4].exIdx++;
+      if (drawState[4].exIdx < drawExercises[4].length) {
+        clearDrawCanvas(4);
+      } else {
+        goToStation(5);
+      }
+    }, 1400);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Intenta nuevamente. La nueva línea debe ir en la misma dirección sin torcerse.';
+    fb.style.display = 'block';
+  }
+  saveProgress();
+}
+
+// Evaluación Estación 5: Perpendiculares
+function evaluateDrawStation5() {
+  const fb = document.getElementById('feedback-s5');
+  const u = drawState[5].userLine;
+  if (!u || Math.hypot(u.x2 - u.x1, u.y2 - u.y1) < 40) {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Dibuja una línea más larga que corte a la línea azul.';
+    fb.style.display = 'block';
+    return;
+  }
+
+  const ex = drawExercises[5][drawState[5].exIdx];
+  const refAngle = getAngleDeg(ex.x1, ex.y1, ex.x2, ex.y2);
+  const userAngle = getAngleDeg(u.x1, u.y1, u.x2, u.y2);
+  const diff = getAngleDiff(refAngle, userAngle);
+
+  stats.drPerTotal++;
+
+  // Aceptar entre 78° y 102° (tolerancia didáctica escolar)
+  if (Math.abs(diff - 90) <= 14) {
+    stats.drPerCorrect++;
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '¡Excelente! Formaste aproximadamente un ángulo recto de 90° □.';
+    fb.style.display = 'block';
+
+    setTimeout(() => {
+      drawState[5].exIdx++;
+      if (drawState[5].exIdx < drawExercises[5].length) {
+        clearDrawCanvas(5);
+      } else {
+        goToStation(6);
+      }
+    }, 1400);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Intenta que el cruce sea como una cruz recta o esquina cuadrada perfecta.';
+    fb.style.display = 'block';
+  }
+  saveProgress();
+}
+
+// Evaluación Estación 6: Secantes
+function evaluateDrawStation6() {
+  const fb = document.getElementById('feedback-s6');
+  const u = drawState[6].userLine;
+  if (!u || Math.hypot(u.x2 - u.x1, u.y2 - u.y1) < 40) {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Dibuja una línea que atraviese a la línea azul.';
+    fb.style.display = 'block';
+    return;
+  }
+
+  const ex = drawExercises[6][drawState[6].exIdx];
+  const refAngle = getAngleDeg(ex.x1, ex.y1, ex.x2, ex.y2);
+  const userAngle = getAngleDeg(u.x1, u.y1, u.x2, u.y2);
+  const diff = getAngleDiff(refAngle, userAngle);
+
+  stats.drSecTotal++;
+
+  // Secante: Debe cruzarse, NO ser paralela (diff > 18) y NO ser perpendicular (|diff - 90| > 18)
+  if (diff >= 18 && Math.abs(diff - 90) >= 18) {
+    stats.drSecCorrect++;
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '¡Muy bien! Las líneas se cruzan en un punto inclinado sin formar 90°.';
+    fb.style.display = 'block';
+
+    setTimeout(() => {
+      drawState[6].exIdx++;
+      if (drawState[6].exIdx < drawExercises[6].length) {
+        clearDrawCanvas(6);
+      } else {
+        goToStation(7);
+      }
+    }, 1400);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    if (diff < 18) {
+      fb.innerHTML = 'Esa línea es paralela. Dibuja una que la atraviese con inclinación.';
+    } else {
+      fb.innerHTML = 'Esa línea forma 90° (perpendicular). Debe ser inclinada, como una tijera abierta.';
+    }
+    fb.style.display = 'block';
+  }
+  saveProgress();
+}
+
+/* =========================================================
+   ESTACIÓN 7: DESAFÍO EN CUADRÍCULA (A, B, C)
+   ========================================================= */
+const s7Challenges = [
+  { targetLine: 'A', action: 'paralela', text: 'Traza una línea PARALELA a la línea A' },
+  { targetLine: 'B', action: 'perpendicular', text: 'Traza una línea PERPENDICULAR a la línea B' },
+  { targetLine: 'C', action: 'secante', text: 'Traza una línea SECANTE a la línea C' },
+  { targetLine: 'B', action: 'paralela', text: 'Traza una línea PARALELA a la línea B' },
+  { targetLine: 'A', action: 'perpendicular', text: 'Traza una línea PERPENDICULAR a la línea A' },
+  { targetLine: 'C', action: 'paralela', text: 'Traza una línea PARALELA a la línea C' }
+];
+
+const s7Lines = {
+  A: { x1: 50, y1: 60, x2: 310, y2: 60, color: '#1565c0', label: 'A' },
+  B: { x1: 180, y1: 40, x2: 180, y2: 240, color: '#2e7d32', label: 'B' },
+  C: { x1: 50, y1: 220, x2: 260, y2: 100, color: '#6a1b9a', label: 'C' }
+};
+
+let s7Index = 0;
+
+function initStation7() {
+  s7Index = 0;
+  initDrawStation(7);
+  updateStation7Prompt();
+}
+
+function updateStation7Prompt() {
+  const ch = s7Challenges[s7Index];
+  document.getElementById('instruct-s7').innerHTML = `🚩 Misión ${s7Index + 1}/${s7Challenges.length}: <strong>${ch.text}</strong>`;
+  document.getElementById('feedback-s7').style.display = 'none';
+  clearDrawCanvas(7);
+}
+
+function renderChallengeStation7(ctx, w, h) {
+  // Dibujar líneas de referencia A, B y C
+  Object.values(s7Lines).forEach(ln => {
+    drawRailroadTrack(ctx, ln.x1, ln.y1, ln.x2, ln.y2, ln.color);
+    ctx.save();
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillStyle = ln.color;
+    ctx.fillText(ln.label, ln.x1 + 10, ln.y1 - 10);
+    ctx.restore();
+  });
+}
+
+function evaluateDrawStation7() {
+  const fb = document.getElementById('feedback-s7');
+  const u = drawState[7].userLine;
+  if (!u || Math.hypot(u.x2 - u.x1, u.y2 - u.y1) < 40) {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Traza una línea más larga para verificar tu respuesta.';
+    fb.style.display = 'block';
+    return;
+  }
+
+  const ch = s7Challenges[s7Index];
+  const targetRef = s7Lines[ch.targetLine];
+  const refAngle = getAngleDeg(targetRef.x1, targetRef.y1, targetRef.x2, targetRef.y2);
+  const userAngle = getAngleDeg(u.x1, u.y1, u.x2, u.y2);
+  const diff = getAngleDiff(refAngle, userAngle);
+
+  let success = false;
+  if (ch.action === 'paralela') {
+    success = (diff <= 16);
+  } else if (ch.action === 'perpendicular') {
+    success = (Math.abs(diff - 90) <= 16);
+  } else if (ch.action === 'secante') {
+    success = (diff >= 18 && Math.abs(diff - 90) >= 18);
+  }
+
+  if (success) {
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = `¡Excelente maniobra! Completaste el desafío para la línea ${ch.targetLine}.`;
+    fb.style.display = 'block';
+
+    setTimeout(() => {
+      s7Index++;
+      if (s7Index < s7Challenges.length) {
+        updateStation7Prompt();
+      } else {
+        goToStation(8);
+      }
+    }, 1400);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = `Revisa tu trazo respecto a la línea ${ch.targetLine}. Asegúrate de cumplir la condición: ${ch.action}.`;
+    fb.style.display = 'block';
+  }
+}
+
+/* =========================================================
+   ESTACIÓN 8: ¿DÓNDE LAS VEMOS? (ARTE SVG LOCAL)
+   ========================================================= */
+const everydayExamples = [
+  {
+    title: 'Rieles del tren con sus durmientes',
+    type: 'paralelas',
+    svg: `<svg width="220" height="150" viewBox="0 0 220 150">
+            <rect width="220" height="150" fill="#f5f5f5" rx="10"/>
+            <line x1="20" y1="45" x2="200" y2="45" stroke="#37474f" stroke-width="8"/>
+            <line x1="20" y1="105" x2="200" y2="105" stroke="#37474f" stroke-width="8"/>
+            <!-- traviesas -->
+            <line x1="50" y1="30" x2="50" y2="120" stroke="#795548" stroke-width="6"/>
+            <line x1="90" y1="30" x2="90" y2="120" stroke="#795548" stroke-width="6"/>
+            <line x1="130" y1="30" x2="130" y2="120" stroke="#795548" stroke-width="6"/>
+            <line x1="170" y1="30" x2="170" y2="120" stroke="#795548" stroke-width="6"/>
+          </svg>`
+  },
+  {
+    title: 'Cruce de calles en la ciudad (+)',
+    type: 'perpendiculares',
+    svg: `<svg width="220" height="150" viewBox="0 0 220 150">
+            <rect width="220" height="150" fill="#cfd8dc" rx="10"/>
+            <!-- calle horizontal -->
+            <rect x="0" y="50" width="220" height="50" fill="#455a64"/>
+            <!-- calle vertical -->
+            <rect x="85" y="0" width="50" height="150" fill="#455a64"/>
+            <!-- lineas de cruce -->
+            <line x1="0" y1="75" x2="220" y2="75" stroke="#ffd54f" stroke-width="4" stroke-dasharray="8 8"/>
+            <line x1="110" y1="0" x2="110" y2="150" stroke="#ffd54f" stroke-width="4" stroke-dasharray="8 8"/>
+            <rect x="110" y="55" width="18" height="18" fill="none" stroke="#ffeb3b" stroke-width="3"/>
+          </svg>`
+  },
+  {
+    title: 'Tijeras abiertas del taller ferroviario',
+    type: 'secantes',
+    svg: `<svg width="220" height="150" viewBox="0 0 220 150">
+            <rect width="220" height="150" fill="#f5f5f5" rx="10"/>
+            <line x1="40" y1="120" x2="180" y2="30" stroke="#78909c" stroke-width="10" stroke-linecap="round"/>
+            <line x1="40" y1="30" x2="180" y2="120" stroke="#78909c" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="110" cy="75" r="7" fill="#d32f2f"/>
+            <circle cx="50" cy="30" r="14" fill="none" stroke="#e53935" stroke-width="6"/>
+            <circle cx="50" cy="120" r="14" fill="none" stroke="#e53935" stroke-width="6"/>
+          </svg>`
+  },
+  {
+    title: 'Líneas y renglones de tu cuaderno',
+    type: 'paralelas',
+    svg: `<svg width="220" height="150" viewBox="0 0 220 150">
+            <rect x="20" y="15" width="180" height="120" fill="#ffffff" stroke="#90a4ae" stroke-width="3" rx="6"/>
+            <line x1="30" y1="40" x2="190" y2="40" stroke="#42a5f5" stroke-width="4"/>
+            <line x1="30" y1="70" x2="190" y2="70" stroke="#42a5f5" stroke-width="4"/>
+            <line x1="30" y1="100" x2="190" y2="100" stroke="#42a5f5" stroke-width="4"/>
+            <line x1="60" y1="15" x2="60" y2="135" stroke="#ef5350" stroke-width="2"/>
+          </svg>`
+  },
+  {
+    title: 'Esquina del marco de una ventana',
+    type: 'perpendiculares',
+    svg: `<svg width="220" height="150" viewBox="0 0 220 150">
+            <rect width="220" height="150" fill="#e0f7fa" rx="10"/>
+            <rect x="40" y="25" width="140" height="100" fill="#b2ebf2" stroke="#006064" stroke-width="8"/>
+            <line x1="110" y1="25" x2="110" y2="125" stroke="#006064" stroke-width="6"/>
+            <line x1="40" y1="75" x2="180" y2="75" stroke="#006064" stroke-width="6"/>
+            <rect x="110" y="75" width="16" height="16" fill="none" stroke="#f57f17" stroke-width="3"/>
+          </svg>`
+  },
+  {
+    title: 'Dos lápices de colores cruzados en la mesa',
+    type: 'secantes',
+    svg: `<svg width="220" height="150" viewBox="0 0 220 150">
+            <rect width="220" height="150" fill="#fffde7" rx="10"/>
+            <line x1="30" y1="125" x2="190" y2="35" stroke="#43a047" stroke-width="12" stroke-linecap="round"/>
+            <line x1="50" y1="35" x2="160" y2="125" stroke="#e64a19" stroke-width="12" stroke-linecap="round"/>
+          </svg>`
+  }
+];
+
+let s8Index = 0;
+
+function initStation8() {
+  s8Index = 0;
+  renderEverydayCard();
+}
+
+function renderEverydayCard() {
+  const item = everydayExamples[s8Index];
+  document.getElementById('everyday-svg-frame').innerHTML = item.svg;
+  document.getElementById('everyday-title').textContent = item.title;
+  document.getElementById('feedback-s8').style.display = 'none';
+}
+
+function checkEveryday(selectedType) {
+  const currentItem = everydayExamples[s8Index];
+  const fb = document.getElementById('feedback-s8');
+
+  if (selectedType === currentItem.type) {
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '¡Correcto! En este objeto encontramos líneas ' + selectedType.toUpperCase() + '.';
+    fb.style.display = 'block';
+
+    setTimeout(() => {
+      s8Index++;
+      if (s8Index < everydayExamples.length) {
+        renderEverydayCard();
+      } else {
+        goToStation(9);
+      }
+    }, 1200);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Observa bien la forma en que se encuentran las líneas en la imagen.';
+    fb.style.display = 'block';
+  }
+}
+
+/* =========================================================
+   ESTACIÓN 9: EXAMEN DE MAQUINISTA (10 Desafíos Mixtos)
+   ========================================================= */
+const s9ExamQuestions = [
+  { kind: 'identificar', text: '¿Qué tipo de líneas son estas vías?', type: 'paralelas', angle: 45, dist: 50 },
+  { kind: 'identificar', text: '¿Qué tipo de líneas son estas vías?', type: 'perpendiculares', angle1: 45, angle2: 135 },
+  { kind: 'identificar', text: '¿Qué tipo de líneas son estas vías?', type: 'secantes', angle1: -25, angle2: 25 },
+  { kind: 'cruzan', text: '¿Estas dos vías se cruzan en algún punto?', cross: false, angle: 90, dist: 50 },
+  { kind: 'cruzan', text: '¿Estas dos vías se cruzan en algún punto?', cross: true, angle1: 10, angle2: 60 },
+  { kind: 'identificar', text: '¿Qué tipo de líneas son estas vías?', type: 'perpendiculares', angle1: 0, angle2: 90 },
+  { kind: 'identificar', text: '¿Qué tipo de líneas son estas vías?', type: 'paralelas', angle: 0, dist: 55 },
+  { kind: 'identificar', text: '¿Qué tipo de líneas son estas vías?', type: 'secantes', angle1: 20, angle2: 155 },
+  { kind: 'cruzan', text: '¿Estas dos vías se cruzan en algún punto?', cross: false, angle: -35, dist: 50 },
+  { kind: 'identificar', text: 'Última pregunta: ¿Qué tipo de vías son?', type: 'perpendiculares', angle1: 30, angle2: 120 }
+];
+
+let s9Index = 0;
+
+function initStation9() {
+  s9Index = 0;
+  renderStation9Question();
+}
+
+function renderStation9Question() {
+  const q = s9ExamQuestions[s9Index];
+  document.getElementById('instruct-s9').innerHTML = `<strong>Pregunta ${s9Index + 1} de 10:</strong> ${q.text}`;
+
+  const fb = document.getElementById('feedback-s9');
+  fb.className = 'feedback-box';
+  fb.style.display = 'none';
+
+  const cvs = document.getElementById('canvas-s9');
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+  const cx = cvs.width / 2, cy = cvs.height / 2;
+
+  if (q.type === 'paralelas' || (q.kind === 'cruzan' && !q.cross)) {
+    const rad = (q.angle * Math.PI) / 180;
+    const nx = -Math.sin(rad) * (q.dist / 2);
+    const ny = Math.cos(rad) * (q.dist / 2);
+    const len = 95;
+    drawRailroadTrack(ctx, cx + nx - Math.cos(rad)*len, cy + ny - Math.sin(rad)*len, cx + nx + Math.cos(rad)*len, cy + ny + Math.sin(rad)*len, '#0288d1');
+    drawRailroadTrack(ctx, cx - nx - Math.cos(rad)*len, cy - ny - Math.sin(rad)*len, cx - nx + Math.cos(rad)*len, cy - ny + Math.sin(rad)*len, '#0288d1');
+  } else if (q.type === 'perpendiculares') {
+    const rad1 = (q.angle1 * Math.PI) / 180;
+    const rad2 = (q.angle2 * Math.PI) / 180;
+    const len = 95;
+    drawRailroadTrack(ctx, cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len, cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len, '#d32f2f');
+    drawRailroadTrack(ctx, cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len, cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len, '#d32f2f');
+    drawRightAngleMarker(ctx, cx, cy, rad1, rad2, 16);
+  } else {
+    // Secantes
+    const rad1 = (q.angle1 * Math.PI) / 180;
+    const rad2 = (q.angle2 * Math.PI) / 180;
+    const len = 95;
+    drawRailroadTrack(ctx, cx - Math.cos(rad1)*len, cy - Math.sin(rad1)*len, cx + Math.cos(rad1)*len, cy + Math.sin(rad1)*len, '#f57c00');
+    drawRailroadTrack(ctx, cx - Math.cos(rad2)*len, cy - Math.sin(rad2)*len, cx + Math.cos(rad2)*len, cy + Math.sin(rad2)*len, '#f57c00');
+  }
+
+  // Generar botones según tipo de pregunta
+  const btnRow = document.getElementById('buttons-s9');
+  btnRow.innerHTML = '';
+
+  if (q.kind === 'cruzan') {
+    btnRow.innerHTML = `
+      <button class="btn btn-choice" onclick="answerStation9(true)">✅ Sí, se cruzan</button>
+      <button class="btn btn-choice" onclick="answerStation9(false)">❌ No se cruzan</button>
+    `;
+  } else {
+    btnRow.innerHTML = `
+      <button class="btn btn-choice" onclick="answerStation9('paralelas')">Paralelas</button>
+      <button class="btn btn-choice" onclick="answerStation9('perpendiculares')">Perpendiculares</button>
+      <button class="btn btn-choice" onclick="answerStation9('secantes')">Secantes</button>
+    `;
+  }
+}
+
+function answerStation9(ans) {
+  const q = s9ExamQuestions[s9Index];
+  const fb = document.getElementById('feedback-s9');
+  let isCorrect = false;
+
+  if (q.kind === 'cruzan') {
+    isCorrect = (ans === q.cross);
+  } else {
+    isCorrect = (ans === q.type);
+    if (q.type === 'paralelas') { stats.idParTotal++; if (isCorrect) stats.idParCorrect++; }
+    if (q.type === 'perpendiculares') { stats.idPerTotal++; if (isCorrect) stats.idPerCorrect++; }
+    if (q.type === 'secantes') { stats.idSecTotal++; if (isCorrect) stats.idSecCorrect++; }
+  }
+
+  if (isCorrect) {
+    playSound('correct');
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '¡Respuesta correcta!';
+    fb.style.display = 'block';
+
+    setTimeout(() => {
+      s9Index++;
+      if (s9Index < s9ExamQuestions.length) {
+        renderStation9Question();
+      } else {
+        playSound('whistle');
+        goToStation(10);
+      }
+    }, 1100);
+  } else {
+    playSound('try-again');
+    fb.className = 'feedback-box try-again';
+    fb.innerHTML = 'Observa con cuidado y vuelve a intentar.';
+    fb.style.display = 'block';
+  }
+  saveProgress();
+}
+
+/* =========================================================
+   ESTACIÓN 10: INFORME FINAL / DIPLOMA IMPRIMIBLE
+   ========================================================= */
+function buildFinalReport() {
+  document.getElementById('student-name-field').value = stats.studentName;
+  document.getElementById('cert-date-text').textContent = 'Fecha de graduación: ' + new Date().toLocaleDateString('es-ES', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  document.getElementById('rep-id-par').textContent = `${stats.idParCorrect} / ${stats.idParTotal || 4}`;
+  document.getElementById('rep-id-per').textContent = `${stats.idPerCorrect} / ${stats.idPerTotal || 4}`;
+  document.getElementById('rep-id-sec').textContent = `${stats.idSecCorrect} / ${stats.idSecTotal || 4}`;
+  document.getElementById('rep-dr-par').textContent = `${stats.drParCorrect} / ${stats.drParTotal || 3}`;
+  document.getElementById('rep-dr-per').textContent = `${stats.drPerCorrect} / ${stats.drPerTotal || 3}`;
+  document.getElementById('rep-dr-sec').textContent = `${stats.drSecCorrect} / ${stats.drSecTotal || 3}`;
+
+  // Determinación constructiva y motivadora de fortalezas
+  const strengthSpan = document.getElementById('rep-strength');
+  const practiceSpan = document.getElementById('rep-practice');
+
+  if (stats.idParCorrect >= stats.idPerCorrect && stats.idParCorrect >= stats.idSecCorrect) {
+    strengthSpan.textContent = 'Distingue de forma impecable las vías paralelas en cualquier inclinación.';
+  } else if (stats.idPerCorrect >= stats.idSecCorrect) {
+    strengthSpan.textContent = 'Reconoce con gran agudeza visual las esquinas y cruces rectos de 90°.';
+  } else {
+    strengthSpan.textContent = 'Identifica con mucha rapidez los cruces secantes inclinados.';
+  }
+
+  // Recomendación positiva sin descalificaciones
+  if (stats.drPerCorrect < stats.drParCorrect) {
+    practiceSpan.textContent = 'Sigue practicando el trazo con tu regla o escuadra formando esquinas en cruz perfectas.';
+  } else if (stats.drParCorrect < stats.drSecCorrect) {
+    practiceSpan.textContent = 'Continúa reforzando el trazado de rieles paralelos cuidando que mantengan la misma separación.';
+  } else {
+    practiceSpan.textContent = '¡Continúa observando las vías férreas y estructuras de tu ciudad para descubrir más líneas en acción!';
+  }
+}
+
+/* =========================================================
+   INICIALIZACIÓN AL CARGAR LA PÁGINA
+   ========================================================= */
+window.addEventListener('DOMContentLoaded', () => {
+  loadSavedProgress();
+  goToStation(currentStationIndex);
+});
+</script>
+</body>
+</html>
