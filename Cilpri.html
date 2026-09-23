@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio 3D Autoguiado: Prismas y Cilindros</title>
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --primary-light: #EEF2FF;
+      --accent: #F59E0B;
+      --accent-light: #FEF3C7;
+      --base-blue: #2563EB;
+      --base-blue-light: #DBEAFE;
+      --lat-orange: #EA580C;
+      --lat-orange-light: #FFEDD5;
+      --success: #10B981;
+      --success-light: #D1FAE5;
+      --error: #EF4444;
+      --error-light: #FEE2E2;
+      --purple: #8B5CF6;
+      --purple-light: #F3E8FF;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Barra Superior */
+    header {
+      background: white;
+      padding: 0.9rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+    .brand-text h1 { font-size: 1.15rem; font-weight: 800; }
+    .brand-text p { font-size: 0.8rem; color: var(--text-muted); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    /* Navegación */
+    nav {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1.5rem;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .nav-list { display: flex; gap: 8px; list-style: none; max-width: 1300px; margin: 0 auto; }
+    .nav-btn {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: var(--primary-light); color: var(--primary); }
+    .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25); }
+
+    /* Contenido */
+    main { flex: 1; max-width: 1300px; width: 100%; margin: 1.5rem auto; padding: 0 1.5rem; }
+    .stage { display: none; }
+    .stage.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .grid-2 { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      position: relative;
+    }
+
+    .canvas-box {
+      background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%);
+      border: 2px dashed #CBD5E1;
+      border-radius: 16px;
+      min-height: 440px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Controles y Botones */
+    .slider-box {
+      background: var(--primary-light);
+      border: 1px solid #C7D2FE;
+      padding: 1rem 1.25rem;
+      border-radius: 14px;
+      margin: 1rem 0;
+    }
+    .slider-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.5rem; color: var(--primary); }
+    input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+
+    .btn {
+      border: none;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-outline { background: white; color: var(--text); border: 1.5px solid var(--border); }
+    .btn-outline:hover { background: var(--bg); border-color: #CBD5E1; }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-accent:hover { background: #D97706; }
+    .btn-help { background: var(--purple); color: white; }
+    .btn-help:hover { background: #7C3AED; }
+
+    /* Cajas Didácticas y Guiadas */
+    .guide-banner {
+      background: linear-gradient(135deg, #FEF3C7, #FFFBEB);
+      border-left: 5px solid var(--accent);
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      margin-bottom: 1.25rem;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .badge-step {
+      background: var(--primary);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+      margin-right: 6px;
+    }
+
+    .step-card {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+    }
+    .step-card.active-step {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+    }
+    .step-card.completed {
+      border-color: var(--success);
+      background: var(--success-light);
+    }
+
+    .hint-box {
+      display: none;
+      background: var(--purple-light);
+      border-left: 4px solid var(--purple);
+      padding: 0.85rem 1rem;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-size: 0.88rem;
+      color: #5B21B6;
+      line-height: 1.4;
+    }
+
+    .feedback-msg {
+      margin-top: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: none;
+    }
+    .feedback-msg.correct { color: #059669; display: block; }
+    .feedback-msg.wrong { color: #DC2626; display: block; }
+
+    .tag-base { background: var(--base-blue-light); color: var(--base-blue); padding: 3px 10px; border-radius: 999px; font-weight: 800; font-size: 0.75rem; }
+    .tag-lat { background: var(--lat-orange-light); color: var(--lat-orange); padding: 3px 10px; border-radius: 999px; font-weight: 800; font-size: 0.75rem; }
+
+    /* Inputs para cálculo */
+    .input-calc {
+      width: 110px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      font-weight: 700;
+      font-size: 1rem;
+      text-align: center;
+      outline: none;
+    }
+    .input-calc:focus { border-color: var(--primary); }
+
+    /* Modal Alumno */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      max-width: 480px;
+      width: 100%;
+      padding: 2rem;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Encabezado -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">📐</div>
+      <div class="brand-text">
+        <h1>Laboratorio 3D: Prismas y Cilindros</h1>
+        <p>Aprende explorando, desarmando y calculando paso a paso</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" onclick="openStudentModal()">
+        👤 <span id="studentNav">Registrar Alumno</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Pestañas de Navegación -->
+  <nav>
+    <ul class="nav-list">
+      <li><button class="nav-btn active" onclick="goStage(1)">1. Recordar Figuras</button></li>
+      <li><button class="nav-btn" onclick="goStage(2)">2. ¿Qué es Superficie?</button></li>
+      <li><button class="nav-btn" onclick="goStage(3)">3. Taller Prisma Cuadrado</button></li>
+      <li><button class="nav-btn" onclick="goStage(4)">4. Taller Prisma Rectangular</button></li>
+      <li><button class="nav-btn" onclick="goStage(5)">5. Taller Prisma Triangular</button></li>
+      <li><button class="nav-btn" onclick="goStage(6)">6. Taller Cilindro</button></li>
+      <li><button class="nav-btn" onclick="goStage(7)">7. Retos y Ejercicios (+12)</button></li>
+      <li><button class="nav-btn" onclick="goStage(8)">8. Síntesis & Certificado</button></li>
+    </ul>
+  </nav>
+
+  <!-- Contenedor Principal -->
+  <main>
+
+    <!-- ETAPA 1: FIGURAS PLANAS -->
+    <section id="stage-1" class="stage active">
+      <div class="guide-banner">
+        👋 <strong>¡Bienvenido al laboratorio interactivo!</strong> Para calcular el área de un cuerpo 3D, primero debemos dominar las figuras planas que forman sus caras. Selecciona una figura, modifica sus medidas y cuenta los cuadritos.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="display:flex; gap:8px; margin-bottom:1rem; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="btn-f-sq" onclick="setFig1('sq')">Cuadrado</button>
+            <button class="btn btn-outline" id="btn-f-rec" onclick="setFig1('rec')">Rectángulo</button>
+            <button class="btn btn-outline" id="btn-f-tri" onclick="setFig1('tri')">Triángulo (÷2)</button>
+            <button class="btn btn-outline" id="btn-f-cir" onclick="setFig1('cir')">Círculo</button>
+          </div>
+          <div class="canvas-box">
+            <svg id="svg-stage1" width="100%" height="400" viewBox="0 0 480 400"></svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 id="fig1-title" style="margin-bottom:0.75rem;">Cuadrado</h3>
+          <div id="fig1-controls"></div>
+          
+          <div style="background:var(--bg); padding:1.25rem; border-radius:14px; margin-top:1.25rem; border:1px solid var(--border);">
+            <h4 style="color:var(--primary); margin-bottom:6px;">Pregunta rápida de autoevaluación:</h4>
+            <p id="fig1-quiz-txt" style="font-size:0.9rem; margin-bottom:10px;"></p>
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="fig1-quiz-in" class="input-calc" placeholder="¿Área?">
+              <button class="btn btn-primary" onclick="verifyFig1Quiz()">Verificar</button>
+            </div>
+            <p id="fig1-quiz-fb" class="feedback-msg"></p>
+          </div>
+
+          <div style="margin-top:1.5rem; text-align:right;">
+            <button class="btn btn-accent" onclick="goStage(2)">Avanzar a la Etapa 2 →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 2: QUÉ ES EL ÁREA DE SUPERFICIE -->
+    <section id="stage-2" class="stage">
+      <div class="guide-banner">
+        🎁 <strong>Ponte en situación:</strong> Imagina que debes forrar una caja cerrada con papel de regalo sin que sobre ni falte. ¿Qué estás midiendo: lo que cabe adentro (volumen) o la superficie de sus paredes exteriores (área de superficie)?
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="canvas-box">
+            <svg id="svg-stage2" width="100%" height="400" viewBox="0 0 480 400"></svg>
+          </div>
+          <div style="display:flex; justify-content:center; gap:10px; margin-top:1rem;">
+            <button class="btn btn-primary" onclick="wrapBoxStep()">🎁 Forrar caras una a una</button>
+            <button class="btn btn-outline" onclick="resetWrap()">Reiniciar</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>La Piel del Cuerpo Geométrico</h3>
+          <p style="margin:1rem 0; font-size:0.95rem; line-height:1.6;">
+            El <strong>Área de Superficie</strong> es la suma de todas las caras que tocas por fuera:
+          </p>
+          <div style="background:var(--bg); padding:1rem; border-radius:12px; margin-bottom:1rem; border:1px solid var(--border);">
+            <p><span class="tag-base">2 BASES</span> Tapa de arriba y tapa de abajo (azules).</p>
+            <p style="margin-top:8px;"><span class="tag-lat">CARAS LATERALES</span> Las paredes de alrededor (naranjas).</p>
+          </div>
+          <div style="background:var(--primary-light); color:var(--primary); padding:1rem; border-radius:12px; text-align:center; font-weight:800; font-size:1.05rem;">
+            Área Total = (Área de las 2 Bases) + (Área Lateral)
+          </div>
+
+          <div style="margin-top:1.5rem; text-align:right;">
+            <button class="btn btn-accent" onclick="goStage(3)">¡Vamos al Prisma Cuadrado! →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 3: TALLER GUIADO - PRISMA CUADRADO -->
+    <section id="stage-3" class="stage">
+      <div class="guide-banner">
+        🛠️ <strong>Taller Guiado 1: Prisma Cuadrado.</strong> Mueve el deslizador para desarmar la figura en su red plana. Luego, completa cada paso del cálculo a tu ritmo.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="slider-box">
+            <div class="slider-header">
+              <span>🌟 Desliza para desplegar la red plana:</span>
+              <span id="sq-unfold-txt">0% (3D Cerrado)</span>
+            </div>
+            <input type="range" id="sq-unfold" min="0" max="100" value="0" oninput="drawSqGuided()">
+          </div>
+          <div class="canvas-box">
+            <svg id="svg-sq" width="100%" height="420" viewBox="0 0 500 420"></svg>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">Medidas actuales: Lado base <strong>a = 4 cm</strong> | Altura <strong>H = 7 cm</strong></span>
+            <button class="btn btn-outline" style="font-size:0.8rem;" onclick="toggleSqHighlight()">Alternar Colores</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:1rem;">Tu Cuaderno de Trabajo Guiado</h3>
+
+          <!-- Paso 1 -->
+          <div class="step-card active-step" id="sq-s1">
+            <p><strong><span class="badge-step">1</span> Área de una Base Cuadrada (AB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">La base es un cuadrado de 4 cm × 4 cm. ¿Cuánto mide su área?</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-sq-ab" class="input-calc" placeholder="AB (cm²)">
+              <button class="btn btn-primary" onclick="checkSqStep(1)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('sq', 1)">💡 Pista</button>
+            </div>
+            <div id="hint-sq-1" class="hint-box"></div>
+            <p id="fb-sq-1" class="feedback-msg"></p>
+          </div>
+
+          <!-- Paso 2 -->
+          <div class="step-card" id="sq-s2">
+            <p><strong><span class="badge-step">2</span> Perímetro de la Base (PB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Suma los 4 lados del cuadrado: 4 + 4 + 4 + 4.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-sq-pb" class="input-calc" placeholder="PB (cm)">
+              <button class="btn btn-primary" onclick="checkSqStep(2)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('sq', 2)">💡 Pista</button>
+            </div>
+            <div id="hint-sq-2" class="hint-box"></div>
+            <p id="fb-sq-2" class="feedback-msg"></p>
+          </div>
+
+          <!-- Paso 3 -->
+          <div class="step-card" id="sq-s3">
+            <p><strong><span class="badge-step">3</span> Área Lateral (AL)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">¡Multiplica el perímetro que hallaste por la altura H (7 cm)!</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-sq-al" class="input-calc" placeholder="AL (cm²)">
+              <button class="btn btn-primary" onclick="checkSqStep(3)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('sq', 3)">💡 Pista</button>
+            </div>
+            <div id="hint-sq-3" class="hint-box"></div>
+            <p id="fb-sq-3" class="feedback-msg"></p>
+          </div>
+
+          <!-- Paso 4 -->
+          <div class="step-card" id="sq-s4">
+            <p><strong><span class="badge-step">4</span> Área Total de Superficie (AS)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Suma las 2 bases más el área lateral: 2 · AB + AL.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-sq-as" class="input-calc" placeholder="AS (cm²)">
+              <button class="btn btn-accent" onclick="checkSqStep(4)">Validar Todo</button>
+              <button class="btn btn-help" onclick="showHint('sq', 4)">💡 Pista</button>
+            </div>
+            <div id="hint-sq-4" class="hint-box"></div>
+            <p id="fb-sq-4" class="feedback-msg"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 4: TALLER GUIADO - PRISMA RECTANGULAR -->
+    <section id="stage-4" class="stage">
+      <div class="guide-banner">
+        📦 <strong>Taller Guiado 2: Prisma Rectangular.</strong> Base con <strong>Largo L = 6 cm</strong> y <strong>Ancho A = 4 cm</strong>. Altura del cuerpo <strong>H = 8 cm</strong>. ¡Sigue la misma lógica!
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="slider-box">
+            <div class="slider-header">
+              <span>🌟 Deslizar para desplegar red:</span>
+              <span id="rec-unfold-txt">0% (3D Cerrado)</span>
+            </div>
+            <input type="range" id="rec-unfold" min="0" max="100" value="0" oninput="drawRecGuided()">
+          </div>
+          <div class="canvas-box">
+            <svg id="svg-rec" width="100%" height="420" viewBox="0 0 500 420"></svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:1rem;">Paso a Paso Interactivo</h3>
+
+          <div class="step-card active-step" id="rec-s1">
+            <p><strong><span class="badge-step">1</span> Área de una Base Rectangular (AB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Largo (6) × Ancho (4) = ¿Área?</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-rec-ab" class="input-calc" placeholder="AB (cm²)">
+              <button class="btn btn-primary" onclick="checkRecStep(1)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('rec', 1)">💡 Pista</button>
+            </div>
+            <div id="hint-rec-1" class="hint-box"></div>
+            <p id="fb-rec-1" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="rec-s2">
+            <p><strong><span class="badge-step">2</span> Perímetro de la Base (PB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Suma todo el contorno: 6 + 4 + 6 + 4.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-rec-pb" class="input-calc" placeholder="PB (cm)">
+              <button class="btn btn-primary" onclick="checkRecStep(2)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('rec', 2)">💡 Pista</button>
+            </div>
+            <div id="hint-rec-2" class="hint-box"></div>
+            <p id="fb-rec-2" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="rec-s3">
+            <p><strong><span class="badge-step">3</span> Área Lateral (AL)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">AL = Perímetro Base (PB) × Altura H (8 cm).</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-rec-al" class="input-calc" placeholder="AL (cm²)">
+              <button class="btn btn-primary" onclick="checkRecStep(3)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('rec', 3)">💡 Pista</button>
+            </div>
+            <div id="hint-rec-3" class="hint-box"></div>
+            <p id="fb-rec-3" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="rec-s4">
+            <p><strong><span class="badge-step">4</span> Área Total de Superficie (AS)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">AS = 2 · AB + AL.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-rec-as" class="input-calc" placeholder="AS (cm²)">
+              <button class="btn btn-accent" onclick="checkRecStep(4)">Validar Todo</button>
+              <button class="btn btn-help" onclick="showHint('rec', 4)">💡 Pista</button>
+            </div>
+            <div id="hint-rec-4" class="hint-box"></div>
+            <p id="fb-rec-4" class="feedback-msg"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 5: TALLER GUIADO - PRISMA TRIANGULAR -->
+    <section id="stage-5" class="stage">
+      <div class="guide-banner">
+        ⛺ <strong>Taller Guiado 3: Prisma Triangular.</strong> ¡Atención al detalle! Distingue la altura del triángulo <strong>h△ = 4 cm</strong> de la altura o largo del prisma <strong>H = 8 cm</strong>.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="slider-box">
+            <div class="slider-header">
+              <span>🌟 Desplegar red triangular:</span>
+              <span id="tri-unfold-txt">0% (3D Cerrado)</span>
+            </div>
+            <input type="range" id="tri-unfold" min="0" max="100" value="0" oninput="drawTriGuided()">
+          </div>
+          <div class="canvas-box">
+            <svg id="svg-tri" width="100%" height="420" viewBox="0 0 500 420"></svg>
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:8px;">Base triangular isósceles con lados: <strong>5 cm, 5 cm y 6 cm</strong>.</p>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:1rem;">Paso a Paso con Apoyo</h3>
+
+          <div class="step-card active-step" id="tri-s1">
+            <p><strong><span class="badge-step">1</span> Área de una Base Triangular (AB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Base del triángulo (6) × altura del triángulo (4) dividido en 2.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-tri-ab" class="input-calc" placeholder="AB (cm²)">
+              <button class="btn btn-primary" onclick="checkTriStep(1)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('tri', 1)">💡 Pista</button>
+            </div>
+            <div id="hint-tri-1" class="hint-box"></div>
+            <p id="fb-tri-1" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="tri-s2">
+            <p><strong><span class="badge-step">2</span> Perímetro del Triángulo (PB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Suma sus 3 lados exteriores: 5 + 5 + 6.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-tri-pb" class="input-calc" placeholder="PB (cm)">
+              <button class="btn btn-primary" onclick="checkTriStep(2)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('tri', 2)">💡 Pista</button>
+            </div>
+            <div id="hint-tri-2" class="hint-box"></div>
+            <p id="fb-tri-2" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="tri-s3">
+            <p><strong><span class="badge-step">3</span> Área Lateral (AL)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Los 3 rectángulos juntos miden PB × H (altura prisma = 8 cm).</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-tri-al" class="input-calc" placeholder="AL (cm²)">
+              <button class="btn btn-primary" onclick="checkTriStep(3)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('tri', 3)">💡 Pista</button>
+            </div>
+            <div id="hint-tri-3" class="hint-box"></div>
+            <p id="fb-tri-3" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="tri-s4">
+            <p><strong><span class="badge-step">4</span> Área Total de Superficie (AS)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Suma: 2 bases triangulares + área lateral.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" id="in-tri-as" class="input-calc" placeholder="AS (cm²)">
+              <button class="btn btn-accent" onclick="checkTriStep(4)">Validar Todo</button>
+              <button class="btn btn-help" onclick="showHint('tri', 4)">💡 Pista</button>
+            </div>
+            <div id="hint-tri-4" class="hint-box"></div>
+            <p id="fb-tri-4" class="feedback-msg"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 6: TALLER GUIADO - CILINDRO -->
+    <section id="stage-6" class="stage">
+      <div class="guide-banner">
+        🥫 <strong>Taller Guiado 4: El Cilindro (Usa π ≈ 3,14).</strong> Observa cómo el borde del círculo se desenrolla en el largo del rectángulo lateral: <strong>Largo = 2 · π · r</strong>.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="slider-box">
+            <div class="slider-header">
+              <span>🌟 Desplegar manto curvo del cilindro:</span>
+              <span id="cil-unfold-txt">0% (3D Cerrado)</span>
+            </div>
+            <input type="range" id="cil-unfold" min="0" max="100" value="0" oninput="drawCilGuided()">
+          </div>
+          <div class="canvas-box">
+            <svg id="svg-cil" width="100%" height="420" viewBox="0 0 500 420"></svg>
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-top:8px;">Datos: <strong>Radio r = 3 cm</strong> | Altura <strong>H = 7 cm</strong>.</p>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:1rem;">Paso a Paso con Apoyo</h3>
+
+          <div class="step-card active-step" id="cil-s1">
+            <p><strong><span class="badge-step">1</span> Área de una Base Circular (AB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">A = π · r² = 3,14 · 3² = 3,14 · 9.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" step="0.01" id="in-cil-ab" class="input-calc" placeholder="AB">
+              <button class="btn btn-primary" onclick="checkCilStep(1)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('cil', 1)">💡 Pista</button>
+            </div>
+            <div id="hint-cil-1" class="hint-box"></div>
+            <p id="fb-cil-1" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="cil-s2">
+            <p><strong><span class="badge-step">2</span> Perímetro de la Circunferencia (PB)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">PB = 2 · π · r = 2 · 3,14 · 3 = 6 · 3,14.</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" step="0.01" id="in-cil-pb" class="input-calc" placeholder="PB">
+              <button class="btn btn-primary" onclick="checkCilStep(2)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('cil', 2)">💡 Pista</button>
+            </div>
+            <div id="hint-cil-2" class="hint-box"></div>
+            <p id="fb-cil-2" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="cil-s3">
+            <p><strong><span class="badge-step">3</span> Área Lateral (AL)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Multiplica el perímetro hallado por la altura H (7 cm).</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" step="0.01" id="in-cil-al" class="input-calc" placeholder="AL">
+              <button class="btn btn-primary" onclick="checkCilStep(3)">Revisar</button>
+              <button class="btn btn-help" onclick="showHint('cil', 3)">💡 Pista</button>
+            </div>
+            <div id="hint-cil-3" class="hint-box"></div>
+            <p id="fb-cil-3" class="feedback-msg"></p>
+          </div>
+
+          <div class="step-card" id="cil-s4">
+            <p><strong><span class="badge-step">4</span> Área Total de Superficie (AS)</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin:4px 0 8px;">Suma: 2 círculos (2 · AB) + el rectángulo lateral (AL).</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="number" step="0.01" id="in-cil-as" class="input-calc" placeholder="AS">
+              <button class="btn btn-accent" onclick="checkCilStep(4)">Validar Todo</button>
+              <button class="btn btn-help" onclick="showHint('cil', 4)">💡 Pista</button>
+            </div>
+            <div id="hint-cil-4" class="hint-box"></div>
+            <p id="fb-cil-4" class="feedback-msg"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 7: RETOS Y EJERCICIOS PRÁCTICOS -->
+    <section id="stage-7" class="stage">
+      <div class="guide-banner">
+        🎯 <strong>¡Zona de Práctica Autónoma!</strong> Pon a prueba lo aprendido con ejercicios aleatorios. Dispones de un <strong>Botón de Pistas Progresivas</strong> que te guiará paso a paso en caso de dudas.
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3 id="ex-type-title">Ejercicio Activo</h3>
+            <span class="tag-base" id="ex-num-badge">Reto 1 de 12</span>
+          </div>
+
+          <div class="canvas-box" style="min-height:300px;">
+            <svg id="svg-ex-preview" width="100%" height="280" viewBox="0 0 400 280"></svg>
+          </div>
+
+          <div style="margin-top:1rem; background:var(--bg); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+            <h4 id="ex-statement-title" style="margin-bottom:4px;">Cuerpo Geométrico</h4>
+            <p id="ex-statement-desc" style="font-size:0.95rem; line-height:1.5;"></p>
+          </div>
+
+          <div style="margin-top:1rem; display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="generateNewExercise()">🎲 Nuevo Ejercicio Aleatorio</button>
+            <button class="btn btn-help" onclick="askDynamicHint()">💡 Necesito Ayuda / Pista</button>
+          </div>
+          <div id="dynamic-hint-box" class="hint-box" style="margin-top:10px;"></div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom:1rem;">Ingresa tus Resultados</h3>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.25rem;">
+            Calcula en tu cuaderno y anota las respuestas. Si es decimal, usa punto o coma con hasta 2 decimales.
+          </p>
+
+          <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div>
+              <label style="font-weight:700; font-size:0.85rem;">1. Área de una Base (AB):</label>
+              <input type="number" step="0.01" id="ex-in-ab" class="input-calc" style="width:100%; margin-top:4px;" placeholder="cm²">
+            </div>
+            <div>
+              <label style="font-weight:700; font-size:0.85rem;">2. Perímetro de la Base (PB):</label>
+              <input type="number" step="0.01" id="ex-in-pb" class="input-calc" style="width:100%; margin-top:4px;" placeholder="cm">
+            </div>
+            <div>
+              <label style="font-weight:700; font-size:0.85rem;">3. Área Lateral (AL = PB · H):</label>
+              <input type="number" step="0.01" id="ex-in-al" class="input-calc" style="width:100%; margin-top:4px;" placeholder="cm²">
+            </div>
+            <div>
+              <label style="font-weight:700; font-size:0.85rem; color:var(--primary);">4. Área Total de Superficie (AS = 2·AB + AL):</label>
+              <input type="number" step="0.01" id="ex-in-as" class="input-calc" style="width:100%; margin-top:4px;" placeholder="cm²">
+            </div>
+
+            <button class="btn btn-accent" style="width:100%; margin-top:6px;" onclick="validateDynamicExercise()">
+              ✅ Comprobar Mis 4 Respuestas
+            </button>
+            <p id="ex-dyn-feedback" class="feedback-msg"></p>
+          </div>
+
+          <div style="margin-top:1.5rem; background:var(--primary-light); padding:1rem; border-radius:12px; text-align:center;">
+            <span style="font-size:0.85rem; color:var(--primary); font-weight:700;">Progreso de Práctica:</span>
+            <div style="font-size:1.4rem; font-weight:800; color:var(--primary); margin-top:4px;">
+              <span id="score-counter">0</span> de 12 Resueltos con Éxito
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 8: SÍNTESIS Y CERTIFICADO -->
+    <section id="stage-8" class="stage">
+      <div class="card" style="margin-bottom:1.5rem;">
+        <h2 style="text-align:center; margin-bottom:1.5rem;">Resumen de la Gran Fórmula Universal</h2>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem;">
+          <div style="border:2px solid var(--border); border-radius:14px; padding:1.25rem; text-align:center;">
+            <span class="tag-base">Prisma Cuadrado</span>
+            <p style="margin-top:8px; font-size:0.88rem; line-height:1.6;">
+              AB = a²<br>PB = 4a<br>AL = PB · H
+            </p>
+          </div>
+          <div style="border:2px solid var(--border); border-radius:14px; padding:1.25rem; text-align:center;">
+            <span class="tag-base">Prisma Rectangular</span>
+            <p style="margin-top:8px; font-size:0.88rem; line-height:1.6;">
+              AB = L · A<br>PB = 2L + 2A<br>AL = PB · H
+            </p>
+          </div>
+          <div style="border:2px solid var(--border); border-radius:14px; padding:1.25rem; text-align:center;">
+            <span class="tag-base">Prisma Triangular</span>
+            <p style="margin-top:8px; font-size:0.88rem; line-height:1.6;">
+              AB = (b · h△) / 2<br>PB = l₁ + l₂ + l₃<br>AL = PB · H
+            </p>
+          </div>
+          <div style="border:2px solid var(--border); border-radius:14px; padding:1.25rem; text-align:center;">
+            <span class="tag-base">Cilindro</span>
+            <p style="margin-top:8px; font-size:0.88rem; line-height:1.6;">
+              AB = π · r²<br>PB = 2 · π · r<br>AL = PB · H
+            </p>
+          </div>
+        </div>
+
+        <div style="background:var(--primary-light); text-align:center; padding:1.25rem; border-radius:16px; margin-top:1.5rem;">
+          <h3 style="color:var(--primary); font-size:1.3rem;">¡Todos comparten la misma estructura!</h3>
+          <div style="background:white; display:inline-block; padding:10px 24px; border-radius:12px; font-weight:800; font-size:1.4rem; color:var(--primary); margin-top:8px;">
+            Área de Superficie = 2 · AB + PB · H
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Tu Reflexión Final y Certificado de Trabajo</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem; margin:6px 0 1rem;">
+          Explica con tus palabras lo que descubriste hoy antes de imprimir o guardar tu trabajo.
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div>
+            <label style="font-weight:700; font-size:0.9rem;">1. ¿Por qué el perímetro de la base (PB) permite calcular el área lateral de un solo viaje?</label>
+            <textarea id="student-final-reflection" rows="3" style="width:100%; margin-top:6px; padding:10px 14px; border-radius:12px; border:1px solid var(--border); font-size:0.95rem;" placeholder="Al abrir la red, los lados de la base se alinean formando el largo total..."></textarea>
+          </div>
+          <div>
+            <label style="font-weight:700; font-size:0.9rem;">2. En un cilindro, ¿qué medida se transforma en el largo del rectángulo lateral?</label>
+            <input type="text" id="student-final-reflection-2" style="width:100%; margin-top:6px; padding:10px 14px; border-radius:12px; border:1px solid var(--border); font-size:0.95rem;" placeholder="La circunferencia del círculo (2 · π · r)...">
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:0.5rem;">
+            <button class="btn btn-primary" onclick="printFinalReport()">🖨️ Imprimir / Guardar Informe PDF</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Identificación Estudiante -->
+  <div class="modal" id="studentModal">
+    <div class="modal-content">
+      <h3 style="margin-bottom:6px;">Registro del Estudiante</h3>
+      <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">Ingresa tus datos para personalizar tus avances e informe.</p>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <input type="text" id="reg-name" placeholder="Tu Nombre y Apellido" style="padding:10px 14px; border-radius:10px; border:1px solid var(--border);">
+        <input type="text" id="reg-course" placeholder="Curso (ej: 8° Básico)" style="padding:10px 14px; border-radius:10px; border:1px solid var(--border);">
+        <button class="btn btn-primary" onclick="saveStudent()">Guardar Datos</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       ESTADO GLOBAL & LOCAL STORAGE
+       ========================================================= */
+    let student = {
+      name: localStorage.getItem('geo8_name') || '',
+      course: localStorage.getItem('geo8_course') || '',
+      solvedCount: parseInt(localStorage.getItem('geo8_solved') || '0'),
+      hintsUsed: 0
+    };
+
+    function updateStudentUI() {
+      const el = document.getElementById('studentNav');
+      if (student.name) {
+        el.textContent = `${student.name} (${student.course || '8°'})`;
+      } else {
+        el.textContent = 'Registrar Alumno';
+      }
+      document.getElementById('score-counter').textContent = student.solvedCount;
+    }
+
+    function openStudentModal() { document.getElementById('studentModal').classList.add('active'); }
+    function closeStudentModal() { document.getElementById('studentModal').classList.remove('active'); }
+
+    function saveStudent() {
+      const n = document.getElementById('reg-name').value.trim();
+      const c = document.getElementById('reg-course').value.trim();
+      if (n) {
+        student.name = n;
+        student.course = c;
+        localStorage.setItem('geo8_name', n);
+        localStorage.setItem('geo8_course', c);
+        updateStudentUI();
+        closeStudentModal();
+      }
+    }
+
+    function goStage(n) {
+      document.querySelectorAll('.nav-btn').forEach((b, idx) => b.classList.toggle('active', idx === n - 1));
+      document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(`stage-${n}`);
+      if (target) target.classList.add('active');
+
+      if (n === 1) renderStage1();
+      if (n === 2) renderStage2();
+      if (n === 3) drawSqGuided();
+      if (n === 4) drawRecGuided();
+      if (n === 5) drawTriGuided();
+      if (n === 6) drawCilGuided();
+      if (n === 7 && !currentDynEx) generateNewExercise();
+    }
+
+    /* =========================================================
+       ETAPA 1: FIGURAS PLANAS
+       ========================================================= */
+    let fig1Type = 'sq';
+    let p1 = { side: 4, b: 6, h: 4, r: 3 };
+
+    function setFig1(type) {
+      fig1Type = type;
+      ['sq', 'rec', 'tri', 'cir'].forEach(t => {
+        document.getElementById(`btn-f-${t}`).className = (t === type) ? 'btn btn-primary' : 'btn btn-outline';
+      });
+      renderFig1Controls();
+      renderStage1();
+    }
+
+    function renderFig1Controls() {
+      const box = document.getElementById('fig1-controls');
+      const qtxt = document.getElementById('fig1-quiz-txt');
+      document.getElementById('fig1-quiz-in').value = '';
+      document.getElementById('fig1-quiz-fb').style.display = 'none';
+
+      if (fig1Type === 'sq') {
+        document.getElementById('fig1-title').textContent = 'Cuadrado (Lado × Lado)';
+        box.innerHTML = `
+          <div class="slider-box" style="margin:0 0 10px 0;">
+            <div class="slider-header"><span>Lado del cuadrado: <strong id="sq1-s-txt">${p1.side}</strong> cm</span></div>
+            <input type="range" min="2" max="6" value="${p1.side}" oninput="p1.side=parseInt(this.value); document.getElementById('sq1-s-txt').textContent=this.value; renderStage1();">
+          </div>
+        `;
+        qtxt.textContent = `Si el lado mide ${p1.side} cm, ¿cuántos cm² tiene de área?`;
+      } else if (fig1Type === 'rec') {
+        document.getElementById('fig1-title').textContent = 'Rectángulo (Base × Altura)';
+        box.innerHTML = `
+          <div class="slider-box" style="margin:0 0 10px 0;">
+            <div class="slider-header"><span>Base (b): <strong id="rec1-b-txt">${p1.b}</strong> cm</span></div>
+            <input type="range" min="3" max="7" value="${p1.b}" oninput="p1.b=parseInt(this.value); document.getElementById('rec1-b-txt').textContent=this.value; renderStage1();">
+            <div class="slider-header" style="margin-top:8px;"><span>Altura (h): <strong id="rec1-h-txt">${p1.h}</strong> cm</span></div>
+            <input type="range" min="2" max="5" value="${p1.h}" oninput="p1.h=parseInt(this.value); document.getElementById('rec1-h-txt').textContent=this.value; renderStage1();">
+          </div>
+        `;
+        qtxt.textContent = `Con base ${p1.b} cm y altura ${p1.h} cm, ¿cuál es su área?`;
+      } else if (fig1Type === 'tri') {
+        document.getElementById('fig1-title').textContent = 'Triángulo: (Base × Altura) ÷ 2';
+        box.innerHTML = `
+          <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+            Observa cómo dos triángulos iguales completan un rectángulo. Por eso siempre dividimos entre 2.
+          </p>
+        `;
+        qtxt.textContent = `Base = 6 cm, Altura = 4 cm. ¿Área del triángulo?`;
+      } else if (fig1Type === 'cir') {
+        document.getElementById('fig1-title').textContent = 'Círculo: A = π · r² (π ≈ 3,14)';
+        box.innerHTML = `
+          <div class="slider-box" style="margin:0 0 10px 0;">
+            <div class="slider-header"><span>Radio (r): <strong id="cir1-r-txt">${p1.r}</strong> cm</span></div>
+            <input type="range" min="2" max="5" value="${p1.r}" oninput="p1.r=parseInt(this.value); document.getElementById('cir1-r-txt').textContent=this.value; renderStage1();">
+          </div>
+        `;
+        qtxt.textContent = `Radio = ${p1.r} cm. Multiplica 3,14 · ${p1.r * p1.r} = ¿Área?`;
+      }
+    }
+
+    function renderStage1() {
+      const svg = document.getElementById('svg-stage1');
+      svg.innerHTML = '';
+      const sc = 30;
+      const cx = 240, cy = 200;
+
+      if (fig1Type === 'sq') {
+        const w = p1.side * sc;
+        const x0 = cx - w/2, y0 = cy - w/2;
+        for (let i = 0; i <= p1.side; i++) {
+          svg.innerHTML += `<line x1="${x0+i*sc}" y1="${y0}" x2="${x0+i*sc}" y2="${y0+w}" stroke="#CBD5E1" stroke-width="1.5"/>`;
+          svg.innerHTML += `<line x1="${x0}" y1="${y0+i*sc}" x2="${x0+w}" y2="${y0+i*sc}" stroke="#CBD5E1" stroke-width="1.5"/>`;
+        }
+        svg.innerHTML += `<rect x="${x0}" y="${y0}" width="${w}" height="${w}" fill="rgba(37,99,235,0.2)" stroke="#2563EB" stroke-width="3" rx="4"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${y0 - 10}" text-anchor="middle" font-weight="700">Lado = ${p1.side} cm</text>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy+6}" text-anchor="middle" font-weight="800" fill="#2563EB" font-size="16">${p1.side * p1.side} cm²</text>`;
+      } else if (fig1Type === 'rec') {
+        const bw = p1.b * sc, bh = p1.h * sc;
+        const x0 = cx - bw/2, y0 = cy - bh/2;
+        for (let i = 0; i <= p1.b; i++) svg.innerHTML += `<line x1="${x0+i*sc}" y1="${y0}" x2="${x0+i*sc}" y2="${y0+bh}" stroke="#CBD5E1" stroke-width="1.5"/>`;
+        for (let j = 0; j <= p1.h; j++) svg.innerHTML += `<line x1="${x0}" y1="${y0+j*sc}" x2="${x0+bw}" y2="${y0+j*sc}" stroke="#CBD5E1" stroke-width="1.5"/>`;
+        svg.innerHTML += `<rect x="${x0}" y="${y0}" width="${bw}" height="${bh}" fill="rgba(245,158,11,0.25)" stroke="#F59E0B" stroke-width="3" rx="4"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${y0 - 10}" text-anchor="middle" font-weight="700">Base = ${p1.b} cm</text>`;
+        svg.innerHTML += `<text x="${x0 - 12}" y="${cy}" text-anchor="middle" font-weight="700">h = ${p1.h}</text>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy+6}" text-anchor="middle" font-weight="800" fill="#B45309" font-size="16">${p1.b * p1.h} cm²</text>`;
+      } else if (fig1Type === 'tri') {
+        const bw = 6 * sc, bh = 4 * sc;
+        const x0 = cx - bw/2, y0 = cy + bh/2;
+        svg.innerHTML += `<rect x="${x0}" y="${y0-bh}" width="${bw}" height="${bh}" fill="none" stroke="#94A3B8" stroke-dasharray="6,6" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${x0},${y0} ${x0+bw},${y0} ${cx},${y0-bh}" fill="rgba(139,92,246,0.3)" stroke="#8B5CF6" stroke-width="3"/>`;
+        svg.innerHTML += `<line x1="${cx}" y1="${y0}" x2="${cx}" y2="${y0-bh}" stroke="#DC2626" stroke-width="2" stroke-dasharray="4,4"/>`;
+        svg.innerHTML += `<text x="${cx+15}" y="${cy}" fill="#DC2626" font-weight="700">h = 4</text>`;
+        svg.innerHTML += `<text x="${cx}" y="${y0+22}" text-anchor="middle" font-weight="700">Base = 6</text>`;
+        svg.innerHTML += `<text x="${cx}" y="${y0-15}" text-anchor="middle" font-weight="800" fill="#6D28D9" font-size="16">Área = 12 cm²</text>`;
+      } else if (fig1Type === 'cir') {
+        const r = p1.r * sc;
+        svg.innerHTML += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(16,185,129,0.2)" stroke="#10B981" stroke-width="3"/>`;
+        svg.innerHTML += `<line x1="${cx}" y1="${cy}" x2="${cx+r}" y2="${cy}" stroke="#0F172A" stroke-width="2.5"/>`;
+        svg.innerHTML += `<circle cx="${cx}" cy="${cy}" r="4" fill="#0F172A"/>`;
+        svg.innerHTML += `<text x="${cx+r/2}" y="${cy-8}" text-anchor="middle" font-weight="700">r = ${p1.r} cm</text>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy+30}" text-anchor="middle" font-weight="800" fill="#047857" font-size="15">A = ${(3.14 * p1.r * p1.r).toFixed(2)} cm²</text>`;
+      }
+    }
+
+    function verifyFig1Quiz() {
+      const val = parseFloat(document.getElementById('fig1-quiz-in').value);
+      const fb = document.getElementById('fig1-quiz-fb');
+      let target = 0;
+      if (fig1Type === 'sq') target = p1.side * p1.side;
+      if (fig1Type === 'rec') target = p1.b * p1.h;
+      if (fig1Type === 'tri') target = 12;
+      if (fig1Type === 'cir') target = Math.round(3.14 * p1.r * p1.r * 100) / 100;
+
+      if (Math.abs(val - target) < 0.2) {
+        fb.className = 'feedback-msg correct';
+        fb.textContent = '¡Correcto! Excelente cálculo de área plana.';
+      } else {
+        fb.className = 'feedback-msg wrong';
+        fb.textContent = `Aún no coincide. El valor esperado es ${target}.`;
+      }
+    }
+
+    /* =========================================================
+       ETAPA 2: CUBO DE REGALO
+       ========================================================= */
+    let wrapStep = 0;
+    function renderStage2() {
+      const svg = document.getElementById('svg-stage2');
+      svg.innerHTML = `
+        <polygon points="150,160 300,160 300,310 150,310" fill="${wrapStep>=1?'#FDE047':'#E2E8F0'}" stroke="#0F172A" stroke-width="2.5"/>
+        <polygon points="150,160 220,100 370,100 300,160" fill="${wrapStep>=2?'#60A5FA':'#CBD5E1'}" stroke="#0F172A" stroke-width="2.5"/>
+        <polygon points="300,160 370,100 370,250 300,310" fill="${wrapStep>=3?'#FB923C':'#94A3B8'}" stroke="#0F172A" stroke-width="2.5"/>
+        <text x="225" y="240" text-anchor="middle" font-weight="800" font-size="18" fill="#1E293B">
+          ${wrapStep===0 ? 'Caja sin forrar' : `Cara ${wrapStep} de 6 forrada`}
+        </text>
+      `;
+    }
+    function wrapBoxStep() { wrapStep = (wrapStep % 6) + 1; renderStage2(); }
+    function resetWrap() { wrapStep = 0; renderStage2(); }
+
+    /* =========================================================
+       ETAPA 3: TALLER GUIADO - PRISMA CUADRADO
+       ========================================================= */
+    const sqData = { a: 4, H: 7, ab: 16, pb: 16, al: 112, as: 144 };
+    let sqHighlight = true;
+
+    function toggleSqHighlight() {
+      sqHighlight = !sqHighlight;
+      drawSqGuided();
+    }
+
+    function drawSqGuided() {
+      const deploy = parseInt(document.getElementById('sq-unfold').value);
+      document.getElementById('sq-unfold-txt').textContent = `${deploy}% ${deploy===100?'(Red Plana)':'(Desplegando)'}`;
+      const svg = document.getElementById('svg-sq');
+      svg.innerHTML = '';
+
+      const t = deploy / 100;
+      const sc = 20;
+      const sw = sqData.a * sc;
+      const sh = sqData.H * sc;
+      const cx = 250, cy = 210;
+
+      const cBase = sqHighlight ? '#2563EB' : '#94A3B8';
+      const cLat = sqHighlight ? '#EA580C' : '#CBD5E1';
+
+      if (t < 0.08) {
+        const isoX = sw * 0.7, isoY = sw * 0.35;
+        svg.innerHTML += `<polygon points="${cx-sw/2},${cy+sh/2} ${cx-sw/2+isoX},${cy+sh/2-isoY} ${cx+sw/2+isoX},${cy+sh/2-isoY} ${cx+sw/2},${cy+sh/2}" fill="${cBase}" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<rect x="${cx-sw/2}" y="${cy-sh/2}" width="${sw}" height="${sh}" fill="${cLat}" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${cx+sw/2},${cy-sh/2} ${cx+sw/2+isoX},${cy-sh/2-isoY} ${cx+sw/2+isoX},${cy+sh/2-isoY} ${cx+sw/2},${cy+sh/2}" fill="#C2410C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${cx-sw/2},${cy-sh/2} ${cx-sw/2+isoX},${cy-sh/2-isoY} ${cx+sw/2+isoX},${cy-sh/2-isoY} ${cx+sw/2},${cy-sh/2}" fill="#3B82F6" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy+sh/2+22}" text-anchor="middle" font-weight="700">Lado base a = 4 cm</text>`;
+        svg.innerHTML += `<text x="${cx-sw/2-18}" y="${cy}" text-anchor="middle" font-weight="700">H = 7 cm</text>`;
+      } else {
+        const totalW = 4 * sw;
+        const startX = cx - totalW / 2;
+
+        for (let i = 0; i < 4; i++) {
+          const rx = startX + i * sw;
+          svg.innerHTML += `<rect x="${rx}" y="${cy-sh/2}" width="${sw}" height="${sh}" fill="${cLat}" stroke="#0F172A" stroke-width="2"/>`;
+          svg.innerHTML += `<text x="${rx+sw/2}" y="${cy}" text-anchor="middle" fill="white" font-weight="700" font-size="11">4 × 7</text>`;
+        }
+
+        const topY = (cy - sh/2) - (sw * t);
+        svg.innerHTML += `<rect x="${startX+sw}" y="${topY}" width="${sw}" height="${sw}" fill="${cBase}" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${startX+1.5*sw}" y="${topY+sw/2+4}" text-anchor="middle" fill="white" font-weight="700" font-size="11">Base Sup</text>`;
+
+        const botY = (cy + sh/2) + (sw * (t-1));
+        svg.innerHTML += `<rect x="${startX+sw}" y="${botY}" width="${sw}" height="${sw}" fill="${cBase}" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${startX+1.5*sw}" y="${botY+sw/2+4}" text-anchor="middle" fill="white" font-weight="700" font-size="11">Base Inf</text>`;
+
+        svg.innerHTML += `
+          <line x1="${startX}" y1="${cy+sh/2+25}" x2="${startX+totalW}" y2="${cy+sh/2+25}" stroke="#4F46E5" stroke-width="2.5"/>
+          <text x="${cx}" y="${cy+sh/2+45}" text-anchor="middle" font-weight="800" fill="#4F46E5">
+            Largo = 4 + 4 + 4 + 4 = 16 cm (Perímetro Base)
+          </text>
+        `;
+      }
+    }
+
+    function checkSqStep(step) {
+      const fb = document.getElementById(`fb-sq-${step}`);
+      let userVal = 0, target = 0;
+
+      if (step === 1) { userVal = parseFloat(document.getElementById('in-sq-ab').value); target = sqData.ab; }
+      if (step === 2) { userVal = parseFloat(document.getElementById('in-sq-pb').value); target = sqData.pb; }
+      if (step === 3) { userVal = parseFloat(document.getElementById('in-sq-al').value); target = sqData.al; }
+      if (step === 4) { userVal = parseFloat(document.getElementById('in-sq-as').value); target = sqData.as; }
+
+      if (userVal === target) {
+        fb.className = 'feedback-msg correct';
+        fb.textContent = '¡Correcto! Muy bien calculado.';
+        document.getElementById(`sq-s${step}`).className = 'step-card completed';
+        if (step < 4) {
+          document.getElementById(`sq-s${step+1}`).className = 'step-card active-step';
+        } else {
+          student.solvedCount++;
+          updateStudentUI();
+        }
+      } else {
+        fb.className = 'feedback-msg wrong';
+        fb.textContent = 'Aún no coincide. Pulsa el botón "💡 Pista" si necesitas ayuda.';
+      }
+    }
+
+    /* =========================================================
+       ETAPA 4: PRISMA RECTANGULAR
+       ========================================================= */
+    const recData = { L: 6, A: 4, H: 8, ab: 24, pb: 20, al: 160, as: 208 };
+
+    function drawRecGuided() {
+      const deploy = parseInt(document.getElementById('rec-unfold').value);
+      document.getElementById('rec-unfold-txt').textContent = `${deploy}% ${deploy===100?'(Red Plana)':'(Desplegando)'}`;
+      const svg = document.getElementById('svg-rec');
+      svg.innerHTML = '';
+
+      const t = deploy / 100;
+      const sc = 16;
+      const sL = recData.L * sc, sA = recData.A * sc, sH = recData.H * sc;
+      const cx = 250, cy = 210;
+
+      if (t < 0.08) {
+        const isoX = sA * 0.7, isoY = sA * 0.35;
+        svg.innerHTML += `<rect x="${cx-sL/2}" y="${cy-sH/2}" width="${sL}" height="${sH}" fill="#EA580C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${cx+sL/2},${cy-sH/2} ${cx+sL/2+isoX},${cy-sH/2-isoY} ${cx+sL/2+isoX},${cy+sH/2-isoY} ${cx+sL/2},${cy+sH/2}" fill="#C2410C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${cx-sL/2},${cy-sH/2} ${cx-sL/2+isoX},${cy-sH/2-isoY} ${cx+sL/2+isoX},${cy-sH/2-isoY} ${cx+sL/2},${cy-sH/2}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy+sH/2+22}" text-anchor="middle" font-weight="700">L = 6 cm | A = 4 cm | H = 8 cm</text>`;
+      } else {
+        const totalW = 2 * sL + 2 * sA;
+        let curX = cx - totalW / 2;
+        const widths = [sL, sA, sL, sA];
+        const labels = ['6 × 8', '4 × 8', '6 × 8', '4 × 8'];
+
+        widths.forEach((w, i) => {
+          svg.innerHTML += `<rect x="${curX}" y="${cy-sH/2}" width="${w}" height="${sH}" fill="#EA580C" stroke="#0F172A" stroke-width="2"/>`;
+          svg.innerHTML += `<text x="${curX+w/2}" y="${cy}" text-anchor="middle" fill="white" font-weight="700" font-size="11">${labels[i]}</text>`;
+          curX += w;
+        });
+
+        const topY = (cy - sH/2) - (sA * t);
+        svg.innerHTML += `<rect x="${cx-totalW/2}" y="${topY}" width="${sL}" height="${sA}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${cx-totalW/2+sL/2}" y="${topY+sA/2+4}" text-anchor="middle" fill="white" font-weight="700" font-size="11">Base Sup (6×4)</text>`;
+
+        const botY = (cy + sH/2);
+        svg.innerHTML += `<rect x="${cx-totalW/2}" y="${botY}" width="${sL}" height="${sA}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+
+        svg.innerHTML += `
+          <text x="${cx}" y="${cy+sH/2+sA+24}" text-anchor="middle" font-weight="800" fill="#4F46E5">
+            Largo franja lateral = 6 + 4 + 6 + 4 = 20 cm (PB)
+          </text>
+        `;
+      }
+    }
+
+    function checkRecStep(step) {
+      const fb = document.getElementById(`fb-rec-${step}`);
+      let userVal = 0, target = 0;
+      if (step === 1) { userVal = parseFloat(document.getElementById('in-rec-ab').value); target = recData.ab; }
+      if (step === 2) { userVal = parseFloat(document.getElementById('in-rec-pb').value); target = recData.pb; }
+      if (step === 3) { userVal = parseFloat(document.getElementById('in-rec-al').value); target = recData.al; }
+      if (step === 4) { userVal = parseFloat(document.getElementById('in-rec-as').value); target = recData.as; }
+
+      if (userVal === target) {
+        fb.className = 'feedback-msg correct';
+        fb.textContent = '¡Correcto! Excelente deducción.';
+        document.getElementById(`rec-s${step}`).className = 'step-card completed';
+        if (step < 4) document.getElementById(`rec-s${step+1}`).className = 'step-card active-step';
+      } else {
+        fb.className = 'feedback-msg wrong';
+        fb.textContent = 'Revisa tu cálculo o consulta la pista.';
+      }
+    }
+
+    /* =========================================================
+       ETAPA 5: PRISMA TRIANGULAR
+       ========================================================= */
+    const triData = { b: 6, hTri: 4, l1: 5, l2: 5, H: 8, ab: 12, pb: 16, al: 128, as: 152 };
+
+    function drawTriGuided() {
+      const deploy = parseInt(document.getElementById('tri-unfold').value);
+      document.getElementById('tri-unfold-txt').textContent = `${deploy}%`;
+      const svg = document.getElementById('svg-tri');
+      svg.innerHTML = '';
+
+      const t = deploy / 100;
+      const sc = 17;
+      const sH = triData.H * sc;
+      const b = 6 * sc, l1 = 5 * sc, l2 = 5 * sc;
+      const cx = 250, cy = 210;
+
+      if (t < 0.08) {
+        svg.innerHTML += `<polygon points="${cx-b/2},${cy+sH/3} ${cx+b/2},${cy+sH/3} ${cx},${cy+sH/3-4*sc}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${cx-b/2},${cy+sH/3} ${cx},${cy+sH/3-4*sc} ${cx},${cy-2*sH/3-4*sc} ${cx-b/2},${cy-2*sH/3}" fill="#EA580C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${cx+b/2},${cy+sH/3} ${cx},${cy+sH/3-4*sc} ${cx},${cy-2*sH/3-4*sc} ${cx+b/2},${cy-2*sH/3}" fill="#C2410C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<polygon points="${cx-b/2},${cy-2*sH/3} ${cx+b/2},${cy-2*sH/3} ${cx},${cy-2*sH/3-4*sc}" fill="#3B82F6" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy+sH/3+22}" text-anchor="middle" font-weight="700">b=6, h△=4, lados=5,5 | H=8</text>`;
+      } else {
+        const totalW = l1 + b + l2;
+        const startX = cx - totalW / 2;
+
+        svg.innerHTML += `<rect x="${startX}" y="${cy-sH/2}" width="${l1}" height="${sH}" fill="#EA580C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${startX+l1/2}" y="${cy}" text-anchor="middle" fill="white" font-weight="700" font-size="11">5 × 8</text>`;
+
+        svg.innerHTML += `<rect x="${startX+l1}" y="${cy-sH/2}" width="${b}" height="${sH}" fill="#EA580C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${startX+l1+b/2}" y="${cy}" text-anchor="middle" fill="white" font-weight="700" font-size="11">6 × 8</text>`;
+
+        svg.innerHTML += `<rect x="${startX+l1+b}" y="${cy-sH/2}" width="${l2}" height="${sH}" fill="#EA580C" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${startX+l1+b+l2/2}" y="${cy}" text-anchor="middle" fill="white" font-weight="700" font-size="11">5 × 8</text>`;
+
+        const bx0 = startX + l1;
+        const topTriY = (cy - sH/2) - (4 * sc * t);
+        svg.innerHTML += `<polygon points="${bx0},${cy-sH/2} ${bx0+b},${cy-sH/2} ${bx0+b/2},${topTriY}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+
+        const botTriY = (cy + sH/2) + (4 * sc * t);
+        svg.innerHTML += `<polygon points="${bx0},${cy+sH/2} ${bx0+b},${cy+sH/2} ${bx0+b/2},${botTriY}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+
+        svg.innerHTML += `
+          <text x="${cx}" y="${cy+sH/2+4*sc+24}" text-anchor="middle" font-weight="800" fill="#4F46E5">
+            Largo = 5 + 6 + 5 = 16 cm (Perímetro Base)
+          </text>
+        `;
+      }
+    }
+
+    function checkTriStep(step) {
+      const fb = document.getElementById(`fb-tri-${step}`);
+      let userVal = 0, target = 0;
+      if (step === 1) { userVal = parseFloat(document.getElementById('in-tri-ab').value); target = triData.ab; }
+      if (step === 2) { userVal = parseFloat(document.getElementById('in-tri-pb').value); target = triData.pb; }
+      if (step === 3) { userVal = parseFloat(document.getElementById('in-tri-al').value); target = triData.al; }
+      if (step === 4) { userVal = parseFloat(document.getElementById('in-tri-as').value); target = triData.as; }
+
+      if (userVal === target) {
+        fb.className = 'feedback-msg correct';
+        fb.textContent = '¡Muy bien! Notaste claramente la diferencia entre h△ y H.';
+        document.getElementById(`tri-s${step}`).className = 'step-card completed';
+        if (step < 4) document.getElementById(`tri-s${step+1}`).className = 'step-card active-step';
+      } else {
+        fb.className = 'feedback-msg wrong';
+        fb.textContent = 'Revisa las operaciones del triángulo.';
+      }
+    }
+
+    /* =========================================================
+       ETAPA 6: CILINDRO
+       ========================================================= */
+    const cilData = { r: 3, H: 7, ab: 28.26, pb: 18.84, al: 131.88, as: 188.4 };
+
+    function drawCilGuided() {
+      const deploy = parseInt(document.getElementById('cil-unfold').value);
+      document.getElementById('cil-unfold-txt').textContent = `${deploy}%`;
+      const svg = document.getElementById('svg-cil');
+      svg.innerHTML = '';
+
+      const t = deploy / 100;
+      const sc = 18;
+      const sr = cilData.r * sc;
+      const sH = cilData.H * sc;
+      const perim = 2 * Math.PI * sr;
+      const cx = 250, cy = 210;
+
+      if (t < 0.08) {
+        svg.innerHTML += `<ellipse cx="${cx}" cy="${cy+sH/2}" rx="${sr}" ry="${sr*0.35}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<rect x="${cx-sr}" y="${cy-sH/2}" width="${2*sr}" height="${sH}" fill="#EA580C" stroke="none"/>`;
+        svg.innerHTML += `<line x1="${cx-sr}" y1="${cy-sH/2}" x2="${cx-sr}" y2="${cy+sH/2}" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<line x1="${cx+sr}" y1="${cy-sH/2}" x2="${cx+sr}" y2="${cy+sH/2}" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<ellipse cx="${cx}" cy="${cy-sH/2}" rx="${sr}" ry="${sr*0.35}" fill="#3B82F6" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy+sH/2+24}" text-anchor="middle" font-weight="700">Radio r = 3 cm | H = 7 cm</text>`;
+      } else {
+        const curW = (2 * sr) + (perim - 2 * sr) * t;
+        const rx = cx - curW / 2;
+
+        svg.innerHTML += `<rect x="${rx}" y="${cy-sH/2}" width="${curW}" height="${sH}" fill="#EA580C" stroke="#0F172A" stroke-width="2" rx="4"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${cy}" text-anchor="middle" fill="white" font-weight="700">Largo = 2 · π · r ≈ 18,84 cm</text>`;
+
+        const topY = (cy - sH/2) - (sr * t);
+        svg.innerHTML += `<circle cx="${cx}" cy="${topY}" r="${sr*0.8}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${topY+4}" text-anchor="middle" fill="white" font-weight="700" font-size="11">Base Sup</text>`;
+
+        const botY = (cy + sH/2) + (sr * t);
+        svg.innerHTML += `<circle cx="${cx}" cy="${botY}" r="${sr*0.8}" fill="#2563EB" stroke="#0F172A" stroke-width="2"/>`;
+        svg.innerHTML += `<text x="${cx}" y="${botY+4}" text-anchor="middle" fill="white" font-weight="700" font-size="11">Base Inf</text>`;
+      }
+    }
+
+    function checkCilStep(step) {
+      const fb = document.getElementById(`fb-cil-${step}`);
+      let userVal = 0, target = 0;
+      if (step === 1) { userVal = parseFloat(document.getElementById('in-cil-ab').value); target = cilData.ab; }
+      if (step === 2) { userVal = parseFloat(document.getElementById('in-cil-pb').value); target = cilData.pb; }
+      if (step === 3) { userVal = parseFloat(document.getElementById('in-cil-al').value); target = cilData.al; }
+      if (step === 4) { userVal = parseFloat(document.getElementById('in-cil-as').value); target = cilData.as; }
+
+      if (Math.abs(userVal - target) < 0.25) {
+        fb.className = 'feedback-msg correct';
+        fb.textContent = '¡Excelente! Manejas muy bien las aproximaciones con π.';
+        document.getElementById(`cil-s${step}`).className = 'step-card completed';
+        if (step < 4) document.getElementById(`cil-s${step+1}`).className = 'step-card active-step';
+      } else {
+        fb.className = 'feedback-msg wrong';
+        fb.textContent = `Aún hay diferencias. Recuerda usar π = 3,14.`;
+      }
+    }
+
+    /* =========================================================
+       SISTEMA DE PISTAS PROGRESIVAS
+       ========================================================= */
+    const hintsCatalog = {
+      sq: [
+        "El área de un cuadrado se calcula multiplicando lado por lado: a · a.",
+        "El perímetro es la suma de sus 4 lados: 4 + 4 + 4 + 4.",
+        "El área lateral es el rectángulo que envuelve el cuerpo: AL = Perímetro × Altura = 16 × 7.",
+        "Para el área total: suma las 2 bases cuadradas (2 × 16) más el área lateral (112)."
+      ],
+      rec: [
+        "El área de la base rectangular es largo por ancho: 6 × 4.",
+        "El perímetro suma los cuatro bordes: 6 + 4 + 6 + 4.",
+        "El área lateral es todo el contorno estirado: AL = PB × H = 20 × 8.",
+        "Área total: 2 veces la base (2 × 24 = 48) más el área lateral (160)."
+      ],
+      tri: [
+        "Para el triángulo usa la altura interna h△: (Base × Altura) ÷ 2 = (6 × 4) ÷ 2.",
+        "Suma los tres lados exteriores del triángulo: 5 + 5 + 6.",
+        "Los 3 rectángulos laterales juntos miden: PB × H = 16 × 8.",
+        "Área total: 2 triángulos (2 × 12 = 24) más el área lateral (128)."
+      ],
+      cil: [
+        "Área del círculo: π · r² = 3,14 · 3² = 3,14 · 9 = 28,26.",
+        "Perímetro de la circunferencia: 2 · π · r = 2 · 3,14 · 3 = 18,84.",
+        "Área lateral: circunferencia × altura = 18,84 × 7 = 131,88.",
+        "Área total: 2 círculos (2 × 28,26 = 56,52) más el área lateral (131,88)."
+      ]
+    };
+
+    function showHint(fig, step) {
+      student.hintsUsed++;
+      const box = document.getElementById(`hint-${fig}-${step}`);
+      box.style.display = 'block';
+      box.innerHTML = `<strong>💡 Pista de apoyo:</strong> ${hintsCatalog[fig][step - 1]}`;
+    }
+
+    /* =========================================================
+       ETAPA 7: GENERADOR DE RETOS DINÁMICOS (+12 EJERCICIOS)
+       ========================================================= */
+    const exercisePool = [
+      { type: 'Prisma Cuadrado', a: 5, H: 9, ab: 25, pb: 20, al: 180, as: 230, desc: 'Lado de la base = 5 cm, Altura del prisma = 9 cm.' },
+      { type: 'Prisma Cuadrado', a: 3, H: 8, ab: 9, pb: 12, al: 96, as: 114, desc: 'Lado de la base = 3 cm, Altura del prisma = 8 cm.' },
+      { type: 'Prisma Cuadrado', a: 6, H: 10, ab: 36, pb: 24, al: 240, as: 312, desc: 'Lado de la base = 6 cm, Altura del prisma = 10 cm.' },
+
+      { type: 'Prisma Rectangular', L: 8, A: 3, H: 6, ab: 24, pb: 22, al: 132, as: 180, desc: 'Largo = 8 cm, Ancho = 3 cm, Altura del cuerpo = 6 cm.' },
+      { type: 'Prisma Rectangular', L: 7, A: 4, H: 10, ab: 28, pb: 22, al: 220, as: 276, desc: 'Largo = 7 cm, Ancho = 4 cm, Altura del cuerpo = 10 cm.' },
+      { type: 'Prisma Rectangular', L: 5, A: 2, H: 8, ab: 10, pb: 14, al: 112, as: 132, desc: 'Largo = 5 cm, Ancho = 2 cm, Altura del cuerpo = 8 cm.' },
+
+      { type: 'Prisma Triangular', b: 6, hTri: 4, l1: 5, l2: 5, H: 10, ab: 12, pb: 16, al: 160, as: 184, desc: 'Base triángulo = 6 cm, Altura h△ = 4 cm, Lados = 5, 5, 6 cm. Altura del cuerpo = 10 cm.' },
+      { type: 'Prisma Triangular', b: 8, hTri: 3, l1: 5, l2: 5, H: 12, ab: 12, pb: 18, al: 216, as: 240, desc: 'Base triángulo = 8 cm, Altura h△ = 3 cm, Lados = 5, 5, 8 cm. Altura del cuerpo = 12 cm.' },
+      { type: 'Prisma Triangular', b: 4, hTri: 3, l1: 3.6, l2: 3.6, H: 8, ab: 6, pb: 11.2, al: 89.6, as: 101.6, desc: 'Base triángulo = 4 cm, Altura h△ = 3 cm, Lados = 3.6, 3.6, 4 cm. Altura H = 8 cm.' },
+
+      { type: 'Cilindro (π=3,14)', r: 4, H: 10, ab: 50.24, pb: 25.12, al: 251.2, as: 351.68, desc: 'Radio r = 4 cm, Altura H = 10 cm. Usa π = 3,14.' },
+      { type: 'Cilindro (π=3,14)', r: 5, H: 12, ab: 78.5, pb: 31.4, al: 376.8, as: 533.8, desc: 'Radio r = 5 cm, Altura H = 12 cm. Usa π = 3,14.' },
+      { type: 'Cilindro (π=3,14)', r: 2, H: 6, ab: 12.56, pb: 12.56, al: 75.36, as: 100.48, desc: 'Radio r = 2 cm, Altura H = 6 cm. Usa π = 3,14.' }
+    ];
+
+    let currentDynEx = null;
+    let dynHintStep = 0;
+
+    function generateNewExercise() {
+      dynHintStep = 0;
+      document.getElementById('dynamic-hint-box').style.display = 'none';
+      document.getElementById('ex-dyn-feedback').style.display = 'none';
+      ['ab', 'pb', 'al', 'as'].forEach(k => document.getElementById(`ex-in-${k}`).value = '');
+
+      const randIndex = Math.floor(Math.random() * exercisePool.length);
+      currentDynEx = exercisePool[randIndex];
+
+      document.getElementById('ex-type-title').textContent = currentDynEx.type;
+      document.getElementById('ex-num-badge').textContent = `Reto sugerido`;
+      document.getElementById('ex-statement-title').textContent = currentDynEx.type;
+      document.getElementById('ex-statement-desc').textContent = currentDynEx.desc;
+
+      renderExPreview(currentDynEx);
+    }
+
+    function renderExPreview(ex) {
+      const svg = document.getElementById('svg-ex-preview');
+      svg.innerHTML = `
+        <rect x="50" y="40" width="300" height="200" fill="rgba(79,70,229,0.06)" stroke="#4F46E5" stroke-dasharray="6,6" rx="14"/>
+        <text x="200" y="130" text-anchor="middle" font-weight="800" fill="#4F46E5" font-size="18">${ex.type}</text>
+        <text x="200" y="160" text-anchor="middle" fill="#64748B" font-size="13">¡Calcula sus 4 medidas clave!</text>
+      `;
+    }
+
+    function askDynamicHint() {
+      dynHintStep++;
+      const box = document.getElementById('dynamic-hint-box');
+      box.style.display = 'block';
+
+      if (dynHintStep === 1) {
+        box.innerHTML = '<strong>Pista 1:</strong> Empieza calculando el área de la base (AB) y su perímetro completo (PB).';
+      } else if (dynHintStep === 2) {
+        box.innerHTML = '<strong>Pista 2:</strong> Recuerda que el Área Lateral siempre es: AL = PB · H.';
+      } else if (dynHintStep === 3) {
+        box.innerHTML = '<strong>Pista 3:</strong> Para el Área Total (AS) suma las 2 bases más el área lateral: AS = 2 · AB + AL.';
+      } else {
+        box.innerHTML = `<strong>Procedimiento:</strong> AB = ${currentDynEx.ab} | PB = ${currentDynEx.pb}`;
+      }
+    }
+
+    function validateDynamicExercise() {
+      const uAb = parseFloat(document.getElementById('ex-in-ab').value);
+      const uPb = parseFloat(document.getElementById('ex-in-pb').value);
+      const uAl = parseFloat(document.getElementById('ex-in-al').value);
+      const uAs = parseFloat(document.getElementById('ex-in-as').value);
+      const fb = document.getElementById('ex-dyn-feedback');
+
+      if (isNaN(uAb) || isNaN(uPb) || isNaN(uAl) || isNaN(uAs)) {
+        fb.className = 'feedback-msg wrong';
+        fb.textContent = 'Por favor completa los 4 campos antes de verificar.';
+        return;
+      }
+
+      const okAb = Math.abs(uAb - currentDynEx.ab) < 0.25;
+      const okPb = Math.abs(uPb - currentDynEx.pb) < 0.25;
+      const okAl = Math.abs(uAl - currentDynEx.al) < 0.35;
+      const okAs = Math.abs(uAs - currentDynEx.as) < 0.35;
+
+      if (okAb && okPb && okAl && okAs) {
+        fb.className = 'feedback-msg correct';
+        fb.textContent = '🎉 ¡Brillante! Los 4 cálculos son correctos.';
+        student.solvedCount++;
+        localStorage.setItem('geo8_solved', student.solvedCount);
+        updateStudentUI();
+      } else {
+        fb.className = 'feedback-msg wrong';
+        fb.textContent = `Aún hay errores en los cálculos. Usa el botón "💡 Necesito Ayuda" para guiarte.`;
+      }
+    }
+
+    /* =========================================================
+       ETAPA 8: IMPRESIÓN Y REPORTE
+       ========================================================= */
+    function printFinalReport() {
+      if (!student.name) {
+        alert('Por favor registra tu nombre primero pulsando en "Registrar Alumno" en la esquina superior.');
+        openStudentModal();
+        return;
+      }
+      window.print();
+    }
+
+    // Inicio
+    window.onload = () => {
+      updateStudentUI();
+      setFig1('sq');
+      drawSqGuided();
+    };
+  </script>
+</body>
+</html>
