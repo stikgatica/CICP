@@ -1,0 +1,2730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISIÓN ABASTECIMIENTO — Patrones y Tablas 6° Básico</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #2563eb;
+      --accent: #f59e0b;
+      --accent-dark: #d97706;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --success: #10b981;
+      --success-dark: #047857;
+      --success-bg: #d1fae5;
+      --danger: #ef4444;
+      --danger-bg: #fee2e2;
+      --border: #cbd5e1;
+      --highlight: #fef08a;
+      --warehouse-steel: #334155;
+      --radius: 12px;
+      --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-stack);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 4px solid var(--accent);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    }
+
+    .brand-titles h1 {
+      font-size: 1.18rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-titles p {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .user-badge {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.4rem 0.8rem;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn {
+      padding: 0.55rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      user-select: none;
+      text-decoration: none;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+      transform: none !important;
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.7rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-primary {
+      background: var(--primary-light);
+      color: white;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #0f172a;
+    }
+    .btn-accent:hover:not(:disabled) {
+      background: var(--accent-dark);
+      color: white;
+    }
+
+    .btn-neutral {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+    .btn-neutral:hover:not(:disabled) {
+      background: #cbd5e1;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+    .btn-success:hover:not(:disabled) {
+      background: var(--success-dark);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #64748b;
+      color: #f8fafc;
+    }
+    .btn-outline:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #94a3b8;
+    }
+
+    .curr-subbar {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+    }
+
+    .curriculum-tag {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.78rem;
+    }
+
+    .stage-indicator {
+      font-weight: 700;
+      color: var(--warehouse-steel);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .progress-track {
+      width: 130px;
+      height: 9px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--primary-light));
+      transition: width 0.4s ease;
+      width: 11%;
+    }
+
+    /* Variant Progress Bar & Status Pills */
+    .variant-tracker-bar {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .variant-pills-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .variant-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+
+    .variant-pill.active {
+      border-color: var(--primary-light);
+      background: #eff6ff;
+      color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .variant-pill.completed {
+      border-color: var(--success);
+      background: var(--success-bg);
+      color: #065f46;
+    }
+
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .app-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+      padding: 1.75rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .card-header-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px dashed #e2e8f0;
+      padding-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .stage-title {
+      font-size: 1.35rem;
+      color: #0f172a;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pedagogical-hint {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      background: #f8fafc;
+      padding: 0.5rem 0.8rem;
+      border-left: 4px solid var(--primary-light);
+      border-radius: 0 6px 6px 0;
+      margin-top: 0.4rem;
+    }
+
+    .context-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .context-box h3 {
+      font-size: 1.1rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .concrete-items-shelf {
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      min-height: 60px;
+      align-items: center;
+    }
+
+    .box-item {
+      width: 44px;
+      height: 44px;
+      background: #d97706;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.15rem;
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.1);
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin: 1.25rem 0;
+    }
+
+    table.logistics-table {
+      width: 100%;
+      max-width: 650px;
+      margin: 0 auto;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    table.logistics-table th {
+      background: #1e293b;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      font-size: 0.95rem;
+      border-right: 1px solid #475569;
+    }
+
+    table.logistics-table th:last-child {
+      border-right: none;
+    }
+
+    table.logistics-table td {
+      padding: 0.75rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    table.logistics-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.logistics-table td:last-child {
+      border-right: none;
+    }
+
+    table.logistics-table tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    .table-input {
+      width: 95px;
+      padding: 0.45rem;
+      border: 2px solid #94a3b8;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .table-input:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    }
+
+    .table-input.is-valid {
+      border-color: var(--success);
+      background-color: var(--success-bg);
+      color: #065f46;
+    }
+
+    .table-input.is-invalid {
+      border-color: var(--danger);
+      background-color: var(--danger-bg);
+      color: #991b1b;
+      animation: shake 0.3s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    .pattern-visualizer-container {
+      background: #eff6ff;
+      border: 2px dashed #93c5fd;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+      text-align: center;
+    }
+
+    .pattern-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .step-badge {
+      background: #ffffff;
+      border: 2px solid #1e3a8a;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      min-width: 52px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .jump-tag {
+      background: var(--accent);
+      color: #78350f;
+      font-weight: 800;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.92rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .choices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+
+    .choice-card {
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .choice-card:hover {
+      border-color: var(--primary-light);
+      background: #f0fdf4;
+    }
+
+    .choice-card.selected {
+      border-color: var(--primary-light);
+      background: #eff6ff;
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .feedback-box {
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      display: none;
+      animation: fadeIn 0.3s ease;
+      font-size: 0.95rem;
+    }
+
+    .feedback-box.show {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .feedback-info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+
+    .feedback-success {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+
+    .feedback-warning {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .stage-unlocked-banner {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      margin: 1.25rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+      animation: popIn 0.35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hint-box {
+      background: #fafaf9;
+      border-left: 4px solid var(--accent);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      margin: 0.75rem 0;
+      display: none;
+      font-size: 0.88rem;
+      color: #44403c;
+    }
+
+    .hint-box.active {
+      display: block;
+    }
+
+    .actions-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .actions-left, .actions-right {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .next-stage-lock-hint {
+      font-size: 0.8rem;
+      color: #dc2626;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 620px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      padding: 1.75rem;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    body.projector-mode {
+      background: #ffffff;
+      font-size: 1.35rem;
+    }
+
+    body.projector-mode .app-card {
+      box-shadow: none;
+      border: 3px solid #1e293b;
+      padding: 2.2rem;
+    }
+
+    body.projector-mode .stage-title {
+      font-size: 2rem;
+    }
+
+    body.projector-mode .context-box {
+      font-size: 1.35rem;
+      border-width: 2px;
+    }
+
+    body.projector-mode table.logistics-table th,
+    body.projector-mode table.logistics-table td {
+      font-size: 1.4rem;
+      padding: 1rem;
+    }
+
+    body.projector-mode .table-input {
+      font-size: 1.45rem;
+      width: 130px;
+      padding: 0.6rem;
+    }
+
+    body.projector-mode .btn {
+      font-size: 1.15rem;
+      padding: 0.8rem 1.4rem;
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      header, .curr-subbar, .variant-tracker-bar, .actions-bar, .modal-overlay, #btnHelpHint, #btnShowPattern {
+        display: none !important;
+      }
+      main {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .app-card {
+        border: 1px solid #94a3b8 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        padding: 1.5rem !important;
+      }
+      #printableReportArea {
+        display: block !important;
+      }
+    }
+
+    .icon {
+      width: 1.2em;
+      height: 1.2em;
+      vertical-align: -0.15em;
+      fill: currentColor;
+    }
+
+    .warehouse-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-container">
+      <div class="brand-icon">
+        <svg class="icon" viewBox="0 0 24 24" style="width:26px; height:26px; fill:#0f172a;">
+          <path d="M21 16.5l-9 5.25L3 16.5V7.5L12 2.25l9 5.25v9zM12 4.15L5.1 8.18 12 12.2l6.9-4.02L12 4.15zM4.5 9.77v6.07L11 19.6v-6.07L4.5 9.77zm15 0L13 13.53v6.07l6.5-3.76V9.77z"/>
+        </svg>
+      </div>
+      <div class="brand-titles">
+        <h1>MISIÓN ABASTECIMIENTO <span>📦</span></h1>
+        <p>Patrones y Tablas de Valores — 6° Básico</p>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <div class="user-badge" id="studentDisplay">
+        <svg class="icon" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/></svg>
+        <span id="txtStudentName">Estudiante: Sin registrar</span>
+        <button class="btn btn-outline btn-sm" id="btnEditProfile" title="Cambiar datos de estudiante">Editar</button>
+      </div>
+
+      <button class="btn btn-outline btn-sm" id="btnProjectorToggle" title="Vista de Proyección para pizarra">
+        📺 Proyector
+      </button>
+
+      <button class="btn btn-accent btn-sm" id="btnTeacherMode">
+        🔒 Modo Profesor
+      </button>
+    </div>
+  </header>
+
+  <div class="curr-subbar">
+    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+      <span class="curriculum-tag">OA 9 Basal 6° Básico</span>
+      <span style="color:#64748b; font-size:0.8rem;">
+        “Demostrar que comprenden la relación entre los valores de una tabla y aplicarla en problemas rutinarios de abastecimiento con crecimiento constante.”
+      </span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:1rem;">
+      <div class="stage-indicator">
+        <span id="stageLabel">ETAPA 1 DE 9</span>
+        <div class="progress-track" title="Progreso total">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+      </div>
+      <span class="warehouse-badge" id="activityBadge">NIVEL 1: ACTIVACIÓN</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="app-card" id="mainContainer">
+      
+      <!-- Stage Header Banner -->
+      <div class="card-header-banner">
+        <div>
+          <h2 class="stage-title" id="stageHeading">
+            1. Activación: ¿Qué es una tabla de abastecimiento?
+          </h2>
+          <div class="pedagogical-hint" id="stageGoalDescription">
+            Observa el registro diario de cajas que llegan a la bodega e identifica el comportamiento de los datos.
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <span style="font-size:0.8rem; font-weight:700; color:#64748b;">EVALUACIÓN FORMATIVA</span>
+          <div style="font-size:1.1rem; font-weight:800; color:#1e3a8a;" id="scoreSummary">
+            ⭐ <span id="completedCounter">0</span> / 9 Etapas
+          </div>
+        </div>
+      </div>
+
+      <div class="variant-tracker-bar" id="variantTrackerBar">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          <strong style="color:#1e3a8a; font-size:0.88rem;">📦 Misiones de esta etapa (Obligatorias):</strong>
+          <div class="variant-pills-row" id="variantPillsContainer">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+        <div style="font-size:0.82rem; color:#475569;" id="variantStatusText">
+          Misión 1 de 3: Comprueba con éxito para avanzar a la siguiente variante.
+        </div>
+      </div>
+
+      <!-- Unlocked Stage Success Banner (Appears when all stage variants are cleared) -->
+      <div class="stage-unlocked-banner" id="stageUnlockedBanner" style="display:none;">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <span style="font-size:1.5rem;">🎉</span>
+          <div>
+            <strong>¡Etapa completada con éxito!</strong>
+            <p style="font-size:0.85rem; margin-top:0.15rem;">Has dominado todas las misiones de este nivel. Ya puedes avanzar a la siguiente etapa.</p>
+          </div>
+        </div>
+        <button class="btn btn-neutral btn-sm" id="btnBannerNextStage" style="font-weight:800;">
+          Avanzar de Etapa ➔
+        </button>
+      </div>
+
+      <!-- Dynamic Stage Problem Area -->
+      <div id="dynamicStageArea">
+        <!-- Content will be rendered dynamically -->
+      </div>
+
+      <!-- Progressive Hint Accordion/Box -->
+      <div class="hint-box" id="hintBox">
+        <strong>💡 Orientación Pedagógica (Pista <span id="hintCurrentStep">1</span>/4):</strong>
+        <p id="hintText" style="margin-top:0.3rem;"></p>
+      </div>
+
+      <!-- Feedback Area -->
+      <div class="feedback-box" id="feedbackBox">
+        <span id="feedbackIcon" style="font-size:1.3rem;">ℹ️</span>
+        <div id="feedbackText"></div>
+      </div>
+
+      <div class="actions-bar">
+        <div class="actions-left">
+          <button class="btn btn-neutral" id="btnPrevStage" disabled>
+            ← Anterior
+          </button>
+          <button class="btn btn-outline" style="color:#0f172a; border-color:#94a3b8;" id="btnHelpHint">
+            💡 Pedir Pista (<span id="hintUsedCount">0</span>)
+          </button>
+          <button class="btn btn-outline" style="color:#0f172a; border-color:#94a3b8;" id="btnShowPattern">
+            👁 Revelar Patrón
+          </button>
+        </div>
+
+        <div class="actions-right">
+          <button class="btn btn-accent" id="btnVerify">
+            ✓ Comprobar Misión
+          </button>
+
+          <button class="btn btn-success" id="btnNextVariant" style="display:none;">
+            Siguiente Misión ➔
+          </button>
+
+          <button class="btn btn-primary" id="btnNextStage" disabled>
+            Siguiente Etapa →
+          </button>
+
+          <div class="next-stage-lock-hint" id="stageLockHint" style="display:none;">
+            🔒 Completa las 3 misiones
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-card">
+      <h2 class="modal-title">📦 Ficha de Inventario del Estudiante</h2>
+      <p style="font-size:0.9rem; color:#64748b; margin-bottom:1.25rem;">
+        Ingresa tus datos para registrar tu progreso en el Cuaderno de Campo del Centro de Abastecimiento. No requiere internet.
+      </p>
+
+      <form id="frmProfile" onsubmit="return false;">
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; font-weight:700; margin-bottom:0.3rem; font-size:0.9rem;">Nombre y Apellido:</label>
+          <input type="text" id="inputStudentName" placeholder="Ej: Valentina Morales" required
+            style="width:100%; padding:0.6rem; border:2px solid #cbd5e1; border-radius:8px; font-size:1rem;">
+        </div>
+
+        <div style="margin-bottom:1.5rem;">
+          <label style="display:block; font-weight:700; margin-bottom:0.3rem; font-size:0.9rem;">Curso:</label>
+          <select id="selectStudentGrade" style="width:100%; padding:0.6rem; border:2px solid #cbd5e1; border-radius:8px; font-size:1rem;">
+            <option value="6° A">6° Básico A</option>
+            <option value="6° B">6° Básico B</option>
+            <option value="6° C">6° Básico C</option>
+            <option value="6° D">6° Básico D</option>
+          </select>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+          <button type="submit" class="btn btn-primary" id="btnSaveProfile">Ingresar a la Misión</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="teacherModal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h2 class="modal-title">🔒 Panel Docente — Misión Abastecimiento</h2>
+        <button class="btn btn-neutral btn-sm" id="btnCloseTeacherModal">✕</button>
+      </div>
+
+      <!-- Password Lock Area -->
+      <div id="teacherLockArea">
+        <p style="font-size:0.9rem; color:#475569; margin-bottom:1rem;">
+          Ingresa la clave docente para activar las herramientas de control, proyección y mediación en sala.
+        </p>
+        <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+          <input type="password" id="inputTeacherPass" placeholder="Clave docente (Stik)"
+            style="flex:1; padding:0.6rem; border:2px solid #cbd5e1; border-radius:8px; font-size:1rem;">
+          <button class="btn btn-accent" id="btnUnlockTeacher">Desbloquear</button>
+        </div>
+        <p id="teacherAuthMsg" style="font-size:0.85rem; color:#ef4444; font-weight:bold; display:none;"></p>
+      </div>
+
+      <!-- Authenticated Teacher Control Panel -->
+      <div id="teacherControlsArea" style="display:none;">
+        <div style="background:#ecfdf5; border:1px solid #a7f3d0; padding:0.75rem; border-radius:8px; margin-bottom:1rem; font-size:0.85rem; color:#065f46;">
+          ✓ Sesión Docente autorizada. Selecciona cualquier parámetro para mediar la clase.
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-bottom:1.25rem;">
+          <div>
+            <label style="font-size:0.8rem; font-weight:bold;">Saltar a Etapa:</label>
+            <select id="teacherStageSelect" style="width:100%; padding:0.5rem; border-radius:6px; border:1px solid #cbd5e1; margin-top:0.3rem;">
+              <option value="1">1. Activación y tabla</option>
+              <option value="2">2. Observar crecimiento (+k)</option>
+              <option value="3">3. Completar tablas</option>
+              <option value="4">4. Construir tablas</option>
+              <option value="5">5. Descubrir el patrón</option>
+              <option value="6">6. Predecir valores lejanos</option>
+              <option value="7">7. Control y detección de errores</option>
+              <option value="8">8. Desafío Integrador Final</option>
+              <option value="9">9. Ticket de Salida e Informe</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:0.8rem; font-weight:bold;">Acción directa:</label>
+            <button class="btn btn-neutral btn-sm" id="btnTeacherSolve" style="width:100%; margin-top:0.3rem;">
+              👁 Resolver Misión Actual
+            </button>
+          </div>
+        </div>
+
+        <div style="border-top:1px solid #e2e8f0; padding-top:1rem; display:flex; flex-direction:column; gap:0.6rem;">
+          <button class="btn btn-outline" style="color:#0f172a; border-color:#94a3b8;" id="btnTeacherUnlockAll">
+            🔓 Desbloquear Todas las Etapas sin Restricción
+          </button>
+          <button class="btn btn-neutral" id="btnOpenDetailedReport">
+            📋 Ver Registro Detallado de Intentos y Pistas
+          </button>
+          <button class="btn btn-outline" style="color:#ef4444; border-color:#ef4444;" id="btnTeacherResetAll">
+            🔄 Reiniciar Progreso del Estudiante
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Student Log Modal for Teachers -->
+  <div class="modal-overlay" id="detailedReportModal">
+    <div class="modal-card" style="max-width:750px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h2 class="modal-title">📋 Bitácora Formativa de Intentos</h2>
+        <button class="btn btn-neutral btn-sm" id="btnCloseDetailsModal">✕</button>
+      </div>
+      <div id="detailsTableContainer" style="overflow-x:auto;">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* ==========================================================================
+     MATH PROBLEM BANK — 32 VERIFIED LOGISTICS CONTEXTS
+     Mathematically checked for linear growth (k in {2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15})
+     ========================================================================== */
+
+  const PROBLEM_BANK = [
+    { id: 1, type: "por_cada", item: "jugos de manzana", container: "caja", unitName: "Cajas", valName: "Jugos", k: 6, icon: "🧃", ctx: "Cada caja que llega al almacén contiene 6 botellines de jugo." },
+    { id: 2, type: "por_cada", item: "cuadernos universitarios", container: "paquete", unitName: "Paquetes", valName: "Cuadernos", k: 8, icon: "📚", ctx: "La distribuidora embala 8 cuadernos por cada paquete escolar." },
+    { id: 3, type: "por_cada", item: "lápices grafito", container: "estuche", unitName: "Estuches", valName: "Lápices", k: 12, icon: "✏️", ctx: "Cada estuche sellado de bodega incluye 12 lápices para donación." },
+    { id: 4, type: "acumulado", item: "cajas de leche", container: "día", unitName: "Días", valName: "Cajas Acumuladas", k: 5, icon: "🥛", ctx: "El camión de la distribuidora entrega 5 cajas de leche cada mañana en el casino escolar." },
+    { id: 5, type: "por_cada", item: "botellas de alcohol gel", container: "pack", unitName: "Packs", valName: "Botellas", k: 4, icon: "🧴", ctx: "Cada pack de productos de higiene cuenta con 4 botellas de alcohol gel." },
+    { id: 6, type: "acumulado", item: "sacos de legumbres", container: "turno", unitName: "Turnos", valName: "Sacos Almacenados", k: 7, icon: "🌾", ctx: "En cada turno de carga, los operarios suben 7 sacos de legumbres al inventario." },
+    { id: 7, type: "por_cada", item: "manzanas seleccionadas", container: "malla", unitName: "Mallas", valName: "Manzanas", k: 9, icon: "🍎", ctx: "El sector frutícola empaca exactamente 9 manzanas en cada malla para colación." },
+    { id: 8, type: "por_cada", item: "resmas de hojas", container: "caja", unitName: "Cajas", valName: "Resmas", k: 10, icon: "📄", ctx: "El flete entrega cajas con 10 resmas de papel para la sala de profesores." },
+    { id: 9, type: "acumulado", item: "tarros de pintura blanca", container: "día", unitName: "Días", valName: "Tarros Ingresados", k: 3, icon: "🎨", ctx: "Para renovar las salas, se reciben diariamente 3 tarros de pintura blanca." },
+    { id: 10, type: "por_cada", item: "pegamentos en barra", container: "blíster", unitName: "Blísteres", valName: "Pegamentos", k: 15, icon: "📌", ctx: "La fábrica entrega cajas donde cada blíster contiene 15 tubos de pegamento." },
+    { id: 11, type: "por_cada", item: "reglas métricas", container: "paquete", unitName: "Paquetes", valName: "Reglas", k: 8, icon: "📏", ctx: "El material de geometría viene ordenado con 8 reglas por paquete." },
+    { id: 12, type: "acumulado", item: "bidones de agua pura", container: "día", unitName: "Días", valName: "Bidones Disponibles", k: 6, icon: "🚰", ctx: "Una cuadrilla entrega 6 bidones de agua pura cada día lectivo." },
+    { id: 13, type: "por_cada", item: "cajas de témperas", container: "set", unitName: "Sets", valName: "Témperas", k: 12, icon: "🖌️", ctx: "Cada set artístico escolar contiene 12 potes de témperas lavables." },
+    { id: 14, type: "por_cada", item: "galletas de avena", container: "bandeja", unitName: "Bandejas", valName: "Galletas", k: 14, icon: "🍪", ctx: "La panadería despacha bandejas con 14 paquetes de galletas saludables." },
+    { id: 15, type: "acumulado", item: "mesas de estudio", container: "camionada", unitName: "Camionadas", valName: "Mesas Armadas", k: 4, icon: "🪑", ctx: "Cada camión de equipamiento escolar descarga 4 mesas nuevas en el patio." },
+    { id: 16, type: "por_cada", item: "tijeras punta roma", container: "estuche", unitName: "Estuches", valName: "Tijeras", k: 7, icon: "✂️", ctx: "Cada estuche de manualidades resguarda 7 tijeras punta roma." },
+    { id: 17, type: "acumulado", item: "toallas de papel", container: "semana", unitName: "Semanas", valName: "Total Paquetes", k: 11, icon: "🧻", ctx: "El servicio de aseo repone 11 paquetes de toallas de papel por semana." },
+    { id: 18, type: "por_cada", item: "gomas de borrar", container: "cajita", unitName: "Cajitas", valName: "Gomas", k: 15, icon: "🧼", ctx: "Las cajitas chicas de útiles contienen 15 gomas de borrar para dibujo." },
+    { id: 19, type: "por_cada", item: "plumones de pizarra", container: "caja", unitName: "Cajas", valName: "Plumones", k: 5, icon: "🖊️", ctx: "La dirección entrega cajas que contienen 5 plumones recargables." },
+    { id: 20, type: "acumulado", item: "cajas de tiza ecológica", container: "día", unitName: "Días", valName: "Cajas en Almacén", k: 9, icon: "📦", ctx: "La bodega central despacha 9 cajas de tiza en cada jornada de abastecimiento." },
+    { id: 21, type: "por_cada", item: "carpetas archivadoras", container: "lote", unitName: "Lotes", valName: "Carpetas", k: 8, icon: "📁", ctx: "Para secretaría, cada lote empacado contiene 8 carpetas archivadoras." },
+    { id: 22, type: "acumulado", item: "hojas milimetradas", container: "sector", unitName: "Sectores", valName: "Paquetes Recibidos", k: 6, icon: "📐", ctx: "Cada sector del colegio recibe 6 paquetes de hojas milimetradas." },
+    { id: 23, type: "por_cada", item: "mascarillas quirúrgicas", container: "dispensador", unitName: "Dispensadores", valName: "Mascarillas", k: 20, icon: "😷", ctx: "La enfermería repone cajas de 20 mascarillas por dispensador." },
+    { id: 24, type: "por_cada", item: "calculadoras científicas", container: "maletín", unitName: "Maletines", valName: "Calculadoras", k: 10, icon: "🔢", ctx: "El laboratorio de matemática guarda 10 calculadoras por maletín seguro." },
+    { id: 25, type: "acumulado", item: "recambios de jabón", container: "día", unitName: "Días", valName: "Cajas Acumuladas", k: 7, icon: "🧼", ctx: "El personal de aseo recibe 7 cajas de jabón líquido cada día." },
+    { id: 26, type: "por_cada", item: "pelotas de baby fútbol", container: "saco", unitName: "Sacos", valName: "Pelotas", k: 6, icon: "⚽", ctx: "El departamento de educación física guarda 6 balones en cada saco reforzado." },
+    { id: 27, type: "acumulado", item: "cuerdas para saltar", container: "curso", unitName: "Cursos", valName: "Cuerdas Repartidas", k: 5, icon: "➰", ctx: "Se entregan 5 cuerdas para recreos activos a cada curso de primaria." },
+    { id: 28, type: "por_cada", item: "sets de acuarelas", container: "caja máster", unitName: "Cajas Máster", valName: "Acuarelas", k: 12, icon: "🎨", ctx: "Cada caja máster embalada desde fábrica contiene 12 sets de acuarela." },
+    { id: 29, type: "acumulado", item: "diccionarios escolares", container: "estante", unitName: "Estantes", valName: "Diccionarios", k: 8, icon: "📖", ctx: "La biblioteca equipa sus muebles con 8 diccionarios nuevos por estante." },
+    { id: 30, type: "por_cada", item: "candados de casillero", container: "caja", unitName: "Cajas", valName: "Candados", k: 4, icon: "🔒", ctx: "Para los casilleros de los alumnos, vienen 4 candados con llave por cajita." },
+    { id: 31, type: "por_cada", item: "pinceles de óleo", container: "frasco", unitName: "Frascos", valName: "Pinceles", k: 9, icon: "🖌️", ctx: "El taller de arte organiza frascos con 9 pinceles de óleo cada uno." },
+    { id: 32, type: "por_cada", item: "blocks de dibujo", container: "fardo", unitName: "Fardos", valName: "Blocks", k: 15, icon: "🗒️", ctx: "La bodega recibe fardos sellados con 15 blocks de dibujo medianos." }
+  ];
+
+  const REQUIRED_VARIANTS_PER_STAGE = {
+    1: 3,
+    2: 3,
+    3: 3,
+    4: 3,
+    5: 3,
+    6: 3,
+    7: 3,
+    8: 1, // Desafío integrador
+    9: 1  // Ticket de salida
+  };
+
+  const APP_STATE = {
+    currentStage: 1,
+    currentVariantIndex: 0, // 0-based index for current stage (0, 1, 2)
+    totalStages: 9,
+    studentName: "",
+    studentGrade: "6° Básico A",
+    isTeacherUnlocked: false,
+    isProjectorActive: false,
+    bypassLocks: false,
+    hintLevel: 0,
+    stageProgress: {
+      1: { completedVariants: 0, fullyCleared: false },
+      2: { completedVariants: 0, fullyCleared: false },
+      3: { completedVariants: 0, fullyCleared: false },
+      4: { completedVariants: 0, fullyCleared: false },
+      5: { completedVariants: 0, fullyCleared: false },
+      6: { completedVariants: 0, fullyCleared: false },
+      7: { completedVariants: 0, fullyCleared: false },
+      8: { completedVariants: 0, fullyCleared: false },
+      9: { completedVariants: 0, fullyCleared: false }
+    },
+    stats: {
+      correctAnswers: 0,
+      totalAttempts: 0,
+      hintsUsed: 0,
+      exitTicketScore: 0,
+      logs: []
+    }
+  };
+
+  const STORAGE_KEY = "MISION_ABASTECIMIENTO_6BASICO_V2";
+
+  const AudioEngine = {
+    ctx: null,
+    init() {
+      if (!this.ctx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) this.ctx = new AudioContext();
+      }
+    },
+    playTone(freq, type, duration, startTime = 0) {
+      this.init();
+      if (!this.ctx) return;
+      try {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + startTime);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime + startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + startTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(this.ctx.currentTime + startTime);
+        osc.stop(this.ctx.currentTime + startTime + duration);
+      } catch (e) {
+        console.warn("Audio error:", e);
+      }
+    },
+    playSuccess() {
+      this.playTone(523.25, "sine", 0.15, 0);     // C5
+      this.playTone(659.25, "sine", 0.25, 0.12);  // E5
+    },
+    playStageComplete() {
+      this.playTone(523.25, "triangle", 0.12, 0);    // C5
+      this.playTone(659.25, "triangle", 0.12, 0.1);  // E5
+      this.playTone(783.99, "triangle", 0.15, 0.2);  // G5
+      this.playTone(1046.50, "triangle", 0.35, 0.32);// C6
+    },
+    playError() {
+      this.playTone(260, "sawtooth", 0.18, 0);
+      this.playTone(220, "sawtooth", 0.25, 0.12);
+    }
+  };
+
+  function saveToLocalStorage() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(APP_STATE));
+    } catch (e) {
+      console.warn("No se pudo guardar en localStorage:", e);
+    }
+  }
+
+  function loadFromLocalStorage() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        const parsed = JSON.parse(data);
+        Object.assign(APP_STATE, parsed);
+      }
+    } catch (e) {
+      console.warn("Error cargando localStorage:", e);
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    loadFromLocalStorage();
+    initUIEventListeners();
+    updateStudentHeader();
+
+    if (!APP_STATE.studentName) {
+      document.getElementById("profileModal").classList.add("open");
+    }
+
+    renderCurrentStage();
+  });
+
+  function updateStudentHeader() {
+    const txt = APP_STATE.studentName 
+      ? `Estudiante: ${APP_STATE.studentName} (${APP_STATE.studentGrade})`
+      : "Estudiante: Sin registrar";
+    document.getElementById("txtStudentName").textContent = txt;
+  }
+
+  function initUIEventListeners() {
+    // Profile Modal
+    document.getElementById("btnEditProfile").addEventListener("click", () => {
+      document.getElementById("inputStudentName").value = APP_STATE.studentName || "";
+      document.getElementById("selectStudentGrade").value = APP_STATE.studentGrade || "6° A";
+      document.getElementById("profileModal").classList.add("open");
+    });
+
+    document.getElementById("frmProfile").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("inputStudentName").value.trim();
+      if (!name) return;
+      APP_STATE.studentName = name;
+      APP_STATE.studentGrade = document.getElementById("selectStudentGrade").value;
+      saveToLocalStorage();
+      updateStudentHeader();
+      document.getElementById("profileModal").classList.remove("open");
+    });
+
+    // Teacher Modal
+    document.getElementById("btnTeacherMode").addEventListener("click", () => {
+      document.getElementById("teacherModal").classList.add("open");
+      if (APP_STATE.isTeacherUnlocked) {
+        document.getElementById("teacherLockArea").style.display = "none";
+        document.getElementById("teacherControlsArea").style.display = "block";
+      } else {
+        document.getElementById("teacherLockArea").style.display = "block";
+        document.getElementById("teacherControlsArea").style.display = "none";
+      }
+    });
+
+    document.getElementById("btnCloseTeacherModal").addEventListener("click", () => {
+      document.getElementById("teacherModal").classList.remove("open");
+    });
+
+    document.getElementById("btnUnlockTeacher").addEventListener("click", () => {
+      const pass = document.getElementById("inputTeacherPass").value;
+      const msg = document.getElementById("teacherAuthMsg");
+      if (pass === "Stik") {
+        APP_STATE.isTeacherUnlocked = true;
+        msg.style.display = "none";
+        document.getElementById("teacherLockArea").style.display = "none";
+        document.getElementById("teacherControlsArea").style.display = "block";
+      } else {
+        msg.textContent = "Clave incorrecta. Solicítela al docente.";
+        msg.style.display = "block";
+      }
+    });
+
+    document.getElementById("teacherStageSelect").addEventListener("change", (e) => {
+      goToStage(parseInt(e.target.value));
+      document.getElementById("teacherModal").classList.remove("open");
+    });
+
+    document.getElementById("btnTeacherUnlockAll").addEventListener("click", () => {
+      APP_STATE.bypassLocks = true;
+      for (let s = 1; s <= 9; s++) {
+        APP_STATE.stageProgress[s].fullyCleared = true;
+        APP_STATE.stageProgress[s].completedVariants = REQUIRED_VARIANTS_PER_STAGE[s];
+      }
+      saveToLocalStorage();
+      renderCurrentStage();
+      document.getElementById("teacherModal").classList.remove("open");
+      showFeedback("info", "🔓 Modo Docente: Se han desbloqueado todas las etapas y requisitos.");
+    });
+
+    document.getElementById("btnTeacherResetAll").addEventListener("click", () => {
+      showConfirmModal("¿Reiniciar progreso?", "Se borrarán todos los registros locales y variantes completadas.", () => {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      });
+    });
+
+    document.getElementById("btnTeacherSolve").addEventListener("click", () => {
+      solveCurrentStageForTeacher();
+      document.getElementById("teacherModal").classList.remove("open");
+    });
+
+    // Detailed Log Modal
+    document.getElementById("btnOpenDetailedReport").addEventListener("click", () => {
+      openDetailedReportModal();
+    });
+    document.getElementById("btnCloseDetailsModal").addEventListener("click", () => {
+      document.getElementById("detailedReportModal").classList.remove("open");
+    });
+
+    // Projector Mode Toggle
+    document.getElementById("btnProjectorToggle").addEventListener("click", () => {
+      APP_STATE.isProjectorActive = !APP_STATE.isProjectorActive;
+      document.body.classList.toggle("projector-mode", APP_STATE.isProjectorActive);
+      document.getElementById("btnProjectorToggle").textContent = APP_STATE.isProjectorActive
+        ? "📺 Salir Proyector"
+        : "📺 Proyector";
+    });
+
+    // Stage Navigation Buttons
+    document.getElementById("btnPrevStage").addEventListener("click", () => {
+      if (APP_STATE.currentStage > 1) {
+        goToStage(APP_STATE.currentStage - 1);
+      }
+    });
+
+    document.getElementById("btnNextStage").addEventListener("click", () => {
+      if (canAdvanceStage()) {
+        goToStage(APP_STATE.currentStage + 1);
+      }
+    });
+
+    document.getElementById("btnBannerNextStage").addEventListener("click", () => {
+      if (canAdvanceStage()) {
+        goToStage(APP_STATE.currentStage + 1);
+      }
+    });
+
+    document.getElementById("btnNextVariant").addEventListener("click", () => {
+      const required = REQUIRED_VARIANTS_PER_STAGE[APP_STATE.currentStage];
+      if (APP_STATE.currentVariantIndex < required - 1) {
+        APP_STATE.currentVariantIndex++;
+        APP_STATE.hintLevel = 0;
+        document.getElementById("btnNextVariant").style.display = "none";
+        hideFeedback();
+        renderCurrentStage();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+
+    // Hints
+    document.getElementById("btnHelpHint").addEventListener("click", triggerPedagogicalHint);
+
+    // Show Pattern Visualizer
+    document.getElementById("btnShowPattern").addEventListener("click", triggerPatternRevealer);
+
+    // Verification Action
+    document.getElementById("btnVerify").addEventListener("click", verifyCurrentStageAction);
+  }
+
+  function canAdvanceStage() {
+    if (APP_STATE.bypassLocks || APP_STATE.isTeacherUnlocked) return true;
+    const stage = APP_STATE.currentStage;
+    return !!(APP_STATE.stageProgress[stage] && APP_STATE.stageProgress[stage].fullyCleared);
+  }
+
+  function goToStage(stageNum) {
+    if (stageNum < 1 || stageNum > APP_STATE.totalStages) return;
+    APP_STATE.currentStage = stageNum;
+    APP_STATE.currentVariantIndex = 0;
+    APP_STATE.hintLevel = 0;
+    saveToLocalStorage();
+    renderCurrentStage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function getProblemForCurrentVariant() {
+    const s = APP_STATE.currentStage;
+    const v = APP_STATE.currentVariantIndex;
+    // Guaranteed non-overlapping distinct math contexts:
+    const idx = (s * 5 + v * 7) % PROBLEM_BANK.length;
+    return PROBLEM_BANK[idx];
+  }
+
+  function updateVariantPillsUI() {
+    const stage = APP_STATE.currentStage;
+    const required = REQUIRED_VARIANTS_PER_STAGE[stage];
+    const completed = APP_STATE.stageProgress[stage].completedVariants || 0;
+    const current = APP_STATE.currentVariantIndex;
+
+    const container = document.getElementById("variantPillsContainer");
+    container.innerHTML = "";
+
+    for (let i = 0; i < required; i++) {
+      const pill = document.createElement("span");
+      pill.className = "variant-pill";
+      if (i < completed) {
+        pill.classList.add("completed");
+        pill.innerHTML = `Misión ${i+1} ✓`;
+      } else if (i === current) {
+        pill.classList.add("active");
+        pill.innerHTML = `Misión ${i+1} ●`;
+      } else {
+        pill.innerHTML = `Misión ${i+1} 🔒`;
+      }
+      container.appendChild(pill);
+    }
+
+    const statusText = document.getElementById("variantStatusText");
+    const isStageCleared = APP_STATE.stageProgress[stage].fullyCleared;
+
+    if (isStageCleared) {
+      statusText.innerHTML = `<span style="color:#059669; font-weight:bold;">¡Todas las misiones (${required}/${required}) completadas en esta etapa!</span>`;
+      document.getElementById("stageUnlockedBanner").style.display = (stage < APP_STATE.totalStages) ? "flex" : "none";
+      document.getElementById("btnNextStage").disabled = (stage === APP_STATE.totalStages);
+      document.getElementById("stageLockHint").style.display = "none";
+    } else {
+      statusText.innerHTML = `Misión <strong>${current + 1} de ${required}</strong>: Resuelve y comprueba con éxito para avanzar.`;
+      document.getElementById("stageUnlockedBanner").style.display = "none";
+      document.getElementById("btnNextStage").disabled = true;
+      document.getElementById("stageLockHint").style.display = "inline-flex";
+      document.getElementById("stageLockHint").textContent = `🔒 Faltan ${required - completed} misiones`;
+    }
+
+    // Bypass mode
+    if (APP_STATE.bypassLocks) {
+      document.getElementById("btnNextStage").disabled = (stage === APP_STATE.totalStages);
+      document.getElementById("stageLockHint").style.display = "none";
+    }
+  }
+
+  function updateProgressDisplay() {
+    const current = APP_STATE.currentStage;
+    const total = APP_STATE.totalStages;
+    document.getElementById("stageLabel").textContent = `ETAPA ${current} DE ${total}`;
+    const pct = Math.round((current / total) * 100);
+    document.getElementById("progressFill").style.width = `${pct}%`;
+
+    let completedStagesCount = 0;
+    for (let s = 1; s <= 9; s++) {
+      if (APP_STATE.stageProgress[s].fullyCleared) completedStagesCount++;
+    }
+    document.getElementById("completedCounter").textContent = completedStagesCount;
+
+    document.getElementById("btnPrevStage").disabled = (current === 1);
+
+    // Hide hints by default on stage change
+    document.getElementById("hintBox").classList.remove("active");
+    hideFeedback();
+    updateVariantPillsUI();
+  }
+
+  function showFeedback(type, message) {
+    const box = document.getElementById("feedbackBox");
+    const txt = document.getElementById("feedbackText");
+    const icon = document.getElementById("feedbackIcon");
+
+    box.className = "feedback-box show";
+    if (type === "success") {
+      box.classList.add("feedback-success");
+      icon.textContent = "✅";
+    } else if (type === "warning") {
+      box.classList.add("feedback-warning");
+      icon.textContent = "⚠️";
+    } else {
+      box.classList.add("feedback-info");
+      icon.textContent = "💡";
+    }
+    txt.innerHTML = message;
+  }
+
+  function hideFeedback() {
+    const box = document.getElementById("feedbackBox");
+    box.className = "feedback-box";
+  }
+
+  function selectChoice(labelElement, value) {
+    const parent = labelElement.closest('.choices-grid');
+    parent.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+    labelElement.classList.add('selected');
+    const radio = labelElement.querySelector('input[type="radio"]');
+    if (radio) radio.checked = true;
+  }
+
+  function renderCurrentStage() {
+    updateProgressDisplay();
+    const stage = APP_STATE.currentStage;
+    const area = document.getElementById("dynamicStageArea");
+    area.innerHTML = "";
+
+    switch(stage) {
+      case 1:
+        renderStage1_Activation(area);
+        break;
+      case 2:
+        renderStage2_ObserveGrowth(area);
+        break;
+      case 3:
+        renderStage3_CompleteTables(area);
+        break;
+      case 4:
+        renderStage4_ConstructTables(area);
+        break;
+      case 5:
+        renderStage5_DiscoverPattern(area);
+        break;
+      case 6:
+        renderStage6_PredictDistantValues(area);
+        break;
+      case 7:
+        renderStage7_ReasonAndDetectErrors(area);
+        break;
+      case 8:
+        renderStage8_FinalChallenge(area);
+        break;
+      case 9:
+        renderStage9_ExitTicketAndReport(area);
+        break;
+    }
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 1: ACTIVACIÓN (3 VARIANTES)
+     ------------------------------------------------------------- */
+  function renderStage1_Activation(container) {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    document.getElementById("stageHeading").textContent = "1. Activación: La Bodega y las Tablas de Valores";
+    document.getElementById("stageGoalDescription").textContent = "Una tabla organiza datos relacionados en filas y columnas para observar regularidades en el abastecimiento.";
+    document.getElementById("activityBadge").textContent = "NIVEL 1: ACTIVACIÓN";
+
+    let shelfHTML = "";
+    for (let day = 1; day <= 3; day++) {
+      const count = day * k;
+      let boxes = "";
+      for (let b = 0; b < count; b++) {
+        boxes += `<div class="box-item" title="Unidad ${b+1}">${prob.icon}</div>`;
+      }
+      shelfHTML += `
+        <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:0.6rem; margin-bottom:0.6rem;">
+          <strong style="color:#1e3a8a;">${prob.unitName.slice(0, -1)} ${day}:</strong> Total acumulado de ${count} ${prob.item}.
+          <div class="concrete-items-shelf" style="margin-top:0.4rem;">
+            ${boxes}
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>📦 Situación en Bodega: Abastecimiento de ${prob.item}</h3>
+        <p>${prob.ctx}</p>
+        <p>A continuación se registran los envíos de los tres primeros momentos en representaciones concretas:</p>
+        <div style="margin-top:0.5rem;">
+          ${shelfHTML}
+        </div>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:1.5rem; justify-content:center; align-items:flex-start;">
+        <div class="table-container" style="flex:1; min-width:280px;">
+          <table class="logistics-table">
+            <thead>
+              <tr>
+                <th>${prob.unitName} (Entrada)</th>
+                <th>${prob.valName} (Salida)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>${1 * k}</td></tr>
+              <tr><td>2</td><td>${2 * k}</td></tr>
+              <tr><td>3</td><td>${3 * k}</td></tr>
+              <tr><td>4</td><td>${4 * k}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="flex:1.2; min-width:300px;">
+          <h4 style="margin-bottom:0.6rem; font-size:1.1rem; color:#1e293b;">Pregunta de Exploración:</h4>
+          <p style="margin-bottom:1rem;">Al observar la columna de <strong>${prob.valName}</strong>, ¿qué ocurre a medida que avanzamos de una fila a la siguiente?</p>
+
+          <div class="choices-grid" style="grid-template-columns: 1fr;">
+            <label class="choice-card" onclick="selectChoice(this, 'A')">
+              <input type="radio" name="stage1_q" value="A" style="display:none;">
+              <strong>A) Disminuye de ${k} en ${k}.</strong>
+              <span style="font-size:0.85rem; color:#64748b;">Cada fila tiene menos productos que la anterior.</span>
+            </label>
+            <label class="choice-card" onclick="selectChoice(this, 'B')">
+              <input type="radio" name="stage1_q" value="B" style="display:none;">
+              <strong>B) Aumenta de ${k} en ${k}.</strong>
+              <span style="font-size:0.85rem; color:#64748b;">En cada fila consecutiva se agrega exactamente la misma cantidad (+${k}).</span>
+            </label>
+            <label class="choice-card" onclick="selectChoice(this, 'C')">
+              <input type="radio" name="stage1_q" value="C" style="display:none;">
+              <strong>C) Aumenta en cantidades distintas sin orden.</strong>
+              <span style="font-size:0.85rem; color:#64748b;">No hay ningún patrón ni regularidad detectable.</span>
+            </label>
+            <label class="choice-card" onclick="selectChoice(this, 'D')">
+              <input type="radio" name="stage1_q" value="D" style="display:none;">
+              <strong>D) Aumenta de ${k * 2} en ${k * 2}.</strong>
+              <span style="font-size:0.85rem; color:#64748b;">El salto entre filas es del doble del inicial.</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 2: OBSERVAR EL CRECIMIENTO CONSTANTE (+k) (3 VARIANTES)
+     ------------------------------------------------------------- */
+  function renderStage2_ObserveGrowth(container) {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    document.getElementById("stageHeading").textContent = "2. Observar el Crecimiento Constante (+k)";
+    document.getElementById("stageGoalDescription").textContent = "Identifica la diferencia entre dos valores consecutivos para verificar si el crecimiento es siempre igual.";
+    document.getElementById("activityBadge").textContent = "NIVEL 2: CRECIMIENTO CONSTANTE";
+
+    const v1 = 1 * k;
+    const v2 = 2 * k;
+    const v3 = 3 * k;
+    const v4 = 4 * k;
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>📋 Registro de Recepción: ${prob.item}</h3>
+        <p>${prob.ctx}</p>
+        <p>Observa cómo progresa el inventario y calcula cuánto se suma entre cada paso sucesivo:</p>
+      </div>
+
+      <div class="table-container">
+        <table class="logistics-table">
+          <thead>
+            <tr>
+              <th>${prob.unitName}</th>
+              <th>${prob.valName}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>${v1}</td></tr>
+            <tr><td>2</td><td>${v2}</td></tr>
+            <tr><td>3</td><td>${v3}</td></tr>
+            <tr><td>4</td><td>${v4}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pattern-visualizer-container">
+        <h4 style="color:#1e3a8a; margin-bottom:0.4rem;">Secuencia de la columna "${prob.valName}":</h4>
+        <p style="font-size:0.9rem; color:#475569;">Escribe en cada casilla cuánto se sumó para pasar al siguiente número:</p>
+
+        <div class="pattern-strip">
+          <div class="step-badge">${v1}</div>
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <span style="font-size:0.8rem; font-weight:bold; color:#d97706;">+</span>
+            <input type="number" class="table-input" id="jumpInput1" placeholder="?" style="width:70px; height:42px;">
+          </div>
+          <div class="step-badge">${v2}</div>
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <span style="font-size:0.8rem; font-weight:bold; color:#d97706;">+</span>
+            <input type="number" class="table-input" id="jumpInput2" placeholder="?" style="width:70px; height:42px;">
+          </div>
+          <div class="step-badge">${v3}</div>
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <span style="font-size:0.8rem; font-weight:bold; color:#d97706;">+</span>
+            <input type="number" class="table-input" id="jumpInput3" placeholder="?" style="width:70px; height:42px;">
+          </div>
+          <div class="step-badge">${v4}</div>
+        </div>
+
+        <div style="margin-top:1.25rem; font-size:1rem;">
+          <p>¿Podemos afirmar que este crecimiento es <strong>CONSTANTE</strong>?</p>
+          <div style="margin-top:0.5rem; display:flex; justify-content:center; gap:1.25rem; flex-wrap:wrap;">
+            <label><input type="radio" name="stage2_const" value="SI"> SÍ, porque en cada fila aumenta la MISMA cantidad (+${k})</label>
+            <label><input type="radio" name="stage2_const" value="NO"> NO, las cantidades van cambiando</label>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 3: COMPLETAR TABLAS (3 VARIANTES)
+     ------------------------------------------------------------- */
+  function renderStage3_CompleteTables(container) {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    document.getElementById("stageHeading").textContent = "3. Completar Tablas Incompletas de Abastecimiento";
+    document.getElementById("stageGoalDescription").textContent = "Aplica el patrón identificado para rellenar las celdas faltantes sin alterar los datos correctos.";
+    document.getElementById("activityBadge").textContent = "NIVEL 3: COMPLETAR VALORES";
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>📦 Distribución Programada de ${prob.item}</h3>
+        <p>${prob.ctx}</p>
+        <p>El equipo de inventario dejó varias celdas sin registrar. Completa la cantidad total correspondiente a cada fila aplicando el patrón constante de <strong>+${k}</strong>.</p>
+      </div>
+
+      <div class="table-container">
+        <table class="logistics-table">
+          <thead>
+            <tr>
+              <th>${prob.unitName}</th>
+              <th>${prob.valName}</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>${1 * k}</td>
+              <td><span style="color:#059669; font-weight:bold;">✓ Inicial</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><input type="number" class="table-input" id="stg3_cell_2" placeholder="?"></td>
+              <td id="stg3_stat_2">—</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><input type="number" class="table-input" id="stg3_cell_3" placeholder="?"></td>
+              <td id="stg3_stat_3">—</td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td><input type="number" class="table-input" id="stg3_cell_4" placeholder="?"></td>
+              <td id="stg3_stat_4">—</td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td><input type="number" class="table-input" id="stg3_cell_5" placeholder="?"></td>
+              <td id="stg3_stat_5">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:1rem; text-align:center; max-width:650px; margin:0 auto;">
+        <span style="font-weight:700; color:#1e293b;">Regla de crecimiento observada en la columna:</span>
+        <span style="background:#dbeafe; color:#1e40af; font-weight:800; padding:0.2rem 0.6rem; border-radius:6px; margin-left:0.5rem;">Aumenta de ${k} en ${k}</span>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 4: CONSTRUIR TABLAS DESDE EL ENUNCIADO (3 VARIANTES)
+     ------------------------------------------------------------- */
+  function renderStage4_ConstructTables(container) {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    document.getElementById("stageHeading").textContent = "4. Construir una Tabla de Valores desde el Enunciado";
+    document.getElementById("stageGoalDescription").textContent = "El objetivo curricular OA 9 exige registrar los datos directamente en una tabla vacía identificando variables.";
+    document.getElementById("activityBadge").textContent = "NIVEL 4: CONSTRUCCIÓN";
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>🚚 Despacho a Bodega Escolar</h3>
+        <p style="font-size:1.05rem;">
+          <em>“Una distribuidora de materiales escolares abastece a la escuela con <strong>${k} ${prob.item}</strong> por cada <strong>${prob.container}</strong> que se recibe.”</em>
+        </p>
+        <p>Al llegar el primer envío hay ${1 * k} unidades; con el segundo ${2 * k}; con el tercero ${3 * k}; y con el cuarto ${4 * k}.</p>
+      </div>
+
+      <div style="margin-bottom:1.25rem;">
+        <h4 style="font-size:1rem; color:#1e293b; margin-bottom:0.5rem;">Paso 1: ¿Cuáles son las dos cantidades que debemos relacionar en las columnas?</h4>
+        <div class="choices-grid" style="grid-template-columns: 1fr 1fr;">
+          <label class="choice-card" onclick="selectChoice(this, 'opt_vars_ok')">
+            <input type="radio" name="stg4_vars" value="opt_vars_ok" style="display:none;">
+            <strong>A) ${prob.unitName} y ${prob.valName}</strong>
+            <span style="font-size:0.85rem; color:#64748b;">Relaciona los envíos recibidos con las cantidades de productos.</span>
+          </label>
+          <label class="choice-card" onclick="selectChoice(this, 'opt_vars_wrong')">
+            <input type="radio" name="stg4_vars" value="opt_vars_wrong" style="display:none;">
+            <strong>B) Días y Kilómetros recorridos por el camión</strong>
+            <span style="font-size:0.85rem; color:#64748b;">No son los datos que pide registrar la situación.</span>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <h4 style="font-size:1rem; color:#1e293b; margin-bottom:0.5rem;">Paso 2: Registra los datos en la tabla vacía (Entrada y Salida):</h4>
+        <div class="table-container">
+          <table class="logistics-table">
+            <thead>
+              <tr>
+                <th>${prob.unitName} (1, 2, 3, 4)</th>
+                <th>${prob.valName} (Total)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="number" class="table-input" id="stg4_u_1" placeholder="Ej: 1" style="width:75px;"></td>
+                <td><input type="number" class="table-input" id="stg4_v_1" placeholder="Valor"></td>
+              </tr>
+              <tr>
+                <td><input type="number" class="table-input" id="stg4_u_2" placeholder="Ej: 2" style="width:75px;"></td>
+                <td><input type="number" class="table-input" id="stg4_v_2" placeholder="Valor"></td>
+              </tr>
+              <tr>
+                <td><input type="number" class="table-input" id="stg4_u_3" placeholder="Ej: 3" style="width:75px;"></td>
+                <td><input type="number" class="table-input" id="stg4_v_3" placeholder="Valor"></td>
+              </tr>
+              <tr>
+                <td><input type="number" class="table-input" id="stg4_u_4" placeholder="Ej: 4" style="width:75px;"></td>
+                <td><input type="number" class="table-input" id="stg4_v_4" placeholder="Valor"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 5: DESCUBRIR EL PATRÓN (3 VARIANTES)
+     ------------------------------------------------------------- */
+  function renderStage5_DiscoverPattern(container) {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    document.getElementById("stageHeading").textContent = "5. Descubrir el Patrón: Columna vs Relación entre Columnas";
+    document.getElementById("stageGoalDescription").textContent = "Distingue pedagógicamente: el crecimiento vertical (+k) de la relación funcional horizontal (Entrada × k = Salida).";
+    document.getElementById("activityBadge").textContent = "NIVEL 5: DESCUBRIR Y FORMULAR";
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>📋 Auditoría de Inventario: ${prob.item}</h3>
+        <p>${prob.ctx}</p>
+        <p>Analiza con atención la tabla ya completa de 5 pedidos:</p>
+      </div>
+
+      <div style="display:flex; flex-wrap:wrap; gap:1.5rem; justify-content:center; align-items:flex-start;">
+        <div class="table-container" style="flex:1; min-width:270px;">
+          <table class="logistics-table">
+            <thead>
+              <tr>
+                <th>${prob.unitName} (E)</th>
+                <th>${prob.valName} (S)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>${1 * k}</td></tr>
+              <tr><td>2</td><td>${2 * k}</td></tr>
+              <tr><td>3</td><td>${3 * k}</td></tr>
+              <tr><td>4</td><td>${4 * k}</td></tr>
+              <tr><td>5</td><td>${5 * k}</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="flex:1.4; min-width:320px;">
+          <div style="background:#fff; border:2px solid #3b82f6; border-radius:10px; padding:1.25rem;">
+            <h4 style="color:#1e3a8a; margin-bottom:0.75rem;">1. Crecimiento vertical dentro de la columna:</h4>
+            <p style="font-size:0.95rem; margin-bottom:0.5rem;">
+              En la columna <em>${prob.valName}</em>, los valores aumentan de forma constante sumando:
+            </p>
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+              <span style="font-weight:bold;">Patrón de suma:</span>
+              <span style="font-weight:bold; font-size:1.1rem; color:#d97706;">+</span>
+              <input type="number" class="table-input" id="stg5_col_growth" placeholder="?" style="width:80px;">
+            </div>
+
+            <hr style="border:0; border-top:1px dashed #cbd5e1; margin:1rem 0;">
+
+            <h4 style="color:#1e3a8a; margin-bottom:0.75rem;">2. Relación horizontal entre las dos columnas:</h4>
+            <p style="font-size:0.95rem; margin-bottom:0.5rem;">
+              Para saber la cantidad de <em>${prob.valName}</em> a partir de cualquier cantidad de <em>${prob.unitName}</em>, ¿por cuál número debemos <strong>multiplicar</strong>?
+            </p>
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+              <span>${prob.valName} = (${prob.unitName}) × </span>
+              <input type="number" class="table-input" id="stg5_multiplier" placeholder="?" style="width:80px;">
+            </div>
+            <p style="font-size:0.85rem; color:#64748b; margin-top:0.6rem;">
+              Ejemplo de comprobación: 1 × ${k} = ${k}, 2 × ${k} = ${2 * k}...
+            </p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 6: PREDECIR VALORES LEJANOS (3 VARIANTES)
+     ------------------------------------------------------------- */
+  function renderStage6_PredictDistantValues(container) {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    document.getElementById("stageHeading").textContent = "6. Predecir Valores Lejanos sin Completar Todas las Filas";
+    document.getElementById("stageGoalDescription").textContent = "Aplica la regla de la tabla para calcular pedidos grandes (ej: día 10 o 20) sin tener que sumar de 1 en 1.";
+    document.getElementById("activityBadge").textContent = "NIVEL 6: PREDICCIÓN EFICIENTE";
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>🚚 Pedido Especial para Fin de Semestre: ${prob.item}</h3>
+        <p>${prob.ctx}</p>
+        <p>La bodega necesita prever el abastecimiento para cantidades mucho más grandes:</p>
+      </div>
+
+      <div class="table-container">
+        <table class="logistics-table">
+          <thead>
+            <tr>
+              <th>${prob.unitName}</th>
+              <th>${prob.valName}</th>
+              <th>Cálculo sugerido</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>${1 * k}</td>
+              <td style="font-size:0.85rem; color:#64748b;">1 × ${k}</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>${2 * k}</td>
+              <td style="font-size:0.85rem; color:#64748b;">2 × ${k}</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>${3 * k}</td>
+              <td style="font-size:0.85rem; color:#64748b;">3 × ${k}</td>
+            </tr>
+            <tr style="background:#fef9c3;">
+              <td><strong>10</strong></td>
+              <td><input type="number" class="table-input" id="stg6_val_10" placeholder="?"></td>
+              <td style="font-size:0.85rem; font-weight:bold; color:#854d0e;">10 × ${k} = ?</td>
+            </tr>
+            <tr style="background:#fef9c3;">
+              <td><strong>20</strong></td>
+              <td><input type="number" class="table-input" id="stg6_val_20" placeholder="?"></td>
+              <td style="font-size:0.85rem; font-weight:bold; color:#854d0e;">20 × ${k} = ?</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background:#ffffff; border:2px solid #cbd5e1; border-radius:10px; padding:1.25rem; max-width:650px; margin:1rem auto;">
+        <h4 style="color:#0f172a; margin-bottom:0.5rem;">Pregunta de razonamiento matemático:</h4>
+        <p style="margin-bottom:0.75rem;">¿Es obligatorio calcular las filas 4, 5, 6, 7, 8 y 9 para saber el resultado de la fila 10?</p>
+        <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+          <label><input type="radio" name="stg6_need_all" value="NO"> <strong>NO</strong>, basta multiplicar la entrada por ${k}</label>
+          <label><input type="radio" name="stg6_need_all" value="SI"> SÍ, es indispensable sumar fila por fila</label>
+        </div>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 7: CONTROL DE CALIDAD Y RAZONAMIENTO (3 VARIANTES)
+     ------------------------------------------------------------- */
+  function renderStage7_ReasonAndDetectErrors(container) {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    document.getElementById("stageHeading").textContent = "7. Razonamiento: Control de Calidad y Detección de Errores";
+    document.getElementById("stageGoalDescription").textContent = "Encuentra el dato que rompe el patrón de crecimiento constante e identifica la tabla correcta.";
+    document.getElementById("activityBadge").textContent = "NIVEL 7: CONTROL DE CALIDAD";
+
+    const errRowVal = (4 * k) - (k > 5 ? 3 : 2); // broken value on row 4
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>🔍 Tarea 1: Detección de Error en la Planilla de Ingreso</h3>
+        <p>Un operario registró la siguiente tabla para <strong>${prob.item}</strong> (+${k} por ${prob.container}), pero cometió un error en una de las filas.</p>
+        <p>Selecciona la fila incorrecta y escribe el valor que verdaderamente debería figurar:</p>
+      </div>
+
+      <div class="table-container">
+        <table class="logistics-table">
+          <thead>
+            <tr>
+              <th>Fila</th>
+              <th>${prob.unitName}</th>
+              <th>${prob.valName}</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Fila 1</td>
+              <td>1</td>
+              <td>${1 * k}</td>
+              <td><label><input type="radio" name="stg7_row_err" value="1"> Elegir</label></td>
+            </tr>
+            <tr>
+              <td>Fila 2</td>
+              <td>2</td>
+              <td>${2 * k}</td>
+              <td><label><input type="radio" name="stg7_row_err" value="2"> Elegir</label></td>
+            </tr>
+            <tr>
+              <td>Fila 3</td>
+              <td>3</td>
+              <td>${3 * k}</td>
+              <td><label><input type="radio" name="stg7_row_err" value="3"> Elegir</label></td>
+            </tr>
+            <tr style="background:#fee2e2;">
+              <td><strong>Fila 4</strong></td>
+              <td>4</td>
+              <td><strong style="color:#b91c1c;">${errRowVal}</strong></td>
+              <td><label><input type="radio" name="stg7_row_err" value="4"> Elegir</label></td>
+            </tr>
+            <tr>
+              <td>Fila 5</td>
+              <td>5</td>
+              <td>${5 * k}</td>
+              <td><label><input type="radio" name="stg7_row_err" value="5"> Elegir</label></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:1rem; max-width:650px; margin:1rem auto; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+        <span style="font-weight:bold;">¿Qué valor debería haber estado en la fila con error?</span>
+        <input type="number" class="table-input" id="stg7_corrected_val" placeholder="Valor correcto" style="width:140px;">
+      </div>
+
+      <div class="context-box" style="margin-top:2rem;">
+        <h3>📊 Tarea 2: ¿Cuál tabla representa correctamente la relación?</h3>
+        <p>Problema: <em>“Se despachan exactamente 7 paquetes de materiales por cada curso del colegio.”</em></p>
+        <div class="choices-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+          <label class="choice-card" onclick="selectChoice(this, 'opt_tab_a')">
+            <input type="radio" name="stg7_table_choice" value="opt_tab_a" style="display:none;">
+            <strong>TABLA A</strong>
+            <div style="font-family:monospace; font-size:0.9rem; margin-top:0.4rem;">
+              1 → 7<br>
+              2 → 14<br>
+              3 → 21<br>
+              4 → 28
+            </div>
+            <span style="font-size:0.78rem; color:#059669; font-weight:bold; margin-top:0.4rem;">Crecimiento +7</span>
+          </label>
+
+          <label class="choice-card" onclick="selectChoice(this, 'opt_tab_b')">
+            <input type="radio" name="stg7_table_choice" value="opt_tab_b" style="display:none;">
+            <strong>TABLA B</strong>
+            <div style="font-family:monospace; font-size:0.9rem; margin-top:0.4rem;">
+              1 → 7<br>
+              2 → 8<br>
+              3 → 9<br>
+              4 → 10
+            </div>
+            <span style="font-size:0.78rem; color:#64748b; margin-top:0.4rem;">Crecimiento +1</span>
+          </label>
+
+          <label class="choice-card" onclick="selectChoice(this, 'opt_tab_c')">
+            <input type="radio" name="stg7_table_choice" value="opt_tab_c" style="display:none;">
+            <strong>TABLA C</strong>
+            <div style="font-family:monospace; font-size:0.9rem; margin-top:0.4rem;">
+              1 → 7<br>
+              2 → 17<br>
+              3 → 27<br>
+              4 → 37
+            </div>
+            <span style="font-size:0.78rem; color:#64748b; margin-top:0.4rem;">Crecimiento +10</span>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 8: DESAFÍO FINAL INTEGRADOR (1 SITUACIÓN COMPLETA)
+     ------------------------------------------------------------- */
+  function renderStage8_FinalChallenge(container) {
+    const k = 8;
+    document.getElementById("stageHeading").textContent = "8. Desafío Integrador: El Gran Despacho Escolar";
+    document.getElementById("stageGoalDescription").textContent = "Aplica toda la secuencia: identificar variables, construir la tabla, descubrir el patrón y resolver un pedido comunal.";
+    document.getElementById("activityBadge").textContent = "NIVEL 8: MISIÓN COMPLETA";
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>📦 Situación Central: Centro General de Abastecimiento Estudiantil</h3>
+        <p style="font-size:1.05rem;">
+          La bodega central de la comuna debe abastecer a todas las escuelas públicas. Cada curso beneficiario recibe un kit con <strong>exactamente 8 cajas de útiles escolares</strong>.
+        </p>
+        <p>Tu misión como encargado de logística es construir la tabla con datos no consecutivos (1, 2, 4 y 6 cursos), determinar el patrón y responder el informe final.</p>
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <h4 style="font-size:1rem; color:#1e293b; margin-bottom:0.5rem;">Fase 1: Completa la tabla de abastecimiento oficial:</h4>
+        <div class="table-container">
+          <table class="logistics-table">
+            <thead>
+              <tr>
+                <th>Cursos a abastecer</th>
+                <th>Cajas de útiles necesarias</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1 curso</td>
+                <td><input type="number" class="table-input" id="stg8_c1" placeholder="?"></td>
+              </tr>
+              <tr>
+                <td>2 cursos</td>
+                <td><input type="number" class="table-input" id="stg8_c2" placeholder="?"></td>
+              </tr>
+              <tr>
+                <td>4 cursos (¡atención al salto!)</td>
+                <td><input type="number" class="table-input" id="stg8_c4" placeholder="?"></td>
+              </tr>
+              <tr>
+                <td>6 cursos</td>
+                <td><input type="number" class="table-input" id="stg8_c6" placeholder="?"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="background:#ffffff; border:2px solid #cbd5e1; border-radius:10px; padding:1.25rem;">
+        <h4 style="font-size:1rem; color:#1e293b; margin-bottom:0.75rem;">Fase 2: Conclusiones y cálculo de abastecimiento masivo:</h4>
+        
+        <div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          <span>1. ¿Cuál es el patrón de cajas por cada curso? </span>
+          <span style="font-weight:bold;">+ </span>
+          <input type="number" class="table-input" id="stg8_pattern" placeholder="k" style="width:75px;">
+          <span>cajas por curso.</span>
+        </div>
+
+        <div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          <span>2. Si la comuna tiene <strong>10 cursos</strong>, ¿cuántas cajas se deben preparar en total?</span>
+          <input type="number" class="table-input" id="stg8_for10" placeholder="Total 10" style="width:110px;">
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          <span>3. Y para <strong>20 cursos</strong>, ¿cuántas cajas se requerirán?</span>
+          <input type="number" class="table-input" id="stg8_for20" placeholder="Total 20" style="width:110px;">
+        </div>
+      </div>
+    `;
+  }
+
+  /* -------------------------------------------------------------
+     ETAPA 9: TICKET DE SALIDA Y REPORTE FORMATIVO FINAL
+     ------------------------------------------------------------- */
+  function renderStage9_ExitTicketAndReport(container) {
+    document.getElementById("stageHeading").textContent = "9. Ticket de Salida e Informe Final de Desempeño";
+    document.getElementById("stageGoalDescription").textContent = "Comprueba tu aprendizaje autónomo mediante tres preguntas clave y genera tu informe oficial imprimible.";
+    document.getElementById("activityBadge").textContent = "NIVEL 9: CERTIFICACIÓN";
+
+    container.innerHTML = `
+      <div class="context-box">
+        <h3>📋 Ticket de Salida de Matemática 6° Básico</h3>
+        <p>Demuestra que puedes: 1) Completar la tabla, 2) Identificar el patrón y 3) Resolver para un valor lejano.</p>
+        <p><em>Situación: La bodega recibe 9 bidones de desinfectante cada día.</em></p>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; margin-bottom:1.5rem;">
+        <!-- Q1 -->
+        <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:1rem;">
+          <h4 style="font-size:0.95rem; color:#1e3a8a; margin-bottom:0.5rem;">Pregunta 1: Completar la tabla</h4>
+          <table class="logistics-table" style="font-size:0.9rem;">
+            <thead>
+              <tr><th>Día</th><th>Bidones</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>9</td></tr>
+              <tr><td>2</td><td>18</td></tr>
+              <tr><td>3</td><td><input type="number" class="table-input" id="tk_q1_d3" placeholder="?" style="width:65px;"></td></tr>
+              <tr><td>4</td><td><input type="number" class="table-input" id="tk_q1_d4" placeholder="?" style="width:65px;"></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Q2 -->
+        <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:1rem;">
+          <h4 style="font-size:0.95rem; color:#1e3a8a; margin-bottom:0.5rem;">Pregunta 2: ¿Cuál es el patrón constante?</h4>
+          <p style="font-size:0.85rem; color:#64748b; margin-bottom:0.75rem;">Indica cuánto se agrega en cada día sucesivo:</p>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span>Aumento constante: <strong>+</strong></span>
+            <input type="number" class="table-input" id="tk_q2_pat" placeholder="?" style="width:80px;">
+          </div>
+        </div>
+
+        <!-- Q3 -->
+        <div style="background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:1rem;">
+          <h4 style="font-size:0.95rem; color:#1e3a8a; margin-bottom:0.5rem;">Pregunta 3: Aplicación a valor nuevo</h4>
+          <p style="font-size:0.85rem; color:#64748b; margin-bottom:0.75rem;">¿Cuántos bidones acumulados habrá al cabo de <strong>10 días</strong>?</p>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span>Total en Día 10:</span>
+            <input type="number" class="table-input" id="tk_q3_val10" placeholder="?" style="width:90px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Final Printable Report Canvas -->
+      <div id="printableReportArea" style="background:#ffffff; border:3px solid #1e3a8a; border-radius:12px; padding:1.75rem; margin-top:2rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #1e3a8a; padding-bottom:0.75rem; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <h2 style="font-size:1.35rem; color:#1e3a8a;">CERTIFICADO OFICIAL DE INVENTARIO Y APRENDIZAJE</h2>
+            <p style="font-size:0.85rem; color:#475569;">Ministerio de Educación de Chile — Currículum Nacional 6° Básico</p>
+          </div>
+          <div style="text-align:right;">
+            <span class="warehouse-badge" style="background:#dbeafe; color:#1e40af;">OA 9 MATEMÁTICA</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; font-size:0.95rem; margin-bottom:1.25rem;">
+          <div><strong>Estudiante:</strong> <span id="repStudentName">${APP_STATE.studentName || 'Sin registrar'}</span></div>
+          <div><strong>Curso:</strong> <span id="repStudentGrade">${APP_STATE.studentGrade}</span></div>
+          <div><strong>Fecha de trabajo:</strong> ${new Date().toLocaleDateString('es-CL')}</div>
+          <div><strong>Eje Curricular:</strong> Patrones y Álgebra — Crecimiento Constante</div>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:1rem; margin-bottom:1.25rem; font-size:0.9rem;">
+          <strong>Objetivo de Aprendizaje evaluado:</strong><br>
+          <em>“Demostrar que comprenden la relación entre los valores de una tabla y aplicarla en la resolución de problemas sencillos de abastecimiento registrando datos para destacar un patrón de crecimiento constante.”</em>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:1rem; text-align:center; margin-bottom:1.5rem;">
+          <div style="background:#eff6ff; padding:0.75rem; border-radius:8px; border:1px solid #bfdbfe;">
+            <div style="font-size:0.8rem; color:#1e40af; font-weight:bold;">ETAPAS DOMINADAS</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#1e3a8a;" id="repStagesCount">
+              ${Object.values(APP_STATE.stageProgress).filter(p => p.fullyCleared).length} / 9
+            </div>
+          </div>
+          <div style="background:#ecfdf5; padding:0.75rem; border-radius:8px; border:1px solid #a7f3d0;">
+            <div style="font-size:0.8rem; color:#065f46; font-weight:bold;">RESPUESTAS CORRECTAS</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#065f46;" id="repCorrectCount">${APP_STATE.stats.correctAnswers}</div>
+          </div>
+          <div style="background:#fef3c7; padding:0.75rem; border-radius:8px; border:1px solid #fde68a;">
+            <div style="font-size:0.8rem; color:#92400e; font-weight:bold;">INTENTOS TOTALES</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#92400e;" id="repAttemptsCount">${APP_STATE.stats.totalAttempts}</div>
+          </div>
+          <div style="background:#f1f5f9; padding:0.75rem; border-radius:8px; border:1px solid #cbd5e1;">
+            <div style="font-size:0.8rem; color:#475569; font-weight:bold;">PISTAS SOLICITADAS</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#475569;" id="repHintsCount">${APP_STATE.stats.hintsUsed}</div>
+          </div>
+          <div style="background:#f5f3ff; padding:0.75rem; border-radius:8px; border:1px solid #ddd6fe;">
+            <div style="font-size:0.8rem; color:#6d28d9; font-weight:bold;">TICKET DE SALIDA</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#6d28d9;" id="repTicketCount">${APP_STATE.stats.exitTicketScore} / 3</div>
+          </div>
+        </div>
+
+        <div style="border-left:4px solid #10b981; padding:0.75rem 1rem; background:#f0fdf4; border-radius:0 8px 8px 0; margin-bottom:1.5rem;">
+          <h4 style="font-size:0.95rem; color:#065f46; margin-bottom:0.25rem;">Dictamen Pedagógico Cualitativo:</h4>
+          <p id="repFeedbackPedagogy" style="font-size:0.9rem; color:#1e293b;">
+            El estudiante demuestra comprensión del concepto de tabla de valores, reconoce el crecimiento constante (+k) y lo aplica eficientemente en la resolución de problemas de abastecimiento escolar.
+          </p>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:1rem;">
+          <button class="btn btn-primary" onclick="window.print()">
+            🖨️ Imprimir / Guardar Informe en PDF
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function verifyCurrentStageAction() {
+    const stage = APP_STATE.currentStage;
+    APP_STATE.stats.totalAttempts++;
+
+    let passed = false;
+    let feedbackMsg = "";
+
+    switch(stage) {
+      case 1: {
+        const checked = document.querySelector('input[name="stage1_q"]:checked');
+        const prob = getProblemForCurrentVariant();
+        if (!checked) {
+          showFeedback("warning", "Por favor selecciona una de las 4 opciones antes de comprobar.");
+          AudioEngine.playError();
+          return;
+        }
+        if (checked.value === "B") {
+          passed = true;
+          feedbackMsg = `¡Excelente observación! La cantidad de ${prob.item} <strong>aumenta constantemente de ${prob.k} en ${prob.k}</strong> en cada fila sucesiva.`;
+        } else {
+          feedbackMsg = `Atención: Compara dos filas consecutivas (por ejemplo Fila 1 y Fila 2). ¿Cuánto se suma para llegar de ${prob.k} a ${prob.k * 2}?`;
+        }
+        break;
+      }
+
+      case 2: {
+        const prob = getProblemForCurrentVariant();
+        const k = prob.k;
+        const j1 = parseInt(document.getElementById("jumpInput1").value);
+        const j2 = parseInt(document.getElementById("jumpInput2").value);
+        const j3 = parseInt(document.getElementById("jumpInput3").value);
+        const constRadio = document.querySelector('input[name="stage2_const"]:checked');
+
+        const ok1 = (j1 === k);
+        const ok2 = (j2 === k);
+        const ok3 = (j3 === k);
+
+        document.getElementById("jumpInput1").className = "table-input " + (ok1 ? "is-valid" : "is-invalid");
+        document.getElementById("jumpInput2").className = "table-input " + (ok2 ? "is-valid" : "is-invalid");
+        document.getElementById("jumpInput3").className = "table-input " + (ok3 ? "is-valid" : "is-invalid");
+
+        if (ok1 && ok2 && ok3 && constRadio && constRadio.value === "SI") {
+          passed = true;
+          feedbackMsg = `¡Correcto! Todos los saltos son exactamente <strong>+${k}</strong>. Por lo tanto, el crecimiento es <strong>CONSTANTE</strong>.`;
+        } else {
+          feedbackMsg = `Revisa las casillas en rojo. Recuerda calcular la resta entre cada número y el anterior: ${2*k} - ${k} = ?`;
+        }
+        break;
+      }
+
+      case 3: {
+        const prob = getProblemForCurrentVariant();
+        const k = prob.k;
+        let allOk = true;
+
+        for (let row = 2; row <= 5; row++) {
+          const input = document.getElementById(`stg3_cell_${row}`);
+          const stat = document.getElementById(`stg3_stat_${row}`);
+          const val = parseInt(input.value);
+          const expected = row * k;
+
+          if (val === expected) {
+            input.className = "table-input is-valid";
+            stat.innerHTML = `<span style="color:#059669; font-weight:bold;">✓ Correcto</span>`;
+          } else {
+            input.className = "table-input is-invalid";
+            stat.innerHTML = `<span style="color:#dc2626; font-weight:bold;">✕ Revisar</span>`;
+            allOk = false;
+          }
+        }
+
+        if (allOk) {
+          passed = true;
+          feedbackMsg = `¡Felicitaciones! Has completado toda la tabla respetando el aumento constante de +${k}. Las celdas correctas se han validado.`;
+        } else {
+          feedbackMsg = `Algunas celdas necesitan corrección (marcadas en rojo). Suma ${k} al valor de la fila anterior.`;
+        }
+        break;
+      }
+
+      case 4: {
+        const prob = getProblemForCurrentVariant();
+        const k = prob.k;
+        const varChoice = document.querySelector('input[name="stg4_vars"]:checked');
+        const isVarOk = (varChoice && varChoice.value === "opt_vars_ok");
+
+        let tableOk = true;
+        for (let i = 1; i <= 4; i++) {
+          const uInput = document.getElementById(`stg4_u_${i}`);
+          const vInput = document.getElementById(`stg4_v_${i}`);
+          const uVal = parseInt(uInput.value);
+          const vVal = parseInt(vInput.value);
+
+          const uExpected = i;
+          const vExpected = i * k;
+
+          if (uVal === uExpected) {
+            uInput.className = "table-input is-valid";
+          } else {
+            uInput.className = "table-input is-invalid";
+            tableOk = false;
+          }
+
+          if (vVal === vExpected) {
+            vInput.className = "table-input is-valid";
+          } else {
+            vInput.className = "table-input is-invalid";
+            tableOk = false;
+          }
+        }
+
+        if (isVarOk && tableOk) {
+          passed = true;
+          feedbackMsg = `¡Extraordinario! Identificaste correctamente las variables y construiste la tabla desde cero registrando los datos con crecimiento constante (+${k}).`;
+        } else {
+          feedbackMsg = `Verifica los encabezados seleccionados y recuerda numerar las entradas del 1 al 4, registrando el valor multiplicado por ${k} en la salida.`;
+        }
+        break;
+      }
+
+      case 5: {
+        const prob = getProblemForCurrentVariant();
+        const k = prob.k;
+        const colGrowth = parseInt(document.getElementById("stg5_col_growth").value);
+        const multiplier = parseInt(document.getElementById("stg5_multiplier").value);
+
+        const okCol = (colGrowth === k);
+        const okMult = (multiplier === k);
+
+        document.getElementById("stg5_col_growth").className = "table-input " + (okCol ? "is-valid" : "is-invalid");
+        document.getElementById("stg5_multiplier").className = "table-input " + (okMult ? "is-valid" : "is-invalid");
+
+        if (okCol && okMult) {
+          passed = true;
+          feedbackMsg = `¡Gran descubrimiento matemático! Distinguiste que la columna crece sumando <strong>+${k}</strong>, y la relación funcional entre columnas es multiplicar la Entrada por <strong>${k}</strong>.`;
+        } else {
+          feedbackMsg = `Revisa ambas casillas: ¿Cuánto se suma hacia abajo? ¿Y por qué número multiplicas la primera columna para obtener la segunda?`;
+        }
+        break;
+      }
+
+      case 6: {
+        const prob = getProblemForCurrentVariant();
+        const k = prob.k;
+        const v10 = parseInt(document.getElementById("stg6_val_10").value);
+        const v20 = parseInt(document.getElementById("stg6_val_20").value);
+        const radioNeed = document.querySelector('input[name="stg6_need_all"]:checked');
+
+        const ok10 = (v10 === 10 * k);
+        const ok20 = (v20 === 20 * k);
+        const okRadio = (radioNeed && radioNeed.value === "NO");
+
+        document.getElementById("stg6_val_10").className = "table-input " + (ok10 ? "is-valid" : "is-invalid");
+        document.getElementById("stg6_val_20").className = "table-input " + (ok20 ? "is-valid" : "is-invalid");
+
+        if (ok10 && ok20 && okRadio) {
+          passed = true;
+          feedbackMsg = `¡Perfecto razonamiento! Multiplicar directamente por ${k} permite predecir valores lejanos (10 → ${10*k}, 20 → ${20*k}) sin completar filas intermedias.`;
+        } else {
+          feedbackMsg = `Verifica los cálculos: para 10 unidades es 10 × ${k} = ${10*k}; para 20 es 20 × ${k} = ${20*k}. Además comprende que no es obligatorio sumar fila a fila.`;
+        }
+        break;
+      }
+
+      case 7: {
+        const prob = getProblemForCurrentVariant();
+        const k = prob.k;
+        const selectedRow = document.querySelector('input[name="stg7_row_err"]:checked');
+        const correctedVal = parseInt(document.getElementById("stg7_corrected_val").value);
+        const tableChoice = document.querySelector('input[name="stg7_table_choice"]:checked');
+
+        const isRow4 = (selectedRow && selectedRow.value === "4");
+        const isValCorrect = (correctedVal === 4 * k);
+        const isTableA = (tableChoice && tableChoice.value === "opt_tab_a");
+
+        document.getElementById("stg7_corrected_val").className = "table-input " + (isValCorrect ? "is-valid" : "is-invalid");
+
+        if (isRow4 && isValCorrect && isTableA) {
+          passed = true;
+          feedbackMsg = `¡Control de calidad superado! Detectaste el error en la Fila 4 (debía ser ${4*k}) y reconociste que la Tabla A representa el crecimiento constante de +7.`;
+        } else {
+          feedbackMsg = `Revisa: En la Tarea 1 la fila con error es la 4 (no respeta el aumento de ${k}). En la Tarea 2 busca la tabla que aumente de 7 en 7.`;
+        }
+        break;
+      }
+
+      case 8: {
+        const k = 8;
+        const c1 = parseInt(document.getElementById("stg8_c1").value);
+        const c2 = parseInt(document.getElementById("stg8_c2").value);
+        const c4 = parseInt(document.getElementById("stg8_c4").value);
+        const c6 = parseInt(document.getElementById("stg8_c6").value);
+
+        const pat = parseInt(document.getElementById("stg8_pattern").value);
+        const f10 = parseInt(document.getElementById("stg8_for10").value);
+        const f20 = parseInt(document.getElementById("stg8_for20").value);
+
+        const okC1 = (c1 === 1 * k);
+        const okC2 = (c2 === 2 * k);
+        const okC4 = (c4 === 4 * k);
+        const okC6 = (c6 === 6 * k);
+        const okPat = (pat === k);
+        const okF10 = (f10 === 10 * k);
+        const okF20 = (f20 === 20 * k);
+
+        document.getElementById("stg8_c1").className = "table-input " + (okC1 ? "is-valid" : "is-invalid");
+        document.getElementById("stg8_c2").className = "table-input " + (okC2 ? "is-valid" : "is-invalid");
+        document.getElementById("stg8_c4").className = "table-input " + (okC4 ? "is-valid" : "is-invalid");
+        document.getElementById("stg8_c6").className = "table-input " + (okC6 ? "is-valid" : "is-invalid");
+        document.getElementById("stg8_pattern").className = "table-input " + (okPat ? "is-valid" : "is-invalid");
+        document.getElementById("stg8_for10").className = "table-input " + (okF10 ? "is-valid" : "is-invalid");
+        document.getElementById("stg8_for20").className = "table-input " + (okF20 ? "is-valid" : "is-invalid");
+
+        if (okC1 && okC2 && okC4 && okC6 && okPat && okF10 && okF20) {
+          passed = true;
+          feedbackMsg = `¡Misión Abastecimiento completada con éxito rotundo! Has aplicado de forma autónoma el OA 9: tabla con datos dispersos, formulación del patrón y cálculo a gran escala.`;
+        } else {
+          feedbackMsg = `Revisa los datos marcados en rojo. Cuidado con el salto: de 2 a 4 cursos son 4 × 8 = 32 cajas; y para 20 cursos: 20 × 8 = 160 cajas.`;
+        }
+        break;
+      }
+
+      case 9: {
+        const q1_d3 = parseInt(document.getElementById("tk_q1_d3").value);
+        const q1_d4 = parseInt(document.getElementById("tk_q1_d4").value);
+        const q2_pat = parseInt(document.getElementById("tk_q2_pat").value);
+        const q3_v10 = parseInt(document.getElementById("tk_q3_val10").value);
+
+        let tkScore = 0;
+        if (q1_d3 === 27 && q1_d4 === 36) tkScore++;
+        if (q2_pat === 9) tkScore++;
+        if (q3_v10 === 90) tkScore++;
+
+        APP_STATE.stats.exitTicketScore = tkScore;
+        passed = (tkScore >= 2);
+
+        document.getElementById("repTicketCount").textContent = `${tkScore} / 3`;
+
+        const repFeedback = document.getElementById("repFeedbackPedagogy");
+        if (tkScore === 3) {
+          repFeedback.textContent = "Excelente logro: Domina completamente la construcción de tablas de valores, identifica con rapidez el patrón de crecimiento constante (+k) y lo aplica para predecir cualquier cantidad sin dificultad.";
+        } else if (tkScore === 2) {
+          repFeedback.textContent = "Buen desempeño: Identifica el patrón y completa tablas con solvencia. Se recomienda afianzar el cálculo directo para valores lejanos mediante la multiplicación de la entrada.";
+        } else {
+          repFeedback.textContent = "En desarrollo: Es conveniente continuar reforzando cómo registrar los datos de un problema paso a paso y calcular la diferencia entre dos valores continuos en una columna.";
+        }
+
+        feedbackMsg = `Ticket de salida calificado formativamente: <strong>${tkScore} de 3 puntos</strong>. Tu informe oficial ha sido actualizado para impresión.`;
+        break;
+      }
+    }
+
+    // Record logging
+    APP_STATE.stats.logs.push({
+      stage: stage,
+      variant: APP_STATE.currentVariantIndex + 1,
+      attempts: APP_STATE.stats.totalAttempts,
+      hints: APP_STATE.hintLevel,
+      passed: passed,
+      timestamp: new Date().toLocaleTimeString()
+    });
+
+    if (passed) {
+      APP_STATE.stats.correctAnswers++;
+      const required = REQUIRED_VARIANTS_PER_STAGE[stage];
+
+      // Advance completed variant count if not already completed
+      if (APP_STATE.stageProgress[stage].completedVariants < APP_STATE.currentVariantIndex + 1) {
+        APP_STATE.stageProgress[stage].completedVariants = APP_STATE.currentVariantIndex + 1;
+      }
+
+      if (APP_STATE.stageProgress[stage].completedVariants >= required) {
+        APP_STATE.stageProgress[stage].fullyCleared = true;
+        AudioEngine.playStageComplete();
+        feedbackMsg += `<br><br>🎉 <strong>¡Etapa completada! Has superado las ${required} misiones de este nivel. Ya puedes avanzar a la siguiente etapa.</strong>`;
+        document.getElementById("btnNextVariant").style.display = "none";
+      } else {
+        AudioEngine.playSuccess();
+        document.getElementById("btnNextVariant").style.display = "inline-flex";
+        feedbackMsg += `<br><br>👉 <strong>¡Misión superada! Presiona "Siguiente Misión ➔" para resolver la misión ${APP_STATE.currentVariantIndex + 2} de ${required}.</strong>`;
+      }
+
+      showFeedback("success", feedbackMsg);
+    } else {
+      AudioEngine.playError();
+      showFeedback("warning", feedbackMsg);
+    }
+
+    saveToLocalStorage();
+    updateProgressDisplay();
+  }
+
+  function triggerPedagogicalHint() {
+    APP_STATE.hintLevel = Math.min(4, APP_STATE.hintLevel + 1);
+    APP_STATE.stats.hintsUsed++;
+    document.getElementById("hintUsedCount").textContent = APP_STATE.stats.hintsUsed;
+
+    const prob = getProblemForCurrentVariant();
+    const k = prob ? prob.k : 6;
+    const box = document.getElementById("hintBox");
+    const num = document.getElementById("hintCurrentStep");
+    const txt = document.getElementById("hintText");
+
+    num.textContent = APP_STATE.hintLevel;
+    box.classList.add("active");
+
+    switch(APP_STATE.hintLevel) {
+      case 1:
+        txt.textContent = "Nivel 1: Observa dos valores consecutivos de la tabla. Por ejemplo, compara el valor de la fila 1 y de la fila 2.";
+        break;
+      case 2:
+        txt.textContent = `Nivel 2: Calcula la diferencia (resta) entre esos dos números. ¿Cuánto aumentó exactamente de un paso al siguiente?`;
+        break;
+      case 3:
+        txt.textContent = `Nivel 3: Comprueba si esa misma diferencia se repite entre la fila 2 y la fila 3. En esta bodega el aumento constante es de +${k}.`;
+        break;
+      case 4:
+        txt.textContent = `Nivel 4: Relaciona las dos columnas: Para saber el total de la segunda columna sin sumar de uno en uno, multiplica el número de la primera columna por ${k}.`;
+        break;
+    }
+
+    saveToLocalStorage();
+  }
+
+  function triggerPatternRevealer() {
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    const v1 = 1 * k;
+    const v2 = 2 * k;
+    const v3 = 3 * k;
+    const v4 = 4 * k;
+
+    const modalHTML = `
+      <div style="text-align:center;">
+        <h3 style="color:#1e3a8a; margin-bottom:0.5rem;">👁 Visualizador de Crecimiento Constante</h3>
+        <p style="font-size:0.9rem; color:#475569; margin-bottom:1rem;">
+          Representación gráfica de saltos consecutivos para ${prob.item}:
+        </p>
+
+        <div style="background:#eff6ff; border:2px dashed #3b82f6; border-radius:12px; padding:1.5rem; margin-bottom:1.25rem;">
+          <div style="display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+            <div class="step-badge">${v1}</div>
+            <div class="jump-tag">── +${k} ──></div>
+            <div class="step-badge">${v2}</div>
+            <div class="jump-tag">── +${k} ──></div>
+            <div class="step-badge">${v3}</div>
+            <div class="jump-tag">── +${k} ──></div>
+            <div class="step-badge">${v4}</div>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:0.8rem; text-align:left; font-size:0.9rem;">
+          <p><strong>Regla pedagógica:</strong></p>
+          <ul style="margin-left:1.25rem; margin-top:0.3rem;">
+            <li>Crecimiento vertical en la columna: <strong>Aumenta de ${k} en ${k} (+${k})</strong>.</li>
+            <li>Relación funcional horizontal: <strong>${prob.valName} = (${prob.unitName}) × ${k}</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    `;
+
+    showGenericModal("Patrón de Crecimiento", modalHTML);
+  }
+
+  function showGenericModal(title, content) {
+    let modal = document.getElementById("genericDynamicModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "genericDynamicModal";
+      modal.className = "modal-overlay";
+      modal.innerHTML = `
+        <div class="modal-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h2 class="modal-title" id="genModalTitle"></h2>
+            <button class="btn btn-neutral btn-sm" onclick="document.getElementById('genericDynamicModal').classList.remove('open')">✕</button>
+          </div>
+          <div id="genModalBody"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+    document.getElementById("genModalTitle").textContent = title;
+    document.getElementById("genModalBody").innerHTML = content;
+    modal.classList.add("open");
+  }
+
+  function showConfirmModal(title, message, onConfirm) {
+    const html = `
+      <p style="margin-bottom:1.5rem; color:#475569;">${message}</p>
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button class="btn btn-neutral" onclick="document.getElementById('genericDynamicModal').classList.remove('open')">Cancelar</button>
+        <button class="btn btn-outline" style="color:#ef4444; border-color:#ef4444;" id="btnModalConfirmAction">Aceptar</button>
+      </div>
+    `;
+    showGenericModal(title, html);
+    document.getElementById("btnModalConfirmAction").onclick = () => {
+      document.getElementById('genericDynamicModal').classList.remove('open');
+      if (onConfirm) onConfirm();
+    };
+  }
+
+  function solveCurrentStageForTeacher() {
+    const stage = APP_STATE.currentStage;
+    const prob = getProblemForCurrentVariant();
+    const k = prob.k;
+
+    switch(stage) {
+      case 1:
+        const r1 = document.querySelector('input[name="stage1_q"][value="B"]');
+        if (r1) { r1.checked = true; r1.closest('.choice-card').classList.add('selected'); }
+        break;
+      case 2:
+        document.getElementById("jumpInput1").value = k;
+        document.getElementById("jumpInput2").value = k;
+        document.getElementById("jumpInput3").value = k;
+        const r2 = document.querySelector('input[name="stage2_const"][value="SI"]');
+        if (r2) r2.checked = true;
+        break;
+      case 3:
+        for (let row = 2; row <= 5; row++) {
+          document.getElementById(`stg3_cell_${row}`).value = row * k;
+        }
+        break;
+      case 4:
+        const rv = document.querySelector('input[name="stg4_vars"][value="opt_vars_ok"]');
+        if (rv) { rv.checked = true; rv.closest('.choice-card').classList.add('selected'); }
+        for (let i = 1; i <= 4; i++) {
+          document.getElementById(`stg4_u_${i}`).value = i;
+          document.getElementById(`stg4_v_${i}`).value = i * k;
+        }
+        break;
+      case 5:
+        document.getElementById("stg5_col_growth").value = k;
+        document.getElementById("stg5_multiplier").value = k;
+        break;
+      case 6:
+        document.getElementById("stg6_val_10").value = 10 * k;
+        document.getElementById("stg6_val_20").value = 20 * k;
+        const r6 = document.querySelector('input[name="stg6_need_all"][value="NO"]');
+        if (r6) r6.checked = true;
+        break;
+      case 7:
+        const r7 = document.querySelector('input[name="stg7_row_err"][value="4"]');
+        if (r7) r7.checked = true;
+        document.getElementById("stg7_corrected_val").value = 4 * k;
+        const r7b = document.querySelector('input[name="stg7_table_choice"][value="opt_tab_a"]');
+        if (r7b) { r7b.checked = true; r7b.closest('.choice-card').classList.add('selected'); }
+        break;
+      case 8:
+        document.getElementById("stg8_c1").value = 8;
+        document.getElementById("stg8_c2").value = 16;
+        document.getElementById("stg8_c4").value = 32;
+        document.getElementById("stg8_c6").value = 48;
+        document.getElementById("stg8_pattern").value = 8;
+        document.getElementById("stg8_for10").value = 80;
+        document.getElementById("stg8_for20").value = 160;
+        break;
+      case 9:
+        document.getElementById("tk_q1_d3").value = 27;
+        document.getElementById("tk_q1_d4").value = 36;
+        document.getElementById("tk_q2_pat").value = 9;
+        document.getElementById("tk_q3_val10").value = 90;
+        break;
+    }
+
+    verifyCurrentStageAction();
+    showFeedback("info", "🔧 [Modo Docente] Se han rellenado y validado todas las soluciones del ejercicio.");
+  }
+
+  function openDetailedReportModal() {
+    const container = document.getElementById("detailsTableContainer");
+    const logs = APP_STATE.stats.logs;
+
+    if (!logs || logs.length === 0) {
+      container.innerHTML = `<p style="padding:1rem; color:#64748b;">No hay intentos registrados aún en la sesión local.</p>`;
+    } else {
+      let rowsHTML = "";
+      logs.forEach((log, index) => {
+        rowsHTML += `
+          <tr>
+            <td style="padding:0.5rem; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">#${index+1}</td>
+            <td style="padding:0.5rem; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">Etapa ${log.stage} (Misión ${log.variant || 1})</td>
+            <td style="padding:0.5rem; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">${log.timestamp}</td>
+            <td style="padding:0.5rem; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">Pista nivel ${log.hints}</td>
+            <td style="padding:0.5rem; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">
+              ${log.passed 
+                ? '<span style="color:#059669; font-weight:bold;">✓ Resuelto</span>' 
+                : '<span style="color:#dc2626; font-weight:bold;">✕ Con error</span>'}
+            </td>
+          </tr>
+        `;
+      });
+
+      container.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; text-align:left;">
+          <thead>
+            <tr style="background:#f1f5f9; color:#334155; font-size:0.85rem;">
+              <th style="padding:0.5rem;">Intento</th>
+              <th style="padding:0.5rem;">Etapa / Misión</th>
+              <th style="padding:0.5rem;">Hora</th>
+              <th style="padding:0.5rem;">Apoyo</th>
+              <th style="padding:0.5rem;">Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHTML}
+          </tbody>
+        </table>
+      `;
+    }
+
+    document.getElementById("teacherModal").classList.remove("open");
+    document.getElementById("detailedReportModal").classList.add("open");
+  }
+  </script>
+</body>
+</html>
