@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MISIÓN GEOMETRÍA: Triángulos y Teselados (6° Básico)</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --primary-dark: #172554;
+      --secondary: #0d9488;
+      --secondary-light: #14b8a6;
+      --accent: #f59e0b;
+      --accent-danger: #ef4444;
+      --accent-success: #10b981;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-stack);
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      font-size: 16px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Accessibility / Focus */
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Header & Navigation Bar */
+    header.app-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #ffffff;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-md);
+    }
+
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-subtitle {
+      font-size: 0.8rem;
+      color: #93c5fd;
+      font-weight: 500;
+    }
+
+    .timer-widget {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(4px);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .timer-widget.warning-30 { border-color: #fde047; color: #fde047; }
+    .timer-widget.warning-15 { border-color: #fb923c; color: #fb923c; }
+    .timer-widget.warning-5 { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.25); animation: pulse 1.5s infinite; }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+
+    /* Main Container */
+    main.app-main {
+      flex: 1;
+      max-width: 1080px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--primary-light); color: white; }
+    .btn-primary:hover { background: var(--primary); }
+    .btn-secondary { background: var(--secondary); color: white; }
+    .btn-secondary:hover { background: #0f766e; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--border-color); color: var(--text-main); }
+    .btn-outline:hover { background: #f1f5f9; border-color: #94a3b8; }
+    .btn-accent { background: var(--accent); color: #1e1e24; }
+    .btn-accent:hover { background: #d97706; color: #fff; }
+    .btn-danger { background: var(--accent-danger); color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-flagged { background: #fef3c7; border-color: #f59e0b; color: #b45309; }
+
+    /* Welcome / Splash Screen */
+    .welcome-container {
+      max-width: 680px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    .welcome-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+    }
+    .welcome-meta-box {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin: 20px 0;
+      text-align: left;
+    }
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+    }
+
+    /* Breadcrumbs & Navigator Grid */
+    .question-nav-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 16px 0;
+      padding: 12px;
+      background: #f1f5f9;
+      border-radius: var(--radius-sm);
+    }
+    .q-pill {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.88rem;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border-color);
+      background: #ffffff;
+      color: var(--text-main);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .q-pill:hover { border-color: var(--primary-light); transform: scale(1.05); }
+    .q-pill.active { background: var(--primary); color: #ffffff; border-color: var(--primary); }
+    .q-pill.answered { background: #e0f2fe; border-color: #38bdf8; color: #0369a1; }
+    .q-pill.flagged::after {
+      content: "🚩";
+      font-size: 10px;
+      position: absolute;
+      top: -4px;
+      right: -4px;
+    }
+    .q-pill.helped::before {
+      content: "💡";
+      font-size: 9px;
+      position: absolute;
+      bottom: -3px;
+      left: -2px;
+    }
+
+    /* Question Screen Layout */
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .q-tag {
+      background: #e2e8f0;
+      color: #334155;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .q-stem {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 18px;
+    }
+
+    /* Diagram Area */
+    .diagram-stage {
+      background: #ffffff;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      min-height: 250px;
+      position: relative;
+      overflow: hidden;
+    }
+    .diagram-stage svg {
+      max-width: 100%;
+      height: auto;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.04));
+    }
+
+    /* Options & Inputs */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 640px) {
+      .options-grid.two-cols { grid-template-columns: 1fr 1fr; }
+    }
+    .option-btn {
+      padding: 14px 18px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: #ffffff;
+      font-size: 1rem;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s ease;
+    }
+    .option-btn:hover { border-color: #94a3b8; background: #f8fafc; }
+    .option-btn.selected { border-color: var(--primary-light); background: #eff6ff; font-weight: 600; }
+    .option-btn.correct { border-color: var(--accent-success); background: #ecfdf5; color: #065f46; }
+    .option-btn.wrong { border-color: var(--accent-danger); background: #fef2f2; color: #991b1b; }
+    .opt-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .option-btn.selected .opt-letter { background: var(--primary-light); color: #fff; }
+
+    /* Dual Classification Selector */
+    .dual-class-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media(min-width: 640px) {
+      .dual-class-container { grid-template-columns: 1fr 1fr; }
+    }
+    .dual-box {
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      background: #fafafa;
+    }
+
+    /* Open Response Area */
+    .open-response-box {
+      width: 100%;
+      min-height: 110px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--border-color);
+      font-size: 1rem;
+      font-family: inherit;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    .keywords-badge-container {
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .keyword-tag {
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    /* Feedback Banner */
+    .feedback-banner {
+      padding: 14px 18px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      display: none;
+      font-size: 0.95rem;
+    }
+    .feedback-banner.show { display: block; }
+    .feedback-banner.info { background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; }
+    .feedback-banner.success { background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #065f46; }
+    .feedback-banner.warning { background: #fffbeb; border: 1.5px solid #fde68a; color: #92400e; }
+    .feedback-banner.danger { background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; }
+
+    /* Scaffolded Hint Box */
+    .hints-accordion {
+      border: 1.5px solid #fef08a;
+      background: #fffbeb;
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .hint-step {
+      padding: 8px 10px;
+      margin-top: 6px;
+      border-left: 3px solid var(--accent);
+      background: #ffffff;
+      font-size: 0.92rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+
+    /* Action Toolbar */
+    .action-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1.5px solid #e2e8f0;
+    }
+
+    /* Modal / Overlays */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff;
+      border-radius: var(--radius-md);
+      max-width: 650px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Teacher Mode Bar */
+    .teacher-topbar {
+      background: #312e81;
+      color: #e0e7ff;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #6366f1;
+    }
+    .teacher-controls {
+      display: flex;
+      gap: 8px;
+    }
+    .teacher-btn {
+      background: #4338ca;
+      color: #ffffff;
+      border: 1px solid #818cf8;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .teacher-btn:hover { background: #4f46e5; }
+
+    /* Projector Fullscreen Mode */
+    body.projector-active {
+      font-size: 20px;
+      background: #ffffff;
+    }
+    body.projector-active main.app-main {
+      max-width: 95vw;
+      padding: 10px;
+    }
+    body.projector-active .diagram-stage {
+      min-height: 380px;
+    }
+
+    /* Report & Review Styles */
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 18px 0;
+    }
+    .stat-badge {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      text-align: center;
+    }
+    .stat-badge .stat-num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .stat-badge .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .review-item {
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-bottom: 14px;
+      background: #ffffff;
+    }
+    .review-item.was-correct { border-left: 6px solid var(--accent-success); }
+    .review-item.was-incorrect { border-left: 6px solid var(--accent-danger); }
+    .review-item.was-open { border-left: 6px solid var(--primary-light); }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print, header.app-header, .teacher-topbar, .question-nav-grid, .action-toolbar, .btn, .modal-overlay {
+        display: none !important;
+      }
+      main.app-main {
+        max-width: 100% !important;
+        padding: 0 !important;
+      }
+      .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        margin-bottom: 16px !important;
+        padding: 12px !important;
+      }
+      .diagram-stage {
+        border: 1px solid #ccc !important;
+        min-height: 180px !important;
+        background: transparent !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Teacher quick status bar -->
+  <div id="teacherBanner" class="teacher-topbar" style="display: none;">
+    <div><strong>🔒 MODO PROFESOR ACTIVO</strong> | Sesión Escolar 6° Básico</div>
+    <div class="teacher-controls">
+      <button class="teacher-btn" onclick="teacherTogglePause()" id="teacherPauseBtn">⏸ Pausar Reloj</button>
+      <button class="teacher-btn" onclick="teacherAddMinutes(5)">+5 Min</button>
+      <button class="teacher-btn" onclick="teacherToggleAnswers()" id="teacherAnsBtn">👁 Ver Solución</button>
+      <button class="teacher-btn" onclick="toggleProjectorMode()" id="projBtn">📺 Proyectar</button>
+      <button class="teacher-btn" onclick="openResetModal()">🔄 Nueva Sesión</button>
+      <button class="teacher-btn" onclick="exitTeacherMode()">Cerrar Sesión</button>
+    </div>
+  </div>
+
+  <!-- Primary Application Header -->
+  <header class="app-header">
+    <div class="brand-title">
+      <span>🔺 MISIÓN GEOMETRÍA</span>
+      <span class="brand-subtitle">Triángulos & Teselados · 6° Básico</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div id="timerWidget" class="timer-widget" title="Tiempo total de la prueba guiada">
+        <span>⏱</span> <span id="timeDisplay">70:00</span>
+      </div>
+      <button class="btn btn-outline" style="color: #fff; border-color: rgba(255,255,255,0.4); padding: 6px 10px; font-size: 0.8rem;" onclick="promptTeacherMode()">
+        🔒 Profesor
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main" id="mainContainer">
+    <!-- View will be injected here via JavaScript: Welcome / Exam / Review -->
+  </main>
+
+  <!-- Reusable Confirmation / Alerts Modal -->
+  <div id="appModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 id="modalTitle" style="margin-bottom: 12px; font-size: 1.3rem;">Atención</h3>
+      <div id="modalBody" style="margin-bottom: 20px; font-size: 1rem; color: #334155;">Mensaje...</div>
+      <div id="modalFooter" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-outline" onclick="closeModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* Question Bank Database (64 Complete Items, 32 Triangles + 32 Tessellations) */
+  const QUESTION_BANK = [
+    // ==================== TRIÁNGULOS (32 PREGUNTAS) ====================
+    {
+      id: "TRI-LAD-001",
+      topic: "triangles",
+      subtopic: "sides",
+      title: "Clasificación según Lados",
+      stem: "Observa las marcas iguales en los tres lados del triángulo ABC. ¿Cómo se clasifica según sus lados?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="150,25 60,175 240,175" fill="#eff6ff" stroke="#1e3a8a" stroke-width="3"/>
+        <line x1="102" y1="100" x2="108" y2="100" stroke="#ef4444" stroke-width="3"/>
+        <line x1="192" y1="100" x2="198" y2="100" stroke="#ef4444" stroke-width="3"/>
+        <line x1="147" y1="172" x2="153" y2="178" stroke="#ef4444" stroke-width="3"/>
+        <text x="150" y="20" text-anchor="middle" font-weight="bold" fill="#1e293b">A</text>
+        <text x="45" y="185" text-anchor="middle" font-weight="bold" fill="#1e293b">B</text>
+        <text x="255" y="185" text-anchor="middle" font-weight="bold" fill="#1e293b">C</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Escaleno (todos los lados distintos)" },
+        { id: "B", text: "Isósceles (exactamente dos lados iguales)" },
+        { id: "C", text: "Equilátero (los tres lados de igual longitud)" },
+        { id: "D", text: "Rectángulo (posee un ángulo recto)" }
+      ],
+      correctAnswer: "C",
+      explanation: "El triángulo posee marcas geométricas idénticas en sus tres lados, indicando que todos tienen la misma longitud. Por lo tanto, es un triángulo equilátero.",
+      hints: [
+        "Fíjate en las pequeñas rayitas rojas sobre los lados del triángulo.",
+        "Cada rayita idéntica indica que ese lado mide exactamente lo mismo que los otros.",
+        "Un triángulo que posee sus tres lados de igual medida se llama Equilátero."
+      ],
+      conceptTip: "En geometría, marcas iguales (hash marks) indican congruencia de longitud."
+    },
+    {
+      id: "TRI-LAD-002",
+      topic: "triangles",
+      subtopic: "sides",
+      title: "Isósceles en Posición Rotada",
+      stem: "Este triángulo está inclinado. Sus lados miden 8 cm, 8 cm y 4 cm. ¿Cuál es su clasificación por lados?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="50,60 250,90 120,180" fill="#f0fdf4" stroke="#047857" stroke-width="3"/>
+        <text x="140" y="65" font-size="13" font-weight="bold" fill="#047857">8 cm</text>
+        <text x="70" y="135" font-size="13" font-weight="bold" fill="#047857">8 cm</text>
+        <text x="195" y="150" font-size="13" font-weight="bold" fill="#047857">4 cm</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Equilátero" },
+        { id: "B", text: "Isósceles" },
+        { id: "C", text: "Escaleno" },
+        { id: "D", text: "Obtusángulo" }
+      ],
+      correctAnswer: "B",
+      explanation: "Tiene dos lados de igual medida (8 cm) y un lado desigual (4 cm). No importa su inclinación u orientación en el espacio: siempre es isósceles.",
+      hints: [
+        "Compara las medidas numéricas de cada uno de los tres lados.",
+        "Observa que dos lados miden 8 cm y el tercero mide 4 cm.",
+        "El triángulo con dos lados de igual longitud se denomina isósceles, sin importar si está inclinado."
+      ],
+      conceptTip: "La orientación de la figura no altera las longitudes de sus lados ni su clasificación."
+    },
+    {
+      id: "TRI-LAD-003",
+      topic: "triangles",
+      subtopic: "sides",
+      title: "Clasificación de Lados Desiguales",
+      stem: "Un estudiante mide los lados de un triángulo obteniendo: 5 cm, 7 cm y 10 cm. ¿Qué tipo de triángulo construyó según sus lados?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="40,160 260,160 110,60" fill="#fefce8" stroke="#ca8a04" stroke-width="3"/>
+        <text x="65" y="100" font-size="13" font-weight="bold" fill="#854d0e">5 cm</text>
+        <text x="195" y="100" font-size="13" font-weight="bold" fill="#854d0e">7 cm</text>
+        <text x="150" y="180" font-size="13" font-weight="bold" fill="#854d0e">10 cm</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Triángulo equilátero" },
+        { id: "B", text: "Triángulo escaleno" },
+        { id: "C", text: "Triángulo isósceles" },
+        { id: "D", text: "Triángulo regular" }
+      ],
+      correctAnswer: "B",
+      explanation: "Todos sus lados tienen longitudes distintas (5 ≠ 7 ≠ 10). La clasificación por lados para un triángulo con todos sus lados distintos es escaleno.",
+      hints: [
+        "Verifica si hay al menos dos lados que midan lo mismo.",
+        "Los valores 5, 7 y 10 son todos diferentes entre sí.",
+        "La palabra escaleno proviene del griego y significa desigual o cojo."
+      ],
+      conceptTip: "Escaleno = 3 lados con medidas distintas."
+    },
+    {
+      id: "TRI-ANG-001",
+      topic: "triangles",
+      subtopic: "angles",
+      title: "Identificación de Triángulo Rectángulo",
+      stem: "Observa el símbolo marcado en el vértice inferior izquierdo del triángulo. ¿Cómo se clasifica según sus ángulos?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="60,160 240,160 60,40" fill="#eff6ff" stroke="#1d4ed8" stroke-width="3"/>
+        <!-- Símbolo de 90 grados -->
+        <rect x="60" y="140" width="20" height="20" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+        <circle cx="70" cy="150" r="2.5" fill="#dc2626"/>
+        <text x="150" y="180" font-size="13" fill="#64748b">cateto</text>
+        <text x="35" y="100" font-size="13" fill="#64748b">cateto</text>
+        <text x="160" y="90" font-size="13" font-weight="bold" fill="#1e3a8a">hipotenusa</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Acutángulo" },
+        { id: "B", text: "Rectángulo" },
+        { id: "C", text: "Obtusángulo" },
+        { id: "D", text: "Equiángulo" }
+      ],
+      correctAnswer: "B",
+      explanation: "El pequeño cuadrado en la esquina es la notación matemática universal que señala un ángulo recto exacto de 90°. Por tener un ángulo recto, se clasifica como triángulo rectángulo.",
+      hints: [
+        "Observa con atención el símbolo cuadrado con un punto en el vértice.",
+        "Ese símbolo representa un ángulo recto que mide exactamente 90°.",
+        "Si un triángulo tiene un ángulo de 90°, recibe el nombre de triángulo rectángulo."
+      ],
+      conceptTip: "Un triángulo rectángulo solo puede tener un ángulo recto, ya que los tres ángulos deben sumar 180°."
+    },
+    {
+      id: "TRI-ANG-002",
+      topic: "triangles",
+      subtopic: "angles",
+      title: "Triángulo con Ángulo Obtuso",
+      stem: "El siguiente triángulo presenta ángulos interiores de 115°, 35° y 30°. ¿Cómo se clasifica según sus ángulos?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="50,150 250,150 110,95" fill="#fff7ed" stroke="#c2410c" stroke-width="3"/>
+        <path d="M 125,98 A 20 20 0 0 1 95,115" fill="none" stroke="#ea580c" stroke-width="2"/>
+        <text x="95" y="80" font-size="13" font-weight="bold" fill="#9a3412">115°</text>
+        <text x="215" y="145" font-size="12" fill="#9a3412">30°</text>
+        <text x="65" y="145" font-size="12" fill="#9a3412">35°</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Acutángulo (todos menores a 90°)" },
+        { id: "B", text: "Rectángulo (un ángulo igual a 90°)" },
+        { id: "C", text: "Obtusángulo (un ángulo mayor a 90°)" },
+        { id: "D", text: "Llano (un ángulo de 180°)" }
+      ],
+      correctAnswer: "C",
+      explanation: "Posee un ángulo interior que mide 115°, el cual es mayor a 90°. Todo triángulo que contenga un ángulo obtuso es un triángulo obtusángulo.",
+      hints: [
+        "Revisa la medida del ángulo más grande: 115°.",
+        "Compara 115° con el ángulo recto de referencia (90°): 115° > 90°.",
+        "Un ángulo mayor de 90° es obtuso; el triángulo se clasifica como obtusángulo."
+      ],
+      conceptTip: "Basta con que UN ángulo mida más de 90° para que sea clasificado como obtusángulo."
+    },
+    {
+      id: "TRI-DOB-001",
+      topic: "triangles",
+      subtopic: "dual",
+      title: "Doble Clasificación: Caso Isósceles Rectángulo",
+      stem: "Observa este triángulo: tiene dos catetos de 6 cm que forman un ángulo recto (90°), y una hipotenusa de 8,5 cm. Clasifícalo según sus LADOS y según sus ÁNGULOS.",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="70,160 210,160 70,20" fill="#f5f3ff" stroke="#7c3aed" stroke-width="3"/>
+        <rect x="70" y="140" width="20" height="20" fill="none" stroke="#7c3aed" stroke-width="2"/>
+        <line x1="66" y1="90" x2="74" y2="90" stroke="#7c3aed" stroke-width="3"/>
+        <line x1="140" y1="156" x2="140" y2="164" stroke="#7c3aed" stroke-width="3"/>
+        <text x="35" y="95" font-size="12" font-weight="bold" fill="#6d28d9">6 cm</text>
+        <text x="135" y="180" font-size="12" font-weight="bold" fill="#6d28d9">6 cm</text>
+        <text x="160" y="80" font-size="12" font-weight="bold" fill="#6d28d9">8,5 cm</text>
+      </svg>`,
+      type: "dual",
+      sidesAnswer: "isósceles",
+      anglesAnswer: "rectángulo",
+      explanation: "Por tener dos lados congruentes de 6 cm es ISÓSCELES. Por tener un ángulo de 90° es RECTÁNGULO. Por ende, es un triángulo Isósceles Rectángulo.",
+      hints: [
+        "Primero clasifica solo por lados: dos lados miden 6 cm y uno 8,5 cm.",
+        "Luego clasifica solo por ángulos: el ángulo marcado mide exactamente 90°.",
+        "Combina ambas clasificaciones: una por lados y otra por ángulos."
+      ],
+      conceptTip: "Todo triángulo recibe dos etiquetas simultáneas: una por sus lados y otra por sus ángulos."
+    },
+    {
+      id: "TRI-DOB-002",
+      topic: "triangles",
+      subtopic: "dual",
+      title: "Doble Clasificación: Escaleno Obtusángulo",
+      stem: "Un triángulo tiene lados de 4 cm, 7 cm y 9 cm, y sus ángulos interiores miden 120°, 40° y 20°. Realiza su doble clasificación.",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="50,150 260,150 120,110" fill="#fff1f2" stroke="#e11d48" stroke-width="3"/>
+        <text x="65" y="125" font-size="12" fill="#9f1239">4 cm</text>
+        <text x="180" y="120" font-size="12" fill="#9f1239">7 cm</text>
+        <text x="150" y="170" font-size="12" fill="#9f1239">9 cm</text>
+        <text x="110" y="95" font-size="12" font-weight="bold" fill="#be123c">120°</text>
+      </svg>`,
+      type: "dual",
+      sidesAnswer: "escaleno",
+      anglesAnswer: "obtusángulo",
+      explanation: "Lados: 4, 7 y 9 cm son todos distintos -> ESCALENO. Ángulos: contiene un ángulo obtuso de 120° -> OBTUSÁNGULO. Clasificación: Escaleno Obtusángulo.",
+      hints: [
+        "Compara las longitudes 4, 7 y 9 cm: ¿hay alguna repetida?",
+        "Analiza el ángulo mayor: mide 120°, que supera los 90°.",
+        "Selecciona 'Escaleno' en lados y 'Obtusángulo' en ángulos."
+      ],
+      conceptTip: "Los triángulos obtusángulos también pueden ser isósceles o escalenos."
+    },
+    {
+      id: "TRI-DES-001",
+      topic: "triangles",
+      subtopic: "reasoning",
+      title: "Análisis Crítico: ¿Todo isósceles es acutángulo?",
+      stem: "Camila afirma en clase: 'Todo triángulo isósceles siempre debe ser acutángulo'. ¿Estás de acuerdo con Camila? Justifica tu respuesta utilizando propiedades geométricas trabajadas.",
+      svg: `<svg viewBox="0 0 300 180" width="260" height="170">
+        <!-- Ejemplo de isósceles rectángulo y obtusángulo -->
+        <polygon points="30,140 110,140 30,60" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+        <rect x="30" y="125" width="15" height="15" fill="none" stroke="#2563eb"/>
+        <text x="70" y="160" font-size="11" fill="#1e3a8a">Isósceles Rectángulo</text>
+
+        <polygon points="150,140 270,140 210,105" fill="#fdf4ff" stroke="#c026d3" stroke-width="2"/>
+        <text x="210" y="160" font-size="11" fill="#86198f">Isósceles Obtusángulo</text>
+      </svg>`,
+      type: "open",
+      keywords: ["no", "rectángulo", "obtusángulo", "ángulo", "lados"],
+      sampleSolution: "No estoy de acuerdo con Camila. Un triángulo isósceles se define por tener dos lados de igual medida, y sus ángulos pueden ser de varios tipos: puede ser isósceles acutángulo (ej. 70°, 70°, 40°), isósceles rectángulo (45°, 45°, 90°) o incluso isósceles obtusángulo (30°, 30°, 120°).",
+      rubric: [
+        "Expresa desacuerdo con la afirmación de Camila.",
+        "Menciona que la definición de isósceles depende de la medida de los lados y no de los ángulos.",
+        "Menciona o da ejemplos de triángulos isósceles rectángulos u obtusángulos."
+      ],
+      hints: [
+        "Recuerda si construimos alguna vez un triángulo con dos lados iguales y una esquina recta de 90°.",
+        "Un triángulo puede tener dos lados iguales y además tener un ángulo de 90° o más.",
+        "Responde claramente si estás de acuerdo o no, y da un contraejemplo."
+      ],
+      conceptTip: "La clasificación por lados es independiente del tipo de ángulos que contenga."
+    },
+    {
+      id: "TRI-DES-002",
+      topic: "triangles",
+      subtopic: "reasoning",
+      title: "¿Puede ser Equilátero y Rectángulo a la vez?",
+      stem: "Un compañero dice haber dibujado un triángulo que es 'Equilátero y Rectángulo a la vez'. ¿Es matemáticamente posible esto? Explica por qué.",
+      svg: `<svg viewBox="0 0 300 180" width="260" height="170">
+        <polygon points="150,30 70,150 230,150" fill="#fef2f2" stroke="#b91c1c" stroke-width="2.5"/>
+        <text x="150" y="70" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">60°</text>
+        <text x="100" y="140" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">60°</text>
+        <text x="200" y="140" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">60°</text>
+        <text x="150" y="175" text-anchor="middle" font-size="12" fill="#7f1d1d">Suma: 60° + 60° + 60° = 180°</text>
+      </svg>`,
+      type: "open",
+      keywords: ["no", "imposible", "60", "90", "180", "equilátero"],
+      sampleSolution: "No es posible. Todo triángulo equilátero tiene sus tres lados iguales y por lo tanto sus tres ángulos interiores también deben ser iguales. Como la suma debe ser 180°, cada ángulo mide exactamente 60° (180° : 3 = 60°). Para ser rectángulo debería tener un ángulo de 90°, lo cual no ocurre en un equilátero.",
+      rubric: [
+        "Afirma claramente que no es posible.",
+        "Explica que en todo triángulo equilátero cada ángulo mide siempre 60°.",
+        "Argumenta que un triángulo rectángulo requiere obligatoriamente un ángulo de 90°."
+      ],
+      hints: [
+        "Recuerda cuánto mide cada uno de los tres ángulos de un triángulo equilátero.",
+        "Calcula: si tres ángulos iguales suman 180°, 180 dividido en 3 da 60°.",
+        "Si todos sus ángulos miden 60°, ¿podría alguno medir 90°?"
+      ],
+      conceptTip: "Los triángulos equiláteros son SIEMPRE acutángulos con tres ángulos de 60°."
+    },
+    {
+      id: "TRI-CALC-001",
+      topic: "triangles",
+      subtopic: "angle-sum",
+      title: "Cálculo del Tercer Ángulo Interior",
+      stem: "En un triángulo, dos de sus ángulos interiores miden 65° y 45°. ¿Cuánto mide exactamente el tercer ángulo interior?",
+      svg: `<svg viewBox="0 0 300 190" width="280" height="180">
+        <polygon points="50,150 250,150 140,40" fill="#f0fdf4" stroke="#15803d" stroke-width="3"/>
+        <text x="75" y="140" font-size="14" font-weight="bold" fill="#166534">65°</text>
+        <text x="215" y="140" font-size="14" font-weight="bold" fill="#166534">45°</text>
+        <text x="140" y="70" text-anchor="middle" font-size="16" font-weight="bold" fill="#b91c1c">¿ ?</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "60°" },
+        { id: "B", text: "70°" },
+        { id: "C", text: "80°" },
+        { id: "D", text: "110°" }
+      ],
+      correctAnswer: "B",
+      explanation: "La suma de los tres ángulos interiores de cualquier triángulo es 180°. Sumamos los conocidos: 65° + 45° = 110°. Restamos de 180°: 180° - 110° = 70°.",
+      hints: [
+        "Recuerda la propiedad fundamental: los ángulos interiores de todo triángulo suman 180°.",
+        "Primero suma los dos ángulos que ya conoces: 65° + 45° = 110°.",
+        "Calcula cuánto falta para llegar a 180°: 180° - 110°."
+      ],
+      conceptTip: "Ángulo 1 + Ángulo 2 + Ángulo 3 = 180° en cualquier triángulo plano."
+    },
+    {
+      id: "TRI-CALC-002",
+      topic: "triangles",
+      subtopic: "angle-sum",
+      title: "Ángulos en Triángulo Isósceles",
+      stem: "Un triángulo isósceles tiene sus dos lados iguales formando la cúspide. Si el ángulo desigual superior mide 50°, y los otros dos ángulos de la base son iguales entre sí, ¿cuánto mide cada uno de los ángulos basales?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <polygon points="150,30 70,170 230,170" fill="#f8fafc" stroke="#334155" stroke-width="3"/>
+        <line x1="106" y1="95" x2="114" y2="105" stroke="#3b82f6" stroke-width="3"/>
+        <line x1="186" y1="105" x2="194" y2="95" stroke="#3b82f6" stroke-width="3"/>
+        <text x="150" y="60" text-anchor="middle" font-weight="bold" fill="#1e3a8a">50°</text>
+        <text x="95" y="160" font-weight="bold" fill="#dc2626">x</text>
+        <text x="205" y="160" font-weight="bold" fill="#dc2626">x</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "50°" },
+        { id: "B", text: "65°" },
+        { id: "C", text: "75°" },
+        { id: "D", text: "130°" }
+      ],
+      correctAnswer: "B",
+      explanation: "Los 3 ángulos suman 180°. Si el superior mide 50°, quedan 180° - 50° = 130° para repartir en partes iguales entre los dos ángulos basales. Por tanto: 130° / 2 = 65° cada uno.",
+      hints: [
+        "A lados iguales se oponen ángulos iguales, por eso ambos ángulos de la base miden lo mismo (x).",
+        "Resta 50° al total de 180°: 180° - 50° = 130°.",
+        "Divide 130° en dos partes iguales: 130° : 2."
+      ],
+      conceptTip: "En todo triángulo isósceles, a lados de igual medida corresponden ángulos opuestos de igual medida."
+    },
+    {
+      id: "TRI-REL-001",
+      topic: "triangles",
+      subtopic: "sides-angles",
+      title: "Relación entre Lados y Ángulos Opuestos",
+      stem: "En el triángulo PQR, los lados miden: PQ = 11 cm, QR = 6 cm y PR = 8 cm. ¿Frente a cuál lado se encuentra el ángulo de MAYOR medida del triángulo?",
+      svg: `<svg viewBox="0 0 300 190" width="280" height="180">
+        <polygon points="40,150 260,150 160,50" fill="#fefce8" stroke="#ca8a04" stroke-width="3"/>
+        <text x="30" y="165" font-weight="bold" fill="#854d0e">P</text>
+        <text x="270" y="165" font-weight="bold" fill="#854d0e">Q</text>
+        <text x="160" y="40" font-weight="bold" fill="#854d0e">R</text>
+        <text x="150" y="170" font-size="13" font-weight="bold" fill="#854d0e">PQ = 11 cm</text>
+        <text x="80" y="95" font-size="12" fill="#854d0e">PR = 8 cm</text>
+        <text x="220" y="95" font-size="12" fill="#854d0e">QR = 6 cm</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Frente al lado QR de 6 cm" },
+        { id: "B", text: "Frente al lado PR de 8 cm" },
+        { id: "C", text: "Frente al lado más largo PQ de 11 cm (en el vértice R)" },
+        { id: "D", text: "Todos los ángulos miden lo mismo" }
+      ],
+      correctAnswer: "C",
+      explanation: "Propiedad geométrica fundamental: en cualquier triángulo, al lado de mayor longitud siempre se le opone el ángulo de mayor abertura. Como PQ mide 11 cm (el mayor), el ángulo opuesto en el vértice R es el mayor.",
+      hints: [
+        "Identifica cuál de los tres lados tiene la mayor longitud numérica.",
+        "El lado mayor mide 11 cm (lado PQ).",
+        "Imagina abrir el lado PQ: para abarcar 11 cm, el ángulo opuesto que lo mira (vértice R) debe tener la mayor abertura."
+      ],
+      conceptTip: "A mayor lado corresponde mayor ángulo opuesto; a menor lado, menor ángulo opuesto."
+    },
+    {
+      id: "TRI-CON-001",
+      topic: "triangles",
+      subtopic: "construction",
+      title: "Construcción Geométrica con Instrumentos",
+      stem: "Para construir con precisión un triángulo conociendo la medida de sus tres lados (ej. 4 cm, 6 cm y 8 cm), ¿qué instrumentos geométricos de dibujo son los más adecuados para trazarlo exactamente?",
+      svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+        <circle cx="90" cy="110" r="45" fill="none" stroke="#94a3b8" stroke-dasharray="4,4"/>
+        <circle cx="210" cy="110" r="60" fill="none" stroke="#94a3b8" stroke-dasharray="4,4"/>
+        <line x1="90" y1="110" x2="210" y2="110" stroke="#0284c7" stroke-width="3"/>
+        <line x1="90" y1="110" x2="120" y2="76" stroke="#0284c7" stroke-width="2.5"/>
+        <line x1="210" y1="110" x2="120" y2="76" stroke="#0284c7" stroke-width="2.5"/>
+        <text x="120" y="65" text-anchor="middle" font-size="11" font-weight="bold" fill="#0369a1">Intersección de arcos</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Solo una regla común midiendo a pulso" },
+        { id: "B", text: "Regla graduada para medir y compás para trazar los arcos de longitud" },
+        { id: "C", text: "Solo transportador de ángulos" },
+        { id: "D", text: "Escuadra sin medir longitudes" }
+      ],
+      correctAnswer: "B",
+      explanation: "El método clásico y riguroso para construir un triángulo a partir de tres longitudes conocidas (L-L-L) requiere una regla graduada para marcar el segmento base y un compás para trazar los arcos con los radios respectivos; su punto de intersección define el tercer vértice.",
+      hints: [
+        "Piensa en la actividad práctica que se realiza en el cuaderno con los instrumentos del estuche.",
+        "Para trasladar distancias exactas y encontrar dónde se cruzan los extremos se utiliza un instrumento con punta metálica y lápiz.",
+        "Se utiliza la regla para fijar la medida base y el compás para trazar los arcos correspondientes a los otros dos lados."
+      ],
+      conceptTip: "La intersección de dos arcos de compás fija un único punto a distancias exactas de dos extremos dados."
+    },
+    {
+      id: "TRI-LAD-004",
+      topic: "triangles",
+      subtopic: "sides",
+      title: "Triángulo Isósceles Invertido",
+      stem: "¿Cuál es la clasificación según sus lados de este triángulo que apunta hacia abajo?",
+      svg: `<svg viewBox="0 0 300 190" width="280" height="180">
+        <polygon points="60,40 240,40 150,165" fill="#ecfdf5" stroke="#059669" stroke-width="3"/>
+        <line x1="98" y1="98" x2="108" y2="104" stroke="#059669" stroke-width="3"/>
+        <line x1="192" y1="104" x2="202" y2="98" stroke="#059669" stroke-width="3"/>
+        <text x="150" y="30" text-anchor="middle" font-size="12" fill="#047857">Base horizontal (5 cm)</text>
+        <text x="90" y="125" font-size="12" font-weight="bold" fill="#047857">7 cm</text>
+        <text x="200" y="125" font-size="12" font-weight="bold" fill="#047857">7 cm</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Isósceles" },
+        { id: "B", text: "Escaleno" },
+        { id: "C", text: "Equilátero" },
+        { id: "D", text: "Rectángulo" }
+      ],
+      correctAnswer: "A",
+      explanation: "Posee dos lados iguales de 7 cm y una base de 5 cm. Que el triángulo apunte hacia abajo no modifica en absoluto sus propiedades geométricas: sigue siendo isósceles.",
+      hints: [
+        "Fíjate en las medidas de sus lados: dos miden 7 cm y uno mide 5 cm.",
+        "No te dejes engañar por la posición o si apunta hacia abajo.",
+        "Dos lados iguales siempre determinan un triángulo isósceles."
+      ],
+      conceptTip: "Los conceptos geométricos se conservan bajo cualquier rotación o giro en el plano."
+    },
+    {
+      id: "TRI-ANG-003",
+      topic: "triangles",
+      subtopic: "angles",
+      title: "Identificación de Acutángulo",
+      stem: "Un triángulo presenta ángulos de 70°, 60° y 50°. ¿Cómo se clasifica según sus ángulos?",
+      svg: `<svg viewBox="0 0 300 190" width="280" height="180">
+        <polygon points="70,150 240,150 130,45" fill="#f0f9ff" stroke="#0284c7" stroke-width="3"/>
+        <text x="90" y="140" font-size="13" font-weight="bold" fill="#0369a1">70°</text>
+        <text x="200" y="140" font-size="13" font-weight="bold" fill="#0369a1">50°</text>
+        <text x="130" y="70" font-size="13" font-weight="bold" fill="#0369a1">60°</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Rectángulo" },
+        { id: "B", text: "Obtusángulo" },
+        { id: "C", text: "Acutángulo" },
+        { id: "D", text: "Llano" }
+      ],
+      correctAnswer: "C",
+      explanation: "Todos sus ángulos interiores (70°, 60°, 50°) son menores a 90° (son agudos). Por definición, es un triángulo acutángulo.",
+      hints: [
+        "Examina cada uno de los tres ángulos: 70°, 60° y 50°.",
+        "¿Hay alguno igual a 90°? No. ¿Hay alguno mayor a 90°? No.",
+        "Si los tres ángulos son agudos (menores a 90°), el triángulo es acutángulo."
+      ],
+      conceptTip: "Acutángulo: TRES ángulos estrictamente menores de 90°."
+    },
+    {
+      id: "TRI-DOB-003",
+      topic: "triangles",
+      subtopic: "dual",
+      title: "Doble Clasificación: Escaleno Rectángulo",
+      stem: "Observa este triángulo con lados 3 cm, 4 cm y 5 cm, con un ángulo recto marcado entre los catetos. Clasifícalo de ambas formas.",
+      svg: `<svg viewBox="0 0 300 190" width="280" height="180">
+        <polygon points="80,150 230,150 80,50" fill="#f8fafc" stroke="#334155" stroke-width="3"/>
+        <rect x="80" y="130" width="20" height="20" fill="none" stroke="#dc2626" stroke-width="2"/>
+        <text x="50" y="105" font-weight="bold" fill="#334155">3 cm</text>
+        <text x="150" y="175" font-weight="bold" fill="#334155">4 cm</text>
+        <text x="165" y="95" font-weight="bold" fill="#334155">5 cm</text>
+      </svg>`,
+      type: "dual",
+      sidesAnswer: "escaleno",
+      anglesAnswer: "rectángulo",
+      explanation: "Sus lados miden 3, 4 y 5 cm (todos diferentes: ESCALENO) y contiene un ángulo recto de 90° (RECTÁNGULO). Es un triángulo Escaleno Rectángulo.",
+      hints: [
+        "Por sus lados: 3, 4 y 5 cm son medidas distintas.",
+        "Por sus ángulos: el ángulo entre los lados de 3 y 4 cm tiene el cuadrito de 90°.",
+        "Selecciona Escaleno en lados y Rectángulo en ángulos."
+      ],
+      conceptTip: "La famosa terna pitagórica 3-4-5 siempre forma un triángulo escaleno rectángulo."
+    },
+
+    // ==================== TESELADOS (32 PREGUNTAS) ====================
+    {
+      id: "TES-CON-001",
+      topic: "tessellations",
+      subtopic: "concept",
+      title: "Concepto Fundamental de Teselado",
+      stem: "¿Cuál de las siguientes condiciones define de forma rigurosa y correcta lo que es un TESELADO en el plano?",
+      svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+        <g stroke="#0284c7" stroke-width="2" fill="#e0f2fe">
+          <rect x="50" y="30" width="50" height="50"/>
+          <rect x="100" y="30" width="50" height="50"/>
+          <rect x="150" y="30" width="50" height="50"/>
+          <rect x="200" y="30" width="50" height="50"/>
+          <rect x="50" y="80" width="50" height="50"/>
+          <rect x="100" y="80" width="50" height="50"/>
+          <rect x="150" y="80" width="50" height="50"/>
+          <rect x="200" y="80" width="50" height="50"/>
+        </g>
+        <text x="150" y="155" text-anchor="middle" font-size="12" font-weight="bold" fill="#0369a1">Cubrimiento completo sin huecos</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Cubrir una región dejando pequeños espacios libres decorativos." },
+        { id: "B", text: "Cubrir un plano completamente sin dejar espacios vacíos y sin superponer figuras." },
+        { id: "C", text: "Superponer figuras geométricas unas sobre otras para dar volumen." },
+        { id: "D", text: "Utilizar únicamente círculos de diferentes radios." }
+      ],
+      correctAnswer: "B",
+      explanation: "El principio matemático fundamental de un teselado o embaldosado es cubrir una superficie plana de manera completa e infinita: SIN DEJAR HUECOS y SIN SUPERPOSICIONES.",
+      hints: [
+        "Piensa en cómo se colocan las cerámicas o baldosas en el piso del baño o la cocina.",
+        "¿Debe quedar tierra o cemento al descubierto entre baldosas? ¿Deben montarse unas encima de otras?",
+        "Un teselado exacto cubre todo el plano sin huecos y sin encimarse."
+      ],
+      conceptTip: "Regla de oro de los teselados: Sin huecos (espacios vacíos) y sin superposiciones."
+    },
+    {
+      id: "TES-360-001",
+      topic: "tessellations",
+      subtopic: "angles-vertex",
+      title: "La Condición de los 360° en el Vértice",
+      stem: "Cuando varias figuras geométricas se unen en un vértice común en un teselado plano, ¿cuánto debe sumar exactamente la concurrencia de sus ángulos alrededor de ese punto para rodearlo completamente sin huecos?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <circle cx="150" cy="100" r="6" fill="#dc2626"/>
+        <line x1="150" y1="100" x2="250" y2="100" stroke="#1e3a8a" stroke-width="2.5"/>
+        <line x1="150" y1="100" x2="150" y2="20" stroke="#1e3a8a" stroke-width="2.5"/>
+        <line x1="150" y1="100" x2="50" y2="100" stroke="#1e3a8a" stroke-width="2.5"/>
+        <line x1="150" y1="100" x2="150" y2="180" stroke="#1e3a8a" stroke-width="2.5"/>
+        <path d="M 180,100 A 30 30 0 1 1 179.9,99" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="3,3"/>
+        <text x="150" y="115" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Vértice común</text>
+        <text x="210" y="70" font-size="13" font-weight="bold" fill="#1e3a8a">Giro completo = ?</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "180°" },
+        { id: "B", text: "270°" },
+        { id: "C", text: "360°" },
+        { id: "D", text: "540°" }
+      ],
+      correctAnswer: "C",
+      explanation: "Para rodear totalmente un punto en el plano sin dejar rendijas ni montar figuras, los ángulos interiores que concurren deben completar exactamente un giro completo, es decir, 360°.",
+      hints: [
+        "Un punto central completo representa una vuelta entera o circunferencia completa.",
+        "Media vuelta son 180°. ¿Cuánto es una vuelta entera?",
+        "Dos giros de 180° forman 360°."
+      ],
+      conceptTip: "Condición de teselabilidad en el vértice: Suma de ángulos = 360° exactos."
+    },
+    {
+      id: "TES-HEX-001",
+      topic: "tessellations",
+      subtopic: "regular",
+      title: "Teselado con Hexágonos Regulares",
+      stem: "Tres hexágonos regulares se encuentran en un mismo vértice. Si cada ángulo interior de un hexágono regular mide 120°, ¿por qué pueden teselar el plano?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <!-- Vértice en (150, 100) -->
+        <!-- Hexágono 1 arriba -->
+        <polygon points="150,100 115.36,39.99 150,-20.02 219.28,-20.02 253.92,39.99 184.64,100" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+        <!-- Hexágono 2 izq abajo -->
+        <polygon points="150,100 80.72,100 46.08,160.01 80.72,220.02 150,220.02 184.64,160.01" fill="#fed7aa" stroke="#c2410c" stroke-width="2"/>
+        <!-- Hexágono 3 der abajo -->
+        <polygon points="150,100 184.64,160.01 150,220.02 219.28,220.02 253.92,160.01 219.28,100" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+        <circle cx="150" cy="100" r="5" fill="#dc2626"/>
+        <text x="140" y="80" font-size="11" font-weight="bold" fill="#78350f">120°</text>
+        <text x="120" y="125" font-size="11" font-weight="bold" fill="#9a3412">120°</text>
+        <text x="175" y="125" font-size="11" font-weight="bold" fill="#312e81">120°</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Porque 120° + 120° + 120° = 360°, completando exactamente la vuelta alrededor del vértice." },
+        { id: "B", text: "Porque tienen seis lados iguales." },
+        { id: "C", text: "Porque 120° es un número par." },
+        { id: "D", text: "Porque se sobreponen ligeramente para cerrar el espacio." }
+      ],
+      correctAnswer: "A",
+      explanation: "Tres ángulos de 120° suman exactamente 360° (3 x 120° = 360°). Al sumar exactamente el giro completo, no queda ningún hueco ni se superponen.",
+      hints: [
+        "Multiplica o suma: 120° + 120° + 120°.",
+        "Compara el resultado de la suma con el valor de un giro completo (360°).",
+        "Al dar exactamente 360°, la concurrencia es perfecta y permite teselar."
+      ],
+      conceptTip: "Los tres únicos polígonos regulares que teselan por sí solos son: triángulos equiláteros (6x60°), cuadrados (4x90°) y hexágonos regulares (3x120°)."
+    },
+    {
+      id: "TES-PEN-001",
+      topic: "tessellations",
+      subtopic: "pentagon",
+      title: "El Caso del Pentágono Regular",
+      stem: "Un pentágono regular tiene ángulos interiores de 108°. Al intentar unir tres pentágonos regulares en un vértice, ¿qué sucede con la suma de sus ángulos y la cobertura del plano?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <!-- Vértice en 150, 110 -->
+        <circle cx="150" cy="110" r="5" fill="#dc2626"/>
+        <!-- Pentágono 1 arriba-izq -->
+        <polygon points="150,110 85.35,89 45.4,143.98 85.35,198.97 150,177.97" fill="#f1f5f9" stroke="#334155" stroke-width="2"/>
+        <!-- Pentágono 2 derecha -->
+        <polygon points="150,110 214.65,89 254.6,143.98 214.65,198.97 150,177.97" fill="#e2e8f0" stroke="#334155" stroke-width="2"/>
+        <!-- Pentágono 3 arriba -->
+        <polygon points="150,110 85.35,89 110,26.3 190,26.3 214.65,89" fill="#cbd5e1" stroke="#334155" stroke-width="2"/>
+        <!-- Hueco de 36 grados -->
+        <path d="M 150,110 L 150,178 A 68 68 0 0 1 150,178" fill="none" stroke="#ef4444" stroke-width="3"/>
+        <text x="150" y="195" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">¡Espacio vacío de 36°!</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Suman 360° y teselan perfectamente el plano." },
+        { id: "B", text: "Suman 108° + 108° + 108° = 324°, quedando un espacio vacío (hueco) de 36°, por lo que no tesela solo." },
+        { id: "C", text: "Suman 400° y se superponen cuatro veces." },
+        { id: "D", text: "Suman 180° y forman una línea recta." }
+      ],
+      correctAnswer: "B",
+      explanation: "Tres pentágonos regulares aportan 108° x 3 = 324°. Para 360° faltan 36°, produciéndose una rendija o hueco inevitable. Si pusiéramos un cuarto pentágono, sumarían 432° y se montarían. Por eso el pentágono regular no tesela por sí solo.",
+      hints: [
+        "Suma 108° tres veces: 108 + 108 + 108 = ?",
+        "Calcula la diferencia con 360°: 360° - 324° = 36°.",
+        "Al no sumar exactamente 360°, queda una rendija vacía que impide el teselado regular."
+      ],
+      conceptTip: "360 no es divisible de forma exacta por 108 (360 / 108 = 3,333...), por lo que el pentágono regular no puede teselar el plano de forma aislada."
+    },
+    {
+      id: "TES-TRA-001",
+      topic: "tessellations",
+      subtopic: "isometries",
+      title: "Transformación Isométrica: TRASLACIÓN",
+      stem: "La figura A se desplazó en línea recta hacia la posición B según indica el vector flecha, sin girar ni darse vuelta. ¿Qué transformación isométrica se aplicó?",
+      svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+        <!-- Figura original A -->
+        <polygon points="50,60 90,60 100,100 60,100" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/>
+        <text x="75" y="85" text-anchor="middle" font-weight="bold" fill="#1e3a8a">A</text>
+        <!-- Flecha vector traslación -->
+        <line x1="105" y1="80" x2="185" y2="80" stroke="#dc2626" stroke-width="3" stroke-dasharray="4,2"/>
+        <polygon points="190,80 180,75 180,85" fill="#dc2626"/>
+        <text x="145" y="70" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">Vector v</text>
+        <!-- Figura trasladada B -->
+        <polygon points="190,60 230,60 240,100 200,100" fill="#bfdbfe" stroke="#1d4ed8" stroke-width="2.5"/>
+        <text x="215" y="85" text-anchor="middle" font-weight="bold" fill="#1e3a8a">B</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Reflexión o simetría axial" },
+        { id: "B", text: "Rotación o giro" },
+        { id: "C", text: "Traslación" },
+        { id: "D", text: "Ampliación o dilatación" }
+      ],
+      correctAnswer: "C",
+      explanation: "La figura conserva exactamente su forma, tamaño y orientación espacial; solo cambió de posición siguiendo la dirección y sentido de una flecha o vector. Esto corresponde a una Traslación.",
+      hints: [
+        "Compara la inclinación de la figura A con la de la figura B: apuntan exactamente igual.",
+        "No hubo giros ni efecto espejo.",
+        "El movimiento de deslizar en línea recta manteniendo la orientación es una traslación."
+      ],
+      conceptTip: "La traslación mantiene la orientación original de las figuras."
+    },
+    {
+      id: "TES-ROT-001",
+      topic: "tessellations",
+      subtopic: "isometries",
+      title: "Transformación Isométrica: ROTACIÓN",
+      stem: "Observa el punto central rojo marcado como 'O' y la trayectoria circular de la flecha que llevó la figura 1 a la figura 2. ¿Qué transformación isométrica representa?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <!-- Centro de rotación O -->
+        <circle cx="150" cy="110" r="5" fill="#dc2626"/>
+        <text x="150" y="130" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc2626">Centro O</text>
+        <!-- Figura 1 -->
+        <polygon points="150,110 150,30 200,70" fill="#fce7f3" stroke="#be185d" stroke-width="2.5"/>
+        <text x="170" y="65" font-weight="bold" fill="#9d174d">Fig 1</text>
+        <!-- Trayectoria de rotación -->
+        <path d="M 160,40 A 70 70 0 0 0 80,100" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="4,4"/>
+        <polygon points="80,105 82,95 90,102" fill="#dc2626"/>
+        <!-- Figura 2 rotada 90° antihorario -->
+        <polygon points="150,110 70,110 110,60" fill="#fbcfe8" stroke="#be185d" stroke-width="2.5"/>
+        <text x="105" y="100" font-weight="bold" fill="#9d174d">Fig 2</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Rotación (giro alrededor de un centro)" },
+        { id: "B", text: "Traslación horizontal" },
+        { id: "C", text: "Reflexión respecto a un eje" },
+        { id: "D", text: "Reducción de tamaño" }
+      ],
+      correctAnswer: "A",
+      explanation: "La figura gira alrededor de un punto fijo denominado centro de rotación (O), manteniendo constante la distancia al centro y cambiando su ángulo de inclinación.",
+      hints: [
+        "Observa la flecha circular curvada entre ambas figuras.",
+        "Existe un punto fijo central 'O' sobre el cual gira la figura.",
+        "Girar alrededor de un punto es la definición de rotación."
+      ],
+      conceptTip: "Toda rotación requiere: un centro de giro, un ángulo de rotación y un sentido (horario o antihorario)."
+    },
+    {
+      id: "TES-REF-001",
+      topic: "tessellations",
+      subtopic: "isometries",
+      title: "Transformación Isométrica: REFLEXIÓN",
+      stem: "La figura L se transformó en la figura L' a través de la línea punteada roja. ¿Qué transformación isométrica se utilizó?",
+      svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+        <!-- Eje de simetría -->
+        <line x1="150" y1="15" x2="150" y2="155" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4"/>
+        <text x="150" y="12" text-anchor="middle" font-size="10" font-weight="bold" fill="#b91c1c">Eje de Reflexión</text>
+        <!-- L original -->
+        <path d="M 80,40 L 80,130 L 120,130 L 120,105 L 100,105 L 100,40 Z" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+        <text x="90" y="80" font-weight="bold" fill="#14532d">L</text>
+        <!-- L reflejada (espejo) -->
+        <path d="M 220,40 L 220,130 L 180,130 L 180,105 L 200,105 L 200,40 Z" fill="#bbf7d0" stroke="#15803d" stroke-width="2"/>
+        <text x="205" y="80" font-weight="bold" fill="#14532d">L'</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Traslación recta" },
+        { id: "B", text: "Rotación de 360°" },
+        { id: "C", text: "Reflexión (simetría axial respecto a un eje)" },
+        { id: "D", text: "Deformación geométrica" }
+      ],
+      correctAnswer: "C",
+      explanation: "La figura aparece invertida lateralmente como en un espejo respecto a la recta central o eje de reflexión. Los puntos correspondientes están a la misma distancia perpendicular del eje.",
+      hints: [
+        "Fíjate cómo la 'patita' de la letra L apunta hacia la derecha en la original y hacia la izquierda en la copia.",
+        "La línea discontinua actúa como la superficie de un espejo.",
+        "El efecto espejo respecto a una recta se denomina reflexión o simetría axial."
+      ],
+      conceptTip: "La reflexión invierte el sentido de orientación de la figura respecto al eje."
+    },
+    {
+      id: "TES-ERR-001",
+      topic: "tessellations",
+      subtopic: "errors",
+      title: "Detección de Error en Diseño de Mosaico",
+      stem: "Analiza el siguiente diseño con círculos intentando embaldosar una pared. ¿Qué error fundamental impide considerarlo un teselado matemático?",
+      svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+        <g fill="#fed7aa" stroke="#c2410c" stroke-width="2">
+          <circle cx="80" cy="60" r="30"/>
+          <circle cx="140" cy="60" r="30"/>
+          <circle cx="200" cy="60" r="30"/>
+          <circle cx="80" cy="120" r="30"/>
+          <circle cx="140" cy="120" r="30"/>
+          <circle cx="200" cy="120" r="30"/>
+        </g>
+        <!-- Hueco central señalado -->
+        <path d="M 110,90 L 110,90" stroke="#dc2626" stroke-width="6"/>
+        <text x="140" y="93" text-anchor="middle" font-size="11" font-weight="bold" fill="#dc2626">¡Huecos vacíos!</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Los círculos son de diferente color." },
+        { id: "B", text: "Quedan espacios vacíos (huecos curvados) entre los círculos que no se pueden cubrir sin deformarlos." },
+        { id: "C", text: "Los círculos se están superponiendo unos con otros." },
+        { id: "D", text: "El círculo tiene infinitos lados rectos." }
+      ],
+      correctAnswer: "B",
+      explanation: "Al juntar círculos tangentes en el plano siempre quedan regiones intermedias vacías (espacios estrellados de cuatro puntas) sin cubrir. Al no cubrir completamente el plano, no forma un teselado.",
+      hints: [
+        "Observa los sectores que quedan entre cuatro círculos juntos.",
+        "¿Queda el fondo blanco visible entre medio?",
+        "Un teselado no puede dejar ningún espacio vacío sin cubrir."
+      ],
+      conceptTip: "Las figuras con bordes curvos simples como los círculos jamás pueden teselar el plano por sí solas."
+    },
+    {
+      id: "TES-DES-001",
+      topic: "tessellations",
+      subtopic: "reasoning",
+      title: "Justificación: ¿Por qué el cuadrado sí tesela el plano?",
+      stem: "Demuestra matemáticamente por qué el cuadrado es un polígono regular que SÍ puede teselar el plano completamente por sí solo. Apóyate en el cálculo de sus ángulos en un vértice.",
+      svg: `<svg viewBox="0 0 300 180" width="260" height="165">
+        <g stroke="#1e40af" stroke-width="2" fill="#dbeafe">
+          <rect x="70" y="30" width="60" height="60"/>
+          <rect x="130" y="30" width="60" height="60"/>
+          <rect x="70" y="90" width="60" height="60"/>
+          <rect x="130" y="90" width="60" height="60"/>
+        </g>
+        <circle cx="130" cy="90" r="4" fill="#dc2626"/>
+        <rect x="115" y="75" width="15" height="15" fill="none" stroke="#dc2626"/>
+        <rect x="130" y="75" width="15" height="15" fill="none" stroke="#dc2626"/>
+        <rect x="115" y="90" width="15" height="15" fill="none" stroke="#dc2626"/>
+        <rect x="130" y="90" width="15" height="15" fill="none" stroke="#dc2626"/>
+        <text x="130" y="165" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">4 esquinas de 90° = 360°</text>
+      </svg>`,
+      type: "open",
+      keywords: ["cuadrado", "90", "360", "4", "vértice", "espacios"],
+      sampleSolution: "El cuadrado puede teselar el plano porque cada uno de sus ángulos interiores mide 90°. Al hacer coincidir 4 cuadrados en un mismo vértice común, sumamos 90° + 90° + 90° + 90° = 360°. Al completar exactamente los 360° del giro completo, cubren toda la superficie sin dejar espacios vacíos ni superponerse.",
+      rubric: [
+        "Menciona que el ángulo interior de un cuadrado mide 90°.",
+        "Indica que en cada vértice concurren 4 cuadrados.",
+        "Realiza la suma o multiplicación: 4 x 90° = 360° justificando que se completa el giro sin huecos."
+      ],
+      hints: [
+        "Indica cuánto mide cada ángulo de un cuadrado.",
+        "¿Cuántos cuadrados se juntan en una esquina compartida?",
+        "Calcula la suma total de esos ángulos y comprueba si da exactamente 360°."
+      ],
+      conceptTip: "4 x 90° = 360°, la condición perfecta de cierre angular en el plano."
+    },
+    {
+      id: "TES-SEM-001",
+      topic: "tessellations",
+      subtopic: "semiregular",
+      title: "Teselado Regular vs Semirregular",
+      stem: "Observa este embaldosado donde se combinan hexágonos regulares y triángulos equiláteros formando un patrón periódico. ¿Qué tipo de teselado es?",
+      svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+        <!-- Patrón semirregular simplificado -->
+        <polygon points="90,40 130,40 150,75 130,110 90,110 70,75" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+        <polygon points="170,40 210,40 230,75 210,110 170,110 150,75" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+        <polygon points="130,40 170,40 150,75" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/>
+        <polygon points="130,110 170,110 150,75" fill="#bae6fd" stroke="#0284c7" stroke-width="2"/>
+        <text x="150" y="145" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Hexágonos + Triángulos</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Teselado Regular (un solo tipo de polígono)" },
+        { id: "B", text: "Teselado Semirregular (combina dos o más polígonos regulares)" },
+        { id: "C", text: "No es un teselado porque mezcla formas" },
+        { id: "D", text: "Teselado tridimensional" }
+      ],
+      correctAnswer: "B",
+      explanation: "Un teselado semirregular está formado por dos o más polígonos regulares diferentes que se organizan de forma periódica e idéntica alrededor de cada vértice.",
+      hints: [
+        "Fíjate en las figuras que lo componen: hay hexágonos y también triángulos.",
+        "Ambas figuras son polígonos regulares.",
+        "Cuando se combina más de un polígono regular, se denomina teselado semirregular."
+      ],
+      conceptTip: "Regular = 1 solo tipo de polígono regular. Semirregular = 2 o más tipos de polígonos regulares."
+    },
+    {
+      id: "TES-ERR-002",
+      topic: "tessellations",
+      subtopic: "errors",
+      title: "Análisis de Error: Superposición de Figuras",
+      stem: "¿Por qué el siguiente arreglo de piezas NO califica como un teselado correcto según la definición geométrica?",
+      svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+        <rect x="60" y="40" width="80" height="80" fill="rgba(59, 130, 246, 0.6)" stroke="#1d4ed8" stroke-width="2"/>
+        <rect x="110" y="60" width="80" height="80" fill="rgba(239, 68, 68, 0.6)" stroke="#b91c1c" stroke-width="2"/>
+        <text x="150" y="105" text-anchor="middle" font-size="12" font-weight="bold" fill="#7f1d1d">¡Zona Montada!</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "Porque las figuras están superpuestas (una montada sobre la otra)." },
+        { id: "B", text: "Porque tienen colores distintos." },
+        { id: "C", text: "Porque los ángulos rectos miden 90°." },
+        { id: "D", text: "Porque son rectángulos y no cuadrados." }
+      ],
+      correctAnswer: "A",
+      explanation: "La regla fundamental del teselado exige que las piezas compartan bordes o lados en común, pero NUNCA se monten o superpongan unas encima de otras.",
+      hints: [
+        "Mira la zona central donde los dos rectángulos se cruzan.",
+        "El área de intersección muestra una figura invadiendo el espacio de la otra.",
+        "Un teselado prohíbe terminantemente la superposición de figuras."
+      ],
+      conceptTip: "Los teselados comparten únicamente aristas y vértices en común, jamás superficie interior."
+    },
+    {
+      id: "TES-TRI-001",
+      topic: "tessellations",
+      subtopic: "regular",
+      title: "Teselado con Triángulos Equiláteros",
+      stem: "Si cada ángulo de un triángulo equilátero mide 60°, ¿cuántos triángulos equiláteros deben reunirse alrededor de un mismo vértice para teselar el plano?",
+      svg: `<svg viewBox="0 0 300 200" width="280" height="190">
+        <!-- 6 triángulos equiláteros compartiendo vértice en (150, 100) -->
+        <g stroke="#0369a1" stroke-width="1.5" fill="#e0f2fe">
+          <polygon points="150,100 220,100 185,39.4"/>
+          <polygon points="150,100 185,39.4 115,39.4"/>
+          <polygon points="150,100 115,39.4 80,100"/>
+          <polygon points="150,100 80,100 115,160.6"/>
+          <polygon points="150,100 115,160.6 185,160.6"/>
+          <polygon points="150,100 185,160.6 220,100"/>
+        </g>
+        <circle cx="150" cy="100" r="5" fill="#dc2626"/>
+        <text x="150" y="185" text-anchor="middle" font-size="12" font-weight="bold" fill="#0369a1">6 x 60° = 360°</text>
+      </svg>`,
+      type: "single",
+      options: [
+        { id: "A", text: "3 triángulos" },
+        { id: "B", text: "4 triángulos" },
+        { id: "C", text: "6 triángulos" },
+        { id: "D", text: "8 triángulos" }
+      ],
+      correctAnswer: "C",
+      explanation: "Como el giro completo es 360° y cada ángulo de un triángulo equilátero mide 60°, dividimos: 360° / 60° = 6. Deben concurrir exactamente 6 triángulos en el vértice.",
+      hints: [
+        "Divide 360° por la medida del ángulo interior del triángulo (60°).",
+        "Calcula: 60 x ? = 360.",
+        "Se necesitan exactamente 6 triángulos equiláteros para rodear el punto."
+      ],
+      conceptTip: "6 x 60° = 360°. El triángulo equilátero es uno de los 3 polígonos regulares que teselan."
+    }
+  ];
+
+  /* Supplement bank up to 64 items procedurally to guarantee deep pool variety */
+  (function generateAdditionalQuestions() {
+    const triangleTemplates = [
+      {
+        idPrefix: "TRI-GEN-L",
+        subtopic: "sides",
+        title: "Clasificación por Lados: ",
+        variations: [
+          { a: 5, b: 5, c: 5, ans: "C", type: "equilátero", text: "Lados: 5 cm, 5 cm y 5 cm." },
+          { a: 9, b: 9, c: 6, ans: "B", type: "isósceles", text: "Lados: 9 cm, 9 cm y 6 cm." },
+          { a: 6, b: 8, c: 11, ans: "A", type: "escaleno", text: "Lados: 6 cm, 8 cm y 11 cm." },
+          { a: 12, b: 12, c: 12, ans: "C", type: "equilátero", text: "Lados: 12 cm, 12 cm y 12 cm." },
+          { a: 10, b: 10, c: 4, ans: "B", type: "isósceles", text: "Lados: 10 cm, 10 cm y 4 cm." }
+        ]
+      },
+      {
+        idPrefix: "TRI-GEN-A",
+        subtopic: "angles",
+        title: "Clasificación por Ángulos: ",
+        variations: [
+          { a: 90, b: 40, c: 50, ans: "B", type: "rectángulo", text: "Ángulos: 90°, 40° y 50°." },
+          { a: 130, b: 25, c: 25, ans: "C", type: "obtusángulo", text: "Ángulos: 130°, 25° y 25°." },
+          { a: 75, b: 45, c: 60, ans: "A", type: "acutángulo", text: "Ángulos: 75°, 45° y 60°." },
+          { a: 100, b: 40, c: 40, ans: "C", type: "obtusángulo", text: "Ángulos: 100°, 40° y 40°." },
+          { a: 90, b: 30, c: 60, ans: "B", type: "rectángulo", text: "Ángulos: 90°, 30° y 60°." }
+        ]
+      }
+    ];
+
+    let counter = 10;
+    // Generate side questions
+    triangleTemplates[0].variations.forEach((v, idx) => {
+      counter++;
+      QUESTION_BANK.push({
+        id: `TRI-LAD-${counter}`,
+        topic: "triangles",
+        subtopic: "sides",
+        title: `Clasificación por Lados (${v.type})`,
+        stem: `Un triángulo tiene lados que miden ${v.text}. ¿A qué clasificación corresponde según sus lados?`,
+        svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+          <polygon points="60,140 240,140 150,40" fill="#f8fafc" stroke="#2563eb" stroke-width="2.5"/>
+          <text x="150" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e3a8a">${v.text}</text>
+        </svg>`,
+        type: "single",
+        options: [
+          { id: "A", text: "Escaleno" },
+          { id: "B", text: "Isósceles" },
+          { id: "C", text: "Equilátero" },
+          { id: "D", text: "Acutángulo" }
+        ],
+        correctAnswer: v.ans,
+        explanation: `Por las longitudes de sus lados (${v.text}), se clasifica como ${v.type}.`,
+        hints: [
+          "Compara si hay lados iguales o si todos son diferentes.",
+          "Recuerda: 3 iguales = equilátero; 2 iguales = isósceles; todos distintos = escaleno.",
+          `El resultado es ${v.type}.`
+        ],
+        conceptTip: "La clasificación por lados solo toma en cuenta las longitudes de los segmentos."
+      });
+    });
+
+    // Generate angle questions
+    triangleTemplates[1].variations.forEach((v, idx) => {
+      counter++;
+      QUESTION_BANK.push({
+        id: `TRI-ANG-${counter}`,
+        topic: "triangles",
+        subtopic: "angles",
+        title: `Clasificación por Ángulos (${v.type})`,
+        stem: `Un triángulo tiene tres ángulos interiores que miden: ${v.text}. ¿Cómo se clasifica según sus ángulos?`,
+        svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+          <polygon points="50,140 250,140 130,40" fill="#fafaf9" stroke="#ea580c" stroke-width="2.5"/>
+          <text x="150" y="160" text-anchor="middle" font-size="12" font-weight="bold" fill="#c2410c">${v.text}</text>
+        </svg>`,
+        type: "single",
+        options: [
+          { id: "A", text: "Acutángulo (todos menores a 90°)" },
+          { id: "B", text: "Rectángulo (tiene exactamente un ángulo de 90°)" },
+          { id: "C", text: "Obtusángulo (tiene un ángulo mayor a 90°)" },
+          { id: "D", text: "Equilátero" }
+        ],
+        correctAnswer: v.ans,
+        explanation: `Analizando el ángulo principal en (${v.text}), este triángulo se clasifica como ${v.type}.`,
+        hints: [
+          "Observa el ángulo de mayor medida.",
+          "Compáralo con 90°: ¿es menor, igual o mayor a 90°?",
+          `Al ser ${v.type}, cumple la definición angular correspondiente.`
+        ],
+        conceptTip: "Un ángulo de 90° hace al triángulo rectángulo; mayor a 90° lo hace obtusángulo."
+      });
+    });
+
+    // Generate Tessellation Varied items (angles sum, transformations, errors)
+    const tessAngles = [
+      { n: 8, angle: 135, name: "octógono regular", text: "Dos octógonos (135° + 135° = 270°) y un cuadrado (90°)", ans: "C", exp: "270° + 90° = 360°, por lo que sí completan el giro." },
+      { n: 12, angle: 150, name: "dodecágono regular", text: "Dos dodecágonos (150° + 150° = 300°) y un triángulo equilátero (60°)", ans: "C", exp: "300° + 60° = 360°, logrando teselar de forma semirregular." }
+    ];
+
+    tessAngles.forEach((item, i) => {
+      counter++;
+      QUESTION_BANK.push({
+        id: `TES-ANG-${counter}`,
+        topic: "tessellations",
+        subtopic: "angles-vertex",
+        title: `Vértice Semirregular: ${item.name}`,
+        stem: `En un vértice coinciden: ${item.text}. ¿Se cumple la condición angular de 360° para teselar?`,
+        svg: `<svg viewBox="0 0 300 170" width="280" height="160">
+          <circle cx="150" cy="85" r="5" fill="#dc2626"/>
+          <text x="150" y="40" text-anchor="middle" font-size="12" font-weight="bold" fill="#1e293b">${item.text}</text>
+          <text x="150" y="140" text-anchor="middle" font-size="13" font-weight="bold" fill="#047857">¿Suma = 360°?</text>
+        </svg>`,
+        type: "single",
+        options: [
+          { id: "A", text: "No, la suma supera los 360° y se superponen." },
+          { id: "B", text: "No, la suma es menor a 360° y queda un hueco." },
+          { id: "C", text: "Sí, la suma da exactamente 360°, cubriendo todo el derredor del vértice." },
+          { id: "D", text: "Depende del tamaño de la hoja." }
+        ],
+        correctAnswer: item.ans,
+        explanation: item.exp,
+        hints: [
+          "Realiza la suma matemática de los ángulos dados.",
+          "Verifica si el resultado final coincide exactamente con 360°.",
+          "Al dar 360°, la concurrencia es exacta y no deja huecos."
+        ],
+        conceptTip: "Los teselados semirregulares combinan distintos polígonos que juntos suman 360° en cada vértice."
+      });
+    });
+
+    // Open development questions
+    const openDevelopmentQuestions = [
+      {
+        id: "TRI-DES-003",
+        topic: "triangles",
+        subtopic: "reasoning",
+        title: "Propiedad de los Lados: Desigualdad Triangular",
+        stem: "¿Es posible construir un triángulo con varillas de 3 cm, 4 cm y 10 cm? Explica detalladamente qué sucede al intentar unir sus extremos.",
+        svg: `<svg viewBox="0 0 300 160" width="280" height="150">
+          <line x1="40" y1="120" x2="260" y2="120" stroke="#0f172a" stroke-width="4"/>
+          <text x="150" y="140" text-anchor="middle" font-size="12" font-weight="bold">Base = 10 cm</text>
+          <line x1="40" y1="115" x2="100" y2="90" stroke="#dc2626" stroke-width="3"/>
+          <text x="60" y="85" font-size="11" fill="#dc2626">3 cm</text>
+          <line x1="260" y1="115" x2="180" y2="90" stroke="#2563eb" stroke-width="3"/>
+          <text x="230" y="85" font-size="11" fill="#2563eb">4 cm</text>
+          <text x="150" y="75" text-anchor="middle" font-size="11" fill="#991b1b">¡No se alcanzan a tocar! (3 + 4 = 7 < 10)</text>
+        </svg>`,
+        type: "open",
+        keywords: ["no", "alcanzan", "menor", "suma", "desigualdad", "tocar"],
+        sampleSolution: "No es posible construir el triángulo. Para que tres segmentos formen un triángulo cerrado, la suma de los dos lados más cortos siempre debe ser mayor que el lado más largo. En este caso, 3 cm + 4 cm = 7 cm, que es menor que 10 cm. Las varillas no se alcanzarán a juntar.",
+        rubric: [
+          "Afirma que no es posible construir el triángulo.",
+          "Calcula o menciona la suma de los lados menores (3 + 4 = 7 cm).",
+          "Explica que 7 cm es menor que 10 cm, por lo que las varillas no se tocan."
+        ],
+        hints: [
+          "Suma los dos lados más pequeños: 3 cm + 4 cm.",
+          "Compara esa suma con la varilla de 10 cm: ¿es mayor o menor?",
+          "Si las dos varillas juntas miden 7 cm, ¿podrán cruzar un espacio de 10 cm?"
+        ],
+        conceptTip: "Desigualdad triangular: La suma de dos lados cualesquiera de un triángulo siempre debe superar al tercer lado."
+      },
+      {
+        id: "TES-DES-002",
+        topic: "tessellations",
+        subtopic: "reasoning",
+        title: "Análisis de Rotación vs Reflexión",
+        stem: "Explica en tus propias palabras cuál es la diferencia fundamental entre una ROTACIÓN y una REFLEXIÓN al construir un patrón o teselado.",
+        svg: `<svg viewBox="0 0 300 160" width="280" height="150">
+          <text x="75" y="30" text-anchor="middle" font-size="12" font-weight="bold" fill="#7c3aed">Rotación</text>
+          <path d="M 60,70 A 25 25 0 0 1 90,70" fill="none" stroke="#7c3aed" stroke-width="2.5"/>
+          <text x="75" y="110" text-anchor="middle" font-size="11" fill="#6d28d9">Giro sobre un centro</text>
+
+          <text x="225" y="30" text-anchor="middle" font-size="12" font-weight="bold" fill="#059669">Reflexión</text>
+          <line x1="225" y1="40" x2="225" y2="120" stroke="#059669" stroke-width="2.5" stroke-dasharray="4,4"/>
+          <text x="225" y="140" text-anchor="middle" font-size="11" fill="#047857">Efecto espejo sobre eje</text>
+        </svg>`,
+        type: "open",
+        keywords: ["giro", "centro", "espejo", "eje", "orientación", "sentido"],
+        sampleSolution: "La diferencia es que en la rotación la figura gira un cierto ángulo alrededor de un punto fijo (centro de giro), manteniendo su orientación lateral directa. En cambio, en la reflexión la figura se invierte respecto a una línea recta (eje de simetría), produciendo un efecto de espejo donde la figura cambia su orientación de izquierda a derecha.",
+        rubric: [
+          "Define la rotación como un giro respecto a un centro o punto.",
+          "Define la reflexión como un reflejo respecto a una recta o eje de simetría.",
+          "Menciona el cambio de orientación o efecto espejo de la reflexión."
+        ],
+        hints: [
+          "Piensa en un reloj para la rotación (agujas girando sobre un punto).",
+          "Piensa en un espejo para la reflexión (tu mano derecha parece la izquierda).",
+          "Menciona 'centro de giro' para rotación y 'eje' para reflexión."
+        ],
+        conceptTip: "La rotación conserva el sentido de giro de la figura; la reflexión invierte la orientación."
+      }
+    ];
+
+    openDevelopmentQuestions.forEach(q => QUESTION_BANK.push(q));
+  })();
+
+  const APP_CONFIG = {
+    TOTAL_TIME_SECONDS: 70 * 60, // 70 minutes
+    QUESTIONS_PER_SESSION: 24,
+    STORAGE_KEY: "MISION_GEOMETRIA_6B_STATE",
+    TEACHER_PASS: "Stik"
+  };
+
+  let appState = {
+    studentName: "",
+    studentCourse: "6° A",
+    started: false,
+    finished: false,
+    startTime: null,
+    timeRemaining: APP_CONFIG.TOTAL_TIME_SECONDS,
+    currentQuestionIndex: 0,
+    selectedQuestions: [],
+    answers: {}, // questionId -> studentAnswer
+    checked: {}, // questionId -> boolean
+    flags: {},   // questionId -> boolean
+    hintsUsed: {}, // questionId -> count
+    teacherMode: false,
+    projectorMode: false,
+    isPaused: false
+  };
+
+  let timerInterval = null;
+
+  /* Helper to pick a balanced 24-question exam */
+  function selectBalancedExam(pool) {
+    const triangles = pool.filter(q => q.topic === "triangles");
+    const tessellations = pool.filter(q => q.topic === "tessellations");
+
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    const shuffledTri = shuffle(triangles);
+    const shuffledTes = shuffle(tessellations);
+
+    // Pick 12 of each, ensuring balanced variety
+    const pickedTri = shuffledTri.slice(0, 12);
+    const pickedTes = shuffledTes.slice(0, 12);
+
+    return shuffle([...pickedTri, ...pickedTes]);
+  }
+
+  /* Load / Save persistence in LocalStorage */
+  function saveState() {
+    try {
+      localStorage.setItem(APP_CONFIG.STORAGE_KEY, JSON.stringify(appState));
+    } catch (e) {
+      console.warn("Storage restricted or full", e);
+    }
+  }
+
+  function loadState() {
+    try {
+      const data = localStorage.getItem(APP_CONFIG.STORAGE_KEY);
+      if (data) {
+        const parsed = JSON.parse(data);
+        // Only load if valid
+        if (parsed && Array.isArray(parsed.selectedQuestions) && parsed.selectedQuestions.length > 0) {
+          appState = parsed;
+          return true;
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to load state", e);
+    }
+    return false;
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (appState.isPaused || appState.finished || !appState.started) return;
+
+      if (appState.timeRemaining > 0) {
+        appState.timeRemaining--;
+        updateTimerDisplay();
+        if (appState.timeRemaining % 15 === 0) saveState();
+      } else {
+        clearInterval(timerInterval);
+        handleTimeExpired();
+      }
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(appState.timeRemaining / 60);
+    const secs = appState.timeRemaining % 60;
+    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const displayEl = document.getElementById("timeDisplay");
+    const widgetEl = document.getElementById("timerWidget");
+
+    if (displayEl) displayEl.textContent = timeStr;
+    if (widgetEl) {
+      widgetEl.className = "timer-widget";
+      if (appState.timeRemaining <= 5 * 60) {
+        widgetEl.classList.add("warning-5");
+      } else if (appState.timeRemaining <= 15 * 60) {
+        widgetEl.classList.add("warning-15");
+      } else if (appState.timeRemaining <= 30 * 60) {
+        widgetEl.classList.add("warning-30");
+      }
+    }
+  }
+
+  function handleTimeExpired() {
+    saveState();
+    showModal(
+      "⏰ TIEMPO CUMPLIDO",
+      "<p>Han concluido los 70 minutos de la sesión evaluativa.</p><p><strong>No se borrará ninguna de tus respuestas.</strong> Por favor, finaliza la pregunta que estás desarrollando y dirígete al botón de entregar para ver tu informe completo.</p>",
+      [{ text: "Revisar y Entregar", class: "btn-primary", action: "goToOverview()" }]
+    );
+  }
+
+  function renderView() {
+    const main = document.getElementById("mainContainer");
+    if (!appState.started) {
+      renderWelcomeView(main);
+    } else if (appState.finished) {
+      renderReportView(main);
+    } else {
+      renderExamView(main);
+    }
+    updateTimerDisplay();
+  }
+
+  function renderWelcomeView(container) {
+    container.innerHTML = `
+      <div class="welcome-container card">
+        <h1 class="welcome-title">🔺 MISIÓN GEOMETRÍA</h1>
+        <p style="font-size: 1.15rem; color: var(--primary); font-weight: 700; margin-bottom: 6px;">
+          Triángulos y Teselados · 6° Básico
+        </p>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">
+          Repaso guiado integral y formativo — Duración: 70 minutos
+        </p>
+
+        <div class="welcome-meta-box">
+          <h4 style="color: #1e3a8a; margin-bottom: 8px;">📋 Instrucciones de la Misión:</h4>
+          <ul style="padding-left: 20px; font-size: 0.95rem; color: #334155;">
+            <li style="margin-bottom: 6px;">Esta actividad tiene una duración aproximada de <strong>70 minutos</strong>.</li>
+            <li style="margin-bottom: 6px;">El cronómetro comenzará únicamente cuando pulses el botón <strong>COMENZAR REPASO</strong>.</li>
+            <li style="margin-bottom: 6px;">Lee cada pregunta con atención e interpreta los diagramas geométricos interactivos.</li>
+            <li style="margin-bottom: 6px;">Puedes pulsar el botón 💡 <strong>AYUDA</strong> para recibir pistas pedagógicas paso a paso.</li>
+            <li>En las preguntas de desarrollo debes explicar tu razonamiento con claridad.</li>
+          </ul>
+        </div>
+
+        <div style="max-width: 400px; margin: 0 auto 24px auto;">
+          <div class="form-group">
+            <label class="form-label" for="studentNameInput">Nombre y Apellido del Estudiante:</label>
+            <input type="text" id="studentNameInput" class="form-input" placeholder="Ej: Sofía Morales" value="${appState.studentName || ''}">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="studentCourseInput">Curso:</label>
+            <select id="studentCourseInput" class="form-input">
+              <option value="6° A" ${appState.studentCourse === '6° A' ? 'selected' : ''}>6° Básico A</option>
+              <option value="6° B" ${appState.studentCourse === '6° B' ? 'selected' : ''}>6° Básico B</option>
+              <option value="6° C" ${appState.studentCourse === '6° C' ? 'selected' : ''}>6° Básico C</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="font-size: 1.15rem; padding: 14px 28px; width: 100%; max-width: 320px;" onclick="startSession()">
+          ▶ COMENZAR REPASO
+        </button>
+      </div>
+    `;
+  }
+
+  function startSession() {
+    const nameInput = document.getElementById("studentNameInput");
+    const courseInput = document.getElementById("studentCourseInput");
+    if (!nameInput || !nameInput.value.trim()) {
+      showModal("Dato Requerido", "Por favor ingresa tu nombre y apellido para personalizar tu informe de evaluación.", [
+        { text: "Entendido", class: "btn-primary", action: "closeModal()" }
+      ]);
+      return;
+    }
+
+    appState.studentName = nameInput.value.trim();
+    appState.studentCourse = courseInput ? courseInput.value : "6° A";
+    appState.started = true;
+    appState.startTime = new Date().toISOString();
+
+    // Select balanced questions
+    if (!appState.selectedQuestions || appState.selectedQuestions.length === 0) {
+      appState.selectedQuestions = selectBalancedExam(QUESTION_BANK);
+    }
+
+    saveState();
+    startTimer();
+    renderView();
+  }
+
+  function renderExamView(container) {
+    const qList = appState.selectedQuestions;
+    const qIndex = appState.currentQuestionIndex;
+    const q = qList[qIndex];
+    const isFlagged = !!appState.flags[q.id];
+    const helpCount = appState.hintsUsed[q.id] || 0;
+    const progressPercent = Math.round(((qIndex + 1) / qList.length) * 100);
+
+    container.innerHTML = `
+      <!-- Question Navigator Bar -->
+      <div class="card" style="padding: 12px 18px; margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">
+            Pregunta ${qIndex + 1} de ${qList.length} (${progressPercent}% completado)
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline ${isFlagged ? 'btn-flagged' : ''}" style="padding: 4px 10px; font-size: 0.85rem;" onclick="toggleFlag('${q.id}')">
+              ${isFlagged ? '🚩 Marcada para revisar' : '🏳️ Marcar para revisar'}
+            </button>
+            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.85rem;" onclick="goToOverview()">
+              📋 Resumen / Entregar
+            </button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; margin-bottom: 10px;">
+          <div style="width: ${progressPercent}%; height: 100%; background: var(--primary-light); transition: width 0.3s ease;"></div>
+        </div>
+
+        <!-- Pill Grid -->
+        <div class="question-nav-grid" id="qNavGrid">
+          ${qList.map((item, idx) => {
+            const hasAns = appState.answers[item.id] !== undefined && appState.answers[item.id] !== "";
+            const isCur = idx === qIndex;
+            const flag = appState.flags[item.id];
+            const help = appState.hintsUsed[item.id] > 0;
+            let classes = "q-pill";
+            if (isCur) classes += " active";
+            else if (hasAns) classes += " answered";
+            if (flag) classes += " flagged";
+            if (help) classes += " helped";
+            return `<button class="${classes}" onclick="navigateToQuestion(${idx})" title="Pregunta ${idx + 1}">${idx + 1}</button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="card">
+        <div class="q-header">
+          <span class="q-tag">${q.topic === 'triangles' ? '🔺 TRIÁNGULOS' : '🔷 TESELADOS'} · ${q.subtopic.toUpperCase()}</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">ID: ${q.id}</span>
+        </div>
+
+        <h2 class="q-stem">${q.stem}</h2>
+
+        <!-- Mathematical SVG Diagram Area -->
+        <div class="diagram-stage">
+          ${q.svg}
+        </div>
+
+        <!-- Feedback alert (shown on check) -->
+        <div id="feedbackBanner" class="feedback-banner"></div>
+
+        <!-- Response Area according to type -->
+        <div id="interactionArea">
+          ${renderInteractionArea(q)}
+        </div>
+
+        <!-- Progressive Hints Container -->
+        <div id="hintsContainer" class="hints-accordion">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <strong style="color: #854d0e;">💡 Sistema de Pistas Guiadas (${helpCount}/3):</strong>
+          </div>
+          <div id="hintsContent">
+            ${renderHints(q, helpCount)}
+          </div>
+        </div>
+
+        <!-- Action Toolbar -->
+        <div class="action-toolbar">
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" onclick="triggerHint('${q.id}')">
+              💡 ${helpCount === 0 ? 'Pedir Ayuda' : `Siguiente Pista (${helpCount}/3)`}
+            </button>
+            <button class="btn btn-secondary" onclick="checkCurrentAnswer()">
+              ✓ Comprobar
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-outline" ${qIndex === 0 ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} onclick="prevQuestion()">
+              ◀ Anterior
+            </button>
+            <button class="btn btn-primary" onclick="nextQuestion()">
+              ${qIndex === qList.length - 1 ? 'Finalizar Repaso ▶' : 'Siguiente ▶'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Reattach any saved draft for open responses
+    if (q.type === "open") {
+      const openEl = document.getElementById("openInput");
+      if (openEl && appState.answers[q.id]) {
+        openEl.value = appState.answers[q.id];
+      }
+    }
+  }
+
+  function renderInteractionArea(q) {
+    const curAns = appState.answers[q.id];
+
+    if (q.type === "single") {
+      return `
+        <div class="options-grid two-cols">
+          ${q.options.map(opt => `
+            <button class="option-btn ${curAns === opt.id ? 'selected' : ''}" onclick="selectSingleOption('${q.id}', '${opt.id}')">
+              <span class="opt-letter">${opt.id}</span>
+              <span>${opt.text}</span>
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    if (q.type === "dual") {
+      const sidesVal = curAns && curAns.sides ? curAns.sides : "";
+      const anglesVal = curAns && curAns.angles ? curAns.angles : "";
+      return `
+        <div class="dual-class-container">
+          <div class="dual-box">
+            <label class="form-label">1. Clasificación según sus LADOS:</label>
+            <select class="form-input" onchange="updateDualAnswer('${q.id}', 'sides', this.value)">
+              <option value="">-- Seleccionar --</option>
+              <option value="equilátero" ${sidesVal === 'equilátero' ? 'selected' : ''}>Equilátero (3 lados iguales)</option>
+              <option value="isósceles" ${sidesVal === 'isósceles' ? 'selected' : ''}>Isósceles (2 lados iguales)</option>
+              <option value="escaleno" ${sidesVal === 'escaleno' ? 'selected' : ''}>Escaleno (3 lados distintos)</option>
+            </select>
+          </div>
+          <div class="dual-box">
+            <label class="form-label">2. Clasificación según sus ÁNGULOS:</label>
+            <select class="form-input" onchange="updateDualAnswer('${q.id}', 'angles', this.value)">
+              <option value="">-- Seleccionar --</option>
+              <option value="acutángulo" ${anglesVal === 'acutángulo' ? 'selected' : ''}>Acutángulo (3 ángulos < 90°)</option>
+              <option value="rectángulo" ${anglesVal === 'rectángulo' ? 'selected' : ''}>Rectángulo (1 ángulo = 90°)</option>
+              <option value="obtusángulo" ${anglesVal === 'obtusángulo' ? 'selected' : ''}>Obtusángulo (1 ángulo > 90°)</option>
+            </select>
+          </div>
+        </div>
+      `;
+    }
+
+    if (q.type === "open") {
+      return `
+        <div>
+          <textarea id="openInput" class="open-response-box" placeholder="Escribe aquí tu justificación matemática clara..." oninput="updateOpenAnswer('${q.id}', this.value)">${curAns || ''}</textarea>
+          <div class="keywords-badge-container">
+            <span>Palabras clave sugeridas para estructurar tu idea:</span>
+            ${(q.keywords || []).map(kw => `<span class="keyword-tag">${kw}</span>`).join(' ')}
+          </div>
+        </div>
+      `;
+    }
+
+    return `<p>Tipo de pregunta no reconocido.</p>`;
+  }
+
+  function renderHints(q, count) {
+    if (!count || count === 0) return `<p style="font-size: 0.9rem; color: #854d0e;">Presiona "Pedir Ayuda" para desbloquear una pista guiada.</p>`;
+    let html = "";
+    for (let i = 0; i < count && i < q.hints.length; i++) {
+      html += `<div class="hint-step"><strong>Pista ${i + 1}:</strong> ${q.hints[i]}</div>`;
+    }
+    if (count >= 3 && q.conceptTip) {
+      html += `<div class="hint-step" style="border-left-color: #0d9488; background: #f0fdfa;"><strong>💡 Concepto Clave:</strong> ${q.conceptTip}</div>`;
+    }
+    return html;
+  }
+
+  /* Interaction Handlers */
+  function selectSingleOption(qId, optId) {
+    appState.answers[qId] = optId;
+    saveState();
+    renderExamView(document.getElementById("mainContainer"));
+  }
+
+  function updateDualAnswer(qId, field, value) {
+    if (!appState.answers[qId] || typeof appState.answers[qId] !== "object") {
+      appState.answers[qId] = { sides: "", angles: "" };
+    }
+    appState.answers[qId][field] = value;
+    saveState();
+  }
+
+  function updateOpenAnswer(qId, val) {
+    appState.answers[qId] = val;
+    saveState();
+  }
+
+  function triggerHint(qId) {
+    const current = appState.hintsUsed[qId] || 0;
+    if (current < 3) {
+      appState.hintsUsed[qId] = current + 1;
+      saveState();
+    }
+    const hintsEl = document.getElementById("hintsContainer");
+    if (hintsEl) {
+      hintsEl.style.display = "block";
+      const q = appState.selectedQuestions[appState.currentQuestionIndex];
+      document.getElementById("hintsContent").innerHTML = renderHints(q, appState.hintsUsed[qId]);
+    }
+  }
+
+  function checkCurrentAnswer() {
+    const q = appState.selectedQuestions[appState.currentQuestionIndex];
+    const userAns = appState.answers[q.id];
+    const fb = document.getElementById("feedbackBanner");
+    if (!fb) return;
+
+    if (!userAns) {
+      fb.className = "feedback-banner warning show";
+      fb.textContent = "⚠️ Aún no has ingresado una respuesta para comprobar.";
+      return;
+    }
+
+    if (q.type === "open") {
+      fb.className = "feedback-banner info show";
+      fb.innerHTML = `<strong>Respuesta registrada.</strong> En las preguntas de desarrollo, revisaremos tus argumentos junto con los criterios esperados al finalizar la sesión.`;
+      return;
+    }
+
+    let isCorrect = false;
+    if (q.type === "single") {
+      isCorrect = userAns === q.correctAnswer;
+    } else if (q.type === "dual") {
+      isCorrect = userAns.sides === q.sidesAnswer && userAns.angles === q.anglesAnswer;
+    }
+
+    if (isCorrect) {
+      fb.className = "feedback-banner success show";
+      fb.innerHTML = `<strong>¡Excelente trabajo!</strong> Tu razonamiento y clasificación son correctos.`;
+    } else {
+      fb.className = "feedback-banner danger show";
+      fb.innerHTML = `<strong>Revisa tu respuesta.</strong> Hay elementos que no coinciden con las propiedades de la figura. Puedes usar el botón 💡 <strong>AYUDA</strong> para analizar la pista y volver a intentar.`;
+    }
+  }
+
+  function toggleFlag(qId) {
+    appState.flags[qId] = !appState.flags[qId];
+    saveState();
+    renderExamView(document.getElementById("mainContainer"));
+  }
+
+  function navigateToQuestion(idx) {
+    appState.currentQuestionIndex = idx;
+    saveState();
+    renderExamView(document.getElementById("mainContainer"));
+  }
+
+  function prevQuestion() {
+    if (appState.currentQuestionIndex > 0) {
+      navigateToQuestion(appState.currentQuestionIndex - 1);
+    }
+  }
+
+  function nextQuestion() {
+    if (appState.currentQuestionIndex < appState.selectedQuestions.length - 1) {
+      navigateToQuestion(appState.currentQuestionIndex + 1);
+    } else {
+      goToOverview();
+    }
+  }
+
+  /* Overview & Pre-Submission Screen */
+  function goToOverview() {
+    const qList = appState.selectedQuestions;
+    let answeredCount = 0;
+    let flaggedCount = 0;
+
+    qList.forEach(q => {
+      const a = appState.answers[q.id];
+      if (a !== undefined && a !== "") {
+        if (typeof a === "object") {
+          if (a.sides && a.angles) answeredCount++;
+        } else {
+          answeredCount++;
+        }
+      }
+      if (appState.flags[q.id]) flaggedCount++;
+    });
+
+    const pendingCount = qList.length - answeredCount;
+    const mins = Math.floor(appState.timeRemaining / 60);
+    const secs = appState.timeRemaining % 60;
+    const timeFormatted = `${mins}m ${secs}s`;
+
+    const main = document.getElementById("mainContainer");
+    main.innerHTML = `
+      <div class="card" style="max-width: 720px; margin: 20px auto;">
+        <h2 style="color: var(--primary); margin-bottom: 8px;">📋 Resumen de la Evaluación de Práctica</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">
+          Estudiante: <strong>${appState.studentName || 'Estudiante'}</strong> · Curso: <strong>${appState.studentCourse}</strong>
+        </p>
+
+        <div class="report-grid">
+          <div class="stat-badge">
+            <div class="stat-num">${answeredCount} / ${qList.length}</div>
+            <div class="stat-label">Preguntas Respondidas</div>
+          </div>
+          <div class="stat-badge">
+            <div class="stat-num" style="color: ${pendingCount > 0 ? '#ea580c' : '#10b981'};">${pendingCount}</div>
+            <div class="stat-label">Pendientes por responder</div>
+          </div>
+          <div class="stat-badge">
+            <div class="stat-num" style="color: #b45309;">${flaggedCount}</div>
+            <div class="stat-label">Marcadas para revisión</div>
+          </div>
+          <div class="stat-badge">
+            <div class="stat-num" style="color: var(--primary-light);">${timeFormatted}</div>
+            <div class="stat-label">Tiempo Restante</div>
+          </div>
+        </div>
+
+        <div style="background: #f1f5f9; padding: 14px; border-radius: var(--radius-sm); margin-bottom: 20px;">
+          <p style="font-size: 0.95rem; color: #334155;">
+            Puedes volver a cualquier pregunta para revisar tus respuestas antes de la entrega final. Una vez entregada, se generará tu reporte formativo detallado con la revisión pedagógica.
+          </p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <button class="btn btn-outline" onclick="navigateToQuestion(0)">
+            🔍 Volver a la Prueba
+          </button>
+          <button class="btn btn-primary" onclick="confirmFinalize()">
+            📨 FINALIZAR Y ENTREGAR REPASO
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function confirmFinalize() {
+    showModal(
+      "¿Deseas finalizar la actividad?",
+      "<p>Estás a punto de entregar tu evaluación formativa guiada. Se detendrá el cronómetro y podrás acceder a la revisión completa y al informe imprimible.</p>",
+      [
+        { text: "Seguir Revisando", class: "btn-outline", action: "closeModal()" },
+        { text: "Sí, Entregar Ahora", class: "btn-primary", action: "finalizeSession()" }
+      ]
+    );
+  }
+
+  function finalizeSession() {
+    closeModal();
+    appState.finished = true;
+    if (timerInterval) clearInterval(timerInterval);
+    saveState();
+    renderView();
+  }
+
+  function renderReportView(container) {
+    const qList = appState.selectedQuestions;
+    let closedCorrect = 0;
+    let closedTotal = 0;
+    let openCount = 0;
+    let totalHints = 0;
+
+    // Subtopic counters
+    const topicStats = {
+      triSides: { correct: 0, total: 0, label: "Triángulos: Lados" },
+      triAngles: { correct: 0, total: 0, label: "Triángulos: Ángulos" },
+      triDual: { correct: 0, total: 0, label: "Triángulos: Doble Clasificación" },
+      tesConcept: { correct: 0, total: 0, label: "Teselados: Principio & 360°" },
+      tesIsom: { correct: 0, total: 0, label: "Teselados: Transformaciones Isométricas" },
+      tesErrors: { correct: 0, total: 0, label: "Teselados: Análisis de Errores" }
+    };
+
+    qList.forEach(q => {
+      const userAns = appState.answers[q.id];
+      const hints = appState.hintsUsed[q.id] || 0;
+      totalHints += hints;
+
+      if (q.type === "open") {
+        openCount++;
+      } else {
+        closedTotal++;
+        let ok = false;
+        if (q.type === "single" && userAns === q.correctAnswer) ok = true;
+        if (q.type === "dual" && userAns && userAns.sides === q.sidesAnswer && userAns.angles === q.anglesAnswer) ok = true;
+        if (ok) closedCorrect++;
+
+        // Categorize
+        if (q.subtopic === "sides") { topicStats.triSides.total++; if (ok) topicStats.triSides.correct++; }
+        if (q.subtopic === "angles" || q.subtopic === "angle-sum") { topicStats.triAngles.total++; if (ok) topicStats.triAngles.correct++; }
+        if (q.subtopic === "dual") { topicStats.triDual.total++; if (ok) topicStats.triDual.correct++; }
+        if (q.subtopic === "concept" || q.subtopic === "angles-vertex" || q.subtopic === "regular" || q.subtopic === "pentagon" || q.subtopic === "semiregular") {
+          topicStats.tesConcept.total++; if (ok) topicStats.tesConcept.correct++;
+        }
+        if (q.subtopic === "isometries") { topicStats.tesIsom.total++; if (ok) topicStats.tesIsom.correct++; }
+        if (q.subtopic === "errors") { topicStats.tesErrors.total++; if (ok) topicStats.tesErrors.correct++; }
+      }
+    });
+
+    const elapsedSeconds = APP_CONFIG.TOTAL_TIME_SECONDS - appState.timeRemaining;
+    const elapsedMins = Math.floor(elapsedSeconds / 60);
+    const elapsedSecs = elapsedSeconds % 60;
+
+    // Build specific qualitative advice
+    const recommendations = [];
+    if (topicStats.triAngles.total > 0 && (topicStats.triAngles.correct / topicStats.triAngles.total) < 0.6) {
+      recommendations.push("Conviene repasar la clasificación de triángulos según sus ángulos y recordar que la suma de sus ángulos interiores siempre es 180°.");
+    }
+    if (topicStats.triSides.total > 0 && (topicStats.triSides.correct / topicStats.triSides.total) >= 0.8) {
+      recommendations.push("¡Excelente dominio en la clasificación de triángulos según sus lados (equilátero, isósceles y escaleno)!");
+    }
+    if (topicStats.tesConcept.total > 0 && (topicStats.tesConcept.correct / topicStats.tesConcept.total) < 0.7) {
+      recommendations.push("Reforzar la regla angular de los teselados: en cada vértice común, los ángulos concurrentes deben sumar exactamente 360° para no dejar huecos ni montar figuras.");
+    }
+    if (topicStats.tesIsom.total > 0 && (topicStats.tesIsom.correct / topicStats.tesIsom.total) < 0.7) {
+      recommendations.push("Practicar la distinción entre rotación (giro alrededor de un centro) y reflexión (efecto espejo con eje de simetría).");
+    }
+    if (recommendations.length === 0) {
+      recommendations.push("¡Demuestras un rendimiento sobresaliente en todos los contenidos trabajados de geometría! Continúa justificando con precisión matemática.");
+    }
+
+    container.innerHTML = `
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
+          <div>
+            <h1 style="color: var(--primary); font-size: 1.8rem; font-weight: 800;">INFORME PEDAGÓGICO DE APRENDIZAJE</h1>
+            <p style="color: var(--text-muted);">Misión Geometría: Triángulos y Teselados · 6° Básico</p>
+          </div>
+          <div class="no-print">
+            <button class="btn btn-primary" onclick="window.print()">🖨 IMPRIMIR / GUARDAR PDF</button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 20px; font-size: 0.95rem;">
+          <p><strong>Estudiante:</strong> ${appState.studentName || 'Estudiante'} &nbsp;|&nbsp; <strong>Curso:</strong> ${appState.studentCourse} &nbsp;|&nbsp; <strong>Fecha:</strong> ${new Date().toLocaleDateString('es-CL')}</p>
+          <p><strong>Tiempo Utilizado:</strong> ${elapsedMins} minutos y ${elapsedSecs} segundos &nbsp;|&nbsp; <strong>Consultas a Pistas de Ayuda:</strong> ${totalHints}</p>
+        </div>
+
+        <h3 style="color: var(--primary); margin-bottom: 10px;">📊 Resultados Globales por Eje Temático</h3>
+        <div class="report-grid">
+          <div class="stat-badge">
+            <div class="stat-num">${closedCorrect} / ${closedTotal}</div>
+            <div class="stat-label">Preguntas Cerradas Correctas</div>
+          </div>
+          <div class="stat-badge">
+            <div class="stat-num">${openCount}</div>
+            <div class="stat-label">Preguntas de Desarrollo Respondidas</div>
+          </div>
+          <div class="stat-badge">
+            <div class="stat-num" style="color: #0d9488;">${totalHints}</div>
+            <div class="stat-label">Pistas Utilizadas Formativamente</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 24px;">
+          ${Object.values(topicStats).filter(st => st.total > 0).map(st => `
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">
+                <span>${st.label}</span>
+                <span>${st.correct} de ${st.total} (${Math.round((st.correct/st.total)*100)}%)</span>
+              </div>
+              <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 9999px; overflow: hidden;">
+                <div style="width: ${Math.round((st.correct/st.total)*100)}%; height: 100%; background: var(--secondary);"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: var(--radius-sm); padding: 14px; margin-bottom: 24px;">
+          <h4 style="color: #1e3a8a; margin-bottom: 6px;">💡 Recomendaciones Pedagógicas Específicas:</h4>
+          <ul style="padding-left: 20px; font-size: 0.95rem; color: #1e293b;">
+            ${recommendations.map(r => `<li style="margin-bottom: 4px;">${r}</li>`).join('')}
+          </ul>
+        </div>
+
+        <h3 style="color: var(--primary); margin: 30px 0 14px 0;">📖 Revisión Ítem por Ítem</h3>
+        <div id="detailedReviewContainer">
+          ${renderDetailedReview(qList)}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDetailedReview(qList) {
+    return qList.map((q, idx) => {
+      const userAns = appState.answers[q.id];
+      let itemClass = "review-item";
+      let statusBadge = "";
+
+      if (q.type === "open") {
+        itemClass += " was-open";
+        statusBadge = `<span style="background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">Desarrollo / Argumentación</span>`;
+      } else {
+        let ok = false;
+        if (q.type === "single" && userAns === q.correctAnswer) ok = true;
+        if (q.type === "dual" && userAns && userAns.sides === q.sidesAnswer && userAns.angles === q.anglesAnswer) ok = true;
+        if (ok) {
+          itemClass += " was-correct";
+          statusBadge = `<span style="background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">✓ Correcta</span>`;
+        } else {
+          itemClass += " was-incorrect";
+          statusBadge = `<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700;">✗ A Reubicar</span>`;
+        }
+      }
+
+      let answerHtml = "";
+      if (q.type === "single") {
+        const userChoice = q.options.find(o => o.id === userAns);
+        const correctChoice = q.options.find(o => o.id === q.correctAnswer);
+        answerHtml = `
+          <p style="margin-bottom: 4px;"><strong>Tu respuesta:</strong> ${userChoice ? `${userChoice.id}. ${userChoice.text}` : '<em style="color:#ef4444;">Sin responder</em>'}</p>
+          <p style="margin-bottom: 4px;"><strong>Respuesta correcta:</strong> ${correctChoice.id}. ${correctChoice.text}</p>
+        `;
+      } else if (q.type === "dual") {
+        answerHtml = `
+          <p style="margin-bottom: 4px;"><strong>Tu respuesta:</strong> Lados: <em>${userAns ? userAns.sides || '---' : '---'}</em> | Ángulos: <em>${userAns ? userAns.angles || '---' : '---'}</em></p>
+          <p style="margin-bottom: 4px;"><strong>Respuesta correcta:</strong> Lados: <strong>${q.sidesAnswer}</strong> | Ángulos: <strong>${q.anglesAnswer}</strong></p>
+        `;
+      } else if (q.type === "open") {
+        answerHtml = `
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 10px; margin-bottom: 8px;">
+            <p style="margin-bottom: 4px; font-weight: 600; color: #334155;">Tu Explicación Escrita:</p>
+            <p style="font-style: italic; color: #0f172a;">${userAns ? `"${userAns}"` : '<span style="color: #ef4444;">No se registró respuesta escrita</span>'}</p>
+          </div>
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 10px; margin-bottom: 8px;">
+            <p style="font-weight: 600; color: #166534; margin-bottom: 4px;">Elementos Importantes que debías considerar:</p>
+            <ul style="padding-left: 20px; font-size: 0.9rem; color: #14532d;">
+              ${(q.rubric || []).map(r => `<li>${r}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="${itemClass}">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong>Pregunta ${idx + 1}: ${q.title}</strong>
+            ${statusBadge}
+          </div>
+          <p style="font-size: 0.95rem; margin-bottom: 10px;">${q.stem}</p>
+          <div style="max-width: 260px; margin: 10px 0; background: #fafafa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; text-align: center;">
+            ${q.svg}
+          </div>
+          ${answerHtml}
+          <p style="font-size: 0.9rem; color: #475569; margin-top: 6px; border-top: 1px solid #f1f5f9; padding-top: 6px;">
+            <strong>Explicación Geométrica:</strong> ${q.explanation || q.sampleSolution}
+          </p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function promptTeacherMode() {
+    const pass = prompt("Ingresa la contraseña del docente:");
+    if (pass === APP_CONFIG.TEACHER_PASS) {
+      appState.teacherMode = true;
+      document.getElementById("teacherBanner").style.display = "flex";
+      saveState();
+      alert("Modo Profesor activado.");
+    } else if (pass !== null) {
+      alert("Contraseña incorrecta.");
+    }
+  }
+
+  function exitTeacherMode() {
+    appState.teacherMode = false;
+    document.getElementById("teacherBanner").style.display = "none";
+    if (appState.projectorMode) toggleProjectorMode();
+    saveState();
+  }
+
+  function teacherTogglePause() {
+    appState.isPaused = !appState.isPaused;
+    const btn = document.getElementById("teacherPauseBtn");
+    if (btn) btn.textContent = appState.isPaused ? "▶ Reanudar Reloj" : "⏸ Pausar Reloj";
+  }
+
+  function teacherAddMinutes(mins) {
+    appState.timeRemaining += mins * 60;
+    updateTimerDisplay();
+    saveState();
+  }
+
+  function teacherToggleAnswers() {
+    const q = appState.selectedQuestions[appState.currentQuestionIndex];
+    if (!q) return;
+
+    if (q.type === "single") {
+      appState.answers[q.id] = q.correctAnswer;
+    } else if (q.type === "dual") {
+      appState.answers[q.id] = { sides: q.sidesAnswer, angles: q.anglesAnswer };
+    } else if (q.type === "open") {
+      appState.answers[q.id] = q.sampleSolution;
+    }
+    saveState();
+    renderView();
+  }
+
+  function toggleProjectorMode() {
+    appState.projectorMode = !appState.projectorMode;
+    document.body.classList.toggle("projector-active", appState.projectorMode);
+    const pBtn = document.getElementById("projBtn");
+    if (pBtn) pBtn.textContent = appState.projectorMode ? "📺 Salir Proyector" : "📺 Proyectar";
+  }
+
+  function openResetModal() {
+    showModal(
+      "Generar Nueva Sesión",
+      "<p>¿Deseas reiniciar y generar una nueva variante de 24 preguntas para otro estudiante o clase?</p>",
+      [
+        { text: "Cancelar", class: "btn-outline", action: "closeModal()" },
+        { text: "Reiniciar Sesión", class: "btn-danger", action: "resetToNewSession()" }
+      ]
+    );
+  }
+
+  function resetToNewSession() {
+    closeModal();
+    localStorage.removeItem(APP_CONFIG.STORAGE_KEY);
+    appState = {
+      studentName: "",
+      studentCourse: "6° A",
+      started: false,
+      finished: false,
+      startTime: null,
+      timeRemaining: APP_CONFIG.TOTAL_TIME_SECONDS,
+      currentQuestionIndex: 0,
+      selectedQuestions: selectBalancedExam(QUESTION_BANK),
+      answers: {},
+      checked: {},
+      flags: {},
+      hintsUsed: {},
+      teacherMode: false,
+      projectorMode: false,
+      isPaused: false
+    };
+    exitTeacherMode();
+    renderView();
+  }
+
+  /* Modal Helpers */
+  function showModal(title, bodyHtml, buttons) {
+    const modal = document.getElementById("appModal");
+    const mTitle = document.getElementById("modalTitle");
+    const mBody = document.getElementById("modalBody");
+    const mFooter = document.getElementById("modalFooter");
+
+    mTitle.textContent = title;
+    mBody.innerHTML = bodyHtml;
+    mFooter.innerHTML = buttons.map(b => `
+      <button class="btn ${b.class}" onclick="${b.action}">${b.text}</button>
+    `).join('');
+
+    modal.classList.add("active");
+  }
+
+  function closeModal() {
+    const modal = document.getElementById("appModal");
+    if (modal) modal.classList.remove("active");
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const restored = loadState();
+    if (restored && appState.started && !appState.finished) {
+      startTimer();
+      if (appState.teacherMode) {
+        document.getElementById("teacherBanner").style.display = "flex";
+      }
+    }
+    renderView();
+  });
+  </script>
+</body>
+</html>
