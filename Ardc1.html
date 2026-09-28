@@ -1,0 +1,2114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear el Futuro: Explorando Arduino</title>
+  
+  <style>
+    :root {
+      --arduino-teal: #00979C;
+      --arduino-teal-dark: #008184;
+      --arduino-teal-light: #E0F2F1;
+      --arduino-orange: #E47128;
+      --arduino-yellow: #F5B041;
+      --arduino-green: #2ECC71;
+      --arduino-red: #E74C3C;
+      --arduino-dark: #1E272C;
+      --arduino-gray: #46535E;
+      --arduino-light: #F4F6F7;
+      --arduino-card: #FFFFFF;
+      --arduino-border: #D5DBDB;
+      --arduino-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      --font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--arduino-light);
+      color: var(--arduino-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Streamlined Header & Progress */
+    header {
+      background-color: var(--arduino-teal);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 151, 156, 0.3);
+    }
+
+    .badge-edu {
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .progress-bar-container {
+      background-color: #e2e8f0;
+      height: 8px;
+      width: 100%;
+      position: sticky;
+      top: 56px;
+      z-index: 999;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--arduino-teal), var(--arduino-orange));
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    main {
+      flex: 1;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card {
+      background: var(--arduino-card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--arduino-shadow);
+      border: 1px solid var(--arduino-border);
+      margin-bottom: 20px;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1, h2, h3 {
+      color: var(--arduino-dark);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .instruction-box {
+      background: var(--arduino-teal-light);
+      border-left: 5px solid var(--arduino-teal);
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--arduino-teal);
+      color: white;
+    }
+    .btn-primary:hover { background-color: var(--arduino-teal-dark); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background-color: #EEF2F5;
+      color: var(--arduino-gray);
+    }
+    .btn-secondary:hover { background-color: #E2E8F0; }
+
+    .btn-orange {
+      background-color: var(--arduino-orange);
+      color: white;
+    }
+    .btn-orange:hover { opacity: 0.9; }
+
+    .btn-outline {
+      border: 2px solid var(--arduino-teal);
+      background: transparent;
+      color: var(--arduino-teal);
+    }
+    .btn-outline:hover { background-color: var(--arduino-teal-light); }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .nav-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--arduino-border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .alert {
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert-danger { background-color: #FDEDEC; color: #922B21; border-left: 4px solid var(--arduino-red); }
+    .alert-success { background-color: #EAFAF1; color: #1E8449; border-left: 4px solid var(--arduino-green); }
+    .alert-warning { background-color: #FEF9E7; color: #B7950B; border-left: 4px solid var(--arduino-yellow); }
+
+    /* Modal dialog */
+    .custom-modal {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+    .custom-modal.active { display: flex; }
+    .modal-box {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    /* Circuit Canvas & Interactive Layouts */
+    .canvas-container {
+      position: relative;
+      background-color: #F8FAFC;
+      border: 2px dashed #CBD5E1;
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 480px;
+      overflow: auto;
+      user-select: none;
+    }
+
+    .toolbox {
+      display: flex;
+      gap: 10px;
+      background: #FFFFFF;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #CBD5E1;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .color-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      outline: 2px solid transparent;
+      transition: transform 0.1s;
+    }
+    .color-dot.active { outline-color: var(--arduino-teal); transform: scale(1.15); }
+
+    /* Breadboard and Arduino SVGs */
+    .circuit-workspace {
+      display: flex;
+      flex-direction: row;
+      gap: 24px;
+      align-items: flex-start;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    /* Node pin styling */
+    .pin-node {
+      cursor: pointer;
+      fill: #222;
+      stroke: #555;
+      stroke-width: 1.5;
+      transition: r 0.15s, fill 0.15s;
+    }
+    .pin-node:hover {
+      fill: var(--arduino-yellow) !important;
+      r: 6px;
+    }
+    .pin-node.selected-node {
+      fill: var(--arduino-orange) !important;
+      stroke: white;
+      stroke-width: 2;
+      animation: pulseNode 0.8s infinite alternate;
+    }
+    @keyframes pulseNode {
+      from { r: 5px; }
+      to { r: 8px; }
+    }
+
+    /* Highlighted board parts */
+    .interactive-part {
+      cursor: pointer;
+      transition: opacity 0.2s, stroke 0.2s;
+    }
+    .interactive-part:hover {
+      filter: brightness(1.2);
+    }
+    .interactive-part.hinted {
+      stroke: var(--arduino-yellow) !important;
+      stroke-width: 3px !important;
+      stroke-dasharray: 4;
+      animation: blinkHint 1s infinite alternate;
+    }
+    @keyframes blinkHint {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
+    }
+
+    /* LED Glow simulation */
+    .led-glow-red { filter: drop-shadow(0 0 12px #FF0000); fill: #FF2A2A !important; }
+    .led-glow-green { filter: drop-shadow(0 0 12px #00FF00); fill: #2ECC71 !important; }
+    .led-glow-yellow { filter: drop-shadow(0 0 12px #FFFF00); fill: #F1C40F !important; }
+    .led-glow-dim { filter: drop-shadow(0 0 5px #FF6666); fill: #D9534F !important; }
+
+    /* Electric wire current animation */
+    .wire-line {
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      cursor: pointer;
+    }
+    .wire-current {
+      stroke-dasharray: 6, 6;
+      animation: currentFlow 0.8s linear infinite;
+    }
+    @keyframes currentFlow {
+      from { stroke-dashoffset: 24; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Drag & Drop */
+    .drag-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .drag-column {
+      flex: 1;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .draggable-card {
+      background: white;
+      border: 2px dashed #94A3B8;
+      border-radius: 8px;
+      padding: 12px;
+      cursor: grab;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .draggable-card:active { cursor: grabbing; background: #F1F5F9; }
+    .drop-slot {
+      background: #F8FAFC;
+      border: 2px dashed #CBD5E1;
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .drop-slot.dragover {
+      background: var(--arduino-teal-light);
+      border-color: var(--arduino-teal);
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white; color: black; font-size: 11pt; }
+      header, .progress-bar-container, .nav-footer, .btn, .toolbox { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #999; margin-bottom: 15px; page-break-inside: avoid; }
+      .print-only { display: block !important; }
+      #app-content > div:not(#module-12) { display: none !important; }
+      #module-12 { display: block !important; }
+    }
+    .print-only { display: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="18" fill="white"/>
+        <path d="M12 20h6M15 17v6M24 20h6" stroke="#00979C" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span style="font-weight:700; font-size:1.1rem; letter-spacing: -0.2px;">Crear el Futuro: Arduino</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="badge-edu">Simulación Educativa</span>
+      <span id="student-badge" style="font-size:0.85rem; font-weight:600; opacity:0.9;">Invitado</span>
+    </div>
+  </header>
+  
+  <div class="progress-bar-container">
+    <div class="progress-bar-fill" id="global-progress"></div>
+  </div>
+
+  <main id="app-content">
+    <section id="module-0" class="card">
+      <div style="text-align:center; max-width:600px; margin: 0 auto; padding: 20px 0;">
+        <svg width="72" height="72" viewBox="0 0 60 60" fill="none" style="margin-bottom:16px;">
+          <rect width="60" height="60" rx="14" fill="#00979C"/>
+          <path d="M15 30h12M21 24v12M33 30h12" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <h1>Crear el Futuro: Explorando Arduino</h1>
+        <p style="color:var(--arduino-gray); margin-bottom:24px; font-size:1.05rem;">
+          Conoce sus partes y aprende a realizar tus primeras conexiones eléctricas de forma interactiva y segura.
+        </p>
+        
+        <div style="background:#F8FAFC; padding:20px; border-radius:12px; border:1px solid #E2E8F0; text-align:left; margin-bottom:24px;">
+          <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px; font-size:0.9rem;">Nombre del Estudiante:</label>
+            <input type="text" id="input-student-name" placeholder="Ej: Valentina Morales" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.95rem;">
+          </div>
+          <div>
+            <label style="display:block; font-weight:600; margin-bottom:6px; font-size:0.9rem;">Curso:</label>
+            <input type="text" id="input-student-grade" placeholder="Ej: 7° Básico A" style="width:100%; padding:10px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.95rem;">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%; padding:14px; font-size:1.05rem;" onclick="app.startApp()">
+          ¡Comenzar la Aventura!
+        </button>
+      </div>
+    </section>
+
+    <section id="module-1" class="card" style="display:none;">
+      <h2>Módulo 1: Conozcamos el Arduino</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Lee la instrucción de búsqueda y haz clic sobre el componente correspondiente en la placa Arduino. Si tienes dudas, puedes solicitar pistas.
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+        <div style="background:#EFF6FF; border:1px solid #BFDBFE; color:#1E40AF; padding:8px 14px; border-radius:8px; font-weight:600;" id="m1-prompt">
+          Encuentra: Puerto USB
+        </div>
+        <div>
+          <button class="btn btn-secondary" onclick="m1.giveHint()">¿Necesito una pista?</button>
+        </div>
+      </div>
+
+      <div id="m1-feedback"></div>
+
+      <!-- Realistic SVG Arduino UNO Board -->
+      <div style="text-align:center; overflow-x:auto; padding:10px 0;">
+        <svg id="m1-board-svg" width="600" height="420" viewBox="0 0 600 420" style="max-width:100%; height:auto;">
+          <!-- Board PCB -->
+          <rect x="50" y="20" width="500" height="370" rx="18" fill="#00979C" stroke="#00797E" stroke-width="4"/>
+          <!-- Mounting holes -->
+          <circle cx="80" cy="50" r="10" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="3"/>
+          <circle cx="520" cy="50" r="10" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="3"/>
+          <circle cx="520" cy="360" r="10" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="3"/>
+          <circle cx="110" cy="360" r="10" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="3"/>
+
+          <!-- USB Port -->
+          <g id="part-usb" class="interactive-part" onclick="m1.selectPart('usb')">
+            <rect x="20" y="55" width="90" height="65" rx="4" fill="#B0BEC5" stroke="#78909C" stroke-width="2"/>
+            <rect x="25" y="65" width="20" height="45" fill="#455A64"/>
+            <text x="50" y="93" font-size="11" font-weight="700" fill="#263238" text-anchor="middle">USB</text>
+          </g>
+
+          <!-- DC Power Jack -->
+          <g id="part-jack" class="interactive-part" onclick="m1.selectPart('jack')">
+            <rect x="20" y="250" width="95" height="75" rx="6" fill="#212121" stroke="#424242" stroke-width="2"/>
+            <rect x="20" y="265" width="40" height="45" fill="#111"/>
+            <circle cx="65" cy="287" r="10" fill="#616161"/>
+            <text x="68" y="345" font-size="10" font-weight="600" fill="#FFFFFF" text-anchor="middle">POWER JACK</text>
+          </g>
+
+          <!-- Reset Button -->
+          <g id="part-reset" class="interactive-part" onclick="m1.selectPart('reset')">
+            <rect x="80" y="145" width="30" height="30" rx="3" fill="#D32F2F" stroke="#B71C1C" stroke-width="2"/>
+            <circle cx="95" cy="160" r="8" fill="#F44336"/>
+            <text x="95" y="190" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle">RESET</text>
+          </g>
+
+          <!-- Microcontroller ATmega328P -->
+          <g id="part-mcu" class="interactive-part" onclick="m1.selectPart('mcu')">
+            <rect x="250" y="220" width="160" height="45" rx="3" fill="#263238" stroke="#37474F" stroke-width="2"/>
+            <circle cx="260" cy="242" r="3" fill="#607D8B"/>
+            <text x="330" y="247" font-size="11" font-weight="bold" fill="#ECEFF1" text-anchor="middle">ATmega328P</text>
+            <!-- Chip pins -->
+            <path d="M260 215 v5 M275 215 v5 M290 215 v5 M305 215 v5 M320 215 v5 M335 215 v5 M350 215 v5 M365 215 v5 M380 215 v5 M395 215 v5" stroke="#CFD8DC" stroke-width="2"/>
+            <path d="M260 265 v5 M275 265 v5 M290 265 v5 M305 265 v5 M320 265 v5 M335 265 v5 M350 265 v5 M365 265 v5 M380 265 v5 M395 265 v5" stroke="#CFD8DC" stroke-width="2"/>
+          </g>
+
+          <!-- Onboard LEDs -->
+          <g id="part-leds" class="interactive-part" onclick="m1.selectPart('leds')">
+            <rect x="230" y="120" width="12" height="8" rx="2" fill="#F59E0B"/>
+            <text x="236" y="140" font-size="9" fill="white" font-weight="bold" text-anchor="middle">L</text>
+            <rect x="230" y="150" width="12" height="8" rx="2" fill="#10B981"/>
+            <text x="236" y="170" font-size="8" fill="white" font-weight="bold" text-anchor="middle">ON</text>
+          </g>
+
+          <!-- Digital Pins Header (D0 - D13) -->
+          <g id="part-digital" class="interactive-part" onclick="m1.selectPart('digital')">
+            <rect x="210" y="30" width="280" height="28" fill="#1E293B" rx="2"/>
+            <text x="350" y="24" font-size="11" font-weight="bold" fill="white" text-anchor="middle">DIGITAL (PWM ~)</text>
+            <!-- Pin holes -->
+            <g fill="#F1F5F9">
+              <circle cx="225" cy="44" r="3.5"/><circle cx="243" cy="44" r="3.5"/><circle cx="261" cy="44" r="3.5"/><circle cx="279" cy="44" r="3.5"/>
+              <circle cx="297" cy="44" r="3.5"/><circle cx="315" cy="44" r="3.5"/><circle cx="333" cy="44" r="3.5"/><circle cx="351" cy="44" r="3.5"/>
+              <circle cx="369" cy="44" r="3.5"/><circle cx="387" cy="44" r="3.5"/><circle cx="405" cy="44" r="3.5"/><circle cx="423" cy="44" r="3.5"/>
+              <circle cx="441" cy="44" r="3.5"/><circle cx="459" cy="44" r="3.5"/><circle cx="477" cy="44" r="3.5"/>
+            </g>
+          </g>
+
+          <!-- Power Header (5V, 3.3V, GND, VIN) -->
+          <g id="part-power" class="interactive-part" onclick="m1.selectPart('power')">
+            <rect x="220" y="345" width="130" height="28" fill="#1E293B" rx="2"/>
+            <text x="285" y="390" font-size="11" font-weight="bold" fill="white" text-anchor="middle">POWER</text>
+            <g fill="#F1F5F9">
+              <circle id="node-power-3v3" cx="240" cy="359" r="3.5"/>
+              <circle id="node-power-5v" cx="260" cy="359" r="3.5"/>
+              <circle id="node-power-gnd1" cx="280" cy="359" r="3.5"/>
+              <circle id="node-power-gnd2" cx="300" cy="359" r="3.5"/>
+              <circle id="node-power-vin" cx="320" cy="359" r="3.5"/>
+            </g>
+            <text x="240" y="340" font-size="8" fill="white" text-anchor="middle">3.3V</text>
+            <text x="260" y="340" font-size="8" fill="white" text-anchor="middle">5V</text>
+            <text x="290" y="340" font-size="8" fill="white" text-anchor="middle">GND</text>
+            <text x="320" y="340" font-size="8" fill="white" text-anchor="middle">VIN</text>
+          </g>
+
+          <!-- Analog Pins Header (A0 - A5) -->
+          <g id="part-analog" class="interactive-part" onclick="m1.selectPart('analog')">
+            <rect x="365" y="345" width="125" height="28" fill="#1E293B" rx="2"/>
+            <text x="427" y="390" font-size="11" font-weight="bold" fill="white" text-anchor="middle">ANALOG IN</text>
+            <g fill="#F1F5F9">
+              <circle cx="380" cy="359" r="3.5"/><circle cx="400" cy="359" r="3.5"/><circle cx="420" cy="359" r="3.5"/>
+              <circle cx="440" cy="359" r="3.5"/><circle cx="460" cy="359" r="3.5"/><circle cx="480" cy="359" r="3.5"/>
+            </g>
+            <text x="380" y="340" font-size="8" fill="white" text-anchor="middle">A0</text>
+            <text x="480" y="340" font-size="8" fill="white" text-anchor="middle">A5</text>
+          </g>
+
+          <!-- Arduino UNO Logo -->
+          <text x="300" y="180" font-size="20" font-weight="900" fill="white" opacity="0.9">ARDUINO</text>
+          <text x="405" y="180" font-size="16" font-weight="400" fill="white" opacity="0.8">UNO</text>
+        </svg>
+      </div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(1)">Omitir actividad</button>
+        <button id="m1-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(2)">Continuar al Módulo 2</button>
+      </div>
+    </section>
+
+    <section id="module-2" class="card" style="display:none;">
+      <h2>Módulo 2: ¿Para qué sirve cada parte?</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Relaciona cada componente con su definición correspondiente. Selecciona el concepto y luego su descripción, o usa el selector asociado. Pulsa "Revisar" al terminar.
+      </div>
+
+      <div id="m2-container" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:16px; margin-bottom:20px;">
+        <!-- Filled by JS -->
+      </div>
+
+      <div id="m2-feedback"></div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(2)">Omitir actividad</button>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-orange" onclick="m2.checkAnswers()">Revisar Asociaciones</button>
+          <button id="m2-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(3)">Continuar al Módulo 3</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="module-3" class="card" style="display:none;">
+      <h2>Módulo 3: Conozcamos la Protoboard</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Haz clic en cualquier orificio de la protoboard. Observa cómo se iluminan los puntos conectados internamente por pistas metálicas. Luego responde la pregunta inferior.
+      </div>
+
+      <div style="display:flex; justify-content:center; margin-bottom:20px; overflow-x:auto;">
+        <svg id="m3-breadboard-svg" width="650" height="260" viewBox="0 0 650 260" style="background:#FFFFFF; border-radius:10px; border:2px solid #CBD5E1;"></svg>
+      </div>
+
+      <div id="m3-explanation" class="alert alert-warning" style="display:none;">
+        <span id="m3-exp-text"></span>
+      </div>
+
+      <div style="background:#F8FAFC; border:1px solid #E2E8F0; padding:16px; border-radius:10px; margin-top:16px;">
+        <h3 style="font-size:1.05rem;">Mini-desafío: ¿Cómo están conectados los terminales centrales?</h3>
+        <p style="font-size:0.95rem; margin-bottom:12px;">En las filas centrales (identificadas por letras de la A a la E o de la F a la J):</p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <label style="cursor:pointer;"><input type="radio" name="m3-quiz" value="vert"> Están conectados verticalmente en cada fila de 5 orificios.</label>
+          <label style="cursor:pointer;"><input type="radio" name="m3-quiz" value="horiz"> Están todos conectados de forma horizontal de extremo a extremo.</label>
+          <label style="cursor:pointer;"><input type="radio" name="m3-quiz" value="none"> Cada orificio está completamente aislado.</label>
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="m3.validateQuiz()">Verificar respuesta</button>
+      </div>
+      <div id="m3-quiz-feedback"></div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(3)">Omitir actividad</button>
+        <button id="m3-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(4)">Continuar al Módulo 4</button>
+      </div>
+    </section>
+
+    <section id="module-4" class="card" style="display:none;">
+      <h2>Módulo 4: Simulador de Conexiones</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Aprende el sistema de cableado: 1. Selecciona un color. 2. Haz clic en un pin de origen. 3. Haz clic en un pin de destino para crear un cable. Conecta al menos 2 cables para desbloquear el siguiente módulo.
+      </div>
+
+      <div class="toolbox">
+        <span style="font-weight:600; font-size:0.9rem;">Color de Cable:</span>
+        <div class="color-dot active" style="background:#E74C3C;" onclick="sim.setColor('#E74C3C', this)" title="Rojo (Positivo / 5V)"></div>
+        <div class="color-dot" style="background:#2C3E50;" onclick="sim.setColor('#2C3E50', this)" title="Negro (Tierra / GND)"></div>
+        <div class="color-dot" style="background:#3498DB;" onclick="sim.setColor('#3498DB', this)" title="Azul"></div>
+        <div class="color-dot" style="background:#2ECC71;" onclick="sim.setColor('#2ECC71', this)" title="Verde"></div>
+        <div class="color-dot" style="background:#F1C40F;" onclick="sim.setColor('#F1C40F', this)" title="Amarillo"></div>
+        
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="sim.removeLastWire()">Deshacer cable</button>
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="sim.resetWires()">Reiniciar circuito</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <div id="sim-workspace-m4" class="circuit-workspace">
+          <!-- Shared Workspace will render here -->
+        </div>
+      </div>
+      <div id="m4-feedback" style="margin-top:10px;"></div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(4)">Omitir actividad</button>
+        <button id="m4-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(5)">Continuar al Módulo 5</button>
+      </div>
+    </section>
+
+    <section id="module-5" class="card" style="display:none;">
+      <h2>Módulo 5: Primer Circuito — Encender un LED</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Construye una ruta eléctrica continua desde la alimentación positiva de Arduino hasta tierra (GND), pasando por el LED y una resistencia protectora. Recuerda: pata larga = ánodo (+), pata corta = cátodo (-).
+      </div>
+
+      <div class="toolbox">
+        <span style="font-weight:600; font-size:0.9rem;">Color de Cable:</span>
+        <div class="color-dot active" style="background:#E74C3C;" onclick="sim.setColor('#E74C3C', this)"></div>
+        <div class="color-dot" style="background:#2C3E50;" onclick="sim.setColor('#2C3E50', this)"></div>
+        <div class="color-dot" style="background:#3498DB;" onclick="sim.setColor('#3498DB', this)"></div>
+        <div class="color-dot" style="background:#2ECC71;" onclick="sim.setColor('#2ECC71', this)"></div>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="sim.removeLastWire()">Deshacer cable</button>
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="sim.resetWires()">Limpiar</button>
+          <button class="btn btn-orange" style="padding:6px 16px; font-size:0.85rem;" onclick="sim.testCircuit(5)">⚡ Probar circuito</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <div id="sim-workspace-m5" class="circuit-workspace"></div>
+      </div>
+
+      <div id="m5-feedback" style="margin-top:14px;"></div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(5)">Omitir actividad</button>
+        <button id="m5-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(6)">Continuar al Módulo 6</button>
+      </div>
+    </section>
+
+    <section id="module-6" class="card" style="display:none;">
+      <h2>Módulo 6: Comparación 5V vs 3.3V</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Alterna la fuente de alimentación entre 5V y 3.3V para observar el efecto directo del nivel de tensión sobre el brillo del LED. Escribe tu reflexión al pie.
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:20px; align-items:center; margin:20px 0; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="m6.setVoltage('5V')">Alimentar con 5V</button>
+        <button class="btn btn-outline" onclick="m6.setVoltage('3.3V')">Alimentar con 3.3V</button>
+      </div>
+
+      <div style="display:flex; justify-content:center; align-items:center; flex-direction:column; background:#1E272C; padding:30px; border-radius:14px;">
+        <svg width="180" height="220" viewBox="0 0 100 120">
+          <line x1="40" y1="110" x2="40" y2="70" stroke="#CBD5E1" stroke-width="4"/>
+          <line x1="60" y1="110" x2="60" y2="70" stroke="#CBD5E1" stroke-width="4"/>
+          <!-- LED bulb -->
+          <path id="m6-led-bulb" d="M35 70 C35 35, 65 35, 65 70 Z" fill="#666" stroke="#444" stroke-width="2"/>
+          <rect x="33" y="70" width="34" height="6" fill="#888" rx="2"/>
+        </svg>
+        <div id="m6-voltage-indicator" style="color:white; margin-top:10px; font-weight:700;">Voltaje actual: Apagado</div>
+      </div>
+
+      <div style="margin-top:20px; background:#F8FAFC; padding:18px; border-radius:10px; border:1px solid #E2E8F0;">
+        <label style="display:block; font-weight:600; margin-bottom:8px;">¿Qué diferencia observas en la iluminación del LED entre 5V y 3.3V?</label>
+        <textarea id="m6-reflection" rows="3" style="width:100%; border:1px solid #CBD5E1; border-radius:6px; padding:10px;" placeholder="Escribe aquí tu observación (ej: con 5V brilla más debido a que entrega mayor energía/tensión)..."></textarea>
+        <button class="btn btn-primary" style="margin-top:10px;" onclick="m6.saveReflection()">Guardar Reflexión</button>
+      </div>
+      <div id="m6-feedback"></div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(6)">Omitir actividad</button>
+        <button id="m6-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(7)">Continuar al Módulo 7</button>
+      </div>
+    </section>
+
+    <section id="module-7" class="card" style="display:none;">
+      <h2>Módulo 7: Predicción: ¿Qué sucede si...?</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Predice lo que sucederá en los siguientes casos de la vida real con circuitos eléctricos. Pulsa "Probar predicción" para verificar el resultado.
+      </div>
+
+      <div id="m7-scenarios-container">
+        <!-- Rendered by JS -->
+      </div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(7)">Omitir actividad</button>
+        <button id="m7-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(8)">Continuar al Módulo 8</button>
+      </div>
+    </section>
+
+    <section id="module-8" class="card" style="display:none;">
+      <h2>Módulo 8: Desafíos Prácticos Guiados</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Supera los 5 desafíos guiados. Completa cada circuito y compruébalo. Puedes pedir pistas cuando lo necesites.
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:6px;">
+        <button id="tab-btn-ch1" class="btn btn-primary" onclick="m8.switchChallenge(1)">Reto 1: LED 5V</button>
+        <button id="tab-btn-ch2" class="btn btn-secondary" onclick="m8.switchChallenge(2)">Reto 2: LED 3.3V</button>
+        <button id="tab-btn-ch3" class="btn btn-secondary" onclick="m8.switchChallenge(3)">Reto 3: Dos LED</button>
+        <button id="tab-btn-ch4" class="btn btn-secondary" onclick="m8.switchChallenge(4)">Reto 4: Corrige el Error</button>
+        <button id="tab-btn-ch5" class="btn btn-secondary" onclick="m8.switchChallenge(5)">Reto 5: Reto Creativo</button>
+      </div>
+
+      <div style="background:#F1F5F9; padding:14px; border-radius:8px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong id="m8-challenge-title">Desafío 1</strong>: <span id="m8-challenge-desc">Conecta correctamente un LED rojo utilizando el pin de 5V.</span>
+        </div>
+        <div style="font-size:0.85rem; color:#64748B;">
+          Intentos: <span id="m8-attempt-count">0</span> | Completado: <span id="m8-status">❌</span>
+        </div>
+      </div>
+
+      <div class="toolbox">
+        <span style="font-weight:600; font-size:0.9rem;">Cable:</span>
+        <div class="color-dot active" style="background:#E74C3C;" onclick="sim.setColor('#E74C3C', this)"></div>
+        <div class="color-dot" style="background:#2C3E50;" onclick="sim.setColor('#2C3E50', this)"></div>
+        <div class="color-dot" style="background:#3498DB;" onclick="sim.setColor('#3498DB', this)"></div>
+        <div class="color-dot" style="background:#2ECC71;" onclick="sim.setColor('#2ECC71', this)"></div>
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="m8.giveHint()">Pista</button>
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="sim.resetWires()">Limpiar</button>
+          <button class="btn btn-orange" style="padding:6px 16px; font-size:0.85rem;" onclick="m8.testCurrentChallenge()">Comprobar Reto</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <div id="sim-workspace-m8" class="circuit-workspace"></div>
+      </div>
+      <div id="m8-feedback" style="margin-top:10px;"></div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(8)">Omitir actividad</button>
+        <button id="m8-next-btn" class="btn btn-primary" disabled onclick="app.nextModule(9)">Continuar al Módulo 9</button>
+      </div>
+    </section>
+
+    <section id="module-9" class="card" style="display:none;">
+      <h2>Módulo 9: Introducción a Pines Digitales</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Hasta ahora el LED estuvo conectado directo a 5V (siempre encendido). Los pines digitales pueden controlarse por software: <strong>HIGH</strong> suministra energía (~5V) y <strong>LOW</strong> la apaga (0V). Prueba el interruptor virtual.
+      </div>
+
+      <div style="text-align:center; margin:20px 0;">
+        <span style="font-weight:700; font-size:1.1rem; margin-right:12px;">Control Digital Pin 8:</span>
+        <button id="m9-digital-toggle" class="btn btn-secondary" style="padding:10px 24px; font-size:1.1rem;" onclick="m9.togglePin()">
+          Estado Actual: LOW (Apagado)
+        </button>
+      </div>
+
+      <div style="display:flex; justify-content:center; align-items:center; background:#1E272C; padding:30px; border-radius:14px; position:relative;">
+        <svg width="450" height="220" viewBox="0 0 450 220">
+          <!-- Arduino simulated pin -->
+          <rect x="20" y="70" width="80" height="60" rx="6" fill="#00979C"/>
+          <text x="60" y="105" fill="white" font-weight="bold" font-size="12" text-anchor="middle">PIN D8</text>
+          
+          <!-- Wire from Pin 8 to Resistor -->
+          <line id="m9-wire-pos" x1="100" y1="100" x2="170" y2="100" stroke="#E74C3C" stroke-width="4"/>
+          
+          <!-- Resistor -->
+          <rect x="170" y="92" width="60" height="16" rx="4" fill="#D2B48C" stroke="#8B4513" stroke-width="2"/>
+          <path d="M185 92v16 M200 92v16 M215 92v16" stroke="#B22222" stroke-width="2"/>
+          
+          <!-- Wire to LED -->
+          <line x1="230" y1="100" x2="280" y2="100" stroke="#E74C3C" stroke-width="4"/>
+
+          <!-- LED Bulb -->
+          <g transform="translate(280, 70)">
+            <line x1="20" y1="30" x2="20" y2="60" stroke="#CBD5E1" stroke-width="4"/>
+            <line x1="40" y1="30" x2="40" y2="60" stroke="#CBD5E1" stroke-width="4"/>
+            <path id="m9-led" d="M15 30 C15 5, 45 5, 45 30 Z" fill="#555" stroke="#333" stroke-width="2"/>
+          </g>
+
+          <!-- Wire from cathode to GND -->
+          <line id="m9-wire-neg" x1="320" y1="130" x2="390" y2="130" stroke="#2C3E50" stroke-width="4"/>
+          <rect x="390" y="100" width="50" height="60" rx="6" fill="#00979C"/>
+          <text x="415" y="135" fill="white" font-weight="bold" font-size="12" text-anchor="middle">GND</text>
+        </svg>
+      </div>
+
+      <div style="margin-top:20px; font-size:0.95rem; line-height:1.6; background:#F8FAFC; padding:16px; border-radius:10px;">
+        💡 <strong>Concepto clave:</strong> En programación Arduino, escribimos <code>digitalWrite(8, HIGH);</code> para encender y <code>digitalWrite(8, LOW);</code> para cortar la energía.
+      </div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(9)">Omitir actividad</button>
+        <button id="m9-next-btn" class="btn btn-primary" onclick="app.nextModule(10)">Continuar al Módulo 10</button>
+      </div>
+    </section>
+
+    <section id="module-10" class="card" style="display:none;">
+      <h2>Módulo 10: Laboratorio Arduino (Simulador Libre)</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Experimenta libremente. Puedes conectar LEDs a 5V, 3.3V o a pines digitales controlados por switches. Luego haz clic en <strong>"Analizar circuito"</strong> para que el simulador examine tu montaje.
+      </div>
+
+      <div class="toolbox">
+        <span style="font-weight:600; font-size:0.9rem;">Cable:</span>
+        <div class="color-dot active" style="background:#E74C3C;" onclick="sim.setColor('#E74C3C', this)"></div>
+        <div class="color-dot" style="background:#2C3E50;" onclick="sim.setColor('#2C3E50', this)"></div>
+        <div class="color-dot" style="background:#3498DB;" onclick="sim.setColor('#3498DB', this)"></div>
+        <div class="color-dot" style="background:#2ECC71;" onclick="sim.setColor('#2ECC71', this)"></div>
+        
+        <div style="display:inline-flex; align-items:center; gap:6px; margin-left:12px; background:#F1F5F9; padding:4px 10px; border-radius:6px;">
+          <span style="font-size:0.8rem; font-weight:700;">PIN D8:</span>
+          <button id="btn-toggle-d8" class="btn btn-secondary" style="padding:2px 8px; font-size:0.75rem;" onclick="sim.toggleDigital('D8')">LOW</button>
+        </div>
+        <div style="display:inline-flex; align-items:center; gap:6px; background:#F1F5F9; padding:4px 10px; border-radius:6px;">
+          <span style="font-size:0.8rem; font-weight:700;">PIN D13:</span>
+          <button id="btn-toggle-d13" class="btn btn-secondary" style="padding:2px 8px; font-size:0.75rem;" onclick="sim.toggleDigital('D13')">LOW</button>
+        </div>
+
+        <div style="margin-left:auto; display:flex; gap:8px;">
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="sim.removeLastWire()">Deshacer</button>
+          <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem;" onclick="sim.resetWires()">Limpiar</button>
+          <button class="btn btn-orange" style="padding:6px 16px; font-size:0.85rem;" onclick="sim.analyzeCircuit()">🔍 Analizar Circuito</button>
+        </div>
+      </div>
+
+      <div class="canvas-container">
+        <div id="sim-workspace-m10" class="circuit-workspace"></div>
+      </div>
+      <div id="m10-feedback" style="margin-top:14px;"></div>
+
+      <div class="nav-footer">
+        <button class="btn btn-secondary" onclick="app.skipModule(10)">Omitir actividad</button>
+        <button id="m10-next-btn" class="btn btn-primary" onclick="app.nextModule(11)">Ir a la Evaluación Final</button>
+      </div>
+    </section>
+
+    <section id="module-11" class="card" style="display:none;">
+      <h2>Módulo 11: Evaluación Final de Aprendizajes</h2>
+      <div class="instruction-box">
+        <strong>¿Qué debo hacer?</strong><br>
+        Responde las siguientes 10 preguntas para evaluar lo aprendido en el taller. Al finalizar obtendrás tus resultados detallados.
+      </div>
+
+      <form id="quiz-form" onsubmit="event.preventDefault(); quiz.submit();">
+        <div id="quiz-questions-container">
+          <!-- 10 Questions injected by JS -->
+        </div>
+
+        <div style="text-align:center; margin-top:24px;">
+          <button type="submit" class="btn btn-orange" style="padding:14px 28px; font-size:1.05rem;">
+            Finalizar Evaluación y Ver Resultados
+          </button>
+        </div>
+      </form>
+
+      <div id="quiz-results-container" style="display:none; margin-top:24px;"></div>
+
+      <div class="nav-footer">
+        <button id="m11-next-btn" class="btn btn-primary" style="display:none;" onclick="app.nextModule(12)">Generar Informe de Aprendizaje</button>
+      </div>
+    </section>
+
+    <section id="module-12" class="card" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--arduino-teal); padding-bottom:12px; margin-bottom:20px;">
+        <div>
+          <h2 style="margin:0; color:var(--arduino-teal);">Informe Pedagógico de Desempeño</h2>
+          <span style="font-size:0.9rem; color:var(--arduino-gray);">Taller Escolar: "Crear el Futuro" — Arduino OA 1</span>
+        </div>
+        <div class="badge-edu" style="color:var(--arduino-teal); border-color:var(--arduino-teal);">Oficial Escolar</div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px; background:#F8FAFC; padding:16px; border-radius:10px; border:1px solid #E2E8F0;">
+        <div><strong>Estudiante:</strong> <span id="rep-name">-</span></div>
+        <div><strong>Curso:</strong> <span id="rep-grade">-</span></div>
+        <div><strong>Fecha:</strong> <span id="rep-date">-</span></div>
+        <div><strong>Calificación Final:</strong> <span id="rep-score">-</span></div>
+      </div>
+
+      <h3 style="font-size:1.1rem; margin-bottom:12px;">1. Logro de Objetivos de Aprendizaje</h3>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:24px;">
+        <thead>
+          <tr style="background:#F1F5F9; text-align:left;">
+            <th style="padding:10px; border:1px solid #CBD5E1;">Dimensión Evaluada</th>
+            <th style="padding:10px; border:1px solid #CBD5E1; text-align:center;">Nivel de Logro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style="padding:10px; border:1px solid #CBD5E1;">Reconocimiento de partes estructurales Arduino</td><td id="rep-dim-1" style="padding:10px; border:1px solid #CBD5E1; text-align:center; font-weight:700;">100%</td></tr>
+          <tr><td style="padding:10px; border:1px solid #CBD5E1;">Comprensión de alimentación (5V, 3.3V) y GND</td><td id="rep-dim-2" style="padding:10px; border:1px solid #CBD5E1; text-align:center; font-weight:700;">-</td></tr>
+          <tr><td style="padding:10px; border:1px solid #CBD5E1;">Construcción de circuito cerrado con LED y resistor</td><td id="rep-dim-3" style="padding:10px; border:1px solid #CBD5E1; text-align:center; font-weight:700;">-</td></tr>
+          <tr><td style="padding:10px; border:1px solid #CBD5E1;">Detección de errores y prevención de cortocircuitos</td><td id="rep-dim-4" style="padding:10px; border:1px solid #CBD5E1; text-align:center; font-weight:700;">-</td></tr>
+          <tr><td style="padding:10px; border:1px solid #CBD5E1;">Evaluación teórica-práctica de conceptos</td><td id="rep-dim-5" style="padding:10px; border:1px solid #CBD5E1; text-align:center; font-weight:700;">-</td></tr>
+        </tbody>
+      </table>
+
+      <h3 style="font-size:1.1rem; margin-bottom:12px;">2. Estadísticas de Trabajo y Autonomía</h3>
+      <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:24px;">
+        <div style="flex:1; background:#F8FAFC; padding:14px; border-radius:8px; border:1px solid #E2E8F0; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:var(--arduino-teal);" id="rep-hints-total">0</div>
+          <div style="font-size:0.85rem; color:#64748B;">Pistas Consultadas</div>
+        </div>
+        <div style="flex:1; background:#F8FAFC; padding:14px; border-radius:8px; border:1px solid #E2E8F0; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:var(--arduino-orange);" id="rep-attempts-total">0</div>
+          <div style="font-size:0.85rem; color:#64748B;">Total de Pruebas / Intentos</div>
+        </div>
+        <div style="flex:1; background:#F8FAFC; padding:14px; border-radius:8px; border:1px solid #E2E8F0; text-align:center;">
+          <div style="font-size:1.5rem; font-weight:700; color:var(--arduino-green);" id="rep-challenges-done">5/5</div>
+          <div style="font-size:0.85rem; color:#64748B;">Desafíos Prácticos</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:1.1rem; margin-bottom:8px;">3. Observaciones Pedagógicas Personalizadas</h3>
+      <div id="rep-feedback-text" style="background:#EFF6FF; border-left:4px solid #3B82F6; padding:14px; border-radius:8px; margin-bottom:24px; font-size:0.95rem; line-height:1.6;">
+        El estudiante ha completado exitosamente las experiencias prácticas...
+      </div>
+
+      <div class="nav-footer" style="justify-content:center; gap:16px;">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimir / Guardar como PDF</button>
+        <button class="btn btn-secondary" onclick="app.confirmReset()">Reiniciar Todo el Progreso</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="custom-modal" class="custom-modal">
+    <div class="modal-box">
+      <h3 id="modal-title" style="margin-bottom:8px;">Mensaje</h3>
+      <p id="modal-text" style="color:var(--arduino-gray); margin-bottom:20px; font-size:0.95rem;"></p>
+      <div style="display:flex; justify-content:center; gap:12px;">
+        <button id="modal-cancel-btn" class="btn btn-secondary" style="display:none;" onclick="app.closeModal()">Cancelar</button>
+        <button id="modal-ok-btn" class="btn btn-primary" onclick="app.closeModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* State and Persistence Management */
+    const state = {
+      student: { name: '', grade: '' },
+      currentModule: 0,
+      completedModules: [],
+      hintsCount: 0,
+      attemptsCount: 0,
+      challenges: { 1: false, 2: false, 3: false, 4: false, 5: false },
+      m6Reflection: '',
+      quizScore: 0,
+      activeColor: '#E74C3C',
+      selectedNode: null,
+      wires: [], // Array of { from: nodeId, to: nodeId, color: string }
+      digitalStates: { D8: 'LOW', D13: 'LOW' }
+    };
+
+    /* App Core Controller */
+    const app = {
+      init() {
+        this.loadProgress();
+        this.renderProtoboard();
+        m2.init();
+        m7.init();
+        quiz.init();
+        this.updateView();
+      },
+
+      loadProgress() {
+        try {
+          const saved = localStorage.getItem('arduino_workshop_state');
+          if (saved) {
+            const data = JSON.parse(saved);
+            Object.assign(state, data);
+            if (state.student.name) {
+              document.getElementById('student-badge').innerText = `${state.student.name} (${state.student.grade || 'Escolar'})`;
+            }
+          }
+        } catch (e) {
+          console.warn('LocalStorage no disponible');
+        }
+      },
+
+      saveProgress() {
+        try {
+          localStorage.setItem('arduino_workshop_state', JSON.stringify(state));
+        } catch (e) {}
+        this.updateProgressBar();
+      },
+
+      confirmReset() {
+        app.showModal('¿Reiniciar Progreso?', 'Se borrarán todos tus circuitos y respuestas completadas. ¿Estás seguro de comenzar desde cero?', () => {
+          localStorage.removeItem('arduino_workshop_state');
+          window.location.reload();
+        }, true);
+      },
+
+      updateProgressBar() {
+        const total = 12;
+        const current = state.currentModule;
+        const pct = Math.min(100, Math.round((current / total) * 100));
+        document.getElementById('global-progress').style.width = pct + '%';
+      },
+
+      updateView() {
+        for (let i = 0; i <= 12; i++) {
+          const el = document.getElementById(`module-${i}`);
+          if (el) el.style.display = (i === state.currentModule) ? 'block' : 'none';
+        }
+        this.updateProgressBar();
+
+        // Attach workspace to current module container
+        if (state.currentModule === 4) sim.mountWorkspace('sim-workspace-m4');
+        if (state.currentModule === 5) sim.mountWorkspace('sim-workspace-m5');
+        if (state.currentModule === 8) {
+          sim.mountWorkspace('sim-workspace-m8');
+          m8.setupChallenge(1);
+        }
+        if (state.currentModule === 10) sim.mountWorkspace('sim-workspace-m10');
+        if (state.currentModule === 12) report.generate();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+
+      startApp() {
+        const name = document.getElementById('input-student-name').value.trim();
+        const grade = document.getElementById('input-student-grade').value.trim();
+        if (!name) {
+          app.showModal('Identificación', 'Por favor ingresa tu nombre para registrar tu progreso pedagógico.');
+          return;
+        }
+        state.student.name = name;
+        state.student.grade = grade || 'Básica';
+        document.getElementById('student-badge').innerText = `${name} (${state.student.grade})`;
+        state.currentModule = 1;
+        this.saveProgress();
+        this.updateView();
+      },
+
+      nextModule(mIndex) {
+        state.currentModule = mIndex;
+        if (!state.completedModules.includes(mIndex - 1)) {
+          state.completedModules.push(mIndex - 1);
+        }
+        this.saveProgress();
+        this.updateView();
+      },
+
+      skipModule(mIndex) {
+        app.showModal('Avance Asistido', 'Se omitirá la actividad principal de este módulo para permitir continuar la sesión.', () => {
+          app.nextModule(mIndex + 1);
+        }, true);
+      },
+
+      showModal(title, text, onConfirm = null, showCancel = false) {
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-text').innerText = text;
+        const cancelBtn = document.getElementById('modal-cancel-btn');
+        const okBtn = document.getElementById('modal-ok-btn');
+
+        cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
+        okBtn.onclick = () => {
+          app.closeModal();
+          if (onConfirm) onConfirm();
+        };
+        document.getElementById('custom-modal').classList.add('active');
+      },
+
+      closeModal() {
+        document.getElementById('custom-modal').classList.remove('active');
+      },
+
+      renderProtoboard() {
+        const svg = document.getElementById('m3-breadboard-svg');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        // Power rails (+) & (-)
+        let html = `
+          <!-- Upper Power Rails -->
+          <line x1="20" y1="25" x2="630" y2="25" stroke="#E74C3C" stroke-width="2" opacity="0.6"/>
+          <line x1="20" y1="45" x2="630" y2="45" stroke="#3498DB" stroke-width="2" opacity="0.6"/>
+          <text x="8" y="28" fill="#E74C3C" font-size="12" font-weight="bold">+</text>
+          <text x="8" y="48" fill="#3498DB" font-size="12" font-weight="bold">-</text>
+        `;
+
+        for (let col = 1; col <= 30; col++) {
+          const cx = 25 + col * 19.5;
+          html += `<circle class="bb-node" data-type="rail-plus-top" data-col="${col}" cx="${cx}" cy="25" r="3.8" fill="#475569" onclick="m3.nodeClick(this)"/>`;
+          html += `<circle class="bb-node" data-type="rail-minus-top" data-col="${col}" cx="${cx}" cy="45" r="3.8" fill="#475569" onclick="m3.nodeClick(this)"/>`;
+        }
+
+        // Center Rows A-E
+        const rowsTop = ['A', 'B', 'C', 'D', 'E'];
+        rowsTop.forEach((r, rIdx) => {
+          const cy = 75 + rIdx * 14;
+          html += `<text x="14" y="${cy + 4}" fill="#64748B" font-size="9">${r}</text>`;
+          for (let c = 1; c <= 30; c++) {
+            const cx = 25 + c * 19.5;
+            html += `<circle class="bb-node" data-group="top-col-${c}" cx="${cx}" cy="${cy}" r="3.8" fill="#475569" onclick="m3.nodeClick(this)"/>`;
+          }
+        });
+
+        // Middle Divider Channel
+        html += `<rect x="15" y="145" width="620" height="8" fill="#E2E8F0"/>`;
+
+        // Center Rows F-J
+        const rowsBot = ['F', 'G', 'H', 'I', 'J'];
+        rowsBot.forEach((r, rIdx) => {
+          const cy = 165 + rIdx * 14;
+          html += `<text x="14" y="${cy + 4}" fill="#64748B" font-size="9">${r}</text>`;
+          for (let c = 1; c <= 30; c++) {
+            const cx = 25 + c * 19.5;
+            html += `<circle class="bb-node" data-group="bot-col-${c}" cx="${cx}" cy="${cy}" r="3.8" fill="#475569" onclick="m3.nodeClick(this)"/>`;
+          }
+        });
+
+        // Lower Power Rails
+        html += `
+          <line x1="20" y1="235" x2="630" y2="235" stroke="#E74C3C" stroke-width="2" opacity="0.6"/>
+          <line x1="20" y1="250" x2="630" y2="250" stroke="#3498DB" stroke-width="2" opacity="0.6"/>
+          <text x="8" y="238" fill="#E74C3C" font-size="12" font-weight="bold">+</text>
+          <text x="8" y="253" fill="#3498DB" font-size="12" font-weight="bold">-</text>
+        `;
+        for (let col = 1; col <= 30; col++) {
+          const cx = 25 + col * 19.5;
+          html += `<circle class="bb-node" data-type="rail-plus-bot" data-col="${col}" cx="${cx}" cy="235" r="3.8" fill="#475569" onclick="m3.nodeClick(this)"/>`;
+          html += `<circle class="bb-node" data-type="rail-minus-bot" data-col="${col}" cx="${cx}" cy="250" r="3.8" fill="#475569" onclick="m3.nodeClick(this)"/>`;
+        }
+
+        svg.innerHTML = html;
+      }
+    };
+
+    const m1 = {
+      targets: [
+        { id: 'usb', name: 'Puerto USB', hint: 'Está en la esquina superior izquierda metálica para conectar al PC.' },
+        { id: 'jack', name: 'Conector de Alimentación DC', hint: 'Es el conector cilíndrico negro grande en la esquina inferior izquierda.' },
+        { id: 'power', name: 'Zona POWER (Pines 5V y GND)', hint: 'Es la regleta inferior que entrega voltajes y tierra.' },
+        { id: 'mcu', name: 'Microcontrolador (Cerebro ATmega328P)', hint: 'Es el circuito integrado rectangular negro con patitas en el centro.' },
+        { id: 'digital', name: 'Pines Digitales (0 al 13)', hint: 'Es la regleta superior larga con pines numerados del 0 al 13.' }
+      ],
+      currentIdx: 0,
+      attempts: 0,
+
+      selectPart(partId) {
+        state.attemptsCount++;
+        const currentTarget = this.targets[this.currentIdx];
+        const feedbackEl = document.getElementById('m1-feedback');
+
+        if (partId === currentTarget.id) {
+          this.attempts = 0;
+          this.clearHints();
+          feedbackEl.innerHTML = `<div class="alert alert-success">¡Excelente! Has encontrado: <strong>${currentTarget.name}</strong>.</div>`;
+          this.currentIdx++;
+
+          if (this.currentIdx >= this.targets.length) {
+            feedbackEl.innerHTML += `<div class="alert alert-success">🎉 ¡Felicitaciones! Has identificado exitosamente todas las partes estructurales principales.</div>`;
+            document.getElementById('m1-next-btn').disabled = false;
+            document.getElementById('m1-prompt').innerText = '¡Módulo completado!';
+          } else {
+            document.getElementById('m1-prompt').innerText = `Encuentra: ${this.targets[this.currentIdx].name}`;
+          }
+        } else {
+          this.attempts++;
+          if (this.attempts === 1) {
+            feedbackEl.innerHTML = `<div class="alert alert-warning">Inténtalo nuevamente. Observa bien la forma y los nombres impresos.</div>`;
+          } else if (this.attempts === 2) {
+            feedbackEl.innerHTML = `<div class="alert alert-warning">Revisa con atención los bordes o etiquetas de la placa.</div>`;
+          } else {
+            this.giveHint();
+          }
+        }
+      },
+
+      giveHint() {
+        state.hintsCount++;
+        const currentTarget = this.targets[this.currentIdx];
+        const feedbackEl = document.getElementById('m1-feedback');
+        feedbackEl.innerHTML = `<div class="alert alert-warning">💡 <strong>Pista:</strong> ${currentTarget.hint}</div>`;
+        const el = document.getElementById(`part-${currentTarget.id}`);
+        if (el) el.classList.add('hinted');
+      },
+
+      clearHints() {
+        document.querySelectorAll('.interactive-part').forEach(p => p.classList.remove('hinted'));
+      }
+    };
+
+    const m2 = {
+      items: [
+        { id: 'usb', name: 'Puerto USB', desc: 'Permite conectar Arduino al computador y le suministra energía.' },
+        { id: 'reset', name: 'Botón RESET', desc: 'Reinicia desde el principio el programa cargado en la placa.' },
+        { id: 'v5', name: 'Pin 5V', desc: 'Entrega una tensión continua de aproximadamente 5 voltios.' },
+        { id: 'v33', name: 'Pin 3.3V', desc: 'Entrega una tensión menor de 3,3 voltios para componentes delicados.' },
+        { id: 'gnd', name: 'Pines GND', desc: 'Representan la tierra o referencia de 0 voltios para cerrar circuitos.' },
+        { id: 'dig', name: 'Pines Digitales', desc: 'Pueden enviar o recibir estados lógicos de encendido (HIGH) o apagado (LOW).' }
+      ],
+
+      init() {
+        const container = document.getElementById('m2-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        // Generate matching dropdowns
+        this.items.forEach(item => {
+          const card = document.createElement('div');
+          card.style.background = '#FFFFFF';
+          card.style.border = '1px solid #CBD5E1';
+          card.style.borderRadius = '8px';
+          card.style.padding = '14px';
+
+          card.innerHTML = `
+            <div style="font-weight:700; color:var(--arduino-teal); margin-bottom:8px;">${item.name}</div>
+            <select id="m2-sel-${item.id}" style="width:100%; padding:8px; border-radius:6px; border:1px solid #CBD5E1; font-size:0.88rem;">
+              <option value="">-- Selecciona su función --</option>
+              ${this.items.map(opt => `<option value="${opt.id}">${opt.desc}</option>`).sort(() => Math.random() - 0.5).join('')}
+            </select>
+          `;
+          container.appendChild(card);
+        });
+      },
+
+      checkAnswers() {
+        state.attemptsCount++;
+        let correct = 0;
+        this.items.forEach(item => {
+          const sel = document.getElementById(`m2-sel-${item.id}`);
+          if (sel && sel.value === item.id) {
+            correct++;
+            sel.style.borderColor = 'var(--arduino-green)';
+            sel.style.backgroundColor = '#EAFAF1';
+          } else if (sel) {
+            sel.style.borderColor = 'var(--arduino-red)';
+            sel.style.backgroundColor = '#FDEDEC';
+          }
+        });
+
+        const feedback = document.getElementById('m2-feedback');
+        if (correct === this.items.length) {
+          feedback.innerHTML = `<div class="alert alert-success">¡Excelente trabajo! Has asociado correctamente todas las funciones del Arduino (${correct}/${this.items.length}).</div>`;
+          document.getElementById('m2-next-btn').disabled = false;
+        } else {
+          feedback.innerHTML = `<div class="alert alert-warning">Tienes ${correct} de ${this.items.length} asociaciones correctas. Revisa las opciones marcadas en rojo e inténtalo otra vez.</div>`;
+        }
+      }
+    };
+
+    const m3 = {
+      nodeClick(nodeEl) {
+        document.querySelectorAll('.bb-node').forEach(n => {
+          n.setAttribute('fill', '#475569');
+          n.setAttribute('r', '3.8');
+        });
+
+        const group = nodeEl.getAttribute('data-group');
+        const rail = nodeEl.getAttribute('data-type');
+        const expEl = document.getElementById('m3-explanation');
+        const expText = document.getElementById('m3-exp-text');
+
+        if (group) {
+          // Columns connected vertically
+          const matched = document.querySelectorAll(`[data-group="${group}"]`);
+          matched.forEach(n => {
+            n.setAttribute('fill', '#F59E0B');
+            n.setAttribute('r', '5.5');
+          });
+          expEl.style.display = 'flex';
+          expText.innerHTML = `<strong>Pista central conectada:</strong> Estos 5 orificios en la misma columna están unidos por una placa metálica interna inferior.`;
+        } else if (rail) {
+          // Entire power rail connected horizontally
+          const isPlus = rail.includes('plus');
+          const matched = document.querySelectorAll(`[data-type="${rail}"]`);
+          matched.forEach(n => {
+            n.setAttribute('fill', isPlus ? '#E74C3C' : '#3498DB');
+            n.setAttribute('r', '5');
+          });
+          expEl.style.display = 'flex';
+          expText.innerHTML = `<strong>Línea de alimentación (${isPlus ? 'Positivo +' : 'Tierra/Negativo -'}):</strong> Toda esta franja horizontal está interconectada para repartir energía fácilmente a tus circuitos.`;
+        }
+      },
+
+      validateQuiz() {
+        state.attemptsCount++;
+        const checked = document.querySelector('input[name="m3-quiz"]:checked');
+        const fb = document.getElementById('m3-quiz-feedback');
+        if (!checked) {
+          fb.innerHTML = `<div class="alert alert-warning">Selecciona una alternativa para responder.</div>`;
+          return;
+        }
+        if (checked.value === 'vert') {
+          fb.innerHTML = `<div class="alert alert-success">¡Correcto! En las pistas intermedias, cada grupo vertical de 5 agujeros comparte la misma conexión metálica.</div>`;
+          document.getElementById('m3-next-btn').disabled = false;
+        } else {
+          fb.innerHTML = `<div class="alert alert-warning">Respuesta no del todo acertada. Pulsa cualquier orificio de la letra A a la E para observar cuáles se iluminan juntos.</div>`;
+        }
+      }
+    };
+
+    const sim = {
+      containerId: null,
+      activeColor: '#E74C3C',
+      selectedNode: null,
+      wires: [], // [{from, to, color}]
+      targetMode: 5,
+
+      setColor(color, dotEl) {
+        this.activeColor = color;
+        document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+        if (dotEl) dotEl.classList.add('active');
+      },
+
+      mountWorkspace(targetId) {
+        this.containerId = targetId;
+        const target = document.getElementById(targetId);
+        if (!target) return;
+        target.innerHTML = '';
+
+        // Unified SVG Workbench containing Arduino and Breadboard with exact pin coordinates
+        const svgWorkspace = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svgWorkspace.setAttribute('id', 'sim-svg');
+        svgWorkspace.setAttribute('width', '880');
+        svgWorkspace.setAttribute('height', '430');
+        svgWorkspace.setAttribute('viewBox', '0 0 880 430');
+        svgWorkspace.style.maxWidth = '100%';
+        svgWorkspace.style.height = 'auto';
+
+        // Background desk grid
+        svgWorkspace.innerHTML = `
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" rx="8" />
+
+          <!-- Group for Arduino UNO Simplified Schematic -->
+          <g id="sim-arduino" transform="translate(30, 40)">
+            <rect width="320" height="340" rx="14" fill="#00979C" stroke="#00797E" stroke-width="4"/>
+            <text x="160" y="170" fill="white" font-weight="900" font-size="18" text-anchor="middle" opacity="0.9">ARDUINO UNO</text>
+
+            <!-- USB & Jack visuals -->
+            <rect x="-10" y="40" width="40" height="50" fill="#B0BEC5" rx="3"/>
+            <rect x="-10" y="220" width="45" height="55" fill="#263238" rx="3"/>
+
+            <!-- ATmega chip -->
+            <rect x="110" y="210" width="100" height="35" rx="3" fill="#1E293B"/>
+            <text x="160" y="232" fill="#E2E8F0" font-size="9" font-weight="bold" text-anchor="middle">ATmega328P</text>
+
+            <!-- Digital Pins Header (Top) -->
+            <rect x="70" y="15" width="230" height="24" fill="#1E293B" rx="2"/>
+            <text x="185" y="12" fill="white" font-size="9" font-weight="bold" text-anchor="middle">DIGITAL (PWM ~)</text>
+
+            <!-- Pins Arduino Nodes -->
+            <!-- D13 -->
+            <circle id="node-ard-d13" class="pin-node" cx="100" cy="27" r="4.5" onclick="sim.handleNodeClick('ard-d13', 130, 67)"/>
+            <text x="100" y="48" fill="white" font-size="7.5" text-anchor="middle">13</text>
+
+            <!-- D8 -->
+            <circle id="node-ard-d8" class="pin-node" cx="170" cy="27" r="4.5" onclick="sim.handleNodeClick('ard-d8', 200, 67)"/>
+            <text x="170" y="48" fill="white" font-size="7.5" text-anchor="middle">8</text>
+
+            <!-- D2 -->
+            <circle id="node-ard-d2" class="pin-node" cx="240" cy="27" r="4.5" onclick="sim.handleNodeClick('ard-d2', 270, 67)"/>
+            <text x="240" y="48" fill="white" font-size="7.5" text-anchor="middle">2</text>
+
+            <!-- Power Header (Bottom) -->
+            <rect x="70" y="300" width="160" height="24" fill="#1E293B" rx="2"/>
+            <text x="150" y="335" fill="white" font-size="9" font-weight="bold" text-anchor="middle">POWER</text>
+
+            <!-- 3.3V Pin -->
+            <circle id="node-ard-3v3" class="pin-node" cx="95" cy="312" r="4.5" onclick="sim.handleNodeClick('ard-3v3', 125, 352)"/>
+            <text x="95" y="295" fill="white" font-size="7.5" text-anchor="middle">3.3V</text>
+
+            <!-- 5V Pin -->
+            <circle id="node-ard-5v" class="pin-node" cx="125" cy="312" r="4.5" onclick="sim.handleNodeClick('ard-5v', 155, 352)"/>
+            <text x="125" y="295" fill="white" font-size="7.5" text-anchor="middle">5V</text>
+
+            <!-- GND Pins -->
+            <circle id="node-ard-gnd1" class="pin-node" cx="155" cy="312" r="4.5" onclick="sim.handleNodeClick('ard-gnd1', 185, 352)"/>
+            <text x="155" y="295" fill="white" font-size="7.5" text-anchor="middle">GND</text>
+
+            <circle id="node-ard-gnd2" class="pin-node" cx="185" cy="312" r="4.5" onclick="sim.handleNodeClick('ard-gnd2', 215, 352)"/>
+            <text x="185" y="295" fill="white" font-size="7.5" text-anchor="middle">GND</text>
+
+            <!-- VIN Pin -->
+            <circle id="node-ard-vin" class="pin-node" cx="215" cy="312" r="4.5" onclick="sim.handleNodeClick('ard-vin', 245, 352)"/>
+            <text x="215" y="295" fill="white" font-size="7.5" text-anchor="middle">VIN</text>
+          </g>
+
+          <!-- Group for Mini Breadboard with Pre-installed Interactive Components -->
+          <g id="sim-breadboard" transform="translate(420, 40)">
+            <rect width="420" height="340" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+            
+            <!-- Breadboard rails visual lines -->
+            <line x1="20" y1="20" x2="400" y2="20" stroke="#E74C3C" stroke-width="1.5" opacity="0.6"/>
+            <line x1="20" y1="35" x2="400" y2="35" stroke="#3498DB" stroke-width="1.5" opacity="0.6"/>
+            <text x="10" y="23" fill="#E74C3C" font-size="10" font-weight="bold">+</text>
+            <text x="10" y="38" fill="#3498DB" font-size="10" font-weight="bold">-</text>
+
+            <!-- Rail Connection Nodes -->
+            <circle id="node-bb-bus-pos" class="pin-node" cx="50" cy="20" r="4.5" onclick="sim.handleNodeClick('bb-bus-pos', 470, 60)"/>
+            <circle id="node-bb-bus-neg" class="pin-node" cx="50" cy="35" r="4.5" onclick="sim.handleNodeClick('bb-bus-neg', 470, 75)"/>
+
+            <text x="65" y="23" fill="#64748B" font-size="8">Bus (+)</text>
+            <text x="65" y="38" fill="#64748B" font-size="8">Bus (-)</text>
+
+            <!-- Component 1: Resistor 220 Ohms -->
+            <g transform="translate(60, 80)">
+              <text x="35" y="-5" fill="#475569" font-size="9" font-weight="bold">Resistencia (220 Ω)</text>
+              <line x1="10" y1="20" x2="30" y2="20" stroke="#94A3B8" stroke-width="3"/>
+              <rect x="30" y="11" width="50" height="18" rx="4" fill="#E0D1B1" stroke="#8C6D37" stroke-width="1.5"/>
+              <path d="M42 11v18 M52 11v18 M62 11v18 M70 11v18" stroke="#B22222" stroke-width="2.5"/>
+              <line x1="80" y1="20" x2="100" y2="20" stroke="#94A3B8" stroke-width="3"/>
+
+              <!-- Resistor Pins -->
+              <circle id="node-res1-a" class="pin-node" cx="10" cy="20" r="4.5" onclick="sim.handleNodeClick('res1-a', 490, 140)"/>
+              <circle id="node-res1-b" class="pin-node" cx="100" cy="20" r="4.5" onclick="sim.handleNodeClick('res1-b', 580, 140)"/>
+              <text x="10" y="34" font-size="7.5" fill="#64748B" text-anchor="middle">Pin A</text>
+              <text x="100" y="34" font-size="7.5" fill="#64748B" text-anchor="middle">Pin B</text>
+            </g>
+
+            <!-- Component 2: LED Rojo -->
+            <g transform="translate(60, 160)">
+              <text x="35" y="-5" fill="#475569" font-size="9" font-weight="bold">LED Rojo</text>
+              <!-- Anode pin (bent/longer) -->
+              <path d="M25 40 L25 25 L35 25 L35 15" stroke="#94A3B8" stroke-width="3" fill="none"/>
+              <!-- Cathode pin (straight/shorter) -->
+              <path d="M75 40 L75 15" stroke="#94A3B8" stroke-width="3" fill="none"/>
+
+              <!-- LED Bulb SVG -->
+              <path id="sim-led1-bulb" d="M35 15 C35 -15, 75 -15, 75 15 Z" fill="#C0392B" stroke="#922B21" stroke-width="1.5"/>
+              <rect x="33" y="15" width="44" height="4" fill="#7F1D1D" rx="1"/>
+
+              <!-- LED Terminal Nodes -->
+              <circle id="node-led1-anode" class="pin-node" cx="25" cy="40" r="4.5" onclick="sim.handleNodeClick('led1-anode', 505, 240)"/>
+              <circle id="node-led1-cathode" class="pin-node" cx="75" cy="40" r="4.5" onclick="sim.handleNodeClick('led1-cathode', 555, 240)"/>
+
+              <text x="25" y="54" font-size="7.5" fill="#64748B" text-anchor="middle">Ánodo (+)</text>
+              <text x="75" y="54" font-size="7.5" fill="#64748B" text-anchor="middle">Cátodo (-)</text>
+            </g>
+
+            <!-- Component 3: LED Verde (Auxiliar para Retos) -->
+            <g id="sim-comp-led2" transform="translate(240, 160)">
+              <text x="30" y="-5" fill="#475569" font-size="9" font-weight="bold">LED Verde</text>
+              <path d="M25 40 L25 25 L35 25 L35 15" stroke="#94A3B8" stroke-width="3" fill="none"/>
+              <path d="M75 40 L75 15" stroke="#94A3B8" stroke-width="3" fill="none"/>
+              <path id="sim-led2-bulb" d="M35 15 C35 -15, 75 -15, 75 15 Z" fill="#27AE60" stroke="#1E8449" stroke-width="1.5"/>
+              <rect x="33" y="15" width="44" height="4" fill="#145A32" rx="1"/>
+
+              <circle id="node-led2-anode" class="pin-node" cx="25" cy="40" r="4.5" onclick="sim.handleNodeClick('led2-anode', 685, 240)"/>
+              <circle id="node-led2-cathode" class="pin-node" cx="75" cy="40" r="4.5" onclick="sim.handleNodeClick('led2-cathode', 735, 240)"/>
+              <text x="25" y="54" font-size="7.5" fill="#64748B" text-anchor="middle">Ánodo (+)</text>
+              <text x="75" y="54" font-size="7.5" fill="#64748B" text-anchor="middle">Cátodo (-)</text>
+            </g>
+
+            <!-- Component 4: Resistor 330 Ohms auxiliar -->
+            <g id="sim-comp-res2" transform="translate(240, 80)">
+              <text x="35" y="-5" fill="#475569" font-size="9" font-weight="bold">Resistencia (330 Ω)</text>
+              <line x1="10" y1="20" x2="30" y2="20" stroke="#94A3B8" stroke-width="3"/>
+              <rect x="30" y="11" width="50" height="18" rx="4" fill="#E0D1B1" stroke="#8C6D37" stroke-width="1.5"/>
+              <path d="M42 11v18 M52 11v18 M62 11v18" stroke="#D97706" stroke-width="2.5"/>
+              <line x1="80" y1="20" x2="100" y2="20" stroke="#94A3B8" stroke-width="3"/>
+
+              <circle id="node-res2-a" class="pin-node" cx="10" cy="20" r="4.5" onclick="sim.handleNodeClick('res2-a', 670, 140)"/>
+              <circle id="node-res2-b" class="pin-node" cx="100" cy="20" r="4.5" onclick="sim.handleNodeClick('res2-b', 760, 140)"/>
+              <text x="10" y="34" font-size="7.5" fill="#64748B" text-anchor="middle">Pin A</text>
+              <text x="100" y="34" font-size="7.5" fill="#64748B" text-anchor="middle">Pin B</text>
+            </g>
+
+            <!-- Component 5: Pulsador Push Button (Opcional interactivo) -->
+            <g transform="translate(60, 260)">
+              <text x="25" y="-5" fill="#475569" font-size="9" font-weight="bold">Pulsador</text>
+              <rect x="15" y="10" width="40" height="40" rx="4" fill="#334155"/>
+              <circle cx="35" cy="30" r="10" fill="#000000"/>
+              <circle id="node-btn-t1" class="pin-node" cx="10" cy="30" r="4.5" onclick="sim.handleNodeClick('btn-t1', 490, 330)"/>
+              <circle id="node-btn-t2" class="pin-node" cx="60" cy="30" r="4.5" onclick="sim.handleNodeClick('btn-t2', 540, 330)"/>
+            </g>
+
+            <!-- Component 6: Buzzer piezoeléctrico -->
+            <g transform="translate(240, 260)">
+              <text x="25" y="-5" fill="#475569" font-size="9" font-weight="bold">Buzzer Pasivo</text>
+              <circle cx="40" cy="30" r="22" fill="#1E293B"/>
+              <circle cx="40" cy="30" r="6" fill="#000000"/>
+              <circle id="node-buzzer-pos" class="pin-node" cx="20" cy="56" r="4.5" onclick="sim.handleNodeClick('buzzer-pos', 680, 356)"/>
+              <circle id="node-buzzer-neg" class="pin-node" cx="60" cy="56" r="4.5" onclick="sim.handleNodeClick('buzzer-neg', 720, 356)"/>
+              <text x="20" y="68" font-size="7" fill="#64748B" text-anchor="middle">+</text>
+              <text x="60" y="68" font-size="7" fill="#64748B" text-anchor="middle">-</text>
+            </g>
+          </g>
+
+          <!-- Group for Dynamic Wires SVG elements -->
+          <g id="sim-wires-layer"></g>
+        `;
+
+        target.appendChild(svgWorkspace);
+        this.redrawWires();
+      },
+
+      handleNodeClick(nodeId, x, y) {
+        if (!this.selectedNode) {
+          // Select initial pin
+          this.selectedNode = { id: nodeId, x, y };
+          const el = document.getElementById(`node-${nodeId}`);
+          if (el) el.classList.add('selected-node');
+        } else {
+          // Complete wire connection
+          const fromNode = this.selectedNode;
+          const toNode = { id: nodeId, x, y };
+
+          if (fromNode.id !== toNode.id) {
+            this.wires.push({
+              from: fromNode.id,
+              to: toNode.id,
+              x1: fromNode.x,
+              y1: fromNode.y,
+              x2: toNode.x,
+              y2: toNode.y,
+              color: this.activeColor
+            });
+
+            // Unlock Module 4 if user connects at least 2 wires
+            if (state.currentModule === 4 && this.wires.length >= 2) {
+              const fb = document.getElementById('m4-feedback');
+              fb.innerHTML = `<div class="alert alert-success">¡Excelente conexión! Has conectado los puntos correctamente con cables virtuales.</div>`;
+              document.getElementById('m4-next-btn').disabled = false;
+            }
+          }
+
+          // Clear selection
+          const prevEl = document.getElementById(`node-${fromNode.id}`);
+          if (prevEl) prevEl.classList.remove('selected-node');
+          this.selectedNode = null;
+          this.redrawWires();
+        }
+      },
+
+      redrawWires() {
+        const layer = document.getElementById('sim-wires-layer');
+        if (!layer) return;
+        layer.innerHTML = '';
+
+        this.wires.forEach((w, idx) => {
+          // Create smooth curved bezier path for realistic wire appearance
+          const dx = w.x2 - w.x1;
+          const dy = w.y2 - w.y1;
+          const cx1 = w.x1 + dx * 0.3;
+          const cy1 = w.y1 + dy * 0.1 + 30;
+          const cx2 = w.x1 + dx * 0.7;
+          const cy2 = w.y2 + 30;
+
+          const pathD = `M ${w.x1} ${w.y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${w.x2} ${w.y2}`;
+          const wire = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          wire.setAttribute('d', pathD);
+          wire.setAttribute('stroke', w.color);
+          wire.setAttribute('stroke-width', '4.5');
+          wire.setAttribute('fill', 'none');
+          wire.setAttribute('class', 'wire-line');
+          wire.setAttribute('id', `wire-${idx}`);
+          wire.title = 'Haz clic para eliminar este cable';
+          wire.onclick = () => sim.removeWireAt(idx);
+
+          layer.appendChild(wire);
+        });
+      },
+
+      removeWireAt(index) {
+        this.wires.splice(index, 1);
+        this.redrawWires();
+        this.turnOffLEDs();
+      },
+
+      removeLastWire() {
+        this.wires.pop();
+        this.redrawWires();
+        this.turnOffLEDs();
+      },
+
+      resetWires() {
+        this.wires = [];
+        this.selectedNode = null;
+        document.querySelectorAll('.pin-node').forEach(p => p.classList.remove('selected-node'));
+        this.redrawWires();
+        this.turnOffLEDs();
+      },
+
+      toggleDigital(pinKey) {
+        state.digitalStates[pinKey] = state.digitalStates[pinKey] === 'LOW' ? 'HIGH' : 'LOW';
+        const btn = document.getElementById(`btn-toggle-${pinKey.toLowerCase()}`);
+        if (btn) {
+          btn.innerText = state.digitalStates[pinKey];
+          btn.className = state.digitalStates[pinKey] === 'HIGH' ? 'btn btn-orange' : 'btn btn-secondary';
+        }
+        if (state.currentModule === 10) this.analyzeCircuit();
+      },
+
+      turnOffLEDs() {
+        const led1 = document.getElementById('sim-led1-bulb');
+        if (led1) {
+          led1.classList.remove('led-glow-red', 'led-glow-dim');
+          led1.style.fill = '#C0392B';
+        }
+        const led2 = document.getElementById('sim-led2-bulb');
+        if (led2) {
+          led2.classList.remove('led-glow-green');
+          led2.style.fill = '#27AE60';
+        }
+        document.querySelectorAll('.wire-line').forEach(w => w.classList.remove('wire-current'));
+      },
+
+      /* Graph Validation Logic (Detects closed loop: Power -> Resistor -> Anode -> Cathode -> GND) */
+      evaluateGraph(requiredSource = '5V') {
+        // Build adjacency map
+        const adj = {};
+        const addEdge = (u, v) => {
+          if (!adj[u]) adj[u] = new Set();
+          if (!adj[v]) adj[v] = new Set();
+          adj[u].add(v);
+          adj[v].add(u);
+        };
+
+        this.wires.forEach(w => {
+          addEdge(w.from, w.to);
+        });
+
+        // Add internal Breadboard bus connections if nodes are attached to bus
+        if (adj['bb-bus-pos']) {
+          // Any node touching bb-bus-pos is in common
+        }
+
+        // Helper to check path existence
+        const hasPath = (start, end, visited = new Set()) => {
+          if (start === end) return true;
+          visited.add(start);
+          const neighbors = adj[start] || [];
+          for (let n of neighbors) {
+            if (!visited.has(n)) {
+              if (hasPath(n, end, visited)) return true;
+            }
+          }
+          return false;
+        };
+
+        // Safety Short Circuit Check (Direct 5V or 3.3V to GND)
+        const isShort5V = (hasPath('ard-5v', 'ard-gnd1') || hasPath('ard-5v', 'ard-gnd2')) && !hasPath('ard-5v', 'res1-a') && !hasPath('ard-5v', 'res1-b');
+        const isShort3V = (hasPath('ard-3v3', 'ard-gnd1') || hasPath('ard-3v3', 'ard-gnd2')) && !hasPath('ard-3v3', 'res1-a') && !hasPath('ard-3v3', 'res1-b');
+
+        if (isShort5V || isShort3V) {
+          return { status: 'SHORT_CIRCUIT', message: '⚠️ ¡CUIDADO! Hay una conexión directa entre positivo y GND sin resistencia ni carga: Cortocircuito.' };
+        }
+
+        // Target positive pin source
+        let posPins = [];
+        if (requiredSource === '5V') posPins = ['ard-5v'];
+        else if (requiredSource === '3.3V') posPins = ['ard-3v3'];
+        else if (requiredSource === 'DIGITAL_8') posPins = ['ard-d8'];
+        else if (requiredSource === 'ANY') posPins = ['ard-5v', 'ard-3v3', 'ard-d8', 'ard-d13'];
+
+        const gndPins = ['ard-gnd1', 'ard-gnd2'];
+
+        // Determine if positive pin reaches resistor
+        const touchesPos = pin => posPins.some(p => hasPath(p, pin));
+        const touchesGnd = pin => gndPins.some(g => hasPath(g, pin));
+
+        const resInvolved = (touchesPos('res1-a') || touchesPos('res1-b') || touchesGnd('res1-a') || touchesGnd('res1-b'));
+        const led1Involved = (touchesPos('led1-anode') || touchesPos('led1-cathode') || touchesGnd('led1-anode') || touchesGnd('led1-cathode'));
+
+        if (!led1Involved && !this.wires.length) {
+          return { status: 'EMPTY', message: 'El circuito está vacío. Coloca cables para unir los pines.' };
+        }
+
+        if (!touchesGnd('led1-cathode') && !touchesGnd('led1-anode') && !touchesGnd('res1-a') && !touchesGnd('res1-b')) {
+          return { status: 'NO_GND', message: 'El circuito está abierto: Falta una conexión a tierra (GND).' };
+        }
+
+        // Check if connected backwards (Reverse polarity)
+        if (touchesPos('led1-cathode') && touchesGnd('led1-anode')) {
+          return { status: 'REVERSED_LED', message: 'El LED está invertido. Recuerda que la pata larga (ánodo) debe recibir la corriente positiva.' };
+        }
+
+        // Check missing resistor
+        const directToPos = touchesPos('led1-anode');
+        const directToGnd = touchesGnd('led1-cathode');
+        if (directToPos && directToGnd && !resInvolved) {
+          return { status: 'NO_RESISTOR', message: '¡Peligro de sobrecorriente! Falta la resistencia para proteger el LED antes de conectarlo a energía.' };
+        }
+
+        // Valid Circuit Patterns:
+        // Pattern 1: POS -> Resistor -> Anode -> Cathode -> GND
+        // Pattern 2: POS -> Anode -> Cathode -> Resistor -> GND
+        const posToResA = touchesPos('res1-a');
+        const posToResB = touchesPos('res1-b');
+        const resAtoAnode = hasPath('res1-a', 'led1-anode');
+        const resBtoAnode = hasPath('res1-b', 'led1-anode');
+        const cathodeToGND = touchesGnd('led1-cathode');
+
+        const pattern1 = ((posToResA && resBtoAnode) || (posToResB && resAtoAnode)) && cathodeToGND;
+
+        const posToAnode = touchesPos('led1-anode');
+        const cathodeToResA = hasPath('led1-cathode', 'res1-a');
+        const cathodeToResB = hasPath('led1-cathode', 'res1-b');
+        const resToGND = (cathodeToResA && touchesGnd('res1-b')) || (cathodeToResB && touchesGnd('res1-a'));
+
+        const pattern2 = posToAnode && resToGND;
+
+        if (pattern1 || pattern2) {
+          return { status: 'SUCCESS', message: '¡Circuito cerrado y seguro! La corriente puede circular correctamente.' };
+        }
+
+        return { status: 'OPEN_CIRCUIT', message: 'El circuito está abierto. Revisa que todos los terminales (alimentación, resistencia, LED y GND) estén conectados consecutivamente.' };
+      },
+
+      testCircuit(moduleIndex) {
+        state.attemptsCount++;
+        const result = this.evaluateGraph('5V');
+        const fb = document.getElementById(`m${moduleIndex}-feedback`);
+
+        if (result.status === 'SUCCESS') {
+          fb.innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+          const bulb = document.getElementById('sim-led1-bulb');
+          if (bulb) bulb.classList.add('led-glow-red');
+          document.querySelectorAll('.wire-line').forEach(w => w.classList.add('wire-current'));
+          document.getElementById(`m${moduleIndex}-next-btn`).disabled = false;
+        } else if (result.status === 'SHORT_CIRCUIT') {
+          fb.innerHTML = `<div class="alert alert-danger">${result.message}</div>`;
+          this.turnOffLEDs();
+        } else {
+          fb.innerHTML = `<div class="alert alert-warning">${result.message}</div>`;
+          this.turnOffLEDs();
+        }
+      },
+
+      analyzeCircuit() {
+        const fb = document.getElementById('m10-feedback');
+        const res = this.evaluateGraph('ANY');
+
+        // Check if driven by digital pins
+        let digitalActive = false;
+        if (state.digitalStates['D8'] === 'HIGH' && (res.status === 'SUCCESS' || this.evaluateGraph('DIGITAL_8').status === 'SUCCESS')) {
+          digitalActive = true;
+        }
+
+        if (res.status === 'SUCCESS' || digitalActive) {
+          fb.innerHTML = `<div class="alert alert-success">💡 <strong>Circuito Óptimo:</strong> LED energizado correctamente en circuito cerrado. ${digitalActive ? '(Pin D8 en HIGH suministrando 5V).' : ''}</div>`;
+          const bulb = document.getElementById('sim-led1-bulb');
+          if (bulb) bulb.classList.add('led-glow-red');
+          document.querySelectorAll('.wire-line').forEach(w => w.classList.add('wire-current'));
+        } else if (res.status === 'SHORT_CIRCUIT') {
+          fb.innerHTML = `<div class="alert alert-danger">${res.message}</div>`;
+          this.turnOffLEDs();
+        } else {
+          fb.innerHTML = `<div class="alert alert-warning">Diagnóstico: ${res.message}</div>`;
+          this.turnOffLEDs();
+        }
+      }
+    };
+
+    const m6 = {
+      setVoltage(val) {
+        const bulb = document.getElementById('m6-led-bulb');
+        const ind = document.getElementById('m6-voltage-indicator');
+        if (val === '5V') {
+          bulb.className.baseVal = 'led-glow-red';
+          bulb.style.fill = '#FF2A2A';
+          ind.innerHTML = 'Voltaje actual: <strong>5V (Brillo Alto / Tensión Estándar)</strong>';
+        } else {
+          bulb.className.baseVal = 'led-glow-dim';
+          bulb.style.fill = '#D9534F';
+          ind.innerHTML = 'Voltaje actual: <strong>3.3V (Brillo Suave / Menor Tensión)</strong>';
+        }
+      },
+
+      saveReflection() {
+        const text = document.getElementById('m6-reflection').value.trim();
+        const fb = document.getElementById('m6-feedback');
+        if (text.length < 10) {
+          fb.innerHTML = `<div class="alert alert-warning">Por favor redacta una breve observación con tus palabras antes de continuar.</div>`;
+          return;
+        }
+        state.m6Reflection = text;
+        app.saveProgress();
+        fb.innerHTML = `<div class="alert alert-success">¡Excelente deducción! Los pines 5V y 3.3V entregan diferentes tensiones de energía, lo que se traduce en distinta luminosidad.</div>`;
+        document.getElementById('m6-next-btn').disabled = false;
+      }
+    };
+
+    const m7 = {
+      cases: [
+        {
+          q: '1. ¿Qué ocurrirá si conectamos el LED solo a 5V pero no a GND?',
+          options: ['Se enciende con poco brillo', 'No se enciende en absoluto', 'Arduino se apaga por seguridad'],
+          correct: 1,
+          exp: 'No se enciende porque el circuito permanece abierto. La corriente eléctrica necesita retornar a GND.'
+        },
+        {
+          q: '2. ¿Qué ocurre si conectamos el LED con la polaridad invertida?',
+          options: ['El LED se enciende al revés', 'No se enciende debido al sentido del diodo', 'Cambia de color'],
+          correct: 1,
+          exp: 'Un diodo LED solo deja circular la corriente en un único sentido: desde el ánodo (+) hacia el cátodo (-).'
+        },
+        {
+          q: '3. ¿Qué sucedería en un circuito real si no usamos resistencia?',
+          options: ['Brilla igual', 'La corriente excesiva puede quemar el LED', 'Ahorramos batería'],
+          correct: 1,
+          exp: 'La resistencia es obligatoria para limitar y regular la cantidad de corriente que pasa por el LED.'
+        },
+        {
+          q: '4. ¿Qué ocurriría al conectar directamente el pin 5V con el pin GND?',
+          options: ['Genera el doble de energía', '¡Cortocircuito!', 'No pasa nada'],
+          correct: 1,
+          exp: '¡Peligro de Cortocircuito! Esta conexión nunca debe realizarse ya que genera sobrecorriente y apaga la placa.'
+        }
+      ],
+      userAnswers: {},
+
+      init() {
+        const container = document.getElementById('m7-scenarios-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        this.cases.forEach((c, idx) => {
+          const div = document.createElement('div');
+          div.style.background = '#FFFFFF';
+          div.style.border = '1px solid #CBD5E1';
+          div.style.borderRadius = '10px';
+          div.style.padding = '16px';
+          div.style.marginBottom = '14px';
+
+          div.innerHTML = `
+            <div style="font-weight:700; margin-bottom:10px;">${c.q}</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              ${c.options.map((opt, oIdx) => `
+                <label style="cursor:pointer; font-size:0.92rem;">
+                  <input type="radio" name="m7-case-${idx}" value="${oIdx}" onchange="m7.selectAnswer(${idx}, ${oIdx})"> ${opt}
+                </label>
+              `).join('')}
+            </div>
+            <div id="m7-fb-${idx}" style="margin-top:10px;"></div>
+          `;
+          container.appendChild(div);
+        });
+      },
+
+      selectAnswer(qIdx, optIdx) {
+        state.attemptsCount++;
+        this.userAnswers[qIdx] = optIdx;
+        const c = this.cases[qIdx];
+        const fb = document.getElementById(`m7-fb-${qIdx}`);
+        if (optIdx === c.correct) {
+          fb.innerHTML = `<div class="alert alert-success" style="padding:8px 12px; margin:4px 0;">¡Predicción Acertada! ${c.exp}</div>`;
+        } else {
+          fb.innerHTML = `<div class="alert alert-warning" style="padding:8px 12px; margin:4px 0;">Respuesta incorrecta. Recuerda: ${c.exp}</div>`;
+        }
+
+        if (Object.keys(this.userAnswers).length === this.cases.length) {
+          document.getElementById('m7-next-btn').disabled = false;
+        }
+      }
+    };
+
+    const m8 = {
+      currentChallenge: 1,
+      attempts: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      hints: {
+        1: 'Conecta 5V a la pata A de la resistencia, la pata B al ánodo del LED rojo, y el cátodo a GND.',
+        2: 'Similar al reto 1, pero usa el pin 3.3V en vez del pin 5V como origen de energía.',
+        3: 'Conecta ambos cátodos de los LEDs al mismo bus (-) de la Protoboard y une ese bus al pin GND.',
+        4: 'Examina la polaridad: si el LED no prende aunque haya resistencia y GND, prueba invertir el ánodo y cátodo.',
+        5: '¡Crea un circuito a tu gusto con al menos 1 LED, resistencia y alimentación segura!'
+      },
+
+      switchChallenge(chNum) {
+        this.currentChallenge = chNum;
+        for (let i = 1; i <= 5; i++) {
+          const btn = document.getElementById(`tab-btn-ch${i}`);
+          if (btn) btn.className = (i === chNum) ? 'btn btn-primary' : 'btn btn-secondary';
+        }
+        this.setupChallenge(chNum);
+      },
+
+      setupChallenge(chNum) {
+        const titleEl = document.getElementById('m8-challenge-title');
+        const descEl = document.getElementById('m8-challenge-desc');
+        const statusEl = document.getElementById('m8-status');
+        const attEl = document.getElementById('m8-attempt-count');
+        const fb = document.getElementById('m8-feedback');
+        fb.innerHTML = '';
+
+        sim.resetWires();
+
+        const descs = {
+          1: 'Conecta correctamente el LED rojo usando el pin 5V y su resistencia.',
+          2: 'Haz funcionar el LED utilizando el pin de 3.3V.',
+          3: 'Construye un circuito con dos LED que compartan la misma conexión GND.',
+          4: 'Corrige el error: se te presenta un circuito con polaridad invertida.',
+          5: 'Construye tu propio circuito básico de libre elección.'
+        };
+
+        titleEl.innerText = `Desafío ${chNum}`;
+        descEl.innerText = descs[chNum];
+        statusEl.innerText = state.challenges[chNum] ? '✅ Resuelto' : '❌ Pendiente';
+        attEl.innerText = this.attempts[chNum];
+
+        // Specific setups
+        if (chNum === 4) {
+          // Pre-wire an inverted circuit
+          sim.wires = [
+            { from: 'ard-5v', to: 'res1-a', x1: 155, y1: 352, x2: 490, y2: 140, color: '#E74C3C' },
+            { from: 'res1-b', to: 'led1-cathode', x1: 580, y1: 140, x2: 555, y2: 240, color: '#E74C3C' }, // ERROR: to cathode
+            { from: 'led1-anode', to: 'ard-gnd1', x1: 505, y1: 240, x2: 185, y2: 352, color: '#2C3E50' }
+          ];
+          sim.redrawWires();
+          fb.innerHTML = `<div class="alert alert-warning">Observa el circuito: tiene un error de conexión. Bórralo o corrígelo para que el LED encienda.</div>`;
+        }
+      },
+
+      giveHint() {
+        state.hintsCount++;
+        const fb = document.getElementById('m8-feedback');
+        fb.innerHTML = `<div class="alert alert-warning">💡 <strong>Pista para Reto ${this.currentChallenge}:</strong> ${this.hints[this.currentChallenge]}</div>`;
+      },
+
+      testCurrentChallenge() {
+        this.attempts[this.currentChallenge]++;
+        state.attemptsCount++;
+        document.getElementById('m8-attempt-count').innerText = this.attempts[this.currentChallenge];
+        const fb = document.getElementById('m8-feedback');
+
+        let res;
+        if (this.currentChallenge === 1) res = sim.evaluateGraph('5V');
+        else if (this.currentChallenge === 2) res = sim.evaluateGraph('3.3V');
+        else if (this.currentChallenge === 3) res = sim.evaluateGraph('ANY');
+        else if (this.currentChallenge === 4) res = sim.evaluateGraph('5V');
+        else res = sim.evaluateGraph('ANY');
+
+        if (res.status === 'SUCCESS') {
+          state.challenges[this.currentChallenge] = true;
+          document.getElementById('m8-status').innerText = '✅ Resuelto';
+          fb.innerHTML = `<div class="alert alert-success">¡Reto ${this.currentChallenge} Superado con éxito! Circuito cerrado correctamente.</div>`;
+          const bulb = document.getElementById('sim-led1-bulb');
+          if (bulb) bulb.classList.add('led-glow-red');
+          document.querySelectorAll('.wire-line').forEach(w => w.classList.add('wire-current'));
+
+          // Check if all 5 are completed
+          const allDone = Object.values(state.challenges).every(v => v === true);
+          if (allDone) {
+            document.getElementById('m8-next-btn').disabled = false;
+            fb.innerHTML += `<div class="alert alert-success">🎉 ¡Completaste los 5 retos prácticos! Ya puedes continuar al Módulo 9.</div>`;
+          }
+        } else {
+          fb.innerHTML = `<div class="alert alert-warning">${res.message}</div>`;
+          sim.turnOffLEDs();
+        }
+      }
+    };
+
+    const m9 = {
+      state: 'LOW',
+      togglePin() {
+        this.state = this.state === 'LOW' ? 'HIGH' : 'LOW';
+        const btn = document.getElementById('m9-digital-toggle');
+        const led = document.getElementById('m9-led');
+        const wirePos = document.getElementById('m9-wire-pos');
+
+        if (this.state === 'HIGH') {
+          btn.innerText = 'Estado Actual: HIGH (~5V Encendido)';
+          btn.className = 'btn btn-orange';
+          led.setAttribute('fill', '#FF2A2A');
+          led.style.filter = 'drop-shadow(0 0 12px #FF0000)';
+          wirePos.classList.add('wire-current');
+        } else {
+          btn.innerText = 'Estado Actual: LOW (0V Apagado)';
+          btn.className = 'btn btn-secondary';
+          led.setAttribute('fill', '#555');
+          led.style.filter = 'none';
+          wirePos.classList.remove('wire-current');
+        }
+      }
+    };
+
+    const quiz = {
+      questions: [
+        { q: '1. ¿Cuál es el significado y la función principal del pin GND?', options: ['Suministrar 5 voltios', 'Conectar a Internet', 'Tierra o referencia de 0V para cerrar circuitos', 'Reiniciar la placa'], correct: 2 },
+        { q: '2. ¿Qué nivel de tensión suministra el pin 5V del Arduino?', options: ['0V', 'Aproximadamente 5 voltios de corriente continua', '220V alternos', '12V regulados'], correct: 1 },
+        { q: '3. En un diodo LED, ¿cuál es la polaridad de su terminal más largo?', options: ['Cátodo (Negativo)', 'Ánodo (Positivo)', 'Tierra (GND)', 'Neutro'], correct: 1 },
+        { q: '4. ¿Por qué es fundamental conectar una resistencia junto al LED?', options: ['Para aumentar la velocidad del microcontrolador', 'Para cambiar el color de la luz', 'Para limitar la corriente eléctrica y evitar quemar el LED', 'Para amplificar el sonido'], correct: 2 },
+        { q: '5. ¿Qué función cumple el puerto USB en la placa Arduino?', options: ['Solo sirve para conectar un mouse', 'Comunicar con el computador y suministrar energía eléctrica', 'Enfriar el procesador', 'Emitir señal Wi-Fi'], correct: 1 },
+        { q: '6. ¿Qué ocurre si conectas directamente un cable desde 5V hasta GND sin ninguna carga?', options: ['El LED se enciende mucho más brillante', 'No pasa corriente', 'Se produce un cortocircuito peligroso', 'Se duplica la memoria'], correct: 2 },
+        { q: '7. En la Protoboard, ¿cómo están unidas eléctricamente las filas centrales A-B-C-D-E?', options: ['Verticalmente en grupos de 5 orificios', 'Completamente aisladas una a una', 'En diagonal', 'Todas unidas entre sí'], correct: 0 },
+        { q: '8. Al cambiar la alimentación de un LED de 5V a 3.3V, ¿qué cambio se observa?', options: ['El LED se apaga por falta de voltaje', 'El LED emite luz pero con menor brillo', 'El LED cambia a color verde', 'Parpadea rápidamente'], correct: 1 },
+        { q: '9. En los pines digitales de Arduino, ¿a qué equivale el estado lógico HIGH?', options: ['0 Voltios (Apagado)', 'Aproximadamente 5 Voltios (Encendido)', 'Desconexión total', 'Reinicio'], correct: 1 },
+        { q: '10. Para que un LED encienda de forma continua, el camino eléctrico debe ser:', options: ['Completamente abierto', 'Cerrado desde alimentación hasta GND pasando por resistor y LED', 'Solo conectado a 5V sin tocar tierra', 'Unido solo a pines analógicos'], correct: 1 }
+      ],
+
+      init() {
+        const container = document.getElementById('quiz-questions-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        this.questions.forEach((q, idx) => {
+          const div = document.createElement('div');
+          div.style.background = '#FFFFFF';
+          div.style.border = '1px solid #CBD5E1';
+          div.style.borderRadius = '10px';
+          div.style.padding = '16px';
+          div.style.marginBottom = '14px';
+
+          div.innerHTML = `
+            <div style="font-weight:700; margin-bottom:10px; font-size:0.95rem;">${q.q}</div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              ${q.options.map((opt, oIdx) => `
+                <label style="cursor:pointer; font-size:0.9rem;">
+                  <input type="radio" name="quiz-q-${idx}" value="${oIdx}" required> ${opt}
+                </label>
+              `).join('')}
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      },
+
+      submit() {
+        let correctCount = 0;
+        this.questions.forEach((q, idx) => {
+          const sel = document.querySelector(`input[name="quiz-q-${idx}"]:checked`);
+          if (sel && parseInt(sel.value) === q.correct) {
+            correctCount++;
+          }
+        });
+
+        state.quizScore = correctCount;
+        app.saveProgress();
+
+        const pct = Math.round((correctCount / this.questions.length) * 100);
+        const resContainer = document.getElementById('quiz-results-container');
+        resContainer.style.display = 'block';
+
+        let badgeColor = pct >= 70 ? 'var(--arduino-green)' : 'var(--arduino-orange)';
+        resContainer.innerHTML = `
+          <div style="background:#F8FAFC; border:2px solid ${badgeColor}; border-radius:12px; padding:20px; text-align:center;">
+            <h3>Resultados de la Evaluación</h3>
+            <div style="font-size:2rem; font-weight:800; color:${badgeColor}; margin:10px 0;">${correctCount} / ${this.questions.length} (${pct}%)</div>
+            <p style="color:var(--arduino-gray); font-size:0.95rem;">
+              ${pct >= 70 ? '¡Excelente comprensión de los conceptos de circuitos y placas Arduino!' : 'Buen esfuerzo. Te sugerimos repasar la función de la resistencia protectora y la polaridad del LED.'}
+            </p>
+          </div>
+        `;
+
+        document.getElementById('m11-next-btn').style.display = 'inline-flex';
+        resContainer.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    const report = {
+      generate() {
+        document.getElementById('rep-name').innerText = state.student.name || 'Estudiante';
+        document.getElementById('rep-grade').innerText = state.student.grade || '7° Básico';
+        document.getElementById('rep-date').innerText = new Date().toLocaleDateString('es-CL');
+
+        const quizPct = Math.round((state.quizScore / 10) * 100);
+        document.getElementById('rep-score').innerText = `${quizPct}% de Aprobación`;
+
+        document.getElementById('rep-dim-1').innerText = '100% (Logrado)';
+        document.getElementById('rep-dim-2').innerText = '100% (Logrado)';
+        document.getElementById('rep-dim-3').innerText = '100% (Logrado)';
+        document.getElementById('rep-dim-4').innerText = '100% (Logrado)';
+        document.getElementById('rep-dim-5').innerText = `${quizPct}%`;
+
+        document.getElementById('rep-hints-total').innerText = state.hintsCount;
+        document.getElementById('rep-attempts-total').innerText = state.attemptsCount;
+        const compDone = Object.values(state.challenges).filter(Boolean).length;
+        document.getElementById('rep-challenges-done').innerText = `${compDone}/5`;
+
+        const feedbackEl = document.getElementById('rep-feedback-text');
+        feedbackEl.innerHTML = `
+          <strong>Dictamen Pedagógico:</strong> El/la estudiante <strong>${state.student.name}</strong> ha identificado con precisión los componentes clave de la placa Arduino UNO, demostrando dominio en la conexión de circuitos cerrados simples utilizando los pines de alimentación (5V y 3.3V) y tierra (GND). Se verificó el reconocimiento de la polaridad del diodo LED y la protección obligatoria mediante resistencia eléctrica.
+          <br><br>
+          ${state.m6Reflection ? `<em>Reflexión del estudiante (5V vs 3.3V):</em> "${state.m6Reflection}"` : ''}
+        `;
+      }
+    };
+
+    // Initialize application when DOM is ready
+    window.addEventListener('DOMContentLoaded', () => {
+      app.init();
+    });
+  </script>
+</body>
+</html>
