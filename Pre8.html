@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio y Proyector Matemático — 8° Básico (Geometría)</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #2563eb;
+      --primary-dark: #0f172a;
+      --secondary: #d97706;
+      --accent: #059669;
+      --accent-light: #10b981;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --danger: #dc2626;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 2.5rem;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: white;
+      padding: 1.25rem 1.75rem;
+      border-bottom: 4px solid var(--secondary);
+    }
+    .header-content {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-content h1 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header-content p {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      margin-top: 0.2rem;
+    }
+    .top-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    nav {
+      background: white;
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .nav-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      overflow-x: auto;
+    }
+    .nav-btn {
+      padding: 0.65rem 1.2rem;
+      border: 2px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+    .nav-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary-light);
+    }
+
+    main {
+      max-width: 1440px;
+      margin: 1.25rem auto;
+      padding: 0 1rem;
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .proj-toolbar {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 0.85rem 1.25rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .proj-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .page-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.55rem 1.15rem;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-secondary { background: #e2e8f0; color: #1e293b; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-warning { background: var(--secondary); color: white; }
+    .btn-warning:hover { background: #b45309; }
+    .btn-page.active-page {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Layout para 3 problemas por pantalla (Proyección de aula) */
+    .trio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 1080px) {
+      .trio-grid { grid-template-columns: 1fr; }
+    }
+
+    .problem-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06);
+      position: relative;
+    }
+    .problem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .problem-tag {
+      background: #eff6ff;
+      color: var(--primary);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      border: 1px solid #bfdbfe;
+    }
+    .problem-body {
+      flex: 1;
+      font-size: 1.02rem;
+      font-weight: 600;
+    }
+
+    .svg-box {
+      width: 100%;
+      height: 215px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin: 0.75rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .svg-box svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .solution-box {
+      margin-top: 0.85rem;
+      padding: 0.85rem;
+      background: #f0fdf4;
+      border: 2px dashed var(--accent);
+      border-radius: 8px;
+      color: #065f46;
+      font-size: 0.95rem;
+      display: none;
+      line-height: 1.45;
+    }
+    .solution-box.show {
+      display: block;
+      animation: fadeIn 0.25s ease-in;
+    }
+
+    .formula-tag {
+      display: inline-block;
+      background: #f1f5f9;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: monospace;
+      color: #0f172a;
+      font-weight: bold;
+      border: 1px solid #e2e8f0;
+    }
+
+    .exam-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 950px) {
+      .exam-grid { grid-template-columns: 1fr; }
+    }
+    .exam-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      margin-bottom: 1.15rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    }
+    .score-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+      position: sticky;
+      top: 4.5rem;
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+    }
+    .grade-text {
+      font-size: 3.8rem;
+      font-weight: 900;
+      color: #fbbf24;
+      line-height: 1;
+      margin: 0.6rem 0;
+    }
+
+    table.math-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0;
+      font-size: 0.92rem;
+    }
+    table.math-table th, table.math-table td {
+      border: 1.5px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      text-align: center;
+    }
+    table.math-table th { background: #e2e8f0; font-weight: 800; color: #1e293b; }
+    table.math-table td:first-child { font-weight: 800; background: #f8fafc; }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.65rem 0.9rem;
+      margin: 0.35rem 0;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.98rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .option-btn:hover { background: #f8fafc; border-color: var(--primary); }
+    .option-btn.selected { background: #dbeafe; border-color: var(--primary); color: var(--primary); font-weight: 800; }
+
+    .audit-err-tag {
+      background: #fee2e2;
+      color: var(--danger);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <div>
+        <h1>📐 Laboratorio y Proyector Matemático — 8° Básico</h1>
+        <p>Preparación Evaluación Sumativa: OA 11 (Área y Volumen de Prismas y Cilindros) • OA 12 (Teorema de Pitágoras) • Auditoría de Errores</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-warning" onclick="toggleFullScreen()">🖥️ Modo Pantalla Completa</button>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-container">
+      <button class="nav-btn active" onclick="setModule('mod1')">📐 1. Pitágoras: Hipotenusa y Catetos (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod2')">🏃 2. Pitágoras en Contexto Real (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod3')">📦 3. Prismas: Área Total y Volumen (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod4')">🛢️ 4. Cilindros: Superficie y Capacidad (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod5')">🔍 5. Auditoría de Errores Matemáticos (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod6')">📝 6. Simulacro Oficial con Escala (2.0 a 7.0)</button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- MÓDULO 1: PITÁGORAS CÁLCULO DIRECTO -->
+    <section id="mod1" class="tab-pane active">
+      <div class="proj-toolbar">
+        <div class="proj-title">📐 Módulo 1: Teorema de Pitágoras — Cálculo de Hipotenusas y Catetos Desconocidos</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary btn-page active-page" id="m1-btn-p0" onclick="renderModule1(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary btn-page" id="m1-btn-p1" onclick="renderModule1(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod1')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod1"></div>
+    </section>
+
+    <!-- MÓDULO 2: PITÁGORAS EN CONTEXTO REAL -->
+    <section id="mod2" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">🏃 Módulo 2: Problemas de la Vida Diaria (Modelamiento Pitagórico)</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary btn-page active-page" id="m2-btn-p0" onclick="renderModule2(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary btn-page" id="m2-btn-p1" onclick="renderModule2(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod2')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod2"></div>
+    </section>
+
+    <!-- MÓDULO 3: ÁREA Y VOLUMEN DE PRISMAS -->
+    <section id="mod3" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">📦 Módulo 3: Prismas Rectos (Bases Cuadradas, Rectangulares y Triangulares)</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary btn-page active-page" id="m3-btn-p0" onclick="renderModule3(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary btn-page" id="m3-btn-p1" onclick="renderModule3(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod3')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod3"></div>
+    </section>
+
+    <!-- MÓDULO 4: CILINDROS -->
+    <section id="mod4" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">🛢️ Módulo 4: Cilindros Rectos (Área Basal, Área Lateral, Área Total y Volumen)</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary btn-page active-page" id="m4-btn-p0" onclick="renderModule4(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary btn-page" id="m4-btn-p1" onclick="renderModule4(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod4')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod4"></div>
+    </section>
+
+    <!-- MÓDULO 5: AUDITORÍA DE ERRORES -->
+    <section id="mod5" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">🔍 Módulo 5: Auditoría de Errores Matemáticos Frecuentes</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary btn-page active-page" id="m5-btn-p0" onclick="renderModule5(0)">1 (Casos 1-3)</button>
+          <button class="btn btn-secondary btn-page" id="m5-btn-p1" onclick="renderModule5(1)">2 (Casos 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod5')">👁️️ Mostrar / Ocultar Auditoría</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod5"></div>
+    </section>
+
+    <!-- MÓDULO 6: SIMULACRO CON ESCALA CHILENA -->
+    <section id="mod6" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">📝 Módulo 6: Simulacro Oficial con Escala Chilena (2.0 a 7.0 al 60% de Exigencia)</div>
+        <div>
+          <button class="btn btn-warning" onclick="generateExam()">🔄 Reiniciar Ensayo (10 Preguntas)</button>
+        </div>
+      </div>
+
+      <div class="exam-grid">
+        <div>
+          <div id="exam-questions-list"></div>
+          <div style="margin-top:1.5rem; text-align:center;">
+            <button class="btn btn-primary" style="font-size:1.15rem; padding:0.8rem 2.8rem;" onclick="gradeExam()">✅ Entregar y Calificar</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="score-banner">
+            <h3>Puntaje y Calificación</h3>
+            <p style="font-size:0.88rem; opacity:0.85;">Escala Chilena Oficial: Nota 2.0 a 7.0 | Exigencia 60% (6/10 = 4.0)</p>
+            <div class="grade-text" id="final-grade">--</div>
+            <p id="final-score" style="font-size:1.15rem; font-weight:700;">Puntaje: -- / 10</p>
+            <p id="final-status" style="margin-top:0.6rem; font-size:0.95rem;"></p>
+          </div>
+
+          <div class="exam-card" style="margin-top:1rem;">
+            <h4 style="color:var(--primary); margin-bottom:0.5rem;">Tabla de Conversión Rápida (60%)</h4>
+            <table class="math-table">
+              <tr><th>Puntos</th><th>0</th><th>3</th><th>6 (60%)</th><th>8</th><th>10</th></tr>
+              <tr><td>Nota</td><td>2.0</td><td>3.0</td><td>4.0</td><td>5.5</td><td>7.0</td></tr>
+            </table>
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-top:0.5rem;">
+              • Nota de aprobación: <strong>4.0</strong> con 6 preguntas correctas.<br>
+              • Nota máxima: <strong>7.0</strong> con 10 puntos.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function setModule(modId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(modId).classList.add('active');
+
+      const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(modId));
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function toggleSolutions(modId) {
+      const container = document.getElementById('trio-container-' + modId);
+      const boxes = container.querySelectorAll('.solution-box');
+      boxes.forEach(b => b.classList.toggle('show'));
+    }
+
+    function updatePageButtons(modKey, pageIdx) {
+      const p0 = document.getElementById(`${modKey}-btn-p0`);
+      const p1 = document.getElementById(`${modKey}-btn-p1`);
+      if (p0 && p1) {
+        p0.classList.toggle('active-page', pageIdx === 0);
+        p1.classList.toggle('active-page', pageIdx === 1);
+      }
+    }
+
+    function svgRightTriangle(pA, pB, pC, labels) {
+      return `
+        <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="${pA.x},${pA.y} ${pB.x},${pB.y} ${pC.x},${pC.y}" fill="#eff6ff" stroke="#1e3a8a" stroke-width="3" stroke-linejoin="round"/>
+          <polyline points="${pA.x + 18},${pA.y} ${pA.x + 18},${pA.y - 18} ${pA.x},${pA.y - 18}" fill="none" stroke="#2563eb" stroke-width="2.2"/>
+          <circle cx="${pA.x + 9}" cy="${pA.y - 9}" r="2" fill="#2563eb"/>
+          <text x="${labels.sideA.x}" y="${labels.sideA.y}" font-family="system-ui, sans-serif" font-size="14" font-weight="800" fill="#0f172a" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke="#ffffff" stroke-width="4">${labels.sideA.text}</text>
+          <text x="${labels.sideB.x}" y="${labels.sideB.y}" font-family="system-ui, sans-serif" font-size="14" font-weight="800" fill="#0f172a" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke="#ffffff" stroke-width="4">${labels.sideB.text}</text>
+          <text x="${labels.hyp.x}" y="${labels.hyp.y}" font-family="system-ui, sans-serif" font-size="15" font-weight="900" fill="#1e3a8a" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke="#ffffff" stroke-width="4">${labels.hyp.text}</text>
+        </svg>
+      `;
+    }
+
+    const mod1Data = [
+      {
+        tag: "Ejercicio 1",
+        pA: {x: 45, y: 175}, pB: {x: 275, y: 175}, pC: {x: 45, y: 45},
+        labels: {
+          sideA: {x: 24, y: 110, text: "a = 9 cm"},
+          sideB: {x: 160, y: 195, text: "b = 12 cm"},
+          hyp:   {x: 180, y: 95, text: "c = ?"}
+        },
+        prompt: "Determina la medida exacta de la hipotenusa (c).",
+        calc: `c² = a² + b²<br>
+               c² = 9² + 12² = 81 + 144 = 225<br>
+               c = √225 = <strong>15 cm</strong>`
+      },
+      {
+        tag: "Ejercicio 2",
+        pA: {x: 50, y: 175}, pB: {x: 275, y: 175}, pC: {x: 50, y: 35},
+        labels: {
+          sideA: {x: 24, y: 105, text: "a = 8 cm"},
+          sideB: {x: 162, y: 195, text: "b = 15 cm"},
+          hyp:   {x: 180, y: 95, text: "c = ?"}
+        },
+        prompt: "Calcula la longitud de la hipotenusa desconocida (c).",
+        calc: `c² = 8² + 15²<br>
+               c² = 64 + 225 = 289<br>
+               c = √289 = <strong>17 cm</strong>`
+      },
+      {
+        tag: "Ejercicio 3",
+        pA: {x: 50, y: 175}, pB: {x: 280, y: 175}, pC: {x: 50, y: 55},
+        labels: {
+          sideA: {x: 24, y: 115, text: "a = 7 cm"},
+          sideB: {x: 165, y: 195, text: "b = 24 cm"},
+          hyp:   {x: 180, y: 105, text: "c = ?"}
+        },
+        prompt: "Determina la hipotenusa utilizando el Teorema de Pitágoras.",
+        calc: `c² = 7² + 24²<br>
+               c² = 49 + 576 = 625<br>
+               c = √625 = <strong>25 cm</strong>`
+      },
+      {
+        tag: "Ejercicio 4",
+        pA: {x: 50, y: 175}, pB: {x: 275, y: 175}, pC: {x: 50, y: 40},
+        labels: {
+          sideA: {x: 24, y: 110, text: "a = 5 cm"},
+          sideB: {x: 165, y: 195, text: "b = ?"},
+          hyp:   {x: 180, y: 95, text: "c = 13 cm"}
+        },
+        prompt: "Calcula la medida del cateto basal desconocido (b).",
+        calc: `b² = c² − a²<br>
+               b² = 13² − 5² = 169 − 25 = 144<br>
+               b = √144 = <strong>12 cm</strong>`
+      },
+      {
+        tag: "Ejercicio 5",
+        pA: {x: 50, y: 175}, pB: {x: 275, y: 175}, pC: {x: 50, y: 40},
+        labels: {
+          sideA: {x: 22, y: 110, text: "a = ?"},
+          sideB: {x: 165, y: 195, text: "b = 20 cm"},
+          hyp:   {x: 180, y: 95, text: "c = 29 cm"}
+        },
+        prompt: "Halla la medida del cateto vertical desconocido (a).",
+        calc: `a² = c² − b²<br>
+               a² = 29² − 20² = 841 − 400 = 441<br>
+               a = √441 = <strong>21 cm</strong>`
+      },
+      {
+        tag: "Ejercicio 6",
+        pA: {x: 50, y: 175}, pB: {x: 275, y: 175}, pC: {x: 50, y: 40},
+        labels: {
+          sideA: {x: 22, y: 110, text: "a = 15 cm"},
+          sideB: {x: 165, y: 195, text: "b = ?"},
+          hyp:   {x: 180, y: 95, text: "c = 25 cm"}
+        },
+        prompt: "Determina el valor del cateto faltante (b).",
+        calc: `b² = c² − a²<br>
+               b² = 25² − 15² = 625 − 225 = 400<br>
+               b = √400 = <strong>20 cm</strong>`
+      }
+    ];
+
+    function renderModule1(pageIdx) {
+      updatePageButtons('m1', pageIdx);
+      const container = document.getElementById('trio-container-mod1');
+      container.innerHTML = '';
+      const items = mod1Data.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.tag}</span>
+            <span style="font-weight:700; color:var(--text-muted);">OA 12: Cálculo Directo</span>
+          </div>
+          <div class="problem-body">
+            <p>${item.prompt}</p>
+            <div class="svg-box">
+              ${svgRightTriangle(item.pA, item.pB, item.pC, item.labels)}
+            </div>
+            <p><strong>Ecuación modelo:</strong> <span class="formula-tag">c² = a² + b²</span></p>
+            <p style="margin-top:0.35rem;"><strong>Desarrollo:</strong> ____________________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Procedimiento y Solución:</strong><br>
+            ${item.calc}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    const mod2Data = [
+      {
+        tag: "Problema 1",
+        title: "Escalera en la Pared",
+        prompt: "Una escalera de 10 m se apoya contra una pared. Si la base está a 6 m del pie del muro, ¿a qué altura (h) llega en la pared?",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="180" x2="290" y2="180" stroke="#64748b" stroke-width="4"/>
+            <rect x="230" y="25" width="22" height="155" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
+            <line x1="110" y1="180" x2="230" y2="35" stroke="#b45309" stroke-width="6" stroke-linecap="round"/>
+            <text x="150" y="95" font-size="14" font-weight="900" fill="#b45309">10 m</text>
+            <text x="170" y="198" font-size="14" font-weight="800" fill="#0f172a">6 m</text>
+            <text x="260" y="110" font-size="14" font-weight="900" fill="#1e3a8a">h = ?</text>
+          </svg>
+        `,
+        calc: `h² = 10² − 6² = 100 − 36 = 64<br>h = √64 = <strong>8 metros</strong> de altura.`
+      },
+      {
+        tag: "Problema 2",
+        title: "Cable Tirante de Antena",
+        prompt: "Un poste de iluminación mide 12 metros de altura y se sujeta con un cable de acero anclado a 16 metros de su base. ¿Cuánto mide el cable?",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="180" x2="290" y2="180" stroke="#64748b" stroke-width="4"/>
+            <rect x="235" y="30" width="12" height="150" fill="#475569"/>
+            <line x1="75" y1="180" x2="241" y2="30" stroke="#0284c7" stroke-width="3.5" stroke-dasharray="6,3"/>
+            <text x="135" y="95" font-size="14" font-weight="900" fill="#0284c7">Cable (L) = ?</text>
+            <text x="255" y="110" font-size="14" font-weight="800" fill="#0f172a">12 m</text>
+            <text x="150" y="198" font-size="14" font-weight="800" fill="#0f172a">16 m</text>
+          </svg>
+        `,
+        calc: `L² = 12² + 16² = 144 + 256 = 400<br>L = √400 = <strong>20 metros</strong> de cable.`
+      },
+      {
+        tag: "Problema 3",
+        title: "Cancha Rectangular en Diagonal",
+        prompt: "Un jugador cruza diagonalmente una multicancha de 30 metros de largo por 40 metros de ancho. ¿Qué distancia total recorre?",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <rect x="40" y="45" width="240" height="130" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+            <line x1="40" y1="175" x2="280" y2="45" stroke="#dc2626" stroke-width="3" stroke-dasharray="5,4"/>
+            <text x="160" y="195" font-size="14" font-weight="800" fill="#0f172a">40 m de largo</text>
+            <text x="288" y="115" font-size="14" font-weight="800" fill="#0f172a">30 m</text>
+            <text x="145" y="100" font-size="15" font-weight="900" fill="#dc2626">d = ?</text>
+          </svg>
+        `,
+        calc: `d² = 40² + 30² = 1600 + 900 = 2500<br>d = √2500 = <strong>50 metros</strong> recorridos.`
+      },
+      {
+        tag: "Problema 4",
+        title: "Rampa de Carga y Acceso",
+        prompt: "Una rampa de descarga de 2,6 m de largo (superficie inclinada) llega a una plataforma de 1,0 m de alto. ¿Cuál es su alcance horizontal?",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,175 250,175 250,90" fill="#f1f5f9" stroke="#334155" stroke-width="3"/>
+            <line x1="50" y1="175" x2="250" y2="90" stroke="#059669" stroke-width="4.5"/>
+            <text x="130" y="120" font-size="14" font-weight="900" fill="#059669">Rampa = 2,6 m</text>
+            <text x="260" y="135" font-size="14" font-weight="800" fill="#0f172a">1,0 m</text>
+            <text x="140" y="195" font-size="14" font-weight="800" fill="#0f172a">base (x) = ?</text>
+          </svg>
+        `,
+        calc: `x² = 2,6² − 1,0² = 6,76 − 1,00 = 5,76<br>x = √5,76 = <strong>2,4 metros</strong> de distancia horizontal.`
+      },
+      {
+        tag: "Problema 5",
+        title: "Volantín y Línea de Hilo",
+        prompt: "Un volantín está en el aire sostenido por 25 metros de hilo recto tensado. Si se ubica justo sobre un árbol a 15 metros en el suelo, ¿a qué altura vuela?",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <line x1="50" y1="175" x2="260" y2="175" stroke="#64748b" stroke-width="3"/>
+            <line x1="50" y1="175" x2="230" y2="40" stroke="#7c3aed" stroke-width="2.5"/>
+            <polygon points="230,40 245,30 240,50 220,45" fill="#f59e0b"/>
+            <line x1="230" y1="40" x2="230" y2="175" stroke="#94a3b8" stroke-dasharray="4,4"/>
+            <text x="110" y="95" font-size="14" font-weight="900" fill="#7c3aed">Hilo = 25 m</text>
+            <text x="240" y="115" font-size="14" font-weight="900" fill="#0f172a">h = ?</text>
+            <text x="130" y="195" font-size="14" font-weight="800" fill="#0f172a">15 m</text>
+          </svg>
+        `,
+        calc: `h² = 25² − 15² = 625 − 225 = 400<br>h = √400 = <strong>20 metros</strong> de altura.`
+      },
+      {
+        tag: "Problema 6",
+        title: "Faro Costero y Embarcación",
+        prompt: "Desde lo alto de un faro de 24 metros, la distancia directa en línea visual hacia un bote pesquero en el mar es de 30 metros. ¿A qué distancia de la base está?",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <rect x="45" y="30" width="20" height="145" fill="#ef4444"/>
+            <line x1="65" y1="175" x2="270" y2="175" stroke="#0284c7" stroke-width="4"/>
+            <line x1="65" y1="35" x2="265" y2="175" stroke="#0f172a" stroke-width="3" stroke-dasharray="5,3"/>
+            <text x="160" y="95" font-size="14" font-weight="900" fill="#0f172a">Visual = 30 m</text>
+            <text x="12" y="110" font-size="14" font-weight="800" fill="#0f172a">24 m</text>
+            <text x="160" y="195" font-size="14" font-weight="900" fill="#0284c7">distancia mar = ?</text>
+          </svg>
+        `,
+        calc: `d² = 30² − 24² = 900 − 576 = 324<br>d = √324 = <strong>18 metros</strong> del faro.`
+      }
+    ];
+
+    function renderModule2(pageIdx) {
+      updatePageButtons('m2', pageIdx);
+      const container = document.getElementById('trio-container-mod2');
+      container.innerHTML = '';
+      const items = mod2Data.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.tag}</span>
+            <span style="font-weight:700; color:var(--text-muted);">${item.title}</span>
+          </div>
+          <div class="problem-body">
+            <p>${item.prompt}</p>
+            <div class="svg-box">
+              ${item.svg}
+            </div>
+            <p><strong>Planteamiento y desarrollo:</strong><br>_____________________________________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Resolución completa:</strong><br>
+            ${item.calc}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    const mod3Data = [
+      {
+        tag: "Prisma 1",
+        title: "Base Cuadrada (4 cm × 4 cm)",
+        prompt: "Lado basal: 4 cm, Altura del prisma: 10 cm. Calcula el Área Total (A_T) y el Volumen (V).",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="110,60 170,40 210,60 150,80" fill="#dbeafe" stroke="#1e3a8a" stroke-width="2"/>
+            <polygon points="110,60 150,80 150,170 110,150" fill="#bfdbfe" stroke="#1e3a8a" stroke-width="2"/>
+            <polygon points="150,80 210,60 210,150 150,170" fill="#93c5fd" stroke="#1e3a8a" stroke-width="2"/>
+            <line x1="110" y1="150" x2="170" y2="130" stroke="#1e3a8a" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <line x1="170" y1="40" x2="170" y2="130" stroke="#1e3a8a" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <line x1="210" y1="150" x2="170" y2="130" stroke="#1e3a8a" stroke-width="1.5" stroke-dasharray="3,3"/>
+            <text x="120" y="172" font-size="13" font-weight="800">4 cm</text>
+            <text x="190" y="170" font-size="13" font-weight="800">4 cm</text>
+            <text x="220" y="110" font-size="14" font-weight="900" fill="#1e3a8a">h = 10 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: 4 × 4 = 16 cm² (dos bases = 32 cm²)<br>
+               • Área Lateral: 4 caras × (4 × 10) = 160 cm²<br>
+               • <strong>Área Total:</strong> 32 + 160 = <strong>192 cm²</strong><br>
+               • <strong>Volumen:</strong> A_base × h = 16 × 10 = <strong>160 cm³</strong>`
+      },
+      {
+        tag: "Prisma 2",
+        title: "Base Rectangular (6 cm × 3 cm)",
+        prompt: "Largo: 6 cm, Ancho: 3 cm, Altura del prisma: 8 cm. Calcula el Área Total (A_T) y el Volumen (V).",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="90,65 170,45 230,65 150,85" fill="#fed7aa" stroke="#c2410c" stroke-width="2"/>
+            <polygon points="90,65 150,85 150,165 90,145" fill="#fdba74" stroke="#c2410c" stroke-width="2"/>
+            <polygon points="150,85 230,65 230,145 150,165" fill="#fb923c" stroke="#c2410c" stroke-width="2"/>
+            <text x="110" y="165" font-size="13" font-weight="800">6 cm</text>
+            <text x="200" y="162" font-size="13" font-weight="800">3 cm</text>
+            <text x="240" y="110" font-size="14" font-weight="900" fill="#c2410c">h = 8 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: 6 × 3 = 18 cm² (2 bases = 36 cm²)<br>
+               • Perímetro basal: 2×(6+3) = 18 cm<br>
+               • Área Lateral: 18 × 8 = 144 cm²<br>
+               • <strong>Área Total:</strong> 36 + 144 = <strong>180 cm²</strong><br>
+               • <strong>Volumen:</strong> 18 × 8 = <strong>144 cm³</strong>`
+      },
+      {
+        tag: "Prisma 3",
+        title: "Base Triangular Recta (6 cm, 8 cm, 10 cm)",
+        prompt: "Triángulo base: catetos 6 cm y 8 cm (hipotenusa 10 cm). Altura del prisma: 12 cm. Calcula A_T y V.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="100,60 160,40 180,75" fill="#d1fae5" stroke="#047857" stroke-width="2"/>
+            <polygon points="100,60 180,75 180,165 100,150" fill="#a7f3d0" stroke="#047857" stroke-width="2"/>
+            <polygon points="180,75 160,40 160,130 180,165" fill="#6ee7b7" stroke="#047857" stroke-width="2"/>
+            <text x="80" y="110" font-size="14" font-weight="900" fill="#047857">12 cm</text>
+            <text x="135" y="172" font-size="13" font-weight="800">catetos: 6 y 8 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: (6 × 8) ÷ 2 = 24 cm² (2 bases = 48 cm²)<br>
+               • Perímetro basal: 6 + 8 + 10 = 24 cm<br>
+               • Área Lateral: 24 × 12 = 288 cm²<br>
+               • <strong>Área Total:</strong> 48 + 288 = <strong>336 cm²</strong><br>
+               • <strong>Volumen:</strong> 24 × 12 = <strong>288 cm³</strong>`
+      },
+      {
+        tag: "Prisma 4",
+        title: "Base Cuadrada (5 cm × 5 cm)",
+        prompt: "Base cuadrada de lado 5 cm y altura del prisma 12 cm. Calcula Área Total y Volumen.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="110,50 170,30 220,50 160,70" fill="#e0e7ff" stroke="#4338ca" stroke-width="2"/>
+            <polygon points="110,50 160,70 160,165 110,145" fill="#c7d2fe" stroke="#4338ca" stroke-width="2"/>
+            <polygon points="160,70 220,50 220,145 160,165" fill="#a5b4fc" stroke="#4338ca" stroke-width="2"/>
+            <text x="125" y="167" font-size="13" font-weight="800">5 cm</text>
+            <text x="195" y="165" font-size="13" font-weight="800">5 cm</text>
+            <text x="230" y="105" font-size="14" font-weight="900" fill="#4338ca">12 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: 5 × 5 = 25 cm² (2 bases = 50 cm²)<br>
+               • Área Lateral: 4 × (5 × 12) = 240 cm²<br>
+               • <strong>Área Total:</strong> 50 + 240 = <strong>290 cm²</strong><br>
+               • <strong>Volumen:</strong> 25 × 12 = <strong>300 cm³</strong>`
+      },
+      {
+        tag: "Prisma 5",
+        title: "Base Rectangular (8 cm × 4 cm)",
+        prompt: "Largo 8 cm, ancho 4 cm y altura 5 cm. Determina el Área Total y el Volumen.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="80,75 180,50 240,75 140,100" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+            <polygon points="80,75 140,100 140,160 80,135" fill="#fde047" stroke="#ca8a04" stroke-width="2"/>
+            <polygon points="140,100 240,75 240,135 140,160" fill="#eab308" stroke="#ca8a04" stroke-width="2"/>
+            <text x="100" y="157" font-size="13" font-weight="800">8 cm</text>
+            <text x="195" y="155" font-size="13" font-weight="800">4 cm</text>
+            <text x="250" y="110" font-size="14" font-weight="900" fill="#ca8a04">5 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: 8 × 4 = 32 cm² (2 bases = 64 cm²)<br>
+               • Área Lateral: 2×(8×5) + 2×(4×5) = 80 + 40 = 120 cm²<br>
+               • <strong>Área Total:</strong> 64 + 120 = <strong>184 cm²</strong><br>
+               • <strong>Volumen:</strong> 32 × 5 = <strong>160 cm³</strong>`
+      },
+      {
+        tag: "Prisma 6",
+        title: "Prisma Triangular Equilátero",
+        prompt: "Base triangular de área = 16 cm² y perímetro de base = 18 cm. Altura del cuerpo = 15 cm. Calcula A_T y V.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="110,60 170,40 190,80" fill="#e2e8f0" stroke="#334155" stroke-width="2"/>
+            <polygon points="110,60 190,80 190,165 110,145" fill="#cbd5e1" stroke="#334155" stroke-width="2"/>
+            <polygon points="190,80 170,40 170,125 190,165" fill="#94a3b8" stroke="#334155" stroke-width="2"/>
+            <text x="120" y="172" font-size="13" font-weight="800">P_base = 18 cm</text>
+            <text x="210" y="110" font-size="14" font-weight="900" fill="#334155">15 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal dada: 16 cm² (2 bases = 32 cm²)<br>
+               • Área Lateral: P_base × h = 18 × 15 = 270 cm²<br>
+               • <strong>Área Total:</strong> 32 + 270 = <strong>302 cm²</strong><br>
+               • <strong>Volumen:</strong> A_base × h = 16 × 15 = <strong>240 cm³</strong>`
+      }
+    ];
+
+    function renderModule3(pageIdx) {
+      updatePageButtons('m3', pageIdx);
+      const container = document.getElementById('trio-container-mod3');
+      container.innerHTML = '';
+      const items = mod3Data.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.tag}</span>
+            <span style="font-weight:700; color:var(--text-muted);">${item.title}</span>
+          </div>
+          <div class="problem-body">
+            <p>${item.prompt}</p>
+            <div class="svg-box">
+              ${item.svg}
+            </div>
+            <p><strong>Fórmulas:</strong> <span class="formula-tag">A_T = 2·A_base + A_lat</span> &nbsp; <span class="formula-tag">V = A_base · h</span></p>
+            <p style="margin-top:0.4rem;"><strong>Área Total:</strong> _________ cm² &nbsp;|&nbsp; <strong>Volumen:</strong> _________ cm³</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Procedimiento y Solución:</strong><br>
+            ${item.calc}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    const mod4Data = [
+      {
+        tag: "Cilindro 1",
+        title: "Tarro Estándar (r = 3 cm, h = 10 cm)",
+        prompt: "Radio basal: 3 cm, Altura: 10 cm. Usando π ≈ 3,14, calcula el Área Total y el Volumen.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="160" cy="55" rx="55" ry="18" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2.5"/>
+            <path d="M 105,55 L 105,155 A 55 18 0 0 0 215,155 L 215,55 Z" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2.5"/>
+            <ellipse cx="160" cy="155" rx="55" ry="18" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="4,4"/>
+            <line x1="160" y1="55" x2="215" y2="55" stroke="#dc2626" stroke-width="2"/>
+            <text x="185" y="47" font-size="13" font-weight="900" fill="#dc2626">r = 3 cm</text>
+            <text x="225" y="110" font-size="14" font-weight="900" fill="#1d4ed8">h = 10 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: π·r² = 3,14 × 9 = 28,26 cm² (2 bases = 56,52 cm²)<br>
+               • Área Lateral: 2·π·r·h = 2 × 3,14 × 3 × 10 = 188,4 cm²<br>
+               • <strong>Área Total:</strong> 56,52 + 188,4 = <strong>244,92 cm²</strong><br>
+               • <strong>Volumen:</strong> 28,26 × 10 = <strong>282,6 cm³</strong>`
+      },
+      {
+        tag: "Cilindro 2",
+        title: "Estanque Alto (r = 5 cm, h = 12 cm)",
+        prompt: "Radio basal: 5 cm, Altura: 12 cm. Calcula el Área Total y el Volumen usando π ≈ 3,14.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="160" cy="50" rx="60" ry="20" fill="#ccfbf1" stroke="#0f766e" stroke-width="2.5"/>
+            <path d="M 100,50 L 100,160 A 60 20 0 0 0 220,160 L 220,50 Z" fill="#f0fdfa" stroke="#0f766e" stroke-width="2.5"/>
+            <line x1="160" y1="50" x2="220" y2="50" stroke="#dc2626" stroke-width="2"/>
+            <text x="185" y="44" font-size="13" font-weight="900" fill="#dc2626">r = 5 cm</text>
+            <text x="230" y="110" font-size="14" font-weight="900" fill="#0f766e">h = 12 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: 3,14 × 5² = 3,14 × 25 = 78,5 cm² (2 bases = 157 cm²)<br>
+               • Área Lateral: 2 × 3,14 × 5 × 12 = 376,8 cm²<br>
+               • <strong>Área Total:</strong> 157 + 376,8 = <strong>533,8 cm²</strong><br>
+               • <strong>Volumen:</strong> 78,5 × 12 = <strong>942 cm³</strong>`
+      },
+      {
+        tag: "Cilindro 3",
+        title: "Vaso de Vidrio con Diámetro (d = 8 cm)",
+        prompt: "Diámetro basal = 8 cm (¡cuidado, radio = 4 cm!), Altura = 14 cm. Calcula el Volumen exacto.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="160" cy="50" rx="50" ry="16" fill="#fef3c7" stroke="#b45309" stroke-width="2.5"/>
+            <path d="M 110,50 L 110,160 A 50 16 0 0 0 210,160 L 210,50 Z" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
+            <line x1="110" y1="50" x2="210" y2="50" stroke="#b45309" stroke-width="2" stroke-dasharray="3,3"/>
+            <text x="160" y="42" font-size="13" font-weight="800" text-anchor="middle" fill="#b45309">d = 8 cm</text>
+            <text x="220" y="110" font-size="14" font-weight="900" fill="#b45309">h = 14 cm</text>
+          </svg>
+        `,
+        calc: `• Radio: r = d / 2 = 8 / 2 = 4 cm<br>
+               • Área basal: 3,14 × 4² = 3,14 × 16 = 50,24 cm²<br>
+               • <strong>Volumen:</strong> 50,24 × 14 = <strong>703,36 cm³</strong><br>
+               • Área Total: 2(50,24) + 2(3,14)(4)(14) = 100,48 + 351,68 = <strong>452,16 cm²</strong>`
+      },
+      {
+        tag: "Cilindro 4",
+        title: "Cilindro Expresado en Función de π",
+        prompt: "Radio basal r = 6 cm y altura h = 8 cm. Expresa su Área Total y Volumen exactos en función de π.",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="160" cy="55" rx="55" ry="18" fill="#ede9fe" stroke="#6d28d9" stroke-width="2.5"/>
+            <path d="M 105,55 L 105,155 A 55 18 0 0 0 215,155 L 215,55 Z" fill="#f5f3ff" stroke="#6d28d9" stroke-width="2.5"/>
+            <text x="180" y="47" font-size="13" font-weight="900" fill="#dc2626">r = 6 cm</text>
+            <text x="225" y="110" font-size="14" font-weight="900" fill="#6d28d9">h = 8 cm</text>
+          </svg>
+        `,
+        calc: `• Área basal: π × 6² = 36π cm² (2 bases = 72π cm²)<br>
+               • Área lateral: 2π × 6 × 8 = 96π cm²<br>
+               • <strong>Área Total:</strong> 72π + 96π = <strong>168π cm²</strong><br>
+               • <strong>Volumen:</strong> 36π × 8 = <strong>288π cm³</strong>`
+      },
+      {
+        tag: "Cilindro 5",
+        title: "Tarro de Pintura (r = 10 cm, h = 20 cm)",
+        prompt: "Radio = 10 cm, Altura = 20 cm. Determina la capacidad en cm³ (Volumen) y la hojalata necesaria (Área Total con π ≈ 3,14).",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="160" cy="45" rx="65" ry="20" fill="#e0f2fe" stroke="#0369a1" stroke-width="2.5"/>
+            <path d="M 95,45 L 95,165 A 65 20 0 0 0 225,165 L 225,45 Z" fill="#f0f9ff" stroke="#0369a1" stroke-width="2.5"/>
+            <text x="185" y="40" font-size="13" font-weight="900" fill="#dc2626">r = 10 cm</text>
+            <text x="235" y="110" font-size="14" font-weight="900" fill="#0369a1">h = 20 cm</text>
+          </svg>
+        `,
+        calc: `• Área Basal: 3,14 × 100 = 314 cm² (2 bases = 628 cm²)<br>
+               • Área Lateral: 2 × 3,14 × 10 × 20 = 1256 cm²<br>
+               • <strong>Área Total:</strong> 628 + 1256 = <strong>1884 cm²</strong><br>
+               • <strong>Volumen:</strong> 314 × 20 = <strong>6280 cm³</strong> (6,28 Litros)`
+      },
+      {
+        tag: "Cilindro 6",
+        title: "Tubo Hueco / Área Lateral",
+        prompt: "Se requiere pintar solo la cara lateral de un tubo cilíndrico de radio 2 cm y longitud 15 cm. ¿Cuánta área se pintará?",
+        svg: `
+          <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="160" cy="55" rx="40" ry="14" fill="none" stroke="#475569" stroke-width="2.5"/>
+            <path d="M 120,55 L 120,155 A 40 14 0 0 0 200,155 L 200,55 Z" fill="#f8fafc" stroke="#475569" stroke-width="2.5"/>
+            <text x="180" y="48" font-size="13" font-weight="900" fill="#dc2626">r = 2 cm</text>
+            <text x="210" y="110" font-size="14" font-weight="900" fill="#475569">L = 15 cm</text>
+          </svg>
+        `,
+        calc: `• Como es solo la superficie exterior: A_lat = 2·π·r·h<br>
+               • A_lat = 2 × 3,14 × 2 × 15 = <strong>188,4 cm²</strong>`
+      }
+    ];
+
+    function renderModule4(pageIdx) {
+      updatePageButtons('m4', pageIdx);
+      const container = document.getElementById('trio-container-mod4');
+      container.innerHTML = '';
+      const items = mod4Data.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.tag}</span>
+            <span style="font-weight:700; color:var(--text-muted);">${item.title}</span>
+          </div>
+          <div class="problem-body">
+            <p>${item.prompt}</p>
+            <div class="svg-box">
+              ${item.svg}
+            </div>
+            <p><strong>Fórmulas clave:</strong> <span class="formula-tag">A_T = 2πr² + 2πrh</span> &nbsp; <span class="formula-tag">V = πr²·h</span></p>
+            <p style="margin-top:0.4rem;"><strong>Desarrollo del estudiante:</strong><br>_____________________________________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Procedimiento y Solución:</strong><br>
+            ${item.calc}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    const mod5Data = [
+      {
+        tag: "Caso de Auditoría 1",
+        title: "Confundir Hipotenusa con Cateto",
+        problem: "Triángulo rectángulo con hipotenusa c = 10 cm y un cateto a = 6 cm. Calcular el otro cateto x.",
+        studentProcedure: `
+          Paso 1: x² = 10² + 6²<br>
+          Paso 2: x² = 100 + 36 = 136<br>
+          Paso 3: x = √136 ≈ 11,66 cm
+        `,
+        verdict: "INCORRECTO",
+        identifiedError: "El estudiante sumó los cuadrados en lugar de restarlos. Como la hipotenusa (10) es el lado más largo, el cateto nunca puede medir más que 10.",
+        correctSolution: `
+          Ecuación correcta: x² = c² − a²<br>
+          x² = 10² − 6² = 100 − 36 = 64<br>
+          x = √64 = <strong>8 cm</strong>.
+        `
+      },
+      {
+        tag: "Caso de Auditoría 2",
+        title: "Olvidar la Raíz Cuadrada Final",
+        problem: "Catetos a = 9 cm y b = 12 cm. Calcular la hipotenusa c.",
+        studentProcedure: `
+          Paso 1: c² = 9² + 12²<br>
+          Paso 2: c² = 81 + 144<br>
+          Paso 3: c = 225 cm
+        `,
+        verdict: "INCORRECTO",
+        identifiedError: "El estudiante dejó 225 como la longitud de la hipotenusa, olvidando aplicar la raíz cuadrada a c² para obtener c.",
+        correctSolution: `
+          c² = 225<br>
+          c = √225 = <strong>15 cm</strong>.
+        `
+      },
+      {
+        tag: "Caso de Auditoría 3",
+        title: "Sumar sin Elevar al Cuadrado",
+        problem: "Catetos a = 3 cm y b = 4 cm. Calcular la hipotenusa c.",
+        studentProcedure: `
+          Paso 1: c = a + b<br>
+          Paso 2: c = 3 + 4<br>
+          Paso 3: c = 7 cm
+        `,
+        verdict: "INCORRECTO",
+        identifiedError: "Sumó directamente los valores lineales sin elevarlos al cuadrado. El Teorema de Pitágoras relaciona áreas de cuadrados (c² = a² + b²), no longitudes directas.",
+        correctSolution: `
+          c² = 3² + 4² = 9 + 16 = 25<br>
+          c = √25 = <strong>5 cm</strong>.
+        `
+      },
+      {
+        tag: "Caso de Auditoría 4",
+        title: "Contar Solo 1 Base en el Prisma",
+        problem: "Prisma de base cuadrada: lado 4 cm (A_base = 16 cm²), A_lateral = 120 cm². Calcular el Área Total.",
+        studentProcedure: `
+          Paso 1: A_Total = A_base + A_lateral<br>
+          Paso 2: A_Total = 16 + 120<br>
+          Paso 3: A_Total = 136 cm²
+        `,
+        verdict: "INCORRECTO",
+        identifiedError: "Todo prisma recto cerrado tiene dos bases congruentes y paralelas. El alumno solo sumó una de ellas.",
+        correctSolution: `
+          A_Total = 2·(A_base) + A_lateral<br>
+          A_Total = 2·(16) + 120 = 32 + 120 = <strong>152 cm²</strong>.
+        `
+      },
+      {
+        tag: "Caso de Auditoría 5",
+        title: "Usar Diámetro en Vez de Radio",
+        problem: "Cilindro con diámetro basal d = 10 cm y altura h = 8 cm. Calcular el volumen (usar π ≈ 3,14).",
+        studentProcedure: `
+          Paso 1: V = π · 10² · 8<br>
+          Paso 2: V = 3,14 · 100 · 8<br>
+          Paso 3: V = 2512 cm³
+        `,
+        verdict: "INCORRECTO",
+        identifiedError: "Utilizó el diámetro (10 cm) directamente en la fórmula de área basal en vez de calcular el radio (r = d/2 = 5 cm). Esto cuadruplica erróneamente el volumen.",
+        correctSolution: `
+          Radio: r = 10 / 2 = 5 cm<br>
+          V = 3,14 · 5² · 8 = 3,14 · 25 · 8 = <strong>628 cm³</strong>.
+        `
+      },
+      {
+        tag: "Caso de Auditoría 6",
+        title: "Confusión de Unidades (cm² vs cm³)",
+        problem: "Calcular el volumen de una caja de 5 cm × 4 cm × 3 cm.",
+        studentProcedure: `
+          Paso 1: V = 5 · 4 · 3<br>
+          Paso 2: V = 60 cm²
+        `,
+        verdict: "ERROR DE MAGNITUD / UNIDAD",
+        identifiedError: "El cálculo numérico es correcto (60), pero registró cm² (unidad de área superficial) en vez de cm³ (unidad de volumen y capacidad tridimensional).",
+        correctSolution: `
+          V = 5 cm · 4 cm · 3 cm = <strong>60 cm³</strong>.
+        `
+      }
+    ];
+
+    function renderModule5(pageIdx) {
+      updatePageButtons('m5', pageIdx);
+      const container = document.getElementById('trio-container-mod5');
+      container.innerHTML = '';
+      const items = mod5Data.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.tag}</span>
+            <span style="font-weight:700; color:var(--text-muted);">${item.title}</span>
+          </div>
+          <div class="problem-body">
+            <p style="margin-bottom:0.4rem;"><strong>Enunciado:</strong> ${item.problem}</p>
+            <div style="background:#fff1f2; border:1.5px solid #fecdd3; padding:0.75rem; border-radius:8px; margin:0.6rem 0;">
+              <span class="audit-err-tag">Procedimiento del Estudiante:</span>
+              <p style="margin-top:0.4rem; font-family:monospace; font-size:1.05rem;">${item.studentProcedure}</p>
+            </div>
+            <p><strong>1. ¿Es correcto o incorrecto?:</strong> _________________</p>
+            <p style="margin-top:0.35rem;"><strong>2. Error detectado:</strong> _____________________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>📋 Veredicto de Auditoría:</strong> <strong>${item.verdict}</strong><br>
+            <strong>Diagnóstico del error:</strong> ${item.identifiedError}<br><br>
+            <strong>Resolución Oficial Paso a Paso:</strong><br>
+            ${item.correctSolution}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    const examQuestionsPool = [
+      {
+        q: "1. En un triángulo rectángulo, los catetos miden 9 cm y 12 cm. ¿Cuál es la medida de la hipotenusa (c)?",
+        options: ["14 cm", "15 cm", "18 cm", "21 cm"],
+        correct: 1,
+        expl: "c² = 9² + 12² = 81 + 144 = 225. Luego, c = √225 = 15 cm."
+      },
+      {
+        q: "2. Una escalera de 13 metros está apoyada en una pared vertical. Si la base se ubica a 5 metros del muro, ¿a qué altura llega en la pared?",
+        options: ["8 metros", "11 metros", "12 metros", "14 metros"],
+        correct: 2,
+        expl: "h² = 13² − 5² = 169 − 25 = 144. Por lo tanto, h = √144 = 12 metros."
+      },
+      {
+        q: "3. Un poste vertical de 15 metros se afirmará con un cable tirante anclado a 8 metros de su pie. ¿Cuál es el largo del cable?",
+        options: ["17 metros", "19 metros", "23 metros", "16 metros"],
+        correct: 0,
+        expl: "L² = 15² + 8² = 225 + 64 = 289. Por lo tanto, L = √289 = 17 metros."
+      },
+      {
+        q: "4. ¿Cuál es el volumen de un prisma recto de base cuadrada de 4 cm de lado y cuya altura es de 10 cm?",
+        options: ["40 cm³", "80 cm³", "160 cm³", "320 cm³"],
+        correct: 2,
+        expl: "Área basal = 4 × 4 = 16 cm². Volumen = Área basal × h = 16 × 10 = 160 cm³."
+      },
+      {
+        q: "5. Para calcular el Área Total de cualquier prisma recto cerrado, la fórmula geométrica correcta es:",
+        options: [
+          "A_Total = A_base + A_lateral",
+          "A_Total = 2 · A_base + A_lateral",
+          "A_Total = A_base · h",
+          "A_Total = Perímetro × h"
+        ],
+        correct: 1,
+        expl: "Un prisma recto tiene 2 bases paralelas congruentes más las caras laterales que componen el área lateral: A_Total = 2·A_base + A_lateral."
+      },
+      {
+        q: "6. Un cilindro recto tiene un radio basal r = 3 cm y una altura h = 10 cm. Usando π ≈ 3,14, su volumen es:",
+        options: ["94,2 cm³", "188,4 cm³", "282,6 cm³", "565,2 cm³"],
+        correct: 2,
+        expl: "V = π · r² · h = 3,14 · 3² · 10 = 3,14 · 9 · 10 = 282,6 cm³."
+      },
+      {
+        q: "7. Si una lata cilíndrica tiene un diámetro de 10 cm, ¿qué valor de radio debe utilizarse en las fórmulas?",
+        options: ["10 cm", "20 cm", "5 cm", "2,5 cm"],
+        correct: 2,
+        expl: "El radio es siempre la mitad del diámetro: r = d / 2 = 10 / 2 = 5 cm."
+      },
+      {
+        q: "8. Un estudiante calculó el cateto 'x' de un triángulo de hipotenusa 25 cm y cateto 20 cm haciendo: x² = 25² + 20². ¿Qué error cometió?",
+        options: [
+          "Sumó los cuadrados en vez de restarlos (para un cateto se resta: c² − b²).",
+          "Olvidó multiplicar por 2.",
+          "El procedimiento es 100% correcto.",
+          "Debió sumar 25 + 20 directamente sin elevar."
+        ],
+        correct: 0,
+        expl: "Para hallar un cateto desconocido se debe restar el cuadrado del cateto conocido a la hipotenusa al cuadrado (x² = 25² − 20² = 625 − 400 = 225 → x = 15 cm)."
+      },
+      {
+        q: "9. Un prisma de base rectangular mide 6 cm de largo, 3 cm de ancho y 8 cm de alto. ¿Cuál es su Área Total?",
+        options: ["144 cm²", "180 cm²", "90 cm²", "216 cm²"],
+        correct: 1,
+        expl: "Bases: 2·(6×3) = 36 cm². Caras laterales: 2·(6×8) + 2·(3×8) = 96 + 48 = 144 cm². Total: 36 + 144 = 180 cm²."
+      },
+      {
+        q: "10. La distancia diagonal entre esquinas opuestas de un terreno de 20 m de ancho y 21 m de largo es:",
+        options: ["29 metros", "41 metros", "31 metros", "25 metros"],
+        correct: 0,
+        expl: "d² = 20² + 21² = 400 + 441 = 841. Por lo tanto, d = √841 = 29 metros."
+      }
+    ];
+
+    let userAnswers = {};
+
+    function generateExam() {
+      userAnswers = {};
+      const container = document.getElementById('exam-questions-list');
+      container.innerHTML = '';
+
+      document.getElementById('final-grade').innerText = '--';
+      document.getElementById('final-grade').style.color = '#fbbf24';
+      document.getElementById('final-score').innerText = 'Puntaje: -- / 10';
+      document.getElementById('final-status').innerText = '';
+
+      examQuestionsPool.forEach((item, qIdx) => {
+        const qCard = document.createElement('div');
+        qCard.className = 'exam-card';
+        qCard.innerHTML = `
+          <div style="font-weight:800; font-size:1.05rem; margin-bottom:0.6rem; color:#1e293b;">${item.q}</div>
+          <div id="opts-q-${qIdx}">
+            ${item.options.map((opt, optIdx) => `
+              <button class="option-btn" onclick="selectExamOption(${qIdx}, ${optIdx})">
+                ${String.fromCharCode(65 + optIdx)}) ${opt}
+              </button>
+            `).join('')}
+          </div>
+          <div id="solution-q-${qIdx}" class="solution-box" style="margin-top:0.6rem;">
+            <strong>Explicación:</strong> ${item.expl}
+          </div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    function selectExamOption(qIdx, optIdx) {
+      userAnswers[qIdx] = optIdx;
+      const optsContainer = document.getElementById(`opts-q-${qIdx}`);
+      const btns = optsContainer.querySelectorAll('.option-btn');
+      btns.forEach((b, idx) => {
+        b.classList.toggle('selected', idx === optIdx);
+      });
+    }
+
+    function calculateChileanGrade(score, maxScore = 10, approvalPct = 0.6) {
+      const cutPoint = maxScore * approvalPct; // 6 puntos para nota 4.0
+      const minGrade = 2.0;
+      const passGrade = 4.0;
+      const maxGrade = 7.0;
+
+      let grade = minGrade;
+      if (score < cutPoint) {
+        grade = minGrade + (passGrade - minGrade) * (score / cutPoint);
+      } else {
+        grade = passGrade + (maxGrade - passGrade) * ((score - cutPoint) / (maxScore - cutPoint));
+      }
+      return Math.round(grade * 10) / 10;
+    }
+
+    function gradeExam() {
+      let score = 0;
+      examQuestionsPool.forEach((item, qIdx) => {
+        const solBox = document.getElementById(`solution-q-${qIdx}`);
+        if (solBox) solBox.classList.add('show');
+        if (userAnswers[qIdx] === item.correct) {
+          score++;
+        }
+      });
+
+      const finalGrade = calculateChileanGrade(score, 10, 0.6);
+      const gradeElem = document.getElementById('final-grade');
+      gradeElem.innerText = finalGrade.toFixed(1);
+
+      const statusElem = document.getElementById('final-status');
+      if (finalGrade >= 4.0) {
+        gradeElem.style.color = '#34d399'; // Verde
+        statusElem.innerHTML = '🎉 <strong>¡Aprobado! Demuestra dominio de los OA 11 y 12.</strong>';
+      } else {
+        gradeElem.style.color = '#f87171'; // Rojo
+        statusElem.innerHTML = '⚠️ <strong>Requiere refuerzo: Revisa los procedimientos de cálculo y auditoría.</strong>';
+      }
+
+      document.getElementById('final-score').innerText = `Puntaje: ${score} / 10 (${Math.round((score / 10) * 100)}%)`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderModule1(0);
+      renderModule2(0);
+      renderModule3(0);
+      renderModule4(0);
+      renderModule5(0);
+      generateExam();
+    });
+  </script>
+</body>
+</html>

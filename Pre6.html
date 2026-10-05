@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrenamiento 6° Básico — Triángulos, Teselados y Patrones</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --secondary: #d97706;
+      --accent: #059669;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+      padding-bottom: 2rem;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-bottom: 4px solid var(--secondary);
+    }
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .header-content h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header-content p {
+      font-size: 0.95rem;
+      color: #94a3b8;
+    }
+    .top-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    nav {
+      background: white;
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .nav-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      overflow-x: auto;
+    }
+    .nav-btn {
+      padding: 0.65rem 1.25rem;
+      border: 2px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+    .nav-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    main {
+      max-width: 1400px;
+      margin: 1.25rem auto;
+      padding: 0 1rem;
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Barra superior de proyección y paginación */
+    .proj-toolbar {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .proj-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .page-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.55rem 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-light); }
+    .btn-secondary { background: #e2e8f0; color: #1e293b; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    .btn-warning { background: var(--secondary); color: white; }
+    .btn-warning:hover { background: #b45309; }
+
+    /* Layout para 3 problemas por pantalla (Proyección) */
+    .trio-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 1024px) {
+      .trio-grid { grid-template-columns: 1fr; }
+    }
+
+    .problem-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06);
+      position: relative;
+    }
+    .problem-card.highlight {
+      border-color: var(--primary);
+    }
+    .problem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .problem-tag {
+      background: #eff6ff;
+      color: var(--primary);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+    .problem-body {
+      flex: 1;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    /* Contenedor SVG seguro y responsivo */
+    .svg-box {
+      width: 100%;
+      height: 220px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin: 0.75rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .svg-box svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* Solución proyectable */
+    .solution-box {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: #f0fdf4;
+      border: 2px dashed var(--accent);
+      border-radius: 8px;
+      color: #065f46;
+      font-size: 0.95rem;
+      display: none;
+    }
+    .solution-box.show {
+      display: block;
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    /* Estilos del Simulador de Prueba */
+    .exam-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 900px) {
+      .exam-grid { grid-template-columns: 1fr; }
+    }
+    .exam-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .score-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      color: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .grade-text {
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: #fbbf24;
+      line-height: 1;
+      margin: 0.5rem 0;
+    }
+
+    /* Tablas matemáticas */
+    table.math-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.75rem 0;
+      font-size: 1.1rem;
+    }
+    table.math-table th, table.math-table td {
+      border: 2px solid var(--border);
+      padding: 0.5rem;
+      text-align: center;
+    }
+    table.math-table th { background: #e2e8f0; font-weight: 800; }
+    table.math-table td:first-child { font-weight: 800; background: #f8fafc; }
+
+    /* Preguntas interactivas */
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.6rem 0.8rem;
+      margin: 0.35rem 0;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .option-btn:hover { background: #f1f5f9; border-color: var(--primary); }
+    .option-btn.selected { background: #dbeafe; border-color: var(--primary); color: var(--primary); font-weight: 800; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-content">
+      <div>
+        <h1>📐 Laboratorio y Proyector Matemático — 6° Básico</h1>
+        <p>Preparación Evaluación Sumativa: OA 12 (Triángulos) • OA 14 (Teselados) • OA 9 (Patrones)</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-warning" onclick="toggleFullScreen()">🖥️ Modo Pantalla Completa</button>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-container">
+      <button class="nav-btn active" onclick="setModule('mod1')">🔺 1. Clasificación Simultánea (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod2')">📏 2. Desigualdad Triangular (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod3')">🔍 3. Ángulo Faltante 180° (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod4')">🧩 4. Teselados y Vértice 360° (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod5')">📊 5. Máquina de Patrones (3 por pantalla)</button>
+      <button class="nav-btn" onclick="setModule('mod6')">📝 6. Simulacro con Escala (2.0 a 7.0)</button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- MÓDULO 1: CLASIFICACIÓN SIMULTÁNEA -->
+    <section id="mod1" class="tab-pane active">
+      <div class="proj-toolbar">
+        <div class="proj-title">🔺 Módulo 1: Clasificación de Triángulos (Lados y Ángulos)</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary" onclick="renderTriScreen(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary" onclick="renderTriScreen(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod1')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod1"></div>
+    </section>
+
+    <!-- MÓDULO 2: DESIGUALDAD TRIANGULAR -->
+    <section id="mod2" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">📏 Módulo 2: Desigualdad Triangular (¿Es posible construirlo?)</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary" onclick="renderIneqScreen(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary" onclick="renderIneqScreen(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod2')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod2"></div>
+    </section>
+
+    <!-- MÓDULO 3: ÁNGULO FALTANTE -->
+    <section id="mod3" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">🔍 Módulo 3: Suma Interior de 180° y Clasificación Angular</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary" onclick="renderMissingScreen(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary" onclick="renderMissingScreen(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod3')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod3"></div>
+    </section>
+
+    <!-- MÓDULO 4: TESELADOS Y 360° -->
+    <section id="mod4" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">🧩 Módulo 4: Condiciones de Teselado y Regla del Vértice (360°)</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary" onclick="renderTessScreen(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary" onclick="renderTessScreen(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod4')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod4"></div>
+    </section>
+
+    <!-- MÓDULO 5: PATRONES Y TABLAS -->
+    <section id="mod5" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">📊 Módulo 5: Tablas Entrada-Salida, Reglas y Predicciones</div>
+        <div class="page-controls">
+          <span style="font-weight:700;">Pantalla:</span>
+          <button class="btn btn-secondary" onclick="renderPatternScreen(0)">1 (Ej. 1-3)</button>
+          <button class="btn btn-secondary" onclick="renderPatternScreen(1)">2 (Ej. 4-6)</button>
+          <button class="btn btn-primary" onclick="toggleSolutions('mod5')">👁️ Mostrar / Ocultar Respuestas</button>
+        </div>
+      </div>
+      <div class="trio-grid" id="trio-container-mod5"></div>
+    </section>
+
+    <!-- MÓDULO 6: SIMULACRO CON ESCALA 2.0 A 7.0 -->
+    <section id="mod6" class="tab-pane">
+      <div class="proj-toolbar">
+        <div class="proj-title">📝 Módulo 6: Ensayo Oficial con Escala Chilena (2.0 a 7.0 al 60%)</div>
+        <div>
+          <button class="btn btn-warning" onclick="generateExam()">🔄 Generar Nueva Prueba de 10 Preguntas</button>
+        </div>
+      </div>
+
+      <div class="exam-grid">
+        <div>
+          <div id="exam-questions-list"></div>
+          <div style="margin-top:1.5rem; text-align:center;">
+            <button class="btn btn-primary" style="font-size:1.2rem; padding:0.8rem 2.5rem;" onclick="gradeExam()">✅ Entregar y Calificar</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="score-banner">
+            <h3>Puntaje y Calificación</h3>
+            <p style="font-size:0.9rem; opacity:0.85;">Escala 2.0 a 7.0 | Exigencia 60% (6/10 = 4.0)</p>
+            <div class="grade-text" id="final-grade">--</div>
+            <p id="final-score" style="font-size:1.15rem; font-weight:700;">Puntaje: -- / 10</p>
+            <p id="final-status" style="margin-top:0.5rem; font-size:1rem;"></p>
+          </div>
+
+          <div class="exam-card" style="margin-top:1rem;">
+            <h4 style="color:var(--primary); margin-bottom:0.5rem;">Tabla de Conversión Rápida</h4>
+            <table class="math-table" style="font-size:0.9rem;">
+              <tr><th>Puntos</th><th>0</th><th>3</th><th>6 (60%)</th><th>8</th><th>10</th></tr>
+              <tr><td>Nota</td><td>2.0</td><td>3.0</td><td>4.0</td><td>5.5</td><td>7.0</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /* =========================================================================
+       NAVEGACIÓN ENTRE PESTAÑAS Y PANTALLA COMPLETA
+       ========================================================================= */
+    function setModule(modId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(modId).classList.add('active');
+
+      const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick').includes(modId));
+      if (btn) btn.classList.add('active');
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert("Error: " + err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function toggleSolutions(modId) {
+      const container = document.getElementById('trio-container-' + modId);
+      const boxes = container.querySelectorAll('.solution-box');
+      boxes.forEach(b => b.classList.toggle('show'));
+    }
+
+    /* =========================================================================
+       GENERADOR DE DIBUJO GEOMÉTRICO SEGURO (SVG ESTÁTICO EMBEBIDO)
+       Evita cualquier fallo de carga y garantiza visualización en proyectores.
+       ========================================================================= */
+    function makeTriangleSVG(pA, pB, pC, labels) {
+      // pA, pB, pC son objetos {x, y} en rango 0..300, 0..200
+      let rightAngleSquare = '';
+      if (labels.isRightAtA) {
+        rightAngleSquare = `<polyline points="${pA.x + 20},${pA.y} ${pA.x + 20},${pA.y - 20} ${pA.x},${pA.y - 20}" fill="none" stroke="#1e3a8a" stroke-width="2"/>`;
+      }
+
+      return `
+        <svg viewBox="0 0 320 210" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="${pA.x},${pA.y} ${pB.x},${pB.y} ${pC.x},${pC.y}" fill="#e0e7ff" stroke="#1e3a8a" stroke-width="3.5" stroke-linejoin="round"/>
+          ${rightAngleSquare}
+          
+          <!-- Etiquetas de Ángulos en Bisectrices Interiores -->
+          <text x="${labels.posA.x}" y="${labels.posA.y}" font-family="Segoe UI, sans-serif" font-size="14" font-weight="800" fill="#312e81" text-anchor="middle" dominant-baseline="central">${labels.angA}</text>
+          <text x="${labels.posB.x}" y="${labels.posB.y}" font-family="Segoe UI, sans-serif" font-size="14" font-weight="800" fill="#312e81" text-anchor="middle" dominant-baseline="central">${labels.angB}</text>
+          <text x="${labels.posC.x}" y="${labels.posC.y}" font-family="Segoe UI, sans-serif" font-size="14" font-weight="800" fill="#312e81" text-anchor="middle" dominant-baseline="central">${labels.angC}</text>
+          
+          <!-- Etiquetas de Lados con Trazo Blanco de Reserva -->
+          <text x="${labels.sideAB.x}" y="${labels.sideAB.y}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="800" fill="#0f172a" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke="#ffffff" stroke-width="4">${labels.sideAB.text}</text>
+          <text x="${labels.sideBC.x}" y="${labels.sideBC.y}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="800" fill="#0f172a" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke="#ffffff" stroke-width="4">${labels.sideBC.text}</text>
+          <text x="${labels.sideCA.x}" y="${labels.sideCA.y}" font-family="Segoe UI, sans-serif" font-size="13" font-weight="800" fill="#0f172a" text-anchor="middle" dominant-baseline="central" paint-order="stroke" stroke="#ffffff" stroke-width="4">${labels.sideCA.text}</text>
+        </svg>
+      `;
+    }
+
+    /* =========================================================================
+       BANCO DE DATOS: 6 EJERCICIOS POR MÓDULO (PANTALLA 1: 0..2 | PANTALLA 2: 3..5)
+       ========================================================================= */
+
+    // MÓDULO 1: CLASIFICACIÓN SIMULTÁNEA
+    const triClassData = [
+      {
+        title: "Problema 1",
+        pA: {x: 40, y: 175}, pB: {x: 280, y: 175}, pC: {x: 160, y: 35},
+        labels: {
+          angA: "60°", posA: {x: 75, y: 155},
+          angB: "60°", posB: {x: 245, y: 155},
+          angC: "60°", posC: {x: 160, y: 65},
+          sideAB: {x: 160, y: 195, text: "9 cm"},
+          sideBC: {x: 235, y: 100, text: "9 cm"},
+          sideCA: {x: 85, y: 100, text: "9 cm"},
+          isRightAtA: false
+        },
+        lados: "Equilátero (3 lados iguales)",
+        angulos: "Acutángulo (3 ángulos < 90°)"
+      },
+      {
+        title: "Problema 2",
+        pA: {x: 50, y: 170}, pB: {x: 270, y: 170}, pC: {x: 50, y: 40},
+        labels: {
+          angA: "90°", posA: {x: 80, y: 145},
+          angB: "30°", posB: {x: 230, y: 155},
+          angC: "60°", posC: {x: 75, y: 70},
+          sideAB: {x: 160, y: 190, text: "12 cm"},
+          sideBC: {x: 175, y: 95, text: "14 cm"},
+          sideCA: {x: 25, y: 105, text: "7 cm"},
+          isRightAtA: true
+        },
+        lados: "Escaleno (3 lados distintos)",
+        angulos: "Rectángulo (1 ángulo recto de 90°)"
+      },
+      {
+        title: "Problema 3",
+        pA: {x: 40, y: 165}, pB: {x: 280, y: 165}, pC: {x: 85, y: 100},
+        labels: {
+          angA: "32°", posA: {x: 75, y: 150},
+          angB: "23°", posB: {x: 245, y: 150},
+          angC: "125°", posC: {x: 105, y: 110},
+          sideAB: {x: 160, y: 185, text: "13 cm"},
+          sideBC: {x: 190, y: 120, text: "10 cm"},
+          sideCA: {x: 50, y: 120, text: "6 cm"},
+          isRightAtA: false
+        },
+        lados: "Escaleno (3 lados distintos)",
+        angulos: "Obtusángulo (1 ángulo > 90°: 125°)"
+      },
+      {
+        title: "Problema 4",
+        pA: {x: 40, y: 170}, pB: {x: 280, y: 170}, pC: {x: 160, y: 65},
+        labels: {
+          angA: "40°", posA: {x: 80, y: 155},
+          angB: "40°", posB: {x: 240, y: 155},
+          angC: "100°", posC: {x: 160, y: 95},
+          sideAB: {x: 160, y: 190, text: "11 cm"},
+          sideBC: {x: 235, y: 110, text: "7 cm"},
+          sideCA: {x: 85, y: 110, text: "7 cm"},
+          isRightAtA: false
+        },
+        lados: "Isósceles (2 lados iguales a 7 cm)",
+        angulos: "Obtusángulo (1 ángulo obtuso de 100°)"
+      },
+      {
+        title: "Problema 5",
+        pA: {x: 60, y: 170}, pB: {x: 240, y: 170}, pC: {x: 60, y: 50},
+        labels: {
+          angA: "90°", posA: {x: 85, y: 145},
+          angB: "45°", posB: {x: 205, y: 155},
+          angC: "45°", posC: {x: 85, y: 80},
+          sideAB: {x: 150, y: 190, text: "8 cm"},
+          sideBC: {x: 170, y: 100, text: "11.3 cm"},
+          sideCA: {x: 35, y: 110, text: "8 cm"},
+          isRightAtA: true
+        },
+        lados: "Isósceles (2 lados iguales a 8 cm)",
+        angulos: "Rectángulo (1 ángulo recto de 90°)"
+      },
+      {
+        title: "Problema 6",
+        pA: {x: 40, y: 170}, pB: {x: 280, y: 170}, pC: {x: 130, y: 40},
+        labels: {
+          angA: "55°", posA: {x: 80, y: 150},
+          angB: "45°", posB: {x: 240, y: 150},
+          angC: "80°", posC: {x: 135, y: 70},
+          sideAB: {x: 160, y: 190, text: "10 cm"},
+          sideBC: {x: 220, y: 95, text: "9 cm"},
+          sideCA: {x: 75, y: 95, text: "8 cm"},
+          isRightAtA: false
+        },
+        lados: "Escaleno (3 lados distintos: 10, 9, 8 cm)",
+        angulos: "Acutángulo (3 ángulos agudos < 90°)"
+      }
+    ];
+
+    function renderTriScreen(pageIdx) {
+      const container = document.getElementById('trio-container-mod1');
+      container.innerHTML = '';
+      const items = triClassData.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.title}</span>
+            <span style="font-weight:700; color:var(--text-muted);">Clasificación Simultánea</span>
+          </div>
+          <div class="problem-body">
+            <p>Observa el triángulo con sus medidas de lados y ángulos:</p>
+            <div class="svg-box">
+              ${makeTriangleSVG(item.pA, item.pB, item.pC, item.labels)}
+            </div>
+            <p><strong>a) Según sus lados:</strong> ____________________</p>
+            <p><strong>b) Según sus ángulos:</strong> ____________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Respuesta y Justificación:</strong><br>
+            • Lados: <strong>${item.lados}</strong><br>
+            • Ángulos: <strong>${item.angulos}</strong>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // MÓDULO 2: DESIGUALDAD TRIANGULAR
+    const ineqData = [
+      {
+        num: "Ejercicio 1",
+        a: 5, b: 7, c: 14,
+        context: "Listones de madera para armar una cercha de techo.",
+        possible: false,
+        calc: "5 + 7 = 12 cm, y 12 no es mayor que 14 (12 < 14). Los extremos no se tocan."
+      },
+      {
+        num: "Ejercicio 2",
+        a: 8, b: 9, c: 11,
+        context: "Soporte metálico de seguridad para estantes de bodega.",
+        possible: true,
+        calc: "8 + 9 = 17 > 11. La suma de los dos menores es mayor que el lado más largo."
+      },
+      {
+        num: "Ejercicio 3",
+        a: 4, b: 6, c: 10,
+        context: "Varillas de acero para soporte de una rampa.",
+        possible: false,
+        calc: "4 + 6 = 10 cm. Como 10 = 10 (no es estrictamente mayor), las varillas caen planas sobre la base sin formar un triángulo."
+      },
+      {
+        num: "Ejercicio 4",
+        a: 7, b: 12, c: 13,
+        context: "Perfil estructural para un marco de refuerzo.",
+        possible: true,
+        calc: "7 + 12 = 19 > 13. Se cumple plenamente la desigualdad triangular."
+      },
+      {
+        num: "Ejercicio 5",
+        a: 3, b: 3, c: 7,
+        context: "Piezas de madera para un caballete decorativo.",
+        possible: false,
+        calc: "3 + 3 = 6 < 7. La suma de los dos lados iguales es menor que la base."
+      },
+      {
+        num: "Ejercicio 6",
+        a: 9, b: 9, c: 9,
+        context: "Señalética triangular de tránsito.",
+        possible: true,
+        calc: "9 + 9 = 18 > 9. Todo conjunto de 3 lados iguales forma un triángulo equilátero."
+      }
+    ];
+
+    function renderIneqScreen(pageIdx) {
+      const container = document.getElementById('trio-container-mod2');
+      container.innerHTML = '';
+      const items = ineqData.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.num}</span>
+            <span style="font-weight:700; color:var(--text-muted);">OA 12: Desigualdad</span>
+          </div>
+          <div class="problem-body">
+            <p><strong>Contexto:</strong> ${item.context}</p>
+            <div style="background:#eef2ff; padding:0.75rem; border-radius:8px; margin:0.75rem 0; text-align:center;">
+              <span style="font-size:1.3rem; font-weight:800; color:var(--primary);">${item.a} cm &nbsp;•&nbsp; ${item.b} cm &nbsp;•&nbsp; ${item.c} cm</span>
+            </div>
+            <p>¿Es posible armar el triángulo?</p>
+            <p style="margin: 0.5rem 0;">[ &nbsp; ] SÍ &emsp;&emsp; [ &nbsp; ] NO</p>
+            <p><strong>Justificación matemática:</strong><br>_____________________________________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Veredicto:</strong> <strong>${item.possible ? 'SÍ ES POSIBLE' : 'NO ES POSIBLE'}</strong><br>
+            <strong>Justificación:</strong> ${item.calc}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // MÓDULO 3: ÁNGULO FALTANTE (180°)
+    const missingData = [
+      {
+        num: "Problema 1",
+        ang1: 52, ang2: 68,
+        pA: {x: 40, y: 170}, pB: {x: 270, y: 170}, pC: {x: 140, y: 45},
+        labels: {
+          angA: "52°", posA: {x: 80, y: 150},
+          angB: "68°", posB: {x: 235, y: 150},
+          angC: "?", posC: {x: 140, y: 75},
+          sideAB: {x: 155, y: 190, text: "Base"},
+          sideBC: {x: 220, y: 100, text: ""},
+          sideCA: {x: 80, y: 100, text: ""},
+          isRightAtA: false
+        },
+        missing: 60,
+        clasif: "Acutángulo (52°, 68°, 60°: todos < 90°)"
+      },
+      {
+        num: "Problema 2",
+        ang1: 90, ang2: 38,
+        pA: {x: 50, y: 170}, pB: {x: 270, y: 170}, pC: {x: 50, y: 40},
+        labels: {
+          angA: "90°", posA: {x: 80, y: 145},
+          angB: "38°", posB: {x: 230, y: 155},
+          angC: "?", posC: {x: 80, y: 70},
+          sideAB: {x: 160, y: 190, text: "Base"},
+          sideBC: {x: 175, y: 95, text: ""},
+          sideCA: {x: 25, y: 105, text: ""},
+          isRightAtA: true
+        },
+        missing: 52,
+        clasif: "Rectángulo (posee 1 ángulo recto de 90°)"
+      },
+      {
+        num: "Problema 3",
+        ang1: 26, ang2: 34,
+        pA: {x: 40, y: 165}, pB: {x: 280, y: 165}, pC: {x: 80, y: 110},
+        labels: {
+          angA: "26°", posA: {x: 75, y: 150},
+          angB: "34°", posB: {x: 245, y: 150},
+          angC: "?", posC: {x: 105, y: 115},
+          sideAB: {x: 160, y: 185, text: "Base"},
+          sideBC: {x: 190, y: 130, text: ""},
+          sideCA: {x: 50, y: 130, text: ""},
+          isRightAtA: false
+        },
+        missing: 120,
+        clasif: "Obtusángulo (el ángulo faltante es 120° > 90°)"
+      },
+      {
+        num: "Problema 4",
+        ang1: 74, ang2: 32,
+        pA: {x: 40, y: 170}, pB: {x: 280, y: 170}, pC: {x: 110, y: 45},
+        labels: {
+          angA: "74°", posA: {x: 75, y: 150},
+          angB: "32°", posB: {x: 240, y: 150},
+          angC: "?", posC: {x: 120, y: 75},
+          sideAB: {x: 160, y: 190, text: "Base"},
+          sideBC: {x: 215, y: 100, text: ""},
+          sideCA: {x: 70, y: 100, text: ""},
+          isRightAtA: false
+        },
+        missing: 74,
+        clasif: "Acutángulo e Isósceles (74°, 74°, 32°)"
+      },
+      {
+        num: "Problema 5",
+        ang1: 90, ang2: 45,
+        pA: {x: 50, y: 170}, pB: {x: 250, y: 170}, pC: {x: 50, y: 50},
+        labels: {
+          angA: "90°", posA: {x: 80, y: 145},
+          angB: "45°", posB: {x: 215, y: 155},
+          angC: "?", posC: {x: 80, y: 80},
+          sideAB: {x: 150, y: 190, text: "Base"},
+          sideBC: {x: 165, y: 100, text: ""},
+          sideCA: {x: 25, y: 110, text: ""},
+          isRightAtA: true
+        },
+        missing: 45,
+        clasif: "Rectángulo e Isósceles (90°, 45°, 45°)"
+      },
+      {
+        num: "Problema 6",
+        ang1: 115, ang2: 25,
+        pA: {x: 40, y: 165}, pB: {x: 280, y: 165}, pC: {x: 95, y: 105},
+        labels: {
+          angA: "115°", posA: {x: 80, y: 145},
+          angB: "25°", posB: {x: 245, y: 150},
+          angC: "?", posC: {x: 115, y: 115},
+          sideAB: {x: 160, y: 185, text: "Base"},
+          sideBC: {x: 190, y: 130, text: ""},
+          sideCA: {x: 55, y: 130, text: ""},
+          isRightAtA: false
+        },
+        missing: 40,
+        clasif: "Obtusángulo (posee un ángulo de 115°)"
+      }
+    ];
+
+    function renderMissingScreen(pageIdx) {
+      const container = document.getElementById('trio-container-mod3');
+      container.innerHTML = '';
+      const items = missingData.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.num}</span>
+            <span style="font-weight:700; color:var(--text-muted);">Suma = 180°</span>
+          </div>
+          <div class="problem-body">
+            <p>Calcula el ángulo incógnita (<strong>?</strong>) a partir de los datos dados:</p>
+            <div class="svg-box">
+              ${makeTriangleSVG(item.pA, item.pB, item.pC, item.labels)}
+            </div>
+            <p><strong>Cálculo:</strong> 180° − (${item.ang1}° + ${item.ang2}°) = ______°</p>
+            <p style="margin-top:0.4rem;"><strong>Clasificación según ángulos:</strong> ________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Respuesta:</strong><br>
+            • Ángulo faltante: <strong>${item.missing}°</strong><br>
+            • Clasificación: <strong>${item.clasif}</strong>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // MÓDULO 4: TESELADOS Y VÉRTICE 360°
+    const tessData = [
+      {
+        num: "Desafío 1",
+        name: "Hexágono Regular",
+        interior: 120,
+        question: "¿Pueden 3 hexágonos regulares cubrir un vértice sin huecos ni traslapes?",
+        calc: "120° × 3 = 360°",
+        verdict: "SÍ TESELA EL PLANO",
+        expl: "La suma en el vértice da exactamente 360°, por lo que no deja espacios vacíos ni se montan entre sí."
+      },
+      {
+        num: "Desafío 2",
+        name: "Octágono Regular",
+        interior: 135,
+        question: "¿Puede un piso cubrirse únicamente con baldosas octogonales regulares?",
+        calc: "135° × 2 = 270° (falta para 360°) | 135° × 3 = 405° (supera 360°)",
+        verdict: "NO PUEDE TESELAR SOLO",
+        expl: "360° no es divisible por 135° (360 ÷ 135 = 2.66...). Deja un hueco de 90° que requiere un cuadrado para cerrar."
+      },
+      {
+        num: "Desafío 3",
+        name: "Triángulo Equilátero",
+        interior: 60,
+        question: "¿Cuántos triángulos equiláteros deben unirse en un vértice para teselar?",
+        calc: "360° ÷ 60° = 6 triángulos",
+        verdict: "SÍ TESELA EL PLANO (con 6 piezas)",
+        expl: "6 × 60° = 360° exactos. Completan una vuelta entera alrededor de un punto común."
+      },
+      {
+        num: "Desafío 4",
+        name: "Condiciones de Teselado",
+        interior: null,
+        question: "¿Cuáles son las dos condiciones geométricas indispensables para formar un teselado?",
+        calc: "Geometría de cobertura del plano",
+        verdict: "1) No dejar espacios ni huecos. 2) No superponerse.",
+        expl: "Cualquier región debe ser recubierta de manera infinita manteniendo contacto borde a borde."
+      },
+      {
+        num: "Desafío 5",
+        name: "Pentágono Regular (108°)",
+        interior: 108,
+        question: "Un arquitecto quiere usar sólo pentágonos regulares de 108°. ¿Qué ocurre?",
+        calc: "108° × 3 = 324° (hueco de 36°) | 108° × 4 = 432° (se montan)",
+        verdict: "IMPOSIBLE TESELAR SOLO",
+        expl: "Al juntar 3 baldosas falta espacio para una cuarta y queda un hueco; al poner 4 se traslapan."
+      },
+      {
+        num: "Desafío 6",
+        name: "Transformación Isométrica",
+        interior: null,
+        question: "Una baldosa con diseño se desplaza 15 cm a la derecha sin rotar. ¿Qué transformación es?",
+        calc: "Movimiento rígido en línea recta",
+        verdict: "TRASLACIÓN",
+        expl: "Conserva la forma, el tamaño y la orientación angular de la figura original."
+      }
+    ];
+
+    function renderTessScreen(pageIdx) {
+      const container = document.getElementById('trio-container-mod4');
+      container.innerHTML = '';
+      const items = tessData.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.num}</span>
+            <span style="font-weight:700; color:var(--text-muted);">${item.name}</span>
+          </div>
+          <div class="problem-body">
+            <p style="font-size:1.1rem; margin-bottom:0.75rem;">${item.question}</p>
+            <div style="background:#f1f5f9; padding:0.75rem; border-radius:8px; margin-bottom:0.75rem;">
+              ${item.interior ? `<p><strong>Ángulo interior:</strong> ${item.interior}°</p>` : ''}
+              <p><strong>Cálculo alrededor del vértice común:</strong><br>_________________________________________</p>
+            </div>
+            <p><strong>Conclusión y justificación:</strong><br>_________________________________________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Veredicto:</strong> <strong>${item.verdict}</strong><br>
+            <strong>Demostración:</strong> ${item.calc}<br>
+            <strong>Explicación:</strong> ${item.expl}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // MÓDULO 5: PATRONES Y TABLAS (BODEGA E INVENTARIO)
+    const patternData = [
+      {
+        num: "Tabla 1",
+        context: "Empaque de paquetes de galletas en cajas:",
+        headers: [1, 2, 3, 5],
+        values:  [8, 16, 24, 40],
+        ruleWords: "Multiplicar la entrada por 8",
+        ruleMath: "S = E × 8",
+        predE: 25,
+        predS: 200
+      },
+      {
+        num: "Tabla 2",
+        context: "Distribución de botellas en bandejas de bodega:",
+        headers: [2, 4, 6, 10],
+        values:  [14, 28, 42, 70],
+        ruleWords: "Multiplicar la entrada por 7",
+        ruleMath: "S = E × 7",
+        predE: 30,
+        predS: 210
+      },
+      {
+        num: "Tabla 3",
+        context: "Masa total agregando un envase base de 5 kg:",
+        headers: [1, 2, 3, 4],
+        values:  [7, 8, 9, 10],
+        ruleWords: "Sumar 6 a la entrada",
+        ruleMath: "S = E + 6",
+        predE: 50,
+        predS: 56
+      },
+      {
+        num: "Tabla 4",
+        context: "Repisa de estanterías en el supermercado:",
+        headers: [3, 5, 8, 12],
+        values:  [15, 25, 40, 60],
+        ruleWords: "Multiplicar la entrada por 5",
+        ruleMath: "S = E × 5",
+        predE: 40,
+        predS: 200
+      },
+      {
+        num: "Tabla 5",
+        context: "Costo de transporte con cargo fijo:",
+        headers: [1, 2, 3, 4],
+        values:  [12, 14, 16, 18],
+        ruleWords: "Multiplicar por 2 y sumar 10",
+        ruleMath: "S = 2 × E + 10",
+        predE: 20,
+        predS: 50
+      },
+      {
+        num: "Tabla 6",
+        context: "Conteo de ruedas de triciclos en bodega:",
+        headers: [4, 6, 9, 15],
+        values:  [12, 18, 27, 45],
+        ruleWords: "Multiplicar la entrada por 3",
+        ruleMath: "S = E × 3",
+        predE: 60,
+        predS: 180
+      }
+    ];
+
+    function renderPatternScreen(pageIdx) {
+      const container = document.getElementById('trio-container-mod5');
+      container.innerHTML = '';
+      const items = patternData.slice(pageIdx * 3, pageIdx * 3 + 3);
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'problem-card';
+        card.innerHTML = `
+          <div class="problem-header">
+            <span class="problem-tag">${item.num}</span>
+            <span style="font-weight:700; color:var(--text-muted);">OA 9: Patrones</span>
+          </div>
+          <div class="problem-body">
+            <p>${item.context}</p>
+            <table class="math-table">
+              <tr>
+                <td>Entrada (E)</td>
+                ${item.headers.map(h => `<td>${h}</td>`).join('')}
+              </tr>
+              <tr>
+                <td>Salida (S)</td>
+                ${item.values.map(v => `<td>${v}</td>`).join('')}
+              </tr>
+            </table>
+            <p><strong>1. Regla en palabras:</strong><br>_________________________________________</p>
+            <p style="margin-top:0.4rem;"><strong>2. Regla simbólica:</strong> S = _________________</p>
+            <p style="margin-top:0.4rem;"><strong>3. Predicción si E = ${item.predE}:</strong> S = ________</p>
+          </div>
+          <div class="solution-box">
+            <strong>✅ Respuesta:</strong><br>
+            • En palabras: <strong>${item.ruleWords}</strong><br>
+            • Con símbolos: <strong>${item.ruleMath}</strong><br>
+            • Para E = ${item.predE}: S = <strong>${item.predS}</strong>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* =========================================================================
+       MÓDULO 6: SIMULACRO CON ESCALA 2.0 A 7.0 AL 60%
+       ========================================================================= */
+    const examQuestionsPool = [
+      {
+        q: "1. Si un triángulo tiene lados de 7 cm, 7 cm y 11 cm, y ángulos de 38°, 38° y 104°, ¿cómo se clasifica?",
+        options: [
+          "Isósceles y Obtusángulo",
+          "Equilátero y Acutángulo",
+          "Escaleno y Rectángulo",
+          "Isósceles y Acutángulo"
+        ],
+        correct: 0,
+        expl: "Tiene dos lados de 7 cm (isósceles) y un ángulo de 104° > 90° (obtusángulo)."
+      },
+      {
+        q: "2. ¿Es posible construir un triángulo con varillas de 5 cm, 6 cm y 12 cm?",
+        options: [
+          "Sí, porque todos los números son mayores que cero.",
+          "No, porque 5 + 6 = 11, y 11 no es mayor que 12.",
+          "Sí, porque 12 − 5 = 7.",
+          "No, porque deben ser los tres lados iguales."
+        ],
+        correct: 1,
+        expl: "Por desigualdad triangular, la suma de los dos menores debe superar al mayor: 5 + 6 = 11 < 12."
+      },
+      {
+        q: "3. En un triángulo, dos ángulos interiores miden 48° y 62°. ¿Cuánto mide el tercer ángulo?",
+        options: ["70°", "80°", "90°", "60°"],
+        correct: 0,
+        expl: "180° − (48° + 62°) = 180° − 110° = 70°."
+      },
+      {
+        q: "4. ¿Por qué el hexágono regular (ángulo interior 120°) sí puede teselar el plano por sí solo?",
+        options: [
+          "Porque 120° × 3 = 360°, completando una vuelta sin huecos.",
+          "Porque tiene 6 lados.",
+          "Porque 120° es un ángulo obtuso.",
+          "Porque 120° + 90° = 210°."
+        ],
+        correct: 0,
+        expl: "Tres hexágonos alrededor de un vértice común suman exactamente 360°."
+      },
+      {
+        q: "5. ¿Qué ocurre al intentar teselar usando únicamente pentágonos regulares de 108°?",
+        options: [
+          "Teselan perfectamente con 3 piezas.",
+          "Con 3 pentágonos da 324° (hueco) y con 4 da 432° (se superponen).",
+          "Completan 360° de forma exacta.",
+          "Se forma un cuadrado en el centro."
+        ],
+        correct: 1,
+        expl: "360 no es múltiplo de 108: 3 baldosas dejan 36° libres y 4 baldosas se traslapan."
+      },
+      {
+        q: "6. En una tabla, cuando E = 2 la salida es S = 12; cuando E = 3, S = 18; cuando E = 5, S = 30. ¿Cuál es la regla matemática?",
+        options: ["S = E + 10", "S = E × 6", "S = E × 5 + 2", "S = E + 15"],
+        correct: 1,
+        expl: "Cada valor de entrada se multiplica por 6: 2×6=12, 3×6=18, 5×6=30."
+      },
+      {
+        q: "7. Usando la regla S = E × 6, ¿cuál será el valor de salida (S) si la entrada es E = 45?",
+        options: ["240", "270", "300", "260"],
+        correct: 1,
+        expl: "S = 45 × 6 = 270."
+      },
+      {
+        q: "8. Un triángulo rectángulo posee un ángulo agudo de 55°. ¿Cuánto mide el otro ángulo agudo?",
+        options: ["35°", "45°", "25°", "55°"],
+        expl: "En un triángulo rectángulo, los dos ángulos agudos suman 90°: 90° − 55° = 35°.",
+        correct: 0
+      },
+      {
+        q: "9. Si desplazamos una baldosa 10 cm a la izquierda sin rotarla ni deformarla, la transformación es:",
+        options: ["Rotación", "Reflexión", "Traslación", "Simetría axial"],
+        correct: 2,
+        expl: "El desplazamiento en línea recta manteniendo la orientación es una traslación."
+      },
+      {
+        q: "10. ¿Cuál de las siguientes ternas de medidas SÍ permite construir un triángulo?",
+        options: [
+          "2 cm, 3 cm, 6 cm",
+          "7 cm, 8 cm, 10 cm",
+          "4 cm, 4 cm, 8 cm",
+          "1 cm, 2 cm, 5 cm"
+        ],
+        correct: 1,
+        expl: "7 + 8 = 15 > 10. En las otras opciones la suma es menor o igual al lado mayor."
+      }
+    ];
+
+    let currentExamQuestions = [];
+    let userAnswers = {};
+
+    function generateExam() {
+      currentExamQuestions = [...examQuestionsPool];
+      userAnswers = {};
+      const container = document.getElementById('exam-questions-list');
+      container.innerHTML = '';
+
+      document.getElementById('final-grade').innerText = '--';
+      document.getElementById('final-score').innerText = 'Puntaje: -- / 10';
+      document.getElementById('final-status').innerText = '';
+
+      currentExamQuestions.forEach((item, qIdx) => {
+        const qCard = document.createElement('div');
+        qCard.className = 'exam-card';
+        qCard.style.marginBottom = '1rem';
+        qCard.innerHTML = `
+          <div style="font-weight:800; font-size:1.1rem; margin-bottom:0.6rem;">${item.q}</div>
+          <div id="opts-q-${qIdx}">
+            ${item.options.map((opt, optIdx) => `
+              <button class="option-btn" onclick="selectExamOption(${qIdx},${optIdx})">
+                ${String.fromCharCode(65 + optIdx)})${opt}
+              </button>
+            `).join('')}
+          </div>
+          <div id="solution-q-${qIdx}" class="solution-box" style="margin-top:0.6rem;">
+            <strong>Explicación:</strong> ${item.expl}
+          </div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    function selectExamOption(qIdx, optIdx) {
+      userAnswers[qIdx] = optIdx;
+      const optsContainer = document.getElementById(`opts-q-${qIdx}`);
+      const btns = optsContainer.querySelectorAll('.option-btn');
+      btns.forEach((b, idx) => {
+        b.classList.toggle('selected', idx === optIdx);
+      });
+    }
+
+    /* =========================================================================
+       FÓRMULA OFICIAL CHILENA CON NOTA 2.0 A 7.0 AL 60% DE EXIGENCIA
+       ========================================================================= */
+    function calculateChileanGrade(score, maxScore = 10, approvalPct = 0.6) {
+      const cutPoint = maxScore * approvalPct; // 6.0 puntos para nota 4.0
+      const minGrade = 2.0;
+      const passGrade = 4.0;
+      const maxGrade = 7.0;
+
+      let grade = minGrade;
+      if (score < cutPoint) {
+        // Tramo 0 a 6 puntos: de 2.0 a 4.0
+        grade = minGrade + (passGrade - minGrade) * (score / cutPoint);
+      } else {
+        // Tramo 6 a 10 puntos: de 4.0 a 7.0
+        grade = passGrade + (maxGrade - passGrade) * ((score - cutPoint) / (maxScore - cutPoint));
+      }
+      return Math.round(grade * 10) / 10;
+    }
+
+    function gradeExam() {
+      let score = 0;
+      currentExamQuestions.forEach((item, qIdx) => {
+        const solBox = document.getElementById(`solution-q-${qIdx}`);
+        solBox.classList.add('show');
+        if (userAnswers[qIdx] === item.correct) {
+          score++;
+        }
+      });
+
+      const finalGrade = calculateChileanGrade(score, 10, 0.6);
+      const gradeElem = document.getElementById('final-grade');
+      gradeElem.innerText = finalGrade.toFixed(1);
+
+      if (finalGrade >= 4.0) {
+        gradeElem.style.color = '#34d399'; // Verde éxito
+        document.getElementById('final-status').innerHTML = '🎉 <strong>¡Aprobado! Cumple con los objetivos de la evaluación.</strong>';
+      } else {
+        gradeElem.style.color = '#f87171'; // Rojo refuerzo
+        document.getElementById('final-status').innerHTML = '⚠️ <strong>Requiere refuerzo: Revisa las explicaciones de cada problema.</strong>';
+      }
+
+      document.getElementById('final-score').innerText = `Puntaje: ${score} / 10 (${Math.round((score/10)*100)}%)`;
+    }
+
+    // Inicializar pantallas por defecto al cargar la página
+    window.addEventListener('DOMContentLoaded', () => {
+      renderTriScreen(0);
+      renderIneqScreen(0);
+      renderMissingScreen(0);
+      renderTessScreen(0);
+      renderPatternScreen(0);
+      generateExam();
+    });
+  </script>
+</body>
+</html>
