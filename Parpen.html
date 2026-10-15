@@ -1,0 +1,2624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoArquitectos Urbanos | OA 12 - 7° Básico</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Space Mono para estética Blueprint/Ingeniería -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para iconografía técnica -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    colors: {
+                        blueprint: {
+                            950: '#071120',
+                            900: '#0c1c36',
+                            800: '#132a4e',
+                            700: '#1d3d6e',
+                            500: '#00a8ff',
+                            400: '#38bdf8',
+                            accent: '#f59e0b',
+                            success: '#10b981',
+                            danger: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Fondo estilo plano arquitectónico (Blueprint Grid) */
+        .bg-blueprint-grid {
+            background-color: #071120;
+            background-image: 
+                linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+                linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+            background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+        }
+
+        /* Animaciones suaves */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.5); }
+            50% { box-shadow: 0 0 15px 4px rgba(56, 189, 248, 0.7); }
+        }
+        .pulse-target {
+            animation: pulseGlow 2s infinite;
+        }
+
+        /* Personalización de barras de desplazamiento */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #071120;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1d3d6e;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        canvas {
+            touch-action: none;
+            user-select: none;
+        }
+
+        /* Etiquetas limpias para fórmulas matemáticas sin símbolos LaTeX crudos */
+        .math-badge {
+            font-family: 'Space Mono', monospace;
+            background: rgba(56, 189, 248, 0.14);
+            color: #7dd3fc;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            padding: 0.1rem 0.45rem;
+            border-radius: 0.375rem;
+            font-weight: 700;
+            display: inline-block;
+            line-height: 1.2;
+        }
+        .math-badge-amber {
+            font-family: 'Space Mono', monospace;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fcd34d;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 0.1rem 0.45rem;
+            border-radius: 0.375rem;
+            font-weight: 700;
+            display: inline-block;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body class="bg-blueprint-grid text-slate-100 font-sans min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+    <!-- ==================== BARRA SUPERIOR DE NAVEGACIÓN Y TELEMETRÍA ==================== -->
+    <header class="bg-blueprint-900/95 backdrop-blur-md border-b border-sky-500/30 sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Logo e Identidad -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-700 flex items-center justify-center shadow-md shadow-sky-500/20 border border-sky-300/40">
+                    <i class="fa-solid fa-compass-drafting text-xl text-white"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono text-[10px] uppercase tracking-widest bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded font-bold">OA 12 • 7° Básico</span>
+                        <span class="hidden sm:inline-block font-mono text-[11px] text-sky-400">MINEDUC CHILE</span>
+                    </div>
+                    <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-white flex items-center gap-2">
+                        GeoArquitectos Urbanos
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Pestañas de los 4 Módulos (Ruta de 80 min) -->
+            <nav class="flex items-center bg-blueprint-950/90 p-1 rounded-xl border border-sky-500/20 overflow-x-auto max-w-full">
+                <button onclick="switchModule(1)" id="nav-mod-1" class="mod-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-sky-500 text-slate-950 shadow">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                    <span>1. Radar</span>
+                    <span class="hidden md:inline font-mono text-[10px] opacity-80">(15m)</span>
+                </button>
+                <button onclick="switchModule(2)" id="nav-mod-2" class="mod-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-sky-200 hover:text-white">
+                    <i class="fa-solid fa-compass"></i>
+                    <span>2. Compás</span>
+                    <span class="hidden md:inline font-mono text-[10px] opacity-75">(25m)</span>
+                </button>
+                <button onclick="switchModule(3)" id="nav-mod-3" class="mod-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-sky-200 hover:text-white">
+                    <i class="fa-solid fa-helmet-safety"></i>
+                    <span>3. Laboratorio CAD</span>
+                    <span class="hidden md:inline font-mono text-[10px] opacity-75">(25m)</span>
+                </button>
+                <button onclick="switchModule(4)" id="nav-mod-4" class="mod-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-sky-200 hover:text-white">
+                    <i class="fa-solid fa-award"></i>
+                    <span>4. Certificación</span>
+                    <span class="hidden md:inline font-mono text-[10px] opacity-75">(15m)</span>
+                </button>
+            </nav>
+
+            <!-- Cronómetro 80 min, Puntaje, Sonido y Guía Docente -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Reloj de Clase (80 min) -->
+                <div class="bg-blueprint-950 border border-sky-500/30 rounded-xl px-2.5 py-1 flex items-center gap-2" title="Cronómetro sugerido para la sesión de 80 minutos">
+                    <i class="fa-regular fa-clock text-sky-400 text-xs"></i>
+                    <span id="class-timer" class="font-mono text-xs sm:text-sm font-bold text-sky-200">80:00</span>
+                    <button onclick="toggleTimer()" id="timer-btn" class="text-xs text-amber-400 hover:text-amber-300 px-1" title="Pausar/Iniciar">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+
+                <!-- Puntaje de Ingeniería -->
+                <div class="bg-amber-500/10 border border-amber-500/40 rounded-xl px-3 py-1 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-amber-400 text-sm"></i>
+                    <span id="score-display" class="font-mono font-bold text-sm text-amber-300">0</span>
+                    <span class="text-[10px] font-mono uppercase text-amber-200/70 hidden sm:inline">PTS</span>
+                </div>
+
+                <!-- Botón Audio -->
+                <button onclick="toggleSound()" id="sound-btn" class="w-9 h-9 rounded-xl bg-blueprint-800 hover:bg-blueprint-700 border border-sky-500/30 flex items-center justify-center text-sky-300 transition" title="Activar/Desactivar Efectos de Sonido">
+                    <i class="fa-solid fa-volume-high text-sm"></i>
+                </button>
+
+                <!-- Botón Modo Profesor -->
+                <button onclick="openTeacherModal()" class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-400/40 text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition" title="Planificación Docente 80 min">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                    <span class="hidden lg:inline">Guía Docente</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de progreso general -->
+        <div class="w-full bg-blueprint-950 h-1.5 overflow-hidden">
+            <div id="global-progress" class="bg-gradient-to-r from-sky-400 via-amber-400 to-emerald-400 h-full transition-all duration-500" style="width: 15%;"></div>
+        </div>
+    </header>
+
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6">
+
+        <!-- =========================================================================
+             MÓDULO 1: RADAR URBANO (INICIO - 15 MINUTOS)
+             ========================================================================= -->
+        <section id="module-1" class="space-y-6">
+            <!-- Banner Introductorio -->
+            <div class="bg-gradient-to-r from-blueprint-900 via-blueprint-800 to-blueprint-900 border border-sky-500/30 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+                    <div class="space-y-2 max-w-3xl">
+                        <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-sky-400 bg-sky-500/10 px-3 py-1 rounded-full border border-sky-400/20">
+                            <i class="fa-solid fa-stopwatch"></i> Fase 1: Exploración y Conceptos Clave • 15 Minutos
+                        </div>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-white">
+                            Misión Inicial: El Lenguaje Secreto de las Ciudades
+                        </h2>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            ¡Bienvenido/a al Departamento de Ingeniería Vial! Antes de trazar puentes, líneas de tren EFE o cruces peatonales con regla y compás, todo urbanista debe dominar las dos relaciones fundamentales entre líneas rectas en el plano: el <strong class="text-sky-300">Paralelismo (<span class="font-mono">L₁ ∥ L₂</span>)</strong> y la <strong class="text-amber-300">Perpendicularidad (<span class="font-mono">L₁ ⊥ L₂</span>)</strong>.
+                        </p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-2 shrink-0 w-full md:w-auto">
+                        <button onclick="openNotebookModal('mod1')" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition">
+                            <i class="fa-solid fa-book-open"></i> Registro en Cuaderno (5 min)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjetas Interactivas de Conceptos: Paralelas vs Perpendiculares vs Secantes Oblicuas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Card 1: Paralelas -->
+                <div class="bg-blueprint-900/90 border border-sky-500/30 rounded-2xl p-4 flex flex-col justify-between hover:border-sky-400 transition">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-mono uppercase px-2.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-400/30 font-bold">Notación: L<sub>1</sub> ∥ L<sub>2</sub></span>
+                            <i class="fa-solid fa-train-tram text-sky-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">Rectas Paralelas</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                            Son rectas en un mismo plano que mantienen una <strong>distancia constante</strong> (<span class="math-badge">d</span>) entre sí. Por más que se prolonguen hacia el infinito, <strong>jamás se intersectan</strong>.
+                        </p>
+                    </div>
+                    <!-- Mini visualización interactiva SVG -->
+                    <div class="bg-blueprint-950 rounded-xl p-3 border border-sky-500/20">
+                        <svg viewBox="0 0 260 95" class="w-full h-24">
+                            <!-- Rieles -->
+                            <line x1="20" y1="28" x2="240" y2="28" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round"/>
+                            <line x1="20" y1="68" x2="240" y2="68" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round"/>
+                            <!-- Flechas de distancia constante -->
+                            <line id="par-dist-1" x1="70" y1="28" x2="70" y2="68" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+                            <line id="par-dist-2" x1="190" y1="28" x2="190" y2="68" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+                            <text x="76" y="52" fill="#f59e0b" font-size="11" font-family="monospace">d = 4m</text>
+                            <text x="196" y="52" fill="#f59e0b" font-size="11" font-family="monospace">d = 4m</text>
+                            <text x="25" y="20" fill="#e2e8f0" font-size="11" font-weight="bold">L₁</text>
+                            <text x="25" y="85" fill="#e2e8f0" font-size="11" font-weight="bold">L₂</text>
+                        </svg>
+                        <div class="text-[11px] text-sky-300 font-mono text-center mt-1">
+                            Ejemplo: Rieles del Metro / Tren EFE
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Perpendiculares -->
+                <div class="bg-blueprint-900/90 border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-between hover:border-amber-400 transition">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-mono uppercase px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 font-bold">Notación: L<sub>1</sub> ⊥ L<sub>2</sub></span>
+                            <i class="fa-solid fa-road-bridge text-amber-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">Rectas Perpendiculares</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                            Son rectas secantes que al cortarse en un punto forman <strong>cuatro ángulos rectos (<span class="math-badge-amber">90°</span>)</strong> congruentes. Representan la <strong>distancia más corta</strong> entre un punto y una vía.
+                        </p>
+                    </div>
+                    <div class="bg-blueprint-950 rounded-xl p-3 border border-amber-500/20">
+                        <svg viewBox="0 0 260 95" class="w-full h-24">
+                            <!-- Líneas perpendiculares -->
+                            <line x1="30" y1="55" x2="230" y2="55" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round"/>
+                            <line x1="130" y1="10" x2="130" y2="88" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round"/>
+                            <!-- Símbolo de ángulo recto (cuadradito) -->
+                            <rect x="130" y="39" width="16" height="16" fill="rgba(16, 185, 129, 0.25)" stroke="#10b981" stroke-width="2"/>
+                            <circle cx="138" cy="47" r="2" fill="#10b981"/>
+                            <text x="152" y="45" fill="#10b981" font-size="12" font-family="monospace" font-weight="bold">90°</text>
+                            <text x="35" y="45" fill="#e2e8f0" font-size="11" font-weight="bold">L₁</text>
+                            <text x="112" y="22" fill="#f59e0b" font-size="11" font-weight="bold">L₂</text>
+                        </svg>
+                        <div class="text-[11px] text-amber-300 font-mono text-center mt-1">
+                            Ejemplo: Cruce de calles en damero o pilares
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Secantes Oblicuas -->
+                <div class="bg-blueprint-900/90 border border-purple-500/30 rounded-2xl p-4 flex flex-col justify-between hover:border-purple-400 transition">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-mono uppercase px-2.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-400/30 font-bold">Secantes (∡ ≠ 90°)</span>
+                            <i class="fa-solid fa-signs-post text-purple-400 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">Rectas Oblicuas</h3>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                            Se cortan en un único punto, pero <strong>NO forman ángulos de 90°</strong>. Generan dos ángulos agudos (<span class="font-mono text-purple-300">&lt; 90°</span>) y dos ángulos obtusos (<span class="font-mono text-purple-300">&gt; 90°</span>).
+                        </p>
+                    </div>
+                    <div class="bg-blueprint-950 rounded-xl p-3 border border-purple-500/20">
+                        <svg viewBox="0 0 260 95" class="w-full h-24">
+                            <line x1="30" y1="70" x2="230" y2="70" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round"/>
+                            <line x1="75" y1="85" x2="185" y2="12" stroke="#c084fc" stroke-width="3.5" stroke-linecap="round"/>
+                            <!-- Arco de ángulo agudo -->
+                            <path d="M 128 70 A 26 26 0 0 0 120 55" fill="none" stroke="#c084fc" stroke-width="2"/>
+                            <text x="135" y="63" fill="#c084fc" font-size="11" font-family="monospace">55° (Agudo)</text>
+                            <text x="55" y="55" fill="#94a3b8" font-size="10" font-family="monospace">125° (Obtuso)</text>
+                        </svg>
+                        <div class="text-[11px] text-purple-300 font-mono text-center mt-1">
+                            Ejemplo: Diagonal Pedro Aguirre Cerda (Concepción)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MINI-JUEGO INTERACTIVO: INSPECCIÓN DE OBRAS EN CHILE -->
+            <div class="bg-blueprint-900/95 border border-sky-500/40 rounded-2xl p-4 sm:p-6 shadow-2xl">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-5 border-b border-sky-500/20 pb-4">
+                    <div>
+                        <span class="text-xs font-mono text-emerald-400 uppercase font-bold tracking-wider">
+                            <i class="fa-solid fa-magnifying-glass-location mr-1"></i> Simulador de Inspección en Terreno
+                        </span>
+                        <h3 class="text-lg sm:text-xl font-bold text-white mt-0.5">
+                            Inspección de Obras Reales: Identifica la Geometría Urbana
+                        </h3>
+                        <p class="text-xs sm:text-sm text-slate-300">
+                            Selecciona cada escenario de ingeniería en Chile, observa las <strong>rectas destacadas en el plano</strong> y clasifícalas correctamente.
+                        </p>
+                    </div>
+                    <!-- Selector de escenarios -->
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadInspectionScene(0)" id="scene-btn-0" class="scene-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 transition">
+                            1. Vía Tren EFE
+                        </button>
+                        <button onclick="loadInspectionScene(1)" id="scene-btn-1" class="scene-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 transition">
+                            2. Plaza de Armas (Damero)
+                        </button>
+                        <button onclick="loadInspectionScene(2)" id="scene-btn-2" class="scene-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 transition">
+                            3. Puente Cau-Cau / Viaducto
+                        </button>
+                        <button onclick="loadInspectionScene(3)" id="scene-btn-3" class="scene-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 transition">
+                            4. Cancha Estadio Nacional
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Contenedor del Escenario Interactivo -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <!-- Visor SVG Interactivo (7 cols) -->
+                    <div class="lg:col-span-7 bg-blueprint-950 rounded-2xl border border-sky-500/30 p-3 relative overflow-hidden">
+                        <div class="flex items-center justify-between text-xs font-mono text-sky-400 mb-2 px-2">
+                            <span id="scene-title-badge">ESCENA 1/4: TRAMO FERROVIARIO EFE VALPARAÍSO - SANTIAGO</span>
+                            <span id="scene-status-badge" class="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30">Pendiente</span>
+                        </div>
+
+                        <!-- SVG Dinámico renderizado por JS -->
+                        <div id="inspection-svg-container" class="w-full h-64 sm:h-72 flex items-center justify-center bg-[#050d1a] rounded-xl border border-sky-500/20">
+                            <!-- Inyectado vía JS -->
+                        </div>
+                    </div>
+
+                    <!-- Panel de Pregunta y Toma de Decisión (5 cols) -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="bg-blueprint-800/60 border border-sky-500/30 rounded-xl p-4">
+                            <div class="text-xs font-mono text-amber-400 uppercase mb-1" id="scene-context-label">
+                                Caso de Ingeniería #1
+                            </div>
+                            <h4 class="text-base sm:text-lg font-bold text-white mb-2" id="scene-question-title">
+                                Cargando desafío...
+                            </h4>
+                            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed" id="scene-question-desc">
+                                Observa las rectas resaltadas en el esquema técnico.
+                            </p>
+                        </div>
+
+                        <!-- Botones de Clasificación -->
+                        <div class="grid grid-cols-1 gap-2.5">
+                            <button onclick="answerInspection('paralelas')" class="w-full py-3 px-4 rounded-xl bg-blueprint-800 hover:bg-sky-500/20 border border-sky-400/40 hover:border-sky-400 text-left flex items-center justify-between group transition">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-300 font-mono font-bold flex items-center justify-center border border-sky-400/30 text-base">∥</span>
+                                    <div>
+                                        <span class="block text-sm font-bold text-white group-hover:text-sky-300">Rectas Paralelas (L<sub>1</sub> ∥ L<sub>2</sub>)</span>
+                                        <span class="block text-[11px] text-slate-400">Mantienen distancia constante, nunca se cruzan</span>
+                                    </div>
+                                </span>
+                                <i class="fa-solid fa-chevron-right text-sky-400 opacity-60 group-hover:opacity-100"></i>
+                            </button>
+
+                            <button onclick="answerInspection('perpendiculares')" class="w-full py-3 px-4 rounded-xl bg-blueprint-800 hover:bg-amber-500/20 border border-amber-400/40 hover:border-amber-400 text-left flex items-center justify-between group transition">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-300 font-mono font-bold flex items-center justify-center border border-amber-400/30 text-base">⊥</span>
+                                    <div>
+                                        <span class="block text-sm font-bold text-white group-hover:text-amber-300">Rectas Perpendiculares (L<sub>1</sub> ⊥ L<sub>2</sub>)</span>
+                                        <span class="block text-[11px] text-slate-400">Se intersectan formando 4 ángulos rectos de 90°</span>
+                                    </div>
+                                </span>
+                                <i class="fa-solid fa-chevron-right text-amber-400 opacity-60 group-hover:opacity-100"></i>
+                            </button>
+
+                            <button onclick="answerInspection('oblicuas')" class="w-full py-3 px-4 rounded-xl bg-blueprint-800 hover:bg-purple-500/20 border border-purple-400/40 hover:border-purple-400 text-left flex items-center justify-between group transition">
+                                <span class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-300 font-mono font-bold flex items-center justify-center border border-purple-400/30 text-base">✕</span>
+                                    <div>
+                                        <span class="block text-sm font-bold text-white group-hover:text-purple-300">Rectas Secantes Oblicuas</span>
+                                        <span class="block text-[11px] text-slate-400">Se cortan en un ángulo distinto de 90°</span>
+                                    </div>
+                                </span>
+                                <i class="fa-solid fa-chevron-right text-purple-400 opacity-60 group-hover:opacity-100"></i>
+                            </button>
+                        </div>
+
+                        <!-- Retroalimentación Inmediata -->
+                        <div id="inspection-feedback" class="hidden rounded-xl p-3.5 text-xs sm:text-sm border"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de Avance al Módulo 2 -->
+            <div class="flex justify-end">
+                <button onclick="switchModule(2)" class="px-6 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-sky-500/25 transition">
+                    <span>Ir al Módulo 2: Simulador de Regla y Compás</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             MÓDULO 2: SIMULADOR PASO A PASO CON REGLA Y COMPÁS (DESARROLLO 1 - 25 MIN)
+             ========================================================================= -->
+        <section id="module-2" class="hidden space-y-6">
+            <!-- Encabezado Módulo 2 -->
+            <div class="bg-blueprint-900 border border-sky-500/30 rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-400/20 mb-2">
+                        <i class="fa-solid fa-compass"></i> Fase 2: Algoritmos de Construcción con Compás • 25 Minutos
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-white">
+                        Taller de Construcción Clásica (Pantalla + Cuaderno)
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-3xl mt-1">
+                        ¿Cómo construían los antiguos geómetras e ingenieros ángulos exactos de <span class="math-badge-amber">90°</span> y vías paralelas sin transportador ni computador? ¡Usando únicamente <strong>arcos de compás de igual radio y una regla no graduada</strong>! Completa las 3 construcciones interactivas y luego replícalas en tu cuaderno.
+                    </p>
+                </div>
+                <button onclick="openNotebookModal('mod2')" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center gap-2 shrink-0 shadow-lg shadow-amber-500/20 transition">
+                    <i class="fa-solid fa-pencil-ruler"></i> Guía Paso a Paso para tu Cuaderno
+                </button>
+            </div>
+
+            <!-- Selector de las 3 Construcciones Fundamentales del OA 12 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button onclick="selectGuidedConstruction(0)" id="const-tab-0" class="const-tab p-3.5 rounded-xl border text-left transition bg-sky-500/20 border-sky-400 text-white">
+                    <div class="flex items-center justify-between text-xs font-mono text-sky-300 mb-1">
+                        <span>CONSTRUCCIÓN A</span>
+                        <span id="const-badge-0" class="px-2 py-0.5 rounded bg-blueprint-950 text-amber-300">En curso</span>
+                    </div>
+                    <div class="font-bold text-sm sm:text-base">1. El Cruce Perfecto (Mediatriz / Simetral)</div>
+                    <p class="text-xs text-slate-300 mt-1">Trazar una perpendicular (<strong>⊥</strong>) que pase exactamente por el punto medio de una avenida <strong>AB</strong>.</p>
+                </button>
+
+                <button onclick="selectGuidedConstruction(1)" id="const-tab-1" class="const-tab p-3.5 rounded-xl border text-left transition bg-blueprint-900/80 border-sky-500/20 text-slate-300 hover:border-sky-400/50">
+                    <div class="flex items-center justify-between text-xs font-mono text-sky-300 mb-1">
+                        <span>CONSTRUCCIÓN B</span>
+                        <span id="const-badge-1" class="px-2 py-0.5 rounded bg-blueprint-950 text-slate-400">Pendiente</span>
+                    </div>
+                    <div class="font-bold text-sm sm:text-base">2. Conexión de Emergencia (⊥ por punto externo P)</div>
+                    <p class="text-xs text-slate-300 mt-1">Conectar un Hospital (<strong>P</strong>) a la carretera (<strong>L</strong>) mediante el camino más corto (perpendicular 90°).</p>
+                </button>
+
+                <button onclick="selectGuidedConstruction(2)" id="const-tab-2" class="const-tab p-3.5 rounded-xl border text-left transition bg-blueprint-900/80 border-sky-500/20 text-slate-300 hover:border-sky-400/50">
+                    <div class="flex items-center justify-between text-xs font-mono text-sky-300 mb-1">
+                        <span>CONSTRUCCIÓN C</span>
+                        <span id="const-badge-2" class="px-2 py-0.5 rounded bg-blueprint-950 text-slate-400">Pendiente</span>
+                    </div>
+                    <div class="font-bold text-sm sm:text-base">3. Ciclovía Expresa Paralela (∥ por punto P)</div>
+                    <p class="text-xs text-slate-300 mt-1">Construir una recta paralela a la avenida principal usando el método del rombo con compás.</p>
+                </button>
+            </div>
+
+            <!-- Área de Simulación Guiada (Canvas + Panel de Instrucciones) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Lienzo HTML5 Canvas Interactivo (8 columnas) -->
+                <div class="lg:col-span-8 bg-blueprint-900 border border-sky-500/40 rounded-2xl p-3 flex flex-col shadow-2xl">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2 border-b border-sky-500/20 px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span id="guided-canvas-title" class="font-mono text-xs sm:text-sm font-bold text-sky-300">
+                                PLANO DE CONSTRUCCIÓN A: MEDIATRIZ (PERPENDICULAR)
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="prevGuidedStep()" class="px-2.5 py-1 rounded-lg bg-blueprint-800 hover:bg-blueprint-700 text-xs text-sky-200 border border-sky-500/30 flex items-center gap-1 transition" title="Paso Anterior">
+                                <i class="fa-solid fa-backward-step"></i> Anterior
+                            </button>
+                            <button onclick="nextGuidedStep()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-xs text-emerald-300 border border-emerald-400/40 font-semibold flex items-center gap-1 transition" title="Ejecutar Paso Siguiente">
+                                Siguiente Paso <i class="fa-solid fa-forward-step"></i>
+                            </button>
+                            <button onclick="resetGuidedStep()" class="px-2.5 py-1 rounded-lg bg-blueprint-800 hover:bg-blueprint-700 text-xs text-amber-300 border border-amber-500/30 flex items-center gap-1 transition" title="Reiniciar Construcción">
+                                <i class="fa-solid fa-rotate-left"></i> Reiniciar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor Responsivo del Canvas -->
+                    <div class="relative w-full h-[360px] sm:h-[430px] bg-[#06101e] rounded-xl border border-sky-500/30 overflow-hidden">
+                        <canvas id="guided-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+                        <!-- Banner flotante de acción -->
+                        <div id="guided-floating-hint" class="absolute bottom-3 left-3 right-3 bg-blueprint-950/90 backdrop-blur border border-amber-400/50 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 pointer-events-none">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fa-solid fa-hand-pointer text-amber-400 text-lg animate-bounce"></i>
+                                <span id="guided-hint-text" class="text-xs sm:text-sm font-semibold text-white">
+                                    Haz clic sobre el punto iluminado en el plano para ejecutar el paso.
+                                </span>
+                            </div>
+                            <span id="guided-step-counter" class="font-mono text-xs bg-amber-500/20 text-amber-300 px-2.5 py-1 rounded border border-amber-400/30 shrink-0">
+                                Paso 1 / 4
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel Derecho: Explicación Pedagógica y Bitácora de Pasos (4 columnas) -->
+                <div class="lg:col-span-4 flex flex-col justify-between bg-blueprint-900 border border-sky-500/30 rounded-2xl p-4 space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between border-b border-sky-500/20 pb-2">
+                            <span class="text-xs font-mono uppercase text-sky-400 font-bold">Protocolo de Ingeniería</span>
+                            <span class="text-xs font-mono text-emerald-400"><i class="fa-solid fa-compass-drafting mr-1"></i>Regla y Compás</span>
+                        </div>
+
+                        <h3 id="guided-Context-heading" class="text-base font-bold text-white">
+                            ¿Por qué funciona este método?
+                        </h3>
+                        <p id="guided-context-explanation" class="text-xs text-slate-300 leading-relaxed bg-blueprint-950/80 p-3 rounded-xl border border-sky-500/20">
+                            Al trazar dos circunferencias del mismo radio desde los extremos A y B, los puntos de intersección P y Q quedan a igual distancia de A y de B. La recta que une P y Q es la simetral o mediatriz, que corta al segmento exactamente a 90°.
+                        </p>
+
+                        <!-- Lista de Pasos Interactivos -->
+                        <div class="space-y-2 pt-1" id="guided-steps-list">
+                            <!-- Dinámico vía JS -->
+                        </div>
+                    </div>
+
+                    <!-- Caja de Consejo para el Cuaderno Físico -->
+                    <div class="bg-amber-500/10 border border-amber-400/30 rounded-xl p-3 space-y-1.5">
+                        <div class="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Regla de Oro en tu Cuaderno:</span>
+                        </div>
+                        <p class="text-[11px] text-amber-100/90 leading-relaxed">
+                            ¡No cambies la abertura de tu compás entre el primer y segundo arco! Si el radio cambia, los puntos no serán equidistantes y el ángulo no medirá 90°.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de Avance al Módulo 3 -->
+            <div class="flex justify-between items-center">
+                <button onclick="switchModule(1)" class="px-4 py-2.5 rounded-xl bg-blueprint-800 hover:bg-blueprint-700 text-slate-300 text-xs sm:text-sm font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Radar
+                </button>
+                <button onclick="switchModule(3)" class="px-6 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-sky-500/25 transition">
+                    <span>Ir al Módulo 3: Laboratorio CAD y Misiones</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             MÓDULO 3: LABORATORIO CAD Y MISIONES DE INGENIERÍA (DESARROLLO 2 - 25 MIN)
+             ========================================================================= -->
+        <section id="module-3" class="hidden space-y-6">
+            <!-- Encabezado Módulo 3 -->
+            <div class="bg-blueprint-900 border border-sky-500/30 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-400/20 mb-1.5">
+                        <i class="fa-solid fa-helmet-safety"></i> Fase 3: Resolución de Problemas Urbanos • 25 Minutos
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-white">
+                        Laboratorio Geométrico CAD: Misiones de Ingeniería Vial
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-3xl">
+                        Utiliza las herramientas de diseño geométrico (Recta, Compás, Escuadra <strong>⊥</strong> y Paralela <strong>∥</strong>) para resolver los 3 desafíos urbanos o experimentar en el Modo Libre.
+                    </p>
+                </div>
+                <!-- Selector de Misiones -->
+                <div class="flex flex-wrap gap-2 shrink-0">
+                    <button onclick="loadCadMission(0)" id="cad-mission-0" class="cad-m-btn px-3 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 shadow transition">
+                        Misión 1: Pasarela ⊥
+                    </button>
+                    <button onclick="loadCadMission(1)" id="cad-mission-1" class="cad-m-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 transition">
+                        Misión 2: Riel EFE ∥
+                    </button>
+                    <button onclick="loadCadMission(2)" id="cad-mission-2" class="cad-m-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 transition">
+                        Misión 3: Parque Rectangular
+                    </button>
+                    <button onclick="loadCadMission(3)" id="cad-mission-3" class="cad-m-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-amber-300 border border-amber-500/30 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Modo Libre
+                    </button>
+                </div>
+            </div>
+
+            <!-- Entorno CAD: Barra de Herramientas + Lienzo + Verificador de Misión -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                <!-- Columna Izquierda: Herramientas CAD + Lienzo (8 cols) -->
+                <div class="lg:col-span-8 bg-blueprint-900 border border-sky-500/40 rounded-2xl p-3 flex flex-col shadow-2xl">
+                    <!-- Barra de Herramientas CAD -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-2 border-b border-sky-500/20">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <button onclick="setCadTool('line')" id="tool-line" class="cad-tool-btn px-3 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 flex items-center gap-1.5 shadow transition" title="Trazar recta o segmento uniendo 2 puntos">
+                                <i class="fa-solid fa-slash"></i>
+                                <span>Recta (2 Puntos)</span>
+                            </button>
+                            <button onclick="setCadTool('compass')" id="tool-compass" class="cad-tool-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 flex items-center gap-1.5 transition" title="Trazar circunferencia (clic en centro y clic en radio)">
+                                <i class="fa-solid fa-compass"></i>
+                                <span>Compás</span>
+                            </button>
+                            <button onclick="setCadTool('perp')" id="tool-perp" class="cad-tool-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition" title="Escuadra: Haz clic en una recta base y luego en el punto por donde pasa la perpendicular">
+                                <i class="fa-solid fa-ruler-combined"></i>
+                                <span>Escuadra ⊥ (90°)</span>
+                            </button>
+                            <button onclick="setCadTool('par')" id="tool-par" class="cad-tool-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 transition" title="Regla Paralela: Haz clic en una recta base y luego en el punto por donde pasa la paralela">
+                                <i class="fa-solid fa-equals"></i>
+                                <span>Paralela ∥</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="toggleCadGridSnap()" id="snap-btn" class="px-2.5 py-1.5 rounded-lg bg-sky-500/20 border border-sky-400/40 text-sky-300 text-xs font-mono" title="Ajustar a cuadrícula">
+                                <i class="fa-solid fa-border-all mr-1"></i>Grid: ON
+                            </button>
+                            <button onclick="undoCadAction()" class="px-2.5 py-1.5 rounded-lg bg-blueprint-800 hover:bg-blueprint-700 border border-sky-500/30 text-slate-200 text-xs" title="Deshacer último trazo">
+                                <i class="fa-solid fa-undo"></i>
+                            </button>
+                            <button onclick="clearCadUserLines()" class="px-2.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs" title="Limpiar mis trazos">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lienzo CAD -->
+                    <div class="relative w-full h-[380px] sm:h-[440px] bg-[#050e1b] rounded-xl border border-sky-500/30 overflow-hidden">
+                        <canvas id="cad-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+                        <!-- Telemetría de Coordenadas y Ángulo en Tiempo Real -->
+                        <div class="absolute top-2.5 left-2.5 bg-blueprint-950/90 border border-sky-500/30 rounded-lg px-3 py-1.5 font-mono text-[11px] text-sky-300 pointer-events-none flex items-center gap-3">
+                            <span id="cad-coords">X: 0, Y: 0</span>
+                            <span class="text-slate-600">|</span>
+                            <span id="cad-live-measure" class="text-amber-300">Selecciona un punto inicial</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Especificaciones de la Misión y Verificación Matemática (4 cols) -->
+                <div class="lg:col-span-4 flex flex-col justify-between bg-blueprint-900 border border-sky-500/30 rounded-2xl p-4 space-y-4">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between border-b border-sky-500/20 pb-2">
+                            <span id="cad-mission-badge" class="text-xs font-mono uppercase px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 font-bold">
+                                MISIÓN DE INGENIERÍA 1/3
+                            </span>
+                            <span id="cad-mission-status" class="text-xs font-mono text-slate-400">Sin validar</span>
+                        </div>
+
+                        <h3 id="cad-mission-title" class="text-lg font-bold text-white">
+                            Misión 1: Nuevo Puente Peatonal (⊥)
+                        </h3>
+                        <p id="cad-mission-desc" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            La Avenida Libertador (recta azul) cruza en diagonal. Construye una pasarela peatonal que sea <strong>exactamente perpendicular (90°)</strong> a la avenida y que pase por la <strong>Entrada del Colegio (Punto P)</strong>.
+                        </p>
+
+                        <!-- Criterios Técnicos de Validación -->
+                        <div class="bg-blueprint-950 rounded-xl p-3.5 border border-sky-500/20 space-y-2">
+                            <div class="text-xs font-mono uppercase text-sky-400 font-bold">Requerimientos del Inspector:</div>
+                            <ul id="cad-mission-criteria" class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                                <!-- Dinámico -->
+                            </ul>
+                        </div>
+
+                        <!-- Ayuda de Herramienta Activa -->
+                        <div id="cad-tool-help" class="bg-sky-500/10 border border-sky-400/30 rounded-xl p-3 text-xs text-sky-200">
+                            <i class="fa-solid fa-circle-info text-sky-400 mr-1"></i>
+                            <strong>Cómo usar Recta:</strong> Haz clic en el primer punto del plano y luego en el segundo punto para unirlos.
+                        </div>
+                    </div>
+
+                    <!-- Botón de Validación Matemática y Resultado -->
+                    <div class="space-y-3">
+                        <div id="cad-validation-box" class="hidden rounded-xl p-3 text-xs sm:text-sm border"></div>
+
+                        <button onclick="validateCadMission()" id="cad-validate-btn" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition">
+                            <i class="fa-solid fa-check-double"></i>
+                            <span>Inspeccionar y Validar Obra</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación inferior -->
+            <div class="flex justify-between items-center">
+                <button onclick="switchModule(2)" class="px-4 py-2.5 rounded-xl bg-blueprint-800 hover:bg-blueprint-700 text-slate-300 text-xs sm:text-sm font-semibold flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al Compás
+                </button>
+                <button onclick="switchModule(4)" class="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-sm flex items-center gap-2 shadow-lg shadow-amber-500/25 transition">
+                    <span>Ir al Módulo 4: Ticket de Salida y Certificación</span>
+                    <i class="fa-solid fa-award"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             MÓDULO 4: TICKET DE SALIDA Y CERTIFICACIÓN DE ARQUITECTO (CIERRE - 15 MIN)
+             ========================================================================= -->
+        <section id="module-4" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Ticket de Salida Interactivo de 5 Preguntas (7 columnas) -->
+                <div class="lg:col-span-7 bg-blueprint-900 border border-sky-500/30 rounded-2xl p-4 sm:p-6 space-y-5 shadow-xl">
+                    <div class="border-b border-sky-500/20 pb-4">
+                        <span class="text-xs font-mono uppercase text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-400/20 font-bold">
+                            <i class="fa-solid fa-clipboard-check mr-1"></i> Fase 4: Evaluación Formativa (Ticket de Salida • 15 Min)
+                        </span>
+                        <h2 class="text-xl sm:text-2xl font-extrabold text-white mt-2">
+                            Examen de Certificación Geométrica OA 12
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                            Responde las 5 preguntas de razonamiento geométrico y aplicación urbana para desbloquear tu Diploma Oficial de GeoArquitecto.
+                        </p>
+                    </div>
+
+                    <!-- Contenedor de Preguntas -->
+                    <div id="quiz-container" class="space-y-4">
+                        <!-- Inyectado dinámicamente por JS -->
+                    </div>
+                </div>
+
+                <!-- Generador de Diploma y Resumen de Logros (5 columnas) -->
+                <div class="lg:col-span-5 space-y-5">
+                    <div class="bg-gradient-to-b from-blueprint-900 to-blueprint-950 border-2 border-amber-400/50 rounded-2xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+                        <!-- Marca de agua decorativa -->
+                        <i class="fa-solid fa-compass-drafting text-9xl text-sky-500/5 absolute -bottom-4 -right-4 pointer-events-none"></i>
+
+                        <div class="text-center space-y-2 border-b border-sky-500/20 pb-4">
+                            <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center mx-auto text-2xl shadow-inner">
+                                <i class="fa-solid fa-medal"></i>
+                            </div>
+                            <div class="font-mono text-[11px] uppercase tracking-widest text-sky-400">Colegio de GeoArquitectos de Chile • 7° Básico</div>
+                            <h3 class="text-xl font-extrabold text-white">Certificado de Competencia OA 12</h3>
+                        </div>
+
+                        <!-- Nombre del Estudiante -->
+                        <div class="my-4 space-y-2">
+                            <label class="block text-xs font-mono uppercase text-slate-300">Nombre del Estudiante / Urbanista:</label>
+                            <input type="text" id="student-name-input" oninput="updateDiplomaName(this.value)" placeholder="Escribe tu nombre y apellido aquí..." class="w-full px-3.5 py-2.5 rounded-xl bg-blueprint-950 border border-sky-500/40 text-white text-sm focus:outline-none focus:border-amber-400">
+                        </div>
+
+                        <!-- Tarjeta de Diploma Vista Previa -->
+                        <div id="diploma-card" class="bg-[#050d1a] border border-sky-500/30 rounded-xl p-4 space-y-3">
+                            <div class="flex justify-between items-center text-xs font-mono text-slate-400">
+                                <span>ID: GEO-7B-2026</span>
+                                <span id="diploma-rank" class="text-amber-300 font-bold">Rango: Aprendiz Vial</span>
+                            </div>
+                            <div class="text-center py-2">
+                                <div class="text-xs text-slate-400">Se otorga a:</div>
+                                <div id="diploma-student-name" class="text-lg font-extrabold text-sky-300 tracking-wide mt-0.5">
+                                    [ Nombre del Estudiante ]
+                                </div>
+                                <p class="text-[11px] text-slate-300 mt-1">
+                                    Por construir y validar líneas perpendiculares (<span class="font-mono font-bold text-amber-300">L₁ ⊥ L₂</span>) y paralelas (<span class="font-mono font-bold text-sky-300">L₁ ∥ L₂</span>) mediante herramientas geométricas manuales y digitales.
+                                </p>
+                            </div>
+
+                            <!-- Medallas de Módulos -->
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-sky-500/20 text-xs">
+                                <div class="bg-blueprint-900/90 p-2 rounded-lg border border-sky-500/20 flex items-center gap-2">
+                                    <i id="badge-icon-1" class="fa-solid fa-circle-check text-slate-600"></i>
+                                    <span>1. Radar Urbano (<span id="stat-mod1">0/4</span>)</span>
+                                </div>
+                                <div class="bg-blueprint-900/90 p-2 rounded-lg border border-sky-500/20 flex items-center gap-2">
+                                    <i id="badge-icon-2" class="fa-solid fa-circle-check text-slate-600"></i>
+                                    <span>2. Compás (<span id="stat-mod2">0/3</span>)</span>
+                                </div>
+                                <div class="bg-blueprint-900/90 p-2 rounded-lg border border-sky-500/20 flex items-center gap-2">
+                                    <i id="badge-icon-3" class="fa-solid fa-circle-check text-slate-600"></i>
+                                    <span>3. Misiones CAD (<span id="stat-mod3">0/3</span>)</span>
+                                </div>
+                                <div class="bg-blueprint-900/90 p-2 rounded-lg border border-sky-500/20 flex items-center gap-2">
+                                    <i id="badge-icon-4" class="fa-solid fa-circle-check text-slate-600"></i>
+                                    <span>4. Examen (<span id="stat-mod4">0/5</span>)</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2 border-t border-sky-500/20 text-xs font-mono">
+                                <span class="text-slate-400">Puntaje Total:</span>
+                                <span id="diploma-total-score" class="text-amber-300 font-bold text-sm">0 PTS</span>
+                            </div>
+                        </div>
+
+                        <button onclick="copyReportToClipboard()" class="mt-4 w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>Copiar Resumen de Logros para el Profesor</span>
+                        </button>
+                        <div id="copy-toast" class="hidden text-center text-xs text-emerald-400 font-mono mt-2">
+                            ¡Reporte copiado al portapapeles!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== MODAL: MODO CUADERNO (INSTRUCCIONES FÍSICAS) ==================== -->
+    <div id="notebook-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-blueprint-900 border-2 border-amber-400/60 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-sky-500/20 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 flex items-center justify-center">
+                        <i class="fa-solid fa-book-open"></i>
+                    </span>
+                    <div>
+                        <span class="text-[11px] font-mono uppercase text-amber-300">Trabajo Manual Complementario</span>
+                        <h3 class="text-lg font-extrabold text-white">Actividad en tu Cuaderno de Matemática</h3>
+                    </div>
+                </div>
+                <button onclick="closeNotebookModal()" class="w-8 h-8 rounded-lg bg-blueprint-800 text-slate-300 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="notebook-modal-body" class="space-y-4 text-xs sm:text-sm text-slate-200 leading-relaxed">
+                <!-- Dinámico -->
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-sky-500/20">
+                <button onclick="closeNotebookModal()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm">
+                    ¡Entendido! Manos a la obra
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: PLANIFICACIÓN DOCENTE 80 MINUTOS ==================== -->
+    <div id="teacher-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-blueprint-900 border-2 border-emerald-400/60 rounded-2xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-sky-500/20 pb-3">
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                    </span>
+                    <div>
+                        <span class="text-xs font-mono uppercase text-emerald-400 font-bold">Guía Didáctica MINEDUC • 7° Básico</span>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-white">Planificación de Clase de 80 Minutos (OA 12)</h3>
+                    </div>
+                </div>
+                <button onclick="closeTeacherModal()" class="w-8 h-8 rounded-lg bg-blueprint-800 text-slate-300 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs sm:text-sm text-slate-200">
+                <div class="bg-blueprint-950 p-4 rounded-xl border border-sky-500/30">
+                    <div class="font-bold text-sky-300 mb-1">Objetivo de Aprendizaje (OA 12):</div>
+                    <p class="text-slate-300">
+                        Construir objetos geométricos de manera manual y/o con software educativo: líneas (perpendiculares, paralelas, bisectrices y alturas en triángulos y cuadriláteros) y puntos notables.
+                        <strong class="text-amber-300 block mt-1">Meta de esta sesión (80 min): Construir y verificar rectas perpendiculares y paralelas mediante regla y compás (físico y digital) aplicadas a contextos de diseño urbano.</strong>
+                    </p>
+                </div>
+
+                <!-- Cronograma de 80 minutos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="bg-blueprint-800/60 p-3.5 rounded-xl border border-sky-500/30">
+                        <div class="font-mono text-xs text-sky-400 font-bold">1. INICIO (15 Minutos) • Módulo 1</div>
+                        <div class="font-bold text-white mt-0.5">Activación e Inspección Urbana</div>
+                        <ul class="list-disc list-inside text-slate-300 mt-1.5 space-y-1 text-xs">
+                            <li><strong>Min 0-5:</strong> Pregunta detonante: <em>"¿Por qué un tren se descarrilaría si los rieles no mantienen distancia constante?"</em></li>
+                            <li><strong>Min 5-12:</strong> Resolución interactiva de los 4 escenarios chilenos en el "Radar Urbano" (EFE, Damero, Viaducto, Cancha).</li>
+                            <li><strong>Min 12-15:</strong> Registro en el cuaderno de la notación simbólica (<span class="math-badge">L₁ ∥ L₂</span> y <span class="math-badge-amber">L₁ ⊥ L₂</span>).</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-blueprint-800/60 p-3.5 rounded-xl border border-amber-500/30">
+                        <div class="font-mono text-xs text-amber-400 font-bold">2. DESARROLLO PARTE 1 (25 Minutos) • Módulo 2</div>
+                        <div class="font-bold text-white mt-0.5">Modelamiento con Regla y Compás (Dual)</div>
+                        <ul class="list-disc list-inside text-slate-300 mt-1.5 space-y-1 text-xs">
+                            <li><strong>Min 15-25:</strong> Construcción A (Simetral/Mediatriz) y Construcción B (<strong>⊥</strong> desde un punto externo <strong>P</strong>). Primero en el simulador y luego en el cuaderno con compás real.</li>
+                            <li><strong>Min 25-40:</strong> Construcción C (Recta paralela por método del rombo y/o deslizamiento de escuadra). Mediación sobre por qué los radios iguales garantizan congruencia.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-blueprint-800/60 p-3.5 rounded-xl border border-emerald-500/30">
+                        <div class="font-mono text-xs text-emerald-400 font-bold">3. DESARROLLO PARTE 2 (25 Minutos) • Módulo 3</div>
+                        <div class="font-bold text-white mt-0.5">Misiones de Ingeniería en el Laboratorio CAD</div>
+                        <ul class="list-disc list-inside text-slate-300 mt-1.5 space-y-1 text-xs">
+                            <li><strong>Min 40-55:</strong> Resolución autónoma o en parejas de las 3 Misiones (Pasarela perpendicular al colegio, Segundo riel paralelo y Subdivisión rectangular).</li>
+                            <li><strong>Min 55-65:</strong> Desafío de comprobación cruzada: usar la herramienta compás en el Modo Libre para levantar una perpendicular sin usar el botón directo.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-blueprint-800/60 p-3.5 rounded-xl border border-purple-500/30">
+                        <div class="font-mono text-xs text-purple-400 font-bold">4. CIERRE Y METACOGNICIÓN (15 Minutos) • Módulo 4</div>
+                        <div class="font-bold text-white mt-0.5">Ticket de Salida y Certificación</div>
+                        <ul class="list-disc list-inside text-slate-300 mt-1.5 space-y-1 text-xs">
+                            <li><strong>Min 65-75:</strong> Ticket de Salida de 5 preguntas (incluyendo transitividad: si <span class="font-mono text-amber-300">L₁ ⊥ L₂</span> y <span class="font-mono text-amber-300">L₂ ⊥ L₃</span> entonces <span class="font-mono text-sky-300">L₁ ∥ L₃</span>).</li>
+                            <li><strong>Min 75-80:</strong> Puesta en común y generación del Certificado de GeoArquitecto.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-sky-500/20">
+                <button onclick="closeTeacherModal()" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm">
+                    Cerrar Planificación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== LÓGICA JAVASCRIPT DE LA APLICACIÓN ==================== -->
+    <script>
+        /* =========================================================================
+           ESTADO GLOBAL, PUNTAJE, SONIDO WEB AUDIO API Y CRONÓMETRO 80 MIN
+           ========================================================================= */
+        const appState = {
+            currentModule: 1,
+            score: 0,
+            soundEnabled: true,
+            timerSeconds: 80 * 60,
+            timerRunning: false,
+            timerInterval: null,
+            mod1Completed: [false, false, false, false],
+            mod2Completed: [false, false, false],
+            mod3Completed: [false, false, false],
+            mod4Answers: [null, null, null, null, null]
+        };
+
+        // Sintetizador de efectos de sonido suaves (sin archivos externos)
+        let audioCtx = null;
+        function playTone(type) {
+            if (!appState.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(520, now);
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.09); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.18); // G5
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+                    osc.start(now);
+                    osc.stop(now + 0.38);
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(175, now + 0.12);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                    osc.start(now);
+                    osc.stop(now + 0.28);
+                }
+            } catch (e) {
+                // Ignorar restricciones de autoplay
+            }
+        }
+
+        function toggleSound() {
+            appState.soundEnabled = !appState.soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            btn.innerHTML = appState.soundEnabled
+                ? '<i class="fa-solid fa-volume-high text-sm"></i>'
+                : '<i class="fa-solid fa-volume-xmark text-sm text-slate-500"></i>';
+        }
+
+        function addScore(points) {
+            appState.score += points;
+            document.getElementById('score-display').textContent = appState.score;
+            updateProgressAndDiploma();
+        }
+
+        // Cronómetro de 80 minutos
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if (appState.timerRunning) {
+                clearInterval(appState.timerInterval);
+                appState.timerRunning = false;
+                btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            } else {
+                appState.timerRunning = true;
+                btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                appState.timerInterval = setInterval(() => {
+                    if (appState.timerSeconds > 0) {
+                        appState.timerSeconds--;
+                        const m = String(Math.floor(appState.timerSeconds / 60)).padStart(2, '0');
+                        const s = String(appState.timerSeconds % 60).padStart(2, '0');
+                        document.getElementById('class-timer').textContent = `${m}:${s}`;
+                    }
+                }, 1000);
+            }
+        }
+
+        // Cambio entre los 4 Módulos
+        function switchModule(modNum) {
+            playTone('click');
+            appState.currentModule = modNum;
+            for (let i = 1; i <= 4; i++) {
+                const sec = document.getElementById(`module-${i}`);
+                const tab = document.getElementById(`nav-mod-${i}`);
+                if (i === modNum) {
+                    sec.classList.remove('hidden');
+                    tab.className = "mod-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all bg-sky-500 text-slate-950 shadow";
+                } else {
+                    sec.classList.add('hidden');
+                    tab.className = "mod-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all text-sky-200 hover:text-white";
+                }
+            }
+
+            if (modNum === 2) {
+                setTimeout(() => {
+                    resizeGuidedCanvas();
+                    drawGuidedCanvas();
+                }, 50);
+            } else if (modNum === 3) {
+                setTimeout(() => {
+                    resizeCadCanvas();
+                    drawCadCanvas();
+                }, 50);
+            } else if (modNum === 4) {
+                updateProgressAndDiploma();
+            }
+        }
+
+        /* =========================================================================
+           MÓDULO 1: ESCENARIOS INTERACTIVOS DE INSPECCIÓN EN CHILE
+           ========================================================================= */
+        const inspectionScenes = [
+            {
+                titleBadge: "ESCENA 1/4: VÍA FÉRREA TREN EFE (VALPARAÍSO - LIMACHE)",
+                contextLabel: "Caso Ferroviario #1",
+                questionTitle: "Los dos rieles de acero (<span class='math-badge'>L₁</span> y <span class='math-badge'>L₂</span>) sobre los que avanza el tren",
+                questionDesc: "Observa las dos líneas celestes (<strong>L₁</strong> y <strong>L₂</strong>) que representan los rieles de acero. Los durmientes de hormigón mantienen siempre <span class='math-badge-amber'>d = 1,676 m</span> (trocha ancha en Chile) entre ambos rieles. ¿Cómo se clasifican <strong>L₁</strong> y <strong>L₂</strong>?",
+                correctAnswer: "paralelas",
+                explanationSuccess: "¡Exacto! Los rieles del tren son RECTAS PARALELAS (L₁ ∥ L₂). Si la distancia entre ellos disminuyera o aumentara, las ruedas del tren se saldrían de la vía causando un descarrilamiento.",
+                explanationError: "Observa con atención: ¿los dos rieles celestes se cruzan en algún punto o mantienen siempre la misma separación constante de 1,676 m?",
+                svgMarkup: `
+                    <svg viewBox="0 0 500 230" class="w-full h-full">
+                        <!-- Durmientes de madera/hormigón -->
+                        <g stroke="#334155" stroke-width="10" stroke-linecap="round">
+                            <line x1="70" y1="45" x2="70" y2="185"/>
+                            <line x1="130" y1="45" x2="130" y2="185"/>
+                            <line x1="190" y1="45" x2="190" y2="185"/>
+                            <line x1="250" y1="45" x2="250" y2="185"/>
+                            <line x1="310" y1="45" x2="310" y2="185"/>
+                            <line x1="370" y1="45" x2="370" y2="185"/>
+                            <line x1="430" y1="45" x2="430" y2="185"/>
+                        </g>
+                        <!-- Rieles Principales Destacados -->
+                        <line x1="25" y1="75" x2="475" y2="75" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+                        <line x1="25" y1="155" x2="475" y2="155" stroke="#38bdf8" stroke-width="6" stroke-linecap="round"/>
+                        <!-- Cotas de distancia constante -->
+                        <line x1="160" y1="75" x2="160" y2="155" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4"/>
+                        <line x1="340" y1="75" x2="340" y2="155" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4"/>
+                        <text x="168" y="120" fill="#f59e0b" font-size="13" font-family="monospace" font-weight="bold">d = 1,676 m</text>
+                        <text x="348" y="120" fill="#f59e0b" font-size="13" font-family="monospace" font-weight="bold">d = 1,676 m</text>
+                        <text x="35" y="62" fill="#ffffff" font-size="15" font-weight="bold">Riel L₁</text>
+                        <text x="35" y="180" fill="#ffffff" font-size="15" font-weight="bold">Riel L₂</text>
+                    </svg>
+                `
+            },
+            {
+                titleBadge: "ESCENA 2/4: TRAZADO EN DAMERO - CENTRO HISTÓRICO DE SANTIAGO / LA SERENA",
+                contextLabel: "Caso Vial #2",
+                questionTitle: "Cruce de Calle Catedral (<span class='math-badge'>L₁</span>) con Calle Morandé (<span class='math-badge-amber'>L₂</span>)",
+                questionDesc: "Muchas ciudades chilenas fueron fundadas con un plano de 'damero' (cuadrícula tipo tablero de ajedrez). Observa cómo se cortan la Avenida Horizontal <strong>L₁</strong> y la Avenida Vertical <strong>L₂</strong> formando un ángulo de <span class='math-badge-amber'>90°</span> en la esquina.",
+                correctAnswer: "perpendiculares",
+                explanationSuccess: "¡Correcto! Son RECTAS PERPENDICULARES (L₁ ⊥ L₂). Al intersectarse forman 4 esquinas exactas de 90° (ángulos rectos), permitiendo manzanas cuadradas y cruces peatonales cortos y seguros.",
+                explanationError: "Fíjate que las dos calles sí se cruzan en el centro y forman esquinas cuadradas exactas de 90°.",
+                svgMarkup: `
+                    <svg viewBox="0 0 500 230" class="w-full h-full">
+                        <!-- Manzanas urbanas -->
+                        <rect x="40" y="20" width="175" height="65" rx="6" fill="#0f2544" stroke="#1e3a5f"/>
+                        <rect x="285" y="20" width="175" height="65" rx="6" fill="#0f2544" stroke="#1e3a5f"/>
+                        <rect x="40" y="145" width="175" height="65" rx="6" fill="#0f2544" stroke="#1e3a5f"/>
+                        <rect x="285" y="145" width="175" height="65" rx="6" fill="#0f2544" stroke="#1e3a5f"/>
+                        <!-- Ejes de las calles -->
+                        <line x1="20" y1="115" x2="480" y2="115" stroke="#38bdf8" stroke-width="5"/>
+                        <line x1="250" y1="10" x2="250" y2="220" stroke="#f59e0b" stroke-width="5"/>
+                        <!-- Símbolo ángulo recto -->
+                        <rect x="250" y="91" width="24" height="24" fill="rgba(16,185,129,0.25)" stroke="#10b981" stroke-width="2.5"/>
+                        <circle cx="262" cy="103" r="2.5" fill="#10b981"/>
+                        <text x="282" y="106" fill="#10b981" font-size="14" font-family="monospace" font-weight="bold">90°</text>
+                        <text x="50" y="106" fill="#38bdf8" font-size="14" font-weight="bold">Calle L₁</text>
+                        <text x="200" y="35" fill="#f59e0b" font-size="14" font-weight="bold">Calle L₂</text>
+                    </svg>
+                `
+            },
+            {
+                titleBadge: "ESCENA 3/4: DIAGONAL UNIVERSITARIA Y AVENIDA PRINCIPAL (CONCEPCIÓN)",
+                contextLabel: "Caso Vial #3",
+                questionTitle: "Avenida Chacabuco (<span class='math-badge'>L₁</span>) y Diagonal Pedro Aguirre Cerda (<span class='math-badge'>L₂</span>)",
+                questionDesc: "Para conectar rápido la Universidad con el centro, los urbanistas trazaron una avenida diagonal (<strong>L₂</strong>, morada) que corta a la calle horizontal (<strong>L₁</strong>, celeste) formando un ángulo de <span class='math-badge-amber'>42°</span>. ¿Qué tipo de rectas son?",
+                correctAnswer: "oblicuas",
+                explanationSuccess: "¡Muy bien! Son RECTAS SECANTES OBLICUAS. Se cortan en un punto, pero su ángulo es de 42° (menor a 90°) y el suplementario de 138°, por lo que NO son perpendiculares.",
+                explanationError: "Las rectas sí se intersectan en un punto, pero observa el ángulo marcado: mide 42°, no 90°.",
+                svgMarkup: `
+                    <svg viewBox="0 0 500 230" class="w-full h-full">
+                        <!-- Calle Horizontal -->
+                        <line x1="30" y1="165" x2="470" y2="165" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
+                        <!-- Calle Diagonal -->
+                        <line x1="120" y1="210" x2="410" y2="25" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
+                        <!-- Punto de intersección -->
+                        <circle cx="190" cy="165" r="6" fill="#f59e0b"/>
+                        <!-- Arco del ángulo -->
+                        <path d="M 245 165 A 55 55 0 0 0 235 136" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
+                        <text x="255" y="154" fill="#f59e0b" font-size="14" font-family="monospace" font-weight="bold">42° (≠ 90°)</text>
+                        <text x="45" y="152" fill="#38bdf8" font-size="14" font-weight="bold">Av. Chacabuco (L₁)</text>
+                        <text x="310" y="45" fill="#c084fc" font-size="14" font-weight="bold">Diagonal (L₂)</text>
+                    </svg>
+                `
+            },
+            {
+                titleBadge: "ESCENA 4/4: TRAZADO CON CAL DE LA CANCHA DEL ESTADIO NACIONAL",
+                contextLabel: "Caso Deportivo #4",
+                questionTitle: "Línea de Fondo (<span class='math-badge-amber'>L₁</span>) y Línea de Banda Lateral (<span class='math-badge'>L₂</span>) en el Tiro de Esquina",
+                questionDesc: "El encargado de marcar la cancha con cal debe asegurarse de que en el banderín del córner la Línea de Fondo (<strong>L₁</strong>) y la Línea Lateral (<strong>L₂</strong>) se unan con precisión reglamentaria FIFA (<span class='math-badge-amber'>90°</span>). ¿Cómo deben ser estas dos líneas?",
+                correctAnswer: "perpendiculares",
+                explanationSuccess: "¡Excelente! La línea de banda y la línea de fondo son PERPENDICULARES (L₁ ⊥ L₂), formando un ángulo recto de 90° en cada uno de los 4 tiros de esquina del rectángulo de juego.",
+                explanationError: "En un campo de fútbol reglamentario (que es un rectángulo), las esquinas donde va el banderín del córner forman exactamente 90°.",
+                svgMarkup: `
+                    <svg viewBox="0 0 500 230" class="w-full h-full">
+                        <!-- Césped fondo -->
+                        <rect x="70" y="30" width="360" height="170" fill="#062e22" stroke="#1e293b" stroke-width="2"/>
+                        <!-- Línea de fondo y banda resaltadas -->
+                        <line x1="70" y1="30" x2="70" y2="200" stroke="#f59e0b" stroke-width="5"/>
+                        <line x1="70" y1="200" x2="430" y2="200" stroke="#38bdf8" stroke-width="5"/>
+                        <!-- Resto de la cancha tenue -->
+                        <line x1="70" y1="30" x2="430" y2="30" stroke="#ffffff" stroke-width="2" stroke-opacity="0.35"/>
+                        <line x1="430" y1="30" x2="430" y2="200" stroke="#ffffff" stroke-width="2" stroke-opacity="0.35"/>
+                        <line x1="250" y1="30" x2="250" y2="200" stroke="#ffffff" stroke-width="2" stroke-opacity="0.35"/>
+                        <circle cx="250" cy="115" r="32" fill="none" stroke="#ffffff" stroke-width="2" stroke-opacity="0.35"/>
+                        <!-- Ángulo recto en el córner -->
+                        <rect x="70" y="176" width="24" height="24" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="2.5"/>
+                        <text x="102" y="190" fill="#10b981" font-size="14" font-family="monospace" font-weight="bold">Córner = 90°</text>
+                        <text x="80" y="60" fill="#f59e0b" font-size="13" font-weight="bold">Línea de Fondo (L₁)</text>
+                        <text x="275" y="190" fill="#38bdf8" font-size="13" font-weight="bold">Línea Lateral (L₂)</text>
+                    </svg>
+                `
+            }
+        ];
+
+        let currentSceneIdx = 0;
+
+        function loadInspectionScene(idx) {
+            currentSceneIdx = idx;
+            const scene = inspectionScenes[idx];
+            document.getElementById('scene-title-badge').textContent = scene.titleBadge;
+            document.getElementById('scene-context-label').textContent = scene.contextLabel;
+            document.getElementById('scene-question-title').innerHTML = scene.questionTitle;
+            document.getElementById('scene-question-desc').innerHTML = scene.questionDesc;
+            document.getElementById('inspection-svg-container').innerHTML = scene.svgMarkup;
+
+            const statusBadge = document.getElementById('scene-status-badge');
+            if (appState.mod1Completed[idx]) {
+                statusBadge.textContent = "✓ Inspeccionado";
+                statusBadge.className = "bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30";
+            } else {
+                statusBadge.textContent = "Pendiente";
+                statusBadge.className = "bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30";
+            }
+
+            // Actualizar botones selectores
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`scene-btn-${i}`);
+                if (i === idx) {
+                    btn.className = "scene-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 transition";
+                } else {
+                    const done = appState.mod1Completed[i] ? "✓ " : "";
+                    btn.className = "scene-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 transition";
+                    btn.textContent = `${done}${i + 1}. ${["Vía Tren EFE", "Plaza de Armas", "Diagonal Urbana", "Estadio Nacional"][i]}`;
+                }
+            }
+
+            const fb = document.getElementById('inspection-feedback');
+            fb.classList.add('hidden');
+        }
+
+        function answerInspection(choice) {
+            const scene = inspectionScenes[currentSceneIdx];
+            const fb = document.getElementById('inspection-feedback');
+            fb.classList.remove('hidden');
+
+            if (choice === scene.correctAnswer) {
+                playTone('success');
+                fb.className = "rounded-xl p-3.5 text-xs sm:text-sm border bg-emerald-500/15 border-emerald-400/50 text-emerald-200";
+                fb.innerHTML = `<div class="font-bold text-emerald-300 mb-1"><i class="fa-solid fa-circle-check mr-1"></i> ¡Inspección Correcta!</div>${scene.explanationSuccess}`;
+
+                if (!appState.mod1Completed[currentSceneIdx]) {
+                    appState.mod1Completed[currentSceneIdx] = true;
+                    addScore(50);
+                    loadInspectionScene(currentSceneIdx);
+                    // Re-mostrar feedback tras refrescar botón
+                    fb.classList.remove('hidden');
+                }
+            } else {
+                playTone('error');
+                fb.className = "rounded-xl p-3.5 text-xs sm:text-sm border bg-rose-500/15 border-rose-400/50 text-rose-200";
+                fb.innerHTML = `<div class="font-bold text-rose-300 mb-1"><i class="fa-solid fa-circle-xmark mr-1"></i> Revisa tu observación:</div>${scene.explanationError}`;
+            }
+        }
+
+        /* =========================================================================
+           MÓDULO 2: SIMULADOR PASO A PASO DE CONSTRUCCIÓN CON REGLA Y COMPÁS
+           ========================================================================= */
+        const guidedConstructions = [
+            {
+                id: 0,
+                title: "PLANO A: SIMETRAL O MEDIATRIZ (PERPENDICULAR POR PUNTO MEDIO)",
+                whyTitle: "¿Por qué los dos arcos forman exactamente 90°?",
+                whyText: "Al abrir el compás con un radio mayor a la mitad del segmento AB y trazar dos arcos iguales desde A y desde B, los puntos donde se cruzan los arcos (P y Q) están a la misma distancia de A y de B. La recta que une P y Q corta a AB en su Punto Medio M formando 90°.",
+                steps: [
+                    {
+                        label: "Paso 1: Posicionar aguja del compás en el extremo A",
+                        hint: "Haz clic en el punto A (extremo izquierdo de la avenida) para apoyar la aguja del compás y trazar el primer arco."
+                    },
+                    {
+                        label: "Paso 2: Posicionar aguja del compás en el extremo B (mismo radio)",
+                        hint: "Haz clic en el punto B (extremo derecho) para trazar el segundo arco con la misma abertura del compás."
+                    },
+                    {
+                        label: "Paso 3: Marcar las intersecciones P (arriba) y Q (abajo)",
+                        hint: "Haz clic en el punto superior P donde se cruzaron ambos arcos de compás."
+                    },
+                    {
+                        label: "Paso 4: Trazar con regla la recta perpendicular por P y Q",
+                        hint: "Haz clic en el punto inferior Q para unir P con Q mediante la regla y obtener el cruce a 90°."
+                    }
+                ]
+            },
+            {
+                id: 1,
+                title: "PLANO B: PERPENDICULAR A UNA RECTA L DESDE UN HOSPITAL EXTERNO (P)",
+                whyTitle: "¿Por qué la perpendicular es la conexión de emergencia ideal?",
+                whyText: "En geometría, la distancia más corta entre un punto externo (Hospital P) y una carretera (Recta L) es siempre el segmento PERPENDICULAR (90°). Con el compás hallamos dos puntos A y B en la carretera que equidistan del hospital.",
+                steps: [
+                    {
+                        label: "Paso 1: Apoyar el compás en el Hospital (P) y cortar la carretera",
+                        hint: "Haz clic en el punto P (Hospital) para trazar un arco que corte la carretera en dos puntos equidistantes A y B."
+                    },
+                    {
+                        label: "Paso 2: Desde el corte izquierdo A, trazar un arco inferior",
+                        hint: "Haz clic en el punto A sobre la carretera para trazar un arco debajo de la vía."
+                    },
+                    {
+                        label: "Paso 3: Desde el corte derecho B, cruzar el arco anterior en Q",
+                        hint: "Haz clic en el punto B sobre la carretera para cortar el arco anterior y hallar el punto guía Q."
+                    },
+                    {
+                        label: "Paso 4: Unir con regla el Hospital P con el punto Q",
+                        hint: "Haz clic en el punto de intersección Q para trazar el acceso vial exactamente a 90°."
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "PLANO C: CICLOVÍA PARALELA A LA AVENIDA POR UN PUNTO P (MÉTODO DEL ROMBO)",
+                whyTitle: "¿Cómo garantiza un rombo que dos vías sean paralelas?",
+                whyText: "Un rombo tiene sus 4 lados de igual longitud (mismo radio de compás), y por propiedad geométrica sus lados opuestos son siempre PARALELOS (L₁ ∥ L₂). Con 3 arcos del mismo radio construimos los vértices del rombo.",
+                steps: [
+                    {
+                        label: "Paso 1: Desde el punto base A en la avenida, trazar arco por P",
+                        hint: "Haz clic en el punto A (en la avenida) para abrir el compás hasta P y cortar la avenida en B."
+                    },
+                    {
+                        label: "Paso 2: Con el mismo radio, apoyar el compás en B",
+                        hint: "Haz clic en el punto B sobre la avenida para trazar un arco hacia la derecha."
+                    },
+                    {
+                        label: "Paso 3: Con el mismo radio, apoyar el compás en P para hallar R",
+                        hint: "Haz clic en el punto P para cortar el arco anterior y encontrar el cuarto vértice R del rombo."
+                    },
+                    {
+                        label: "Paso 4: Trazar la Ciclovía Paralela uniendo P con R",
+                        hint: "Haz clic en el nuevo punto R para trazar la recta paralela (L₂ ∥ L₁) con la regla."
+                    }
+                ]
+            }
+        ];
+
+        let currentGuidedIdx = 0;
+        let currentGuidedStep = 0;
+        let guidedTargetPoint = { x: 0, y: 0 };
+
+        function selectGuidedConstruction(idx) {
+            playTone('click');
+            currentGuidedIdx = idx;
+            currentGuidedStep = 0;
+
+            for (let i = 0; i < 3; i++) {
+                const tab = document.getElementById(`const-tab-${i}`);
+                const badge = document.getElementById(`const-badge-${i}`);
+                if (i === idx) {
+                    tab.className = "const-tab p-3.5 rounded-xl border text-left transition bg-sky-500/20 border-sky-400 text-white";
+                } else {
+                    tab.className = "const-tab p-3.5 rounded-xl border text-left transition bg-blueprint-900/80 border-sky-500/20 text-slate-300 hover:border-sky-400/50";
+                }
+                if (appState.mod2Completed[i]) {
+                    badge.textContent = "✓ Completado";
+                    badge.className = "px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                } else {
+                    badge.textContent = i === idx ? "En curso" : "Pendiente";
+                    badge.className = "px-2 py-0.5 rounded bg-blueprint-950 text-amber-300";
+                }
+            }
+
+            updateGuidedUI();
+            drawGuidedCanvas();
+        }
+
+        function resetGuidedStep() {
+            playTone('click');
+            currentGuidedStep = 0;
+            updateGuidedUI();
+            drawGuidedCanvas();
+        }
+
+        function prevGuidedStep() {
+            playTone('click');
+            if (currentGuidedStep > 0) {
+                currentGuidedStep--;
+                updateGuidedUI();
+                drawGuidedCanvas();
+            }
+        }
+
+        function nextGuidedStep() {
+            if (currentGuidedStep < 4) {
+                currentGuidedStep++;
+                if (currentGuidedStep === 4) {
+                    playTone('success');
+                    if (!appState.mod2Completed[currentGuidedIdx]) {
+                        appState.mod2Completed[currentGuidedIdx] = true;
+                        addScore(100);
+                        selectGuidedConstruction(currentGuidedIdx);
+                        currentGuidedStep = 4;
+                    }
+                } else {
+                    playTone('click');
+                }
+                updateGuidedUI();
+                drawGuidedCanvas();
+            }
+        }
+
+        function updateGuidedUI() {
+            const c = guidedConstructions[currentGuidedIdx];
+            document.getElementById('guided-canvas-title').textContent = c.title;
+            document.getElementById('guided-Context-heading').textContent = c.whyTitle;
+            document.getElementById('guided-context-explanation').textContent = c.whyText;
+
+            const listEl = document.getElementById('guided-steps-list');
+            listEl.innerHTML = '';
+
+            c.steps.forEach((st, i) => {
+                const isDone = i < currentGuidedStep;
+                const isCurrent = i === currentGuidedStep;
+                const div = document.createElement('div');
+                div.className = `p-2.5 rounded-xl border text-xs flex items-start gap-2.5 transition ${
+                    isDone ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' :
+                    isCurrent ? 'bg-amber-500/20 border-amber-400 text-white font-semibold shadow' :
+                    'bg-blueprint-950/50 border-sky-500/10 text-slate-400'
+                }`;
+                div.innerHTML = `
+                    <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0 font-mono text-[11px] mt-0.5 ${
+                        isDone ? 'bg-emerald-500 text-slate-950 font-bold' :
+                        isCurrent ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-blueprint-800 text-slate-400'
+                    }">${isDone ? '✓' : i + 1}</span>
+                    <span>${st.label}</span>
+                `;
+                listEl.appendChild(div);
+            });
+
+            if (currentGuidedStep < 4) {
+                document.getElementById('guided-hint-text').textContent = c.steps[currentGuidedStep].hint;
+                document.getElementById('guided-step-counter').textContent = `Paso ${currentGuidedStep + 1} / 4`;
+            } else {
+                document.getElementById('guided-hint-text').textContent = "¡Construcción geométrica completada con éxito! Ahora replícala en tu cuaderno o pasa a la siguiente.";
+                document.getElementById('guided-step-counter').textContent = "¡Logrado! 4 / 4";
+            }
+        }
+
+        function resizeGuidedCanvas() {
+            const canvas = document.getElementById('guided-canvas');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        function drawGuidedCanvas() {
+            const canvas = document.getElementById('guided-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            // Cuadrícula sutil de fondo
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.07)';
+            ctx.lineWidth = 1;
+            const step = 30;
+            for (let x = 0; x < w; x += step) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            }
+            for (let y = 0; y < h; y += step) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+
+            const cx = w / 2;
+            const cy = h / 2 - 15;
+
+            if (currentGuidedIdx === 0) {
+                // CONSTRUCCIÓN A: MEDIATRIZ DE AB
+                const span = Math.min(w * 0.24, 130);
+                const A = { x: cx - span, y: cy };
+                const B = { x: cx + span, y: cy };
+                const R = span * 1.45; // Radio mayor a la mitad
+                const dy = Math.sqrt(R * R - span * span);
+                const P = { x: cx, y: cy - dy };
+                const Q = { x: cx, y: cy + dy };
+
+                // Segmento Avenida AB
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+
+                // Arco 1 desde A
+                if (currentGuidedStep >= 1) {
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(A.x, A.y, R, -Math.PI / 2.2, Math.PI / 2.2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Arco 2 desde B
+                if (currentGuidedStep >= 2) {
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(B.x, B.y, R, Math.PI - Math.PI / 2.2, Math.PI + Math.PI / 2.2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Punto P marcado
+                if (currentGuidedStep >= 3) {
+                    drawPointLabel(ctx, P.x, P.y, 'P', '#10b981');
+                }
+
+                // Recta Mediatriz final PQ y ángulo de 90°
+                if (currentGuidedStep >= 4) {
+                    drawPointLabel(ctx, Q.x, Q.y, 'Q', '#10b981');
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, P.y - 25);
+                    ctx.lineTo(cx, Q.y + 25);
+                    ctx.stroke();
+
+                    // Símbolo de 90° en M
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(cx, cy - 18, 18, 18);
+                    ctx.strokeRect(cx, cy - 18, 18, 18);
+                    drawPointLabel(ctx, cx, cy, 'M (90°)', '#10b981');
+                }
+
+                drawPointLabel(ctx, A.x, A.y, 'A', '#38bdf8');
+                drawPointLabel(ctx, B.x, B.y, 'B', '#38bdf8');
+
+                // Definir punto objetivo iluminado según el paso actual
+                if (currentGuidedStep === 0) guidedTargetPoint = A;
+                else if (currentGuidedStep === 1) guidedTargetPoint = B;
+                else if (currentGuidedStep === 2) guidedTargetPoint = P;
+                else if (currentGuidedStep === 3) guidedTargetPoint = Q;
+
+            } else if (currentGuidedIdx === 1) {
+                // CONSTRUCCIÓN B: PERPENDICULAR DESDE PUNTO EXTERNO P (HOSPITAL)
+                const roadY = cy + 15;
+                const P = { x: cx, y: cy - 95 };
+                const span = Math.min(w * 0.22, 110);
+                const A = { x: cx - span, y: roadY };
+                const B = { x: cx + span, y: roadY };
+                const R1 = Math.hypot(P.x - A.x, P.y - A.y);
+                const Q = { x: cx, y: roadY + 95 };
+                const R2 = Math.hypot(Q.x - A.x, Q.y - A.y);
+
+                // Carretera L
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(40, roadY); ctx.lineTo(w - 40, roadY); ctx.stroke();
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12px Inter';
+                ctx.fillText('Carretera L', 50, roadY - 10);
+
+                // Paso 1: Arco desde P que corta a la carretera en A y B
+                if (currentGuidedStep >= 1) {
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(P.x, P.y, R1, Math.PI * 0.18, Math.PI * 0.82);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    drawPointLabel(ctx, A.x, A.y, 'A', '#f59e0b');
+                    drawPointLabel(ctx, B.x, B.y, 'B', '#f59e0b');
+                }
+
+                // Paso 2: Arco inferior desde A
+                if (currentGuidedStep >= 2) {
+                    ctx.strokeStyle = '#c084fc';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 4]);
+                    ctx.beginPath();
+                    ctx.arc(A.x, A.y, R2, 0.2, 1.2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Paso 3: Arco inferior desde B que corta en Q
+                if (currentGuidedStep >= 3) {
+                    ctx.strokeStyle = '#c084fc';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 4]);
+                    ctx.beginPath();
+                    ctx.arc(B.x, B.y, R2, Math.PI - 1.2, Math.PI - 0.2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    drawPointLabel(ctx, Q.x, Q.y, 'Q', '#10b981');
+                }
+
+                // Paso 4: Recta Perpendicular PQ
+                if (currentGuidedStep >= 4) {
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(P.x, P.y - 15);
+                    ctx.lineTo(Q.x, Q.y + 15);
+                    ctx.stroke();
+
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(cx, roadY - 18, 18, 18);
+                    ctx.strokeRect(cx, roadY - 18, 18, 18);
+                }
+
+                drawPointLabel(ctx, P.x, P.y, 'P (Hospital)', '#f43f5e');
+
+                if (currentGuidedStep === 0) guidedTargetPoint = P;
+                else if (currentGuidedStep === 1) guidedTargetPoint = A;
+                else if (currentGuidedStep === 2) guidedTargetPoint = B;
+                else if (currentGuidedStep === 3) guidedTargetPoint = Q;
+
+            } else if (currentGuidedIdx === 2) {
+                // CONSTRUCCIÓN C: PARALELA POR PUNTO EXTERNO P (MÉTODO DEL ROMBO)
+                const roadY = cy + 65;
+                const R = Math.min(w * 0.26, 135);
+                const A = { x: cx - R * 0.7, y: roadY };
+                const B = { x: A.x + R, y: roadY };
+                const angle = -Math.PI / 3; // 60 grados
+                const P = { x: A.x + R * Math.cos(angle), y: A.y + R * Math.sin(angle) };
+                const Rpt = { x: P.x + R, y: P.y };
+
+                // Avenida Base L1
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(40, roadY); ctx.lineTo(w - 40, roadY); ctx.stroke();
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12px Inter';
+                ctx.fillText('Avenida Principal L₁', 50, roadY + 22);
+
+                // Línea auxiliar AP
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(A.x - 15, A.y + 26); ctx.lineTo(P.x + 20, P.y - 35); ctx.stroke();
+
+                // Paso 1: Arco con centro A y radio AP que corta L1 en B
+                if (currentGuidedStep >= 1) {
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(A.x, A.y, R, -Math.PI * 0.42, 0.1);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    drawPointLabel(ctx, B.x, B.y, 'B', '#f59e0b');
+                }
+
+                // Paso 2: Arco con centro B y mismo radio R
+                if (currentGuidedStep >= 2) {
+                    ctx.strokeStyle = '#c084fc';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(B.x, B.y, R, -Math.PI * 0.48, -Math.PI * 0.15);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Paso 3: Arco con centro P y mismo radio R que corta en Rpt
+                if (currentGuidedStep >= 3) {
+                    ctx.strokeStyle = '#c084fc';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(P.x, P.y, R, -0.35, 0.35);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    drawPointLabel(ctx, Rpt.x, Rpt.y, 'R', '#10b981');
+                }
+
+                // Paso 4: Recta Paralela PR
+                if (currentGuidedStep >= 4) {
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(40, P.y);
+                    ctx.lineTo(w - 40, P.y);
+                    ctx.stroke();
+                    ctx.fillStyle = '#10b981';
+                    ctx.font = 'bold 12px Inter';
+                    ctx.fillText('Ciclovía Paralela L₂ (L₂ ∥ L₁)', 50, P.y - 12);
+                }
+
+                drawPointLabel(ctx, A.x, A.y, 'A', '#38bdf8');
+                drawPointLabel(ctx, P.x, P.y, 'P', '#f59e0b');
+
+                if (currentGuidedStep === 0) guidedTargetPoint = A;
+                else if (currentGuidedStep === 1) guidedTargetPoint = B;
+                else if (currentGuidedStep === 2) guidedTargetPoint = P;
+                else if (currentGuidedStep === 3) guidedTargetPoint = Rpt;
+            }
+
+            // Dibujar indicador pulsante sobre el punto objetivo si aún no termina
+            if (currentGuidedStep < 4 && guidedTargetPoint) {
+                ctx.save();
+                ctx.strokeStyle = '#fbbf24';
+                ctx.fillStyle = 'rgba(251, 191, 36, 0.28)';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.arc(guidedTargetPoint.x, guidedTargetPoint.y, 18, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+        }
+
+        function drawPointLabel(ctx, x, y, label, color) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#071120';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px Space Mono, monospace';
+            ctx.fillText(label, x + 10, y - 8);
+            ctx.restore();
+        }
+
+        // Eventos de Clic / Touch en el Canvas Guiado
+        function setupGuidedCanvasEvents() {
+            const canvas = document.getElementById('guided-canvas');
+            const handlePointer = (e) => {
+                if (currentGuidedStep >= 4) return;
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+
+                const dist = Math.hypot(x - guidedTargetPoint.x, y - guidedTargetPoint.y);
+                if (dist <= 38) {
+                    currentGuidedStep++;
+                    if (currentGuidedStep === 4) {
+                        playTone('success');
+                        if (!appState.mod2Completed[currentGuidedIdx]) {
+                            appState.mod2Completed[currentGuidedIdx] = true;
+                            addScore(100);
+                            selectGuidedConstruction(currentGuidedIdx);
+                            currentGuidedStep = 4;
+                        }
+                    } else {
+                        playTone('click');
+                    }
+                    updateGuidedUI();
+                    drawGuidedCanvas();
+                } else {
+                    playTone('error');
+                }
+            };
+
+            canvas.addEventListener('mousedown', handlePointer);
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                handlePointer(e);
+            }, { passive: false });
+        }
+
+        /* =========================================================================
+           MÓDULO 3: LABORATORIO CAD INTERACTIVO Y MISIONES DE INGENIERÍA
+           ========================================================================= */
+        const cadState = {
+            currentMission: 0,
+            tool: 'line', // 'line' | 'compass' | 'perp' | 'par'
+            snapToGrid: true,
+            gridSize: 32,
+            fixedLines: [],
+            fixedPoints: [],
+            userShapes: [], // { type: 'line'|'circle', x1, y1, x2, y2, r, tag }
+            firstClick: null,
+            selectedRefLine: null,
+            mousePos: { x: 0, y: 0 }
+        };
+
+        const cadMissionsData = [
+            {
+                badge: "MISIÓN DE INGENIERÍA 1/3",
+                title: "Misión 1: Nuevo Puente Peatonal (⊥)",
+                desc: "La Avenida Libertador (recta celeste) cruza la ciudad. Tienes que diseñar una pasarela peatonal que sea EXACTAMENTE PERPENDICULAR (90°) a la avenida y que pase por la Entrada del Colegio (Punto P).",
+                criteria: [
+                    "La recta trazada debe pasar por el Punto P (Colegio).",
+                    "El ángulo de intersección con la Avenida Libertador debe ser de 90° (±2°).",
+                    "Puedes usar la herramienta 'Escuadra ⊥' o construirla con Compás y Recta."
+                ]
+            },
+            {
+                badge: "MISIÓN DE INGENIERÍA 2/3",
+                title: "Misión 2: Ampliación de Línea Férrea EFE (∥)",
+                desc: "El Riel Principal L₁ (celeste) ya está instalado. Debes construir el segundo riel que sea PARALELO a L₁ (L₂ ∥ L₁) y que pase exactamente por la Estación Central (Punto E).",
+                criteria: [
+                    "La nueva vía debe pasar por la Estación Central (Punto E).",
+                    "La pendiente debe ser idéntica al Riel Principal (ángulo entre ambas = 0°).",
+                    "Usa la herramienta 'Paralela ∥' o 'Recta (2 Puntos)' guiándote por la cuadrícula."
+                ]
+            },
+            {
+                badge: "MISIÓN DE INGENIERÍA 3/3",
+                title: "Misión 3: Cierre de Parque Urbano Rectangular",
+                desc: "Ya están construidos dos bordes perpendiculares del Parque (Borde Sur AB y Borde Oeste AC). Traza los 2 lados faltantes (uno paralelo a AB que pase por C, y otro perpendicular que pase por B) para cerrar el rectángulo.",
+                criteria: [
+                    "Trazar una recta que pase por C y sea paralela a AB (Borde Norte).",
+                    "Trazar una recta que pase por B y sea perpendicular a AB (Borde Este).",
+                    "Las 4 esquinas del parque quedarán a 90°."
+                ]
+            },
+            {
+                badge: "MODO CREATIVO SANDBOX",
+                title: "Laboratorio de Diseño Geométrico Libre",
+                desc: "Experimenta libremente combinando rectas, circunferencias de compás, perpendiculares y paralelas. El sistema calculará en tiempo real los ángulos de tus trazos.",
+                criteria: [
+                    "Usa el Compás para ensayar la mediatriz o el método del rombo.",
+                    "Observa en la esquina superior izquierda el ángulo exacto de cada recta.",
+                    "Presiona Validar para inspeccionar cuántas paralelas y perpendiculares creaste."
+                ]
+            }
+        ];
+
+        function resizeCadCanvas() {
+            const canvas = document.getElementById('cad-canvas');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            setupCadMissionGeometry(cadState.currentMission);
+        }
+
+        function snapCoord(val) {
+            if (!cadState.snapToGrid) return val;
+            return Math.round(val / cadState.gridSize) * cadState.gridSize;
+        }
+
+        function setCadTool(toolName) {
+            playTone('click');
+            cadState.tool = toolName;
+            cadState.firstClick = null;
+            cadState.selectedRefLine = null;
+
+            const tools = ['line', 'compass', 'perp', 'par'];
+            tools.forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (t === toolName) {
+                    btn.className = "cad-tool-btn px-3 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 flex items-center gap-1.5 shadow transition";
+                } else {
+                    btn.className = "cad-tool-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 flex items-center gap-1.5 transition";
+                }
+            });
+
+            const helpBox = document.getElementById('cad-tool-help');
+            if (toolName === 'line') {
+                helpBox.innerHTML = `<i class="fa-solid fa-slash text-sky-400 mr-1"></i> <strong>Recta (2 Puntos):</strong> Haz clic en el primer punto del plano y luego en un segundo punto para trazar la recta.`;
+            } else if (toolName === 'compass') {
+                helpBox.innerHTML = `<i class="fa-solid fa-compass text-amber-400 mr-1"></i> <strong>Compás:</strong> Haz clic en el punto que será el CENTRO y luego mueve el cursor y haz clic para fijar el RADIO.`;
+            } else if (toolName === 'perp') {
+                helpBox.innerHTML = `<i class="fa-solid fa-ruler-combined text-amber-400 mr-1"></i> <strong>Escuadra Perpendicular (⊥):</strong> Primero haz clic sobre una recta existente y luego haz clic en el punto por donde debe pasar la perpendicular a 90°.`;
+            } else if (toolName === 'par') {
+                helpBox.innerHTML = `<i class="fa-solid fa-equals text-emerald-400 mr-1"></i> <strong>Regla Paralela (∥):</strong> Primero haz clic sobre una recta existente y luego haz clic en el punto por donde debe pasar la paralela.`;
+            }
+            drawCadCanvas();
+        }
+
+        function toggleCadGridSnap() {
+            cadState.snapToGrid = !cadState.snapToGrid;
+            const btn = document.getElementById('snap-btn');
+            btn.innerHTML = `<i class="fa-solid fa-border-all mr-1"></i>Grid: ${cadState.snapToGrid ? 'ON' : 'OFF'}`;
+            btn.className = cadState.snapToGrid
+                ? "px-2.5 py-1.5 rounded-lg bg-sky-500/20 border border-sky-400/40 text-sky-300 text-xs font-mono"
+                : "px-2.5 py-1.5 rounded-lg bg-blueprint-800 border border-slate-600 text-slate-400 text-xs font-mono";
+        }
+
+        function undoCadAction() {
+            playTone('click');
+            cadState.userShapes.pop();
+            cadState.firstClick = null;
+            cadState.selectedRefLine = null;
+            drawCadCanvas();
+        }
+
+        function clearCadUserLines() {
+            playTone('click');
+            cadState.userShapes = [];
+            cadState.firstClick = null;
+            cadState.selectedRefLine = null;
+            document.getElementById('cad-validation-box').classList.add('hidden');
+            drawCadCanvas();
+        }
+
+        function loadCadMission(idx) {
+            playTone('click');
+            cadState.currentMission = idx;
+            cadState.userShapes = [];
+            cadState.firstClick = null;
+            cadState.selectedRefLine = null;
+
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`cad-mission-${i}`);
+                if (i === idx) {
+                    btn.className = "cad-m-btn px-3 py-2 rounded-xl text-xs font-bold bg-sky-500 text-slate-950 shadow transition";
+                } else {
+                    btn.className = "cad-m-btn px-3 py-2 rounded-xl text-xs font-bold bg-blueprint-800 text-sky-200 border border-sky-500/30 transition";
+                }
+            }
+
+            const m = cadMissionsData[idx];
+            document.getElementById('cad-mission-badge').textContent = m.badge;
+            document.getElementById('cad-mission-title').textContent = m.title;
+            document.getElementById('cad-mission-desc').textContent = m.desc;
+
+            const statusEl = document.getElementById('cad-mission-status');
+            if (idx < 3 && appState.mod3Completed[idx]) {
+                statusEl.textContent = "✓ Obra Aprobada";
+                statusEl.className = "text-xs font-mono text-emerald-400 font-bold";
+            } else {
+                statusEl.textContent = idx === 3 ? "Sandbox Activo" : "Sin validar";
+                statusEl.className = "text-xs font-mono text-slate-400";
+            }
+
+            const ul = document.getElementById('cad-mission-criteria');
+            ul.innerHTML = m.criteria.map(c => `<li>${c}</li>`).join('');
+            document.getElementById('cad-validation-box').classList.add('hidden');
+
+            setupCadMissionGeometry(idx);
+            drawCadCanvas();
+        }
+
+        function setupCadMissionGeometry(idx) {
+            const canvas = document.getElementById('cad-canvas');
+            if (!canvas) return;
+            const g = cadState.gridSize;
+            const cols = Math.floor(canvas.width / g);
+            const rows = Math.floor(canvas.height / g);
+            const midX = Math.floor(cols / 2) * g;
+            const midY = Math.floor(rows / 2) * g;
+
+            cadState.fixedLines = [];
+            cadState.fixedPoints = [];
+
+            if (idx === 0) {
+                // Misión 1: Avenida diagonal pendiente 1/2 y punto P externo
+                const A = { x: midX - 4 * g, y: midY + 2 * g, label: 'A' };
+                const B = { x: midX + 4 * g, y: midY - 2 * g, label: 'B' };
+                const P = { x: midX - 1 * g, y: midY - 3 * g, label: 'P (Colegio)' };
+                cadState.fixedLines.push({ x1: A.x, y1: A.y, x2: B.x, y2: B.y, label: 'Av. Libertador', color: '#38bdf8' });
+                cadState.fixedPoints.push(A, B, P);
+            } else if (idx === 1) {
+                // Misión 2: Riel EFE inclinado y Estación E a 4 unidades
+                const A = { x: midX - 5 * g, y: midY + 2 * g, label: 'R₁' };
+                const B = { x: midX + 3 * g, y: midY - 2 * g, label: 'R₂' };
+                const E = { x: midX - 3 * g, y: midY - 2 * g, label: 'E (Estación)' };
+                cadState.fixedLines.push({ x1: A.x, y1: A.y, x2: B.x, y2: B.y, label: 'Riel Principal L₁', color: '#38bdf8' });
+                cadState.fixedPoints.push(A, B, E);
+            } else if (idx === 2) {
+                // Misión 3: Parque Rectangular con base horizontal AB y lateral AC
+                const A = { x: midX - 4 * g, y: midY + 3 * g, label: 'A (90°)' };
+                const B = { x: midX + 4 * g, y: midY + 3 * g, label: 'B' };
+                const C = { x: midX - 4 * g, y: midY - 2 * g, label: 'C' };
+                cadState.fixedLines.push(
+                    { x1: A.x, y1: A.y, x2: B.x, y2: B.y, label: 'Borde Sur AB', color: '#38bdf8' },
+                    { x1: A.x, y1: A.y, x2: C.x, y2: C.y, label: 'Borde Oeste AC', color: '#38bdf8' }
+                );
+                cadState.fixedPoints.push(A, B, C);
+            } else {
+                // Modo Libre: 2 puntos de referencia opcionales
+                const A = { x: midX - 3 * g, y: midY, label: 'A' };
+                const B = { x: midX + 3 * g, y: midY, label: 'B' };
+                cadState.fixedPoints.push(A, B);
+            }
+        }
+
+        // Dibuja una recta extendida a los bordes del lienzo que pasa por (x1,y1) y (x2,y2)
+        function drawExtendedLine(ctx, x1, y1, x2, y2, color, width = 3, dashed = false) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (len < 1) return;
+            const ux = dx / len;
+            const uy = dy / len;
+            const big = 1500;
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            if (dashed) ctx.setLineDash([7, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x1 - ux * big, y1 - uy * big);
+            ctx.lineTo(x1 + ux * big, y1 + uy * big);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawCadCanvas() {
+            const canvas = document.getElementById('cad-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const g = cadState.gridSize;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // 1. Dibujar cuadrícula CAD
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.09)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < w; x += g) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            }
+            for (let y = 0; y < h; y += g) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+
+            // 2. Dibujar rectas fijas de la misión
+            cadState.fixedLines.forEach((ln, idx) => {
+                const isSelected = cadState.selectedRefLine && cadState.selectedRefLine.source === 'fixed' && cadState.selectedRefLine.index === idx;
+                drawExtendedLine(ctx, ln.x1, ln.y1, ln.x2, ln.y2, isSelected ? '#fbbf24' : ln.color, 4, false);
+                ctx.fillStyle = ln.color;
+                ctx.font = 'bold 12px Inter';
+                ctx.fillText(ln.label, (ln.x1 + ln.x2) / 2 + 8, (ln.y1 + ln.y2) / 2 - 10);
+            });
+
+            // 3. Dibujar formas creadas por el estudiante
+            cadState.userShapes.forEach((sh, idx) => {
+                if (sh.type === 'line') {
+                    const isSelected = cadState.selectedRefLine && cadState.selectedRefLine.source === 'user' && cadState.selectedRefLine.index === idx;
+                    drawExtendedLine(ctx, sh.x1, sh.y1, sh.x2, sh.y2, isSelected ? '#fbbf24' : '#10b981', 3.5, false);
+                    drawPointLabel(ctx, sh.x1, sh.y1, '', '#10b981');
+                    drawPointLabel(ctx, sh.x2, sh.y2, '', '#10b981');
+                } else if (sh.type === 'circle') {
+                    ctx.save();
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.beginPath();
+                    ctx.arc(sh.x1, sh.y1, sh.r, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                    drawPointLabel(ctx, sh.x1, sh.y1, '', '#f59e0b');
+                }
+            });
+
+            // 4. Vista previa elástica según la herramienta activa
+            const mx = cadState.mousePos.x;
+            const my = cadState.mousePos.y;
+
+            if (cadState.firstClick) {
+                const fx = cadState.firstClick.x;
+                const fy = cadState.firstClick.y;
+                if (cadState.tool === 'line') {
+                    drawExtendedLine(ctx, fx, fy, mx, my, 'rgba(16, 185, 129, 0.65)', 2.5, true);
+                } else if (cadState.tool === 'compass') {
+                    const r = Math.hypot(mx - fx, my - fy);
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(245, 158, 11, 0.75)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.arc(fx, fy, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                drawPointLabel(ctx, fx, fy, '', '#fbbf24');
+            }
+
+            if (cadState.selectedRefLine && (cadState.tool === 'perp' || cadState.tool === 'par')) {
+                const ref = getRefLineObject(cadState.selectedRefLine);
+                if (ref) {
+                    const dx = ref.x2 - ref.x1;
+                    const dy = ref.y2 - ref.y1;
+                    if (cadState.tool === 'perp') {
+                        // Vector normal (-dy, dx) pasando por (mx, my)
+                        drawExtendedLine(ctx, mx, my, mx - dy, my + dx, 'rgba(251, 191, 36, 0.75)', 2.5, true);
+                    } else {
+                        // Vector paralelo (dx, dy) pasando por (mx, my)
+                        drawExtendedLine(ctx, mx, my, mx + dx, my + dy, 'rgba(16, 185, 129, 0.75)', 2.5, true);
+                    }
+                }
+            }
+
+            // 5. Dibujar puntos fijos encima
+            cadState.fixedPoints.forEach(pt => {
+                drawPointLabel(ctx, pt.x, pt.y, pt.label, '#f43f5e');
+            });
+
+            // 6. Dibujar cursor magnético
+            ctx.save();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(mx, my, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function getRefLineObject(sel) {
+            if (!sel) return null;
+            if (sel.source === 'fixed') return cadState.fixedLines[sel.index];
+            if (sel.source === 'user') return cadState.userShapes[sel.index];
+            return null;
+        }
+
+        // Distancia de un punto (px, py) a una recta infinita definida por (x1,y1)-(x2,y2)
+        function pointToLineDistance(px, py, x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (len < 1e-5) return Infinity;
+            return Math.abs(dy * px - dx * py + x2 * y1 - y2 * x1) / len;
+        }
+
+        // Ángulo en grados [0, 90] entre dos rectas
+        function angleBetweenLinesDeg(l1, l2) {
+            const v1x = l1.x2 - l1.x1;
+            const v1y = l1.y2 - l1.y1;
+            const v2x = l2.x2 - l2.x1;
+            const v2y = l2.y2 - l2.y1;
+            const m1 = Math.hypot(v1x, v1y);
+            const m2 = Math.hypot(v2x, v2y);
+            if (m1 < 1e-5 || m2 < 1e-5) return 0;
+            const dot = Math.abs(v1x * v2x + v1y * v2y) / (m1 * m2);
+            const clamped = Math.min(1, Math.max(0, dot));
+            return (Math.acos(clamped) * 180) / Math.PI;
+        }
+
+        function findNearestLine(px, py) {
+            let best = null;
+            let minDist = 22;
+
+            cadState.fixedLines.forEach((ln, idx) => {
+                const d = pointToLineDistance(px, py, ln.x1, ln.y1, ln.x2, ln.y2);
+                if (d < minDist) {
+                    minDist = d;
+                    best = { source: 'fixed', index: idx };
+                }
+            });
+
+            cadState.userShapes.forEach((sh, idx) => {
+                if (sh.type === 'line') {
+                    const d = pointToLineDistance(px, py, sh.x1, sh.y1, sh.x2, sh.y2);
+                    if (d < minDist) {
+                        minDist = d;
+                        best = { source: 'user', index: idx };
+                    }
+                }
+            });
+
+            return best;
+        }
+
+        function setupCadCanvasEvents() {
+            const canvas = document.getElementById('cad-canvas');
+
+            const getCanvasPos = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const rawX = clientX - rect.left;
+                const rawY = clientY - rect.top;
+
+                // Priorizar imán a puntos fijos cercanos
+                for (const pt of cadState.fixedPoints) {
+                    if (Math.hypot(rawX - pt.x, rawY - pt.y) < 18) {
+                        return { x: pt.x, y: pt.y };
+                    }
+                }
+                return { x: snapCoord(rawX), y: snapCoord(rawY) };
+            };
+
+            const onMove = (e) => {
+                const pos = getCanvasPos(e);
+                cadState.mousePos = pos;
+                const gx = Math.round(pos.x / cadState.gridSize);
+                const gy = Math.round(pos.y / cadState.gridSize);
+                document.getElementById('cad-coords').textContent = `Grid: (${gx}, ${gy})`;
+
+                if (cadState.firstClick && cadState.tool === 'line') {
+                    const dx = pos.x - cadState.firstClick.x;
+                    const dy = -(pos.y - cadState.firstClick.y);
+                    const ang = ((Math.atan2(dy, dx) * 180) / Math.PI + 360) % 180;
+                    document.getElementById('cad-live-measure').textContent = `Inclinación: ${ang.toFixed(1)}°`;
+                } else if (cadState.firstClick && cadState.tool === 'compass') {
+                    const r = Math.hypot(pos.x - cadState.firstClick.x, pos.y - cadState.firstClick.y) / cadState.gridSize;
+                    document.getElementById('cad-live-measure').textContent = `Radio: ${r.toFixed(1)} u`;
+                }
+                drawCadCanvas();
+            };
+
+            const onDown = (e) => {
+                const pos = getCanvasPos(e);
+                cadState.mousePos = pos;
+
+                if (cadState.tool === 'line') {
+                    if (!cadState.firstClick) {
+                        playTone('click');
+                        cadState.firstClick = pos;
+                        document.getElementById('cad-live-measure').textContent = "Selecciona el 2° punto de la recta";
+                    } else {
+                        if (Math.hypot(pos.x - cadState.firstClick.x, pos.y - cadState.firstClick.y) > 8) {
+                            playTone('click');
+                            cadState.userShapes.push({
+                                type: 'line',
+                                x1: cadState.firstClick.x,
+                                y1: cadState.firstClick.y,
+                                x2: pos.x,
+                                y2: pos.y
+                            });
+                            cadState.firstClick = null;
+                            document.getElementById('cad-live-measure').textContent = "Recta trazada";
+                        }
+                    }
+                } else if (cadState.tool === 'compass') {
+                    if (!cadState.firstClick) {
+                        playTone('click');
+                        cadState.firstClick = pos;
+                        document.getElementById('cad-live-measure').textContent = "Haz clic para definir el radio";
+                    } else {
+                        const r = Math.hypot(pos.x - cadState.firstClick.x, pos.y - cadState.firstClick.y);
+                        if (r > 10) {
+                            playTone('click');
+                            cadState.userShapes.push({
+                                type: 'circle',
+                                x1: cadState.firstClick.x,
+                                y1: cadState.firstClick.y,
+                                r: r
+                            });
+                            cadState.firstClick = null;
+                            document.getElementById('cad-live-measure').textContent = "Arco de compás trazado";
+                        }
+                    }
+                } else if (cadState.tool === 'perp' || cadState.tool === 'par') {
+                    if (!cadState.selectedRefLine) {
+                        const nearest = findNearestLine(pos.x, pos.y);
+                        if (nearest) {
+                            playTone('click');
+                            cadState.selectedRefLine = nearest;
+                            document.getElementById('cad-live-measure').textContent = "Ahora haz clic en el punto por donde pasa";
+                        } else {
+                            playTone('error');
+                            document.getElementById('cad-live-measure').textContent = "Haz clic encima de una recta base primero";
+                        }
+                    } else {
+                        const ref = getRefLineObject(cadState.selectedRefLine);
+                        if (ref) {
+                            playTone('click');
+                            const dx = ref.x2 - ref.x1;
+                            const dy = ref.y2 - ref.y1;
+                            if (cadState.tool === 'perp') {
+                                cadState.userShapes.push({
+                                    type: 'line',
+                                    x1: pos.x,
+                                    y1: pos.y,
+                                    x2: pos.x - dy,
+                                    y2: pos.y + dx
+                                });
+                                document.getElementById('cad-live-measure').textContent = "Perpendicular (90°) construida";
+                            } else {
+                                cadState.userShapes.push({
+                                    type: 'line',
+                                    x1: pos.x,
+                                    y1: pos.y,
+                                    x2: pos.x + dx,
+                                    y2: pos.y + dy
+                                });
+                                document.getElementById('cad-live-measure').textContent = "Paralela (∥) construida";
+                            }
+                            cadState.selectedRefLine = null;
+                        }
+                    }
+                }
+                drawCadCanvas();
+            };
+
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mousedown', onDown);
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                onDown(e);
+            }, { passive: false });
+        }
+
+        // Validación matemática de las 3 misiones de ingeniería
+        function validateCadMission() {
+            const box = document.getElementById('cad-validation-box');
+            box.classList.remove('hidden');
+            const userLines = cadState.userShapes.filter(s => s.type === 'line');
+
+            if (userLines.length === 0) {
+                playTone('error');
+                box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-rose-500/15 border-rose-400/50 text-rose-200";
+                box.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i> Aún no has trazado ninguna recta en el plano. Usa las herramientas superiores.`;
+                return;
+            }
+
+            if (cadState.currentMission === 0) {
+                // Validar Misión 1: Recta perpendicular a Av. Libertador que pase por P
+                const baseLine = cadState.fixedLines[0];
+                const P = cadState.fixedPoints[2];
+                let valid = false;
+                let measuredAngle = 0;
+
+                for (const ul of userLines) {
+                    const distP = pointToLineDistance(P.x, P.y, ul.x1, ul.y1, ul.x2, ul.y2);
+                    const ang = angleBetweenLinesDeg(baseLine, ul);
+                    measuredAngle = ang;
+                    if (distP <= 12 && Math.abs(ang - 90) <= 2.5) {
+                        valid = true;
+                        break;
+                    }
+                }
+
+                if (valid) {
+                    playTone('success');
+                    box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-emerald-500/15 border-emerald-400/50 text-emerald-200";
+                    box.innerHTML = `<strong><i class="fa-solid fa-circle-check mr-1"></i> ¡Misión 1 Aprobada!</strong> La pasarela pasa por el Colegio P y corta la Avenida Libertador en un ángulo exacto de <strong>${measuredAngle.toFixed(1)}° (⊥)</strong>.`;
+                    if (!appState.mod3Completed[0]) {
+                        appState.mod3Completed[0] = true;
+                        addScore(150);
+                        document.getElementById('cad-mission-status').textContent = "✓ Obra Aprobada";
+                    }
+                } else {
+                    playTone('error');
+                    box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-rose-500/15 border-rose-400/50 text-rose-200";
+                    box.innerHTML = `<strong>Revisión Técnica:</strong> Tu recta forma un ángulo de <strong>${measuredAngle.toFixed(1)}°</strong> o no pasa por el punto P (Colegio). Asegúrate de que sea de <strong>90°</strong> y cruce exactamente por P.`;
+                }
+
+            } else if (cadState.currentMission === 1) {
+                // Validar Misión 2: Recta paralela al Riel Principal que pase por Estación E
+                const baseLine = cadState.fixedLines[0];
+                const E = cadState.fixedPoints[2];
+                let valid = false;
+                let measuredAngle = 90;
+
+                for (const ul of userLines) {
+                    const distE = pointToLineDistance(E.x, E.y, ul.x1, ul.y1, ul.x2, ul.y2);
+                    const ang = angleBetweenLinesDeg(baseLine, ul);
+                    measuredAngle = ang;
+                    if (distE <= 12 && ang <= 2.5) {
+                        valid = true;
+                        break;
+                    }
+                }
+
+                if (valid) {
+                    playTone('success');
+                    box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-emerald-500/15 border-emerald-400/50 text-emerald-200";
+                    box.innerHTML = `<strong><i class="fa-solid fa-circle-check mr-1"></i> ¡Misión 2 Aprobada!</strong> El nuevo riel pasa por la Estación E y mantiene una desviación de <strong>${measuredAngle.toFixed(1)}° (Paralelismo perfecto L₁ ∥ L₂)</strong>.`;
+                    if (!appState.mod3Completed[1]) {
+                        appState.mod3Completed[1] = true;
+                        addScore(150);
+                        document.getElementById('cad-mission-status').textContent = "✓ Obra Aprobada";
+                    }
+                } else {
+                    playTone('error');
+                    box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-rose-500/15 border-rose-400/50 text-rose-200";
+                    box.innerHTML = `<strong>Revisión Técnica:</strong> El riel trazado tiene una desviación de <strong>${measuredAngle.toFixed(1)}°</strong> respecto al riel principal o no pasa por la Estación E. ¡Recuerda que dos rectas paralelas tienen 0° de desviación entre sí!`;
+                }
+
+            } else if (cadState.currentMission === 2) {
+                // Validar Misión 3: Cerrar el rectángulo (una paralela a AB por C, y una perpendicular a AB por B)
+                const lineAB = cadState.fixedLines[0];
+                const B = cadState.fixedPoints[1];
+                const C = cadState.fixedPoints[2];
+
+                let hasTopParallel = false;
+                let hasRightPerp = false;
+
+                for (const ul of userLines) {
+                    const distC = pointToLineDistance(C.x, C.y, ul.x1, ul.y1, ul.x2, ul.y2);
+                    const distB = pointToLineDistance(B.x, B.y, ul.x1, ul.y1, ul.x2, ul.y2);
+                    const ang = angleBetweenLinesDeg(lineAB, ul);
+
+                    if (distC <= 12 && ang <= 2.5) hasTopParallel = true;
+                    if (distB <= 12 && Math.abs(ang - 90) <= 2.5) hasRightPerp = true;
+                }
+
+                if (hasTopParallel && hasRightPerp) {
+                    playTone('success');
+                    box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-emerald-500/15 border-emerald-400/50 text-emerald-200";
+                    box.innerHTML = `<strong><i class="fa-solid fa-circle-check mr-1"></i> ¡Misión 3 Aprobada!</strong> Has cerrado el Parque Rectangular con sus 4 ángulos rectos de 90° y lados opuestos paralelos.`;
+                    if (!appState.mod3Completed[2]) {
+                        appState.mod3Completed[2] = true;
+                        addScore(150);
+                        document.getElementById('cad-mission-status').textContent = "✓ Obra Aprobada";
+                    }
+                } else {
+                    playTone('error');
+                    box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-rose-500/15 border-rose-400/50 text-rose-200";
+                    box.innerHTML = `<strong>Estado del Rectángulo:</strong><br>• Borde Norte (paralelo a AB por C): ${hasTopParallel ? '✓ Listo' : '✗ Falta'}<br>• Borde Este (perpendicular a AB por B): ${hasRightPerp ? '✓ Listo' : '✗ Falta'}`;
+                }
+
+            } else {
+                // Modo Libre: Analizador automático de relaciones entre las rectas creadas
+                let perpPairs = 0;
+                let parPairs = 0;
+                for (let i = 0; i < userLines.length; i++) {
+                    for (let j = i + 1; j < userLines.length; j++) {
+                        const ang = angleBetweenLinesDeg(userLines[i], userLines[j]);
+                        if (Math.abs(ang - 90) <= 2.5) perpPairs++;
+                        if (ang <= 2.5) parPairs++;
+                    }
+                }
+                playTone('success');
+                box.className = "rounded-xl p-3 text-xs sm:text-sm border bg-sky-500/15 border-sky-400/50 text-sky-200";
+                box.innerHTML = `<strong>Reporte de Diseño Libre:</strong> Has trazado <strong>${userLines.length}</strong> rectas, formando <strong>${perpPairs}</strong> pares de rectas perpendiculares (⊥) y <strong>${parPairs}</strong> pares de rectas paralelas (∥).`;
+            }
+        }
+
+        /* =========================================================================
+           MÓDULO 4: TICKET DE SALIDA (5 PREGUNTAS) Y DIPLOMA
+           ========================================================================= */
+        const quizQuestions = [
+            {
+                q: "1. Si la Avenida Los Carrera (L₁) es perpendicular al Pasaje Bulnes (L₂), y a su vez la Avenida O'Higgins (L₃) también es perpendicular al mismo Pasaje Bulnes (L₂). ¿Qué relación tienen entre sí las avenidas L₁ y L₃?",
+                options: [
+                    "Son rectas paralelas (L₁ ∥ L₃)",
+                    "Son rectas perpendiculares entre sí (L₁ ⊥ L₃)",
+                    "Se cortan en un ángulo de 45°"
+                ],
+                correct: 0,
+                feedback: "¡Correcto! En el plano, dos rectas que son perpendiculares a una misma tercera recta son siempre PARALELAS entre sí (L₁ ⊥ L₂ y L₃ ⊥ L₂ ⇒ L₁ ∥ L₃)."
+            },
+            {
+                q: "2. Al construir la mediatriz (simetral) de un segmento AB con el compás, ¿qué condición debe cumplir la abertura (radio) del compás para que los dos arcos se intersecten?",
+                options: [
+                    "El radio debe ser menor que la mitad del segmento AB",
+                    "El radio debe ser mayor que la mitad del segmento AB y mantenerse igual en ambos extremos",
+                    "El radio debe cambiar al pasar del punto A al punto B"
+                ],
+                correct: 1,
+                feedback: "¡Exacto! Si el radio fuera menor o igual a la mitad del segmento AB, los arcos no alcanzarían a cruzarse arriba y abajo."
+            },
+            {
+                q: "3. Se necesita conectar una posta rural (Punto P) con una tubería recta de agua potable (Recta L) gastando la menor cantidad posible de metros de cañería. ¿Cómo debe trazarse la conexión?",
+                options: [
+                    "De forma paralela a la tubería L",
+                    "De forma oblicua en un ángulo de 30°",
+                    "De forma perpendicular (90°) desde el punto P hacia la recta L"
+                ],
+                correct: 2,
+                feedback: "¡Muy bien! La distancia más corta desde un punto exterior a una recta es siempre el segmento perpendicular (90°)."
+            },
+            {
+                q: "4. ¿Cuál de las siguientes afirmaciones sobre dos rectas paralelas (L₁ ∥ L₂) es SIEMPRE verdadera?",
+                options: [
+                    "La distancia perpendicular entre ellas es constante en todos sus puntos",
+                    "Se intersectan únicamente cuando se prolongan muchos kilómetros",
+                    "Forman cuatro ángulos rectos al cruzarse"
+                ],
+                correct: 0,
+                feedback: "¡Correcto! Por definición, dos rectas paralelas jamás se intersectan y mantienen una distancia perpendicular constante."
+            },
+            {
+                q: "5. En el método del rombo con regla y compás para trazar una paralela a una recta L por un punto P, ¿cuántos lados de igual medida (mismo radio de compás) se utilizan?",
+                options: [
+                    "Los 4 lados tienen medidas distintas",
+                    "Los 4 lados se trazan con la misma abertura del compás, garantizando que los lados opuestos sean paralelos",
+                    "No se utiliza el compás, solo un transportador circular"
+                ],
+                correct: 1,
+                feedback: "¡Excelente! Al mantener fijo el radio del compás se forma un rombo equilátero cuyos lados opuestos son necesariamente paralelos."
+            }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            quizQuestions.forEach((item, qIdx) => {
+                const card = document.createElement('div');
+                card.className = "bg-blueprint-950/90 border border-sky-500/25 rounded-xl p-4 space-y-2.5";
+
+                let optsHtml = '';
+                item.options.forEach((opt, oIdx) => {
+                    const selected = appState.mod4Answers[qIdx] === oIdx;
+                    const isCorrect = oIdx === item.correct;
+                    let btnClass = "bg-blueprint-900 hover:bg-blueprint-800 border-sky-500/30 text-slate-200";
+
+                    if (appState.mod4Answers[qIdx] !== null) {
+                        if (selected && isCorrect) {
+                            btnClass = "bg-emerald-500/20 border-emerald-400 text-emerald-200 font-bold";
+                        } else if (selected && !isCorrect) {
+                            btnClass = "bg-rose-500/20 border-rose-400 text-rose-200";
+                        } else if (isCorrect) {
+                            btnClass = "bg-emerald-500/10 border-emerald-500/40 text-emerald-300";
+                        }
+                    }
+
+                    optsHtml += `
+                        <button onclick="answerQuiz(${qIdx}, ${oIdx})" class="w-full text-left px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm transition flex items-center justify-between ${btnClass}">
+                            <span>${opt}</span>
+                            ${selected ? (isCorrect ? '<i class="fa-solid fa-check text-emerald-400"></i>' : '<i class="fa-solid fa-xmark text-rose-400"></i>') : ''}
+                        </button>
+                    `;
+                });
+
+                const fbHtml = appState.mod4Answers[qIdx] !== null
+                    ? `<div class="text-xs p-2.5 rounded-lg ${appState.mod4Answers[qIdx] === item.correct ? 'bg-emerald-500/10 text-emerald-300' : 'bg-amber-500/10 text-amber-200'}">${item.feedback}</div>`
+                    : '';
+
+                card.innerHTML = `
+                    <div class="font-bold text-xs sm:text-sm text-white">${item.q}</div>
+                    <div class="space-y-1.5">${optsHtml}</div>
+                    ${fbHtml}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function answerQuiz(qIdx, oIdx) {
+            const firstTime = appState.mod4Answers[qIdx] === null;
+            appState.mod4Answers[qIdx] = oIdx;
+
+            if (oIdx === quizQuestions[qIdx].correct) {
+                playTone('success');
+                if (firstTime) addScore(60);
+            } else {
+                playTone('error');
+            }
+            renderQuiz();
+            updateProgressAndDiploma();
+        }
+
+        function updateDiplomaName(val) {
+            const el = document.getElementById('diploma-student-name');
+            el.textContent = val.trim() ? val.trim() : "[ Nombre del Estudiante ]";
+        }
+
+        function updateProgressAndDiploma() {
+            const c1 = appState.mod1Completed.filter(Boolean).length;
+            const c2 = appState.mod2Completed.filter(Boolean).length;
+            const c3 = appState.mod3Completed.filter(Boolean).length;
+            const c4 = appState.mod4Answers.filter((a, i) => a === quizQuestions[i].correct).length;
+
+            document.getElementById('stat-mod1').textContent = `${c1}/4`;
+            document.getElementById('stat-mod2').textContent = `${c2}/3`;
+            document.getElementById('stat-mod3').textContent = `${c3}/3`;
+            document.getElementById('stat-mod4').textContent = `${c4}/5`;
+
+            document.getElementById('badge-icon-1').className = c1 === 4 ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-circle-check text-slate-600";
+            document.getElementById('badge-icon-2').className = c2 === 3 ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-circle-check text-slate-600";
+            document.getElementById('badge-icon-3').className = c3 === 3 ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-circle-check text-slate-600";
+            document.getElementById('badge-icon-4').className = c4 >= 4 ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-circle-check text-slate-600";
+
+            document.getElementById('diploma-total-score').textContent = `${appState.score} PTS`;
+
+            // Rango según puntaje
+            const rankEl = document.getElementById('diploma-rank');
+            if (appState.score >= 850) rankEl.textContent = "Rango: Arquitecto Senior OA 12 ★";
+            else if (appState.score >= 450) rankEl.textContent = "Rango: Ingeniero Geométrico";
+            else rankEl.textContent = "Rango: Urbanista en Formación";
+
+            // Barra de progreso global (15 items totales)
+            const totalDone = c1 + c2 + c3 + c4;
+            const pct = Math.min(100, Math.max(10, Math.round((totalDone / 15) * 100)));
+            document.getElementById('global-progress').style.width = `${pct}%`;
+        }
+
+        function copyReportToClipboard() {
+            const name = document.getElementById('student-name-input').value.trim() || "Estudiante 7° Básico";
+            const c1 = appState.mod1Completed.filter(Boolean).length;
+            const c2 = appState.mod2Completed.filter(Boolean).length;
+            const c3 = appState.mod3Completed.filter(Boolean).length;
+            const c4 = appState.mod4Answers.filter((a, i) => a === quizQuestions[i].correct).length;
+
+            const text = `REPORTE GEOARQUITECTOS URBANOS (OA 12 - 7° Básico)\nEstudiante: ${name}\nPuntaje Total: ${appState.score} PTS\n- Módulo 1 (Radar Urbano): ${c1}/4\n- Módulo 2 (Regla y Compás): ${c2}/3\n- Módulo 3 (Misiones CAD): ${c3}/3\n- Módulo 4 (Ticket de Salida): ${c4}/5`;
+
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+
+            playTone('success');
+            const toast = document.getElementById('copy-toast');
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3500);
+        }
+
+        /* =========================================================================
+           MODALES: CUADERNO DEL ESTUDIANTE Y GUÍA DOCENTE
+           ========================================================================= */
+        function openNotebookModal(context) {
+            playTone('click');
+            const modal = document.getElementById('notebook-modal');
+            const body = document.getElementById('notebook-modal-body');
+            modal.classList.remove('hidden');
+
+            if (context === 'mod1') {
+                body.innerHTML = `
+                    <div class="bg-blueprint-950 p-4 rounded-xl border border-amber-400/30 space-y-2.5">
+                        <div class="font-bold text-amber-300">Actividad Rápida en tu Cuaderno (5 minutos):</div>
+                        <p>Escribe como título <strong>"OA 12: Rectas Paralelas y Perpendiculares"</strong> y dibuja con tu regla un esquema claro de cada caso:</p>
+                        <ol class="list-decimal list-inside space-y-2 text-slate-300">
+                            <li><strong>Rectas Paralelas (<span class="math-badge">L₁ ∥ L₂</span>):</strong> Usa los dos bordes largos de tu regla para trazar dos líneas que mantengan siempre la misma distancia (<span class="font-mono text-sky-300">d constante</span>) y nunca se crucen. Anota un ejemplo real de tu comuna (ej. dos calles paralelas).</li>
+                            <li><strong>Rectas Perpendiculares (<span class="math-badge-amber">L₁ ⊥ L₂</span>):</strong> Usa la esquina en escuadra de tu regla para formar dos rectas que se corten en un ángulo recto e incluye el cuadradito que simboliza <span class="math-badge-amber">90°</span> en la intersección.</li>
+                        </ol>
+                    </div>
+                `;
+            } else {
+                body.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="bg-blueprint-950 p-3.5 rounded-xl border border-sky-400/30">
+                            <div class="font-bold text-sky-300 mb-1">1. Cómo hacer "El Cruce Perfecto" (Mediatriz ⊥) en tu cuaderno:</div>
+                            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-xs">
+                                <li>Traza con tu regla un segmento horizontal <strong>AB</strong> de <span class="math-badge">6 cm</span>.</li>
+                                <li>Abre tu compás un poco más de la mitad del segmento (por ejemplo, <span class="math-badge">4 cm</span>).</li>
+                                <li>Apoya la punta metálica en el extremo <strong>A</strong> y traza un arco amplio arriba y abajo del segmento.</li>
+                                <li><strong>Sin cambiar la abertura del compás</strong>, apoya la aguja en el extremo <strong>B</strong> y traza otro arco que corte al anterior en los puntos <strong>P</strong> (arriba) y <strong>Q</strong> (abajo).</li>
+                                <li>Une <strong>P</strong> y <strong>Q</strong> con tu regla. ¡Comprueba con tu escuadra que el cruce mide exactamente <span class="math-badge-amber">90°</span> (<span class="font-mono">PQ ⊥ AB</span>)!</li>
+                            </ol>
+                        </div>
+                        <div class="bg-blueprint-950 p-3.5 rounded-xl border border-emerald-400/30">
+                            <div class="font-bold text-emerald-300 mb-1">2. Cómo trazar una Paralela (∥) con Regla y Escuadra (Método del riel):</div>
+                            <ol class="list-decimal list-inside space-y-1.5 text-slate-300 text-xs">
+                                <li>Dibuja una recta base <strong>L₁</strong> y marca un punto externo <strong>P</strong> fuera de ella.</li>
+                                <li>Apoya uno de los lados de <span class="math-badge-amber">90°</span> (cateto) de tu escuadra sobre la recta <strong>L₁</strong>.</li>
+                                <li>Coloca tu regla larga firme contra el otro borde de la escuadra (funcionará como un riel guía fijo).</li>
+                                <li>Desliza suavemente la escuadra sobre la regla hasta llegar al punto <strong>P</strong> y traza la nueva recta <strong>L₂</strong>. ¡Obtendrás <span class="math-badge">L₁ ∥ L₂</span>!</li>
+                            </ol>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function closeNotebookModal() {
+            document.getElementById('notebook-modal').classList.add('hidden');
+        }
+
+        function openTeacherModal() {
+            playTone('click');
+            document.getElementById('teacher-modal').classList.remove('hidden');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('teacher-modal').classList.add('hidden');
+        }
+
+        /* =========================================================================
+           INICIALIZACIÓN AL CARGAR LA VENTANA
+           ========================================================================= */
+        window.onload = function () {
+            loadInspectionScene(0);
+            selectGuidedConstruction(0);
+            setupGuidedCanvasEvents();
+            setupCadCanvasEvents();
+            loadCadMission(0);
+            renderQuiz();
+            updateProgressAndDiploma();
+
+            window.addEventListener('resize', () => {
+                if (appState.currentModule === 2) {
+                    resizeGuidedCanvas();
+                    drawGuidedCanvas();
+                } else if (appState.currentModule === 3) {
+                    resizeCadCanvas();
+                    drawCadCanvas();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
