@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aventura de Números: Del 1 al 50</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka para un look infantil, redondeado y legible -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti para celebraciones -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #f0f9ff;
+            background-image: radial-gradient(#bae6fd 2px, transparent 2px);
+            background-size: 32px 32px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Estilo de botones 3D amigables para niños */
+        .btn-3d {
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            transform: translateY(0);
+        }
+        .btn-3d:active:not(:disabled) {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn-blue { background-color: #38bdf8; box-shadow: 0 6px 0 #0284c7; color: white; }
+        .btn-blue:hover:not(:disabled) { background-color: #0ea5e9; }
+        
+        .btn-green { background-color: #4ade80; box-shadow: 0 6px 0 #16a34a; color: white; }
+        .btn-green:hover:not(:disabled) { background-color: #22c55e; }
+
+        .btn-yellow { background-color: #facc15; box-shadow: 0 6px 0 #ca8a04; color: #1e293b; }
+        .btn-yellow:hover:not(:disabled) { background-color: #eab308; }
+
+        .btn-purple { background-color: #c084fc; box-shadow: 0 6px 0 #9333ea; color: white; }
+        .btn-purple:hover:not(:disabled) { background-color: #a855f7; }
+
+        .btn-pink { background-color: #f472b6; box-shadow: 0 6px 0 #db2777; color: white; }
+        .btn-pink:hover:not(:disabled) { background-color: #ec4899; }
+
+        .btn-orange { background-color: #fb923c; box-shadow: 0 6px 0 #ea580c; color: white; }
+        .btn-orange:hover:not(:disabled) { background-color: #f97316; }
+
+        /* Bloques multibase (Decenas y Unidades) */
+        .ten-rod {
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #991b1b;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 2px 3px 0 rgba(0,0,0,0.15);
+            background-color: #ef4444;
+        }
+        .ten-segment {
+            width: 22px;
+            height: 11px;
+            border-bottom: 1px solid #f87171;
+        }
+        .ten-segment:last-child {
+            border-bottom: none;
+        }
+        .unit-cube {
+            width: 22px;
+            height: 22px;
+            background-color: #3b82f6;
+            border: 2px solid #1e40af;
+            border-radius: 5px;
+            box-shadow: 2px 3px 0 rgba(0,0,0,0.15);
+        }
+
+        /* Animaciones */
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.08); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: pop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px) rotate(-3deg); }
+            75% { transform: translateX(8px) rotate(3deg); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Estilos personalizados para scrollbars en caso de pantallas pequeñas */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800">
+
+    <!-- ================= BARRA SUPERIOR / ENCABEZADO ================= -->
+    <header class="bg-white/95 backdrop-blur-md border-b-4 border-sky-200 sticky top-0 z-30 px-3 py-2 md:px-6 md:py-3 shadow-sm">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <!-- Título / Logo -->
+            <div class="flex items-center gap-2 md:gap-3">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-md animate-float">
+                    50
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-2xl font-bold bg-gradient-to-r from-sky-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
+                        Aventura de Números
+                    </h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">¡Explora, clasifica, une y cuenta del 1 al 50!</p>
+                </div>
+            </div>
+
+            <!-- Controles de Audio y Puntaje de Estrellas -->
+            <div class="flex items-center gap-2 md:gap-4">
+                <button id="sound-toggle" onclick="toggleSound()" class="btn-3d bg-slate-100 hover:bg-slate-200 text-slate-700 w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center text-lg border-2 border-slate-300" title="Activar/Desactivar Sonido">
+                    <i id="sound-icon" class="fa-solid fa-volume-high text-sky-600"></i>
+                </button>
+
+                <div class="flex items-center gap-2 bg-amber-100 border-2 border-amber-300 px-3 py-1.5 md:px-4 md:py-2 rounded-2xl shadow-inner">
+                    <i class="fa-solid fa-star text-amber-400 text-xl md:text-2xl drop-shadow-sm animate-pulse"></i>
+                    <span class="font-bold text-amber-900 text-base md:text-xl" id="score-display">0</span>
+                    <span class="text-xs font-semibold text-amber-700 uppercase hidden sm:inline">Estrellas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menú de Navegación de Juegos -->
+        <nav class="max-w-6xl mx-auto mt-2 md:mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button onclick="switchTab('tablero')" id="tab-btn-tablero" class="nav-btn btn-3d btn-blue py-2 px-3 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-table-cells text-base md:text-lg"></i>
+                <span>1. Tablero 1-50</span>
+            </button>
+            <button onclick="switchTab('clasificar')" id="tab-btn-clasificar" class="nav-btn btn-3d bg-white text-slate-600 border-2 border-slate-200 py-2 px-3 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-boxes-stacked text-base md:text-lg text-purple-500"></i>
+                <span>2. Clasificar</span>
+            </button>
+            <button onclick="switchTab('unir')" id="tab-btn-unir" class="nav-btn btn-3d bg-white text-slate-600 border-2 border-slate-200 py-2 px-3 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-bezier-curve text-base md:text-lg text-pink-500"></i>
+                <span>3. Unir Parejas</span>
+            </button>
+            <button onclick="switchTab('contar')" id="tab-btn-contar" class="nav-btn btn-3d bg-white text-slate-600 border-2 border-slate-200 py-2 px-3 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-calculator text-base md:text-lg text-emerald-500"></i>
+                <span>4. Contar Objetos</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- ================= CONTENIDO PRINCIPAL ================= -->
+    <main class="flex-grow max-w-6xl w-full mx-auto p-3 md:p-6 flex flex-col">
+
+        <!-- Banner de Mascota / Retroalimentación Positiva -->
+        <div id="feedback-banner" class="bg-white border-4 border-sky-300 rounded-3xl p-3 md:p-4 mb-4 md:mb-6 shadow-md flex items-center justify-between gap-3 transition-all duration-300">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div id="mascot-avatar" class="text-3xl md:text-5xl bg-sky-100 w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center border-2 border-sky-200 flex-shrink-0">
+                    🦉
+                </div>
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-sky-600 bg-sky-100 px-2 py-0.5 rounded-full" id="mascot-name">Profe Búho</span>
+                    <p id="mascot-message" class="text-sm md:text-lg font-semibold text-slate-700 mt-0.5">
+                        ¡Hola! Toca cualquier número del tablero para descubrir cómo se forma con decenas y unidades.
+                    </p>
+                </div>
+            </div>
+            <button onclick="speakCurrentMessage()" class="btn-3d bg-sky-100 hover:bg-sky-200 text-sky-700 p-2.5 md:p-3 rounded-2xl flex-shrink-0" title="Escuchar instrucción">
+                <i class="fa-solid fa-ear-listen text-lg md:text-xl"></i>
+            </button>
+        </div>
+
+        <!-- ================= SECCIÓN 1: TABLERO DEL 1 AL 50 ================= -->
+        <section id="sec-tablero" class="game-section grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 items-start">
+            
+            <!-- Cuadrícula del 1 al 50 -->
+            <div class="lg:col-span-7 bg-white p-3 md:p-5 rounded-3xl border-4 border-sky-200 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <h2 class="text-base md:text-xl font-bold text-slate-700 flex items-center gap-2">
+                        <i class="fa-solid fa-table-cells text-sky-500"></i> Tablero Numérico
+                    </h2>
+                    <!-- Modo Desafío: Buscar número -->
+                    <button id="btn-find-challenge" onclick="startBoardChallenge()" class="btn-3d btn-yellow px-3 py-1.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-magnifying-glass"></i> ¡Juego de Buscar!
+                    </button>
+                </div>
+
+                <!-- Filtros rápidos para visualizar patrones -->
+                <div class="flex flex-wrap gap-1.5 mb-3 text-xs">
+                    <button onclick="highlightBoard('none')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 font-semibold text-slate-700 transition">Todos</button>
+                    <button onclick="highlightBoard('even')" class="px-2.5 py-1 rounded-lg bg-emerald-100 hover:bg-emerald-200 font-semibold text-emerald-800 transition">Pares (2, 4, 6...)</button>
+                    <button onclick="highlightBoard('odd')" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 font-semibold text-amber-800 transition">Impares (1, 3, 5...)</button>
+                    <button onclick="highlightBoard('tens')" class="px-2.5 py-1 rounded-lg bg-rose-100 hover:bg-rose-200 font-semibold text-rose-800 transition">De 10 en 10</button>
+                </div>
+
+                <!-- Grid 10 columnas x 5 filas -->
+                <div id="board-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-1.5 md:gap-2">
+                    <!-- Generado dinámicamente por JS -->
+                </div>
+            </div>
+
+            <!-- Panel de Inspección del Número Seleccionado -->
+            <div class="lg:col-span-5 bg-white p-4 md:p-6 rounded-3xl border-4 border-amber-200 shadow-lg flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between border-b-2 border-slate-100 pb-3 mb-4">
+                        <div>
+                            <span class="text-xs font-bold uppercase text-slate-400">Número Seleccionado</span>
+                            <div class="flex items-baseline gap-3 mt-1">
+                                <span id="insp-number" class="text-5xl md:text-6xl font-bold text-sky-600">24</span>
+                                <span id="insp-word" class="text-xl md:text-2xl font-bold text-purple-600 capitalize">Veinticuatro</span>
+                            </div>
+                        </div>
+                        <button onclick="speakNumberInfo()" class="btn-3d btn-blue w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-xl md:text-2xl" title="Escuchar número">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                    </div>
+
+                    <!-- Tarjetas de Decenas y Unidades -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-3 text-center">
+                            <span class="text-xs font-bold text-rose-600 uppercase block">Decenas (Grupos de 10)</span>
+                            <span id="insp-tens-count" class="text-3xl font-bold text-rose-600">2</span>
+                            <span id="insp-tens-val" class="text-xs text-rose-500 block font-medium">= 20 unidades</span>
+                        </div>
+                        <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-3 text-center">
+                            <span class="text-xs font-bold text-blue-600 uppercase block">Unidades Sueltas</span>
+                            <span id="insp-units-count" class="text-3xl font-bold text-blue-600">4</span>
+                            <span id="insp-units-val" class="text-xs text-blue-500 block font-medium">= 4 unidades</span>
+                        </div>
+                    </div>
+
+                    <!-- Suma Descompuesta -->
+                    <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl py-2 px-4 mb-4 text-center">
+                        <p id="insp-equation" class="text-base md:text-lg font-bold text-amber-900">
+                            20 + 4 = 24 &nbsp;|&nbsp; Número Par
+                        </p>
+                    </div>
+
+                    <!-- Representación Visual con Bloques Base 10 -->
+                    <div class="bg-slate-50 border-2 border-slate-200 rounded-2xl p-4 min-h-[180px] flex flex-col justify-center">
+                        <span class="text-xs font-bold text-slate-400 uppercase mb-3 text-center block">Bloques de Decenas y Unidades</span>
+                        <div class="flex flex-wrap items-end justify-center gap-4">
+                            <!-- Contenedor de Barras de 10 -->
+                            <div id="insp-tens-blocks" class="flex items-end gap-2 flex-wrap justify-center"></div>
+                            <!-- Contenedor de Cubos de 1 -->
+                            <div id="insp-units-blocks" class="grid grid-cols-5 gap-1.5 items-end"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones Anterior / Siguiente -->
+                <div class="flex justify-between gap-3 mt-4 pt-3 border-t-2 border-slate-100">
+                    <button onclick="changeInspectedNumber(-1)" class="btn-3d bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-4 rounded-xl font-bold text-sm flex-1 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-left"></i> Anterior
+                    </button>
+                    <button onclick="changeInspectedNumber(1)" class="btn-3d bg-slate-200 hover:bg-slate-300 text-slate-700 py-2 px-4 rounded-xl font-bold text-sm flex-1 flex items-center justify-center gap-2">
+                        Siguiente <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECCIÓN 2: CLASIFICAR OBJETOS Y NÚMEROS ================= -->
+        <section id="sec-clasificar" class="game-section hidden flex-col gap-4 md:gap-6">
+            <div class="bg-white p-4 md:p-6 rounded-3xl border-4 border-purple-200 shadow-lg">
+                <!-- Selector de Modo de Clasificación -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b-2 border-slate-100">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setClassifyMode('par-impar')" id="cls-mode-par" class="btn-3d btn-purple px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-scale-balanced"></i> Pares vs Impares
+                        </button>
+                        <button onclick="setClassifyMode('mayor-menor')" id="cls-mode-mayor" class="btn-3d bg-slate-100 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-arrows-up-down"></i> Menores o Mayores
+                        </button>
+                        <button onclick="setClassifyMode('decenas')" id="cls-mode-decenas" class="btn-3d bg-slate-100 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group"></i> Familias de 10 en 10
+                        </button>
+                    </div>
+                    <button onclick="initClassifyGame()" class="btn-3d btn-yellow px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-1.5">
+                        <i class="fa-solid fa-rotate-right"></i> Nuevas Tarjetas
+                    </button>
+                </div>
+
+                <!-- Área de Tarjeta Actual para Clasificar -->
+                <div class="my-6 flex flex-col items-center justify-center">
+                    <p class="text-xs md:text-sm font-bold uppercase text-purple-600 tracking-wider mb-2" id="cls-progress">
+                        Tarjeta 1 de 6 — ¡Elige la caja correcta!
+                    </p>
+                    
+                    <div id="cls-current-card" class="w-48 h-40 md:w-56 md:h-44 bg-gradient-to-b from-amber-50 to-amber-100 border-4 border-amber-400 rounded-3xl shadow-xl flex flex-col items-center justify-center p-4 animate-pop cursor-pointer" onclick="speakCurrentCard()">
+                        <div id="cls-card-visual" class="text-2xl md:text-3xl mb-1 flex flex-wrap justify-center gap-1">
+                            🍎🍎
+                        </div>
+                        <div id="cls-card-number" class="text-5xl md:text-6xl font-bold text-slate-800">
+                            24
+                        </div>
+                        <span id="cls-card-hint" class="text-xs font-semibold text-amber-800 mt-1 bg-amber-200/70 px-2.5 py-0.5 rounded-full">
+                            2 decenas y 4 unidades
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Contenedores / Cajas de Destino -->
+                <div id="cls-bins-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Generado dinámicamente según el modo -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECCIÓN 3: UNIR CON LÍNEAS / EMPAREJAR ================= -->
+        <section id="sec-unir" class="game-section hidden flex-col gap-4 md:gap-6">
+            <div class="bg-white p-4 md:p-6 rounded-3xl border-4 border-pink-200 shadow-lg">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b-2 border-slate-100 mb-4">
+                    <div>
+                        <h2 class="text-base md:text-xl font-bold text-slate-700 flex items-center gap-2">
+                            <i class="fa-solid fa-bezier-curve text-pink-500"></i> ¡Une cada Número con su Pareja!
+                        </h2>
+                        <p class="text-xs md:text-sm text-slate-500">Toca un número de la izquierda y luego su representación a la derecha.</p>
+                    </div>
+                    <button onclick="initMatchGame()" class="btn-3d btn-pink px-4 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-shuffle"></i> Nuevo Juego
+                    </button>
+                </div>
+
+                <!-- Tablero de Unir con Canvas SVG superpuesto para las líneas -->
+                <div class="relative w-full py-2" id="match-board-wrapper">
+                    <!-- SVG para dibujar líneas conectoras -->
+                    <svg id="match-svg" class="absolute inset-0 w-full h-full pointer-events-none z-10"></svg>
+
+                    <div class="grid grid-cols-2 gap-8 sm:gap-16 md:gap-24 relative z-20">
+                        <!-- Columna Izquierda: Números -->
+                        <div id="match-left-col" class="flex flex-col gap-3 md:gap-4">
+                            <!-- Generado por JS -->
+                        </div>
+
+                        <!-- Columna Derecha: Representaciones (Decenas/Unidades, Palabras, Objetos) -->
+                        <div id="match-right-col" class="flex flex-col gap-3 md:gap-4">
+                            <!-- Generado por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECCIÓN 4: CONTAR OBJETOS AGRUPADOS ================= -->
+        <section id="sec-contar" class="game-section hidden flex-col gap-4 md:gap-6">
+            <div class="bg-white p-4 md:p-6 rounded-3xl border-4 border-emerald-200 shadow-lg">
+                <!-- Encabezado y Pestañas de Sub-modo -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b-2 border-slate-100 mb-4">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setCountSubmode('count')" id="cnt-mode-count" class="btn-3d btn-green px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-eye"></i> 1. ¿Cuántos hay?
+                        </button>
+                        <button onclick="setCountSubmode('build')" id="cnt-mode-build" class="btn-3d bg-slate-100 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-hammer"></i> 2. ¡Construye el Número!
+                        </button>
+                    </div>
+
+                    <button onclick="initCountGame()" class="btn-3d btn-yellow px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-forward"></i> Siguiente Reto
+                    </button>
+                </div>
+
+                <!-- Sub-modo A: Contar objetos mostrados en cajas de 10 y sueltos -->
+                <div id="count-submode-count" class="flex flex-col items-center">
+                    <h3 id="count-question-title" class="text-base md:text-xl font-bold text-slate-700 mb-3 text-center">
+                        Cuenta las cajas de 10 y las frutas sueltas. ¿Cuántas hay en total?
+                    </h3>
+
+                    <!-- Escenario de Objetos Agrupados -->
+                    <div class="w-full bg-emerald-50/70 border-2 border-emerald-200 rounded-3xl p-4 md:p-6 mb-5 min-h-[200px] flex flex-wrap items-center justify-center gap-4 md:gap-6">
+                        <!-- Cajas de 10 -->
+                        <div id="count-tens-area" class="flex flex-wrap items-center justify-center gap-3"></div>
+                        <!-- Objetos Sueltos -->
+                        <div id="count-units-area" class="bg-white/90 border-2 border-dashed border-emerald-400 rounded-2xl p-3 flex flex-col items-center"></div>
+                    </div>
+
+                    <!-- Ayuda visual de descomposición -->
+                    <div class="flex items-center gap-4 mb-5 bg-slate-100 px-4 py-2 rounded-2xl text-xs md:text-sm font-bold text-slate-600">
+                        <span>📦 Cada caja = <strong>10</strong></span>
+                        <span>•</span>
+                        <span>✨ Sueltos = <strong>1 cada uno</strong></span>
+                    </div>
+
+                    <!-- Opciones de Respuesta -->
+                    <div id="count-options" class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 w-full max-w-2xl">
+                        <!-- Generado por JS -->
+                    </div>
+                </div>
+
+                <!-- Sub-modo B: Laboratorio Constructor de Números -->
+                <div id="count-submode-build" class="hidden flex-col items-center">
+                    <div class="bg-amber-100 border-2 border-amber-300 px-6 py-3 rounded-2xl mb-4 text-center">
+                        <span class="text-xs font-bold uppercase text-amber-800 block">Reto de Construcción</span>
+                        <p class="text-lg md:text-2xl font-bold text-slate-800">
+                            Pon en la mesa: <span id="build-target-num" class="text-3xl text-rose-600 underline">35</span> objetos
+                        </p>
+                        <span id="build-target-word" class="text-sm font-semibold text-amber-900">Treinta y cinco</span>
+                    </div>
+
+                    <!-- Controles para agregar/quitar Cajas de 10 y Unidades -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl mb-4">
+                        <div class="bg-rose-50 border-2 border-rose-200 p-3 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <span class="font-bold text-rose-700 block text-sm md:text-base">📦 Cajas de 10</span>
+                                <span class="text-xs text-rose-500">Suma de 10 en 10</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="modifyBuilder(-10)" class="btn-3d bg-white text-rose-600 border-2 border-rose-200 w-10 h-10 rounded-xl font-bold text-xl">-</button>
+                                <span id="build-tens-counter" class="font-bold text-2xl text-rose-800 w-8 text-center">0</span>
+                                <button onclick="modifyBuilder(10)" class="btn-3d btn-pink w-10 h-10 rounded-xl font-bold text-xl">+</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border-2 border-blue-200 p-3 rounded-2xl flex items-center justify-between">
+                            <div>
+                                <span class="font-bold text-blue-700 block text-sm md:text-base">🍓 Unidades Sueltas</span>
+                                <span class="text-xs text-blue-500">Suma de 1 en 1</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="modifyBuilder(-1)" class="btn-3d bg-white text-blue-600 border-2 border-blue-200 w-10 h-10 rounded-xl font-bold text-xl">-</button>
+                                <span id="build-units-counter" class="font-bold text-2xl text-blue-800 w-8 text-center">0</span>
+                                <button onclick="modifyBuilder(1)" class="btn-3d btn-blue w-10 h-10 rounded-xl font-bold text-xl">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mesa de Construcción -->
+                    <div class="w-full bg-slate-50 border-2 border-slate-200 rounded-3xl p-4 mb-4 min-h-[160px] flex flex-col items-center justify-center">
+                        <div id="build-visual-stage" class="flex flex-wrap items-center justify-center gap-3"></div>
+                        <p class="mt-3 text-sm font-bold text-slate-500">
+                            Total actual en la mesa: <span id="build-current-total" class="text-xl text-sky-600">0</span>
+                        </p>
+                    </div>
+
+                    <button onclick="checkBuilderAnswer()" class="btn-3d btn-green px-8 py-3 rounded-2xl font-bold text-base md:text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-check-circle"></i> ¡Comprobar Construcción!
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= PIE DE PÁGINA ================= -->
+    <footer class="bg-white/80 border-t-2 border-sky-100 py-3 px-4 text-center text-xs text-slate-500">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>🎓 <strong>Aventura de Números 1 al 50</strong> — Matemáticas Interactivas para Niños</span>
+            <span class="flex items-center gap-3">
+                <span>🟥 Barra Roja = 1 Decena (10)</span>
+                <span>🟦 Cubo Azul = 1 Unidad (1)</span>
+            </span>
+        </div>
+    </footer>
+
+    <!-- ================= LÓGICA JAVASCRIPT ================= -->
+    <script>
+        /* ==========================================================================
+           1. DICCIONARIO DE NÚMEROS EN ESPAÑOL (1 AL 50) Y DATOS GLOBALES
+           ========================================================================== */
+        const NOMBRES_NUMEROS = {
+            0: "cero", 1: "uno", 2: "dos", 3: "tres", 4: "cuatro", 5: "cinco",
+            6: "seis", 7: "siete", 8: "ocho", 9: "nueve", 10: "diez",
+            11: "once", 12: "doce", 13: "trece", 14: "catorce", 15: "quince",
+            16: "dieciséis", 17: "diecisiete", 18: "dieciocho", 19: "diecinueve", 20: "veinte",
+            21: "veintiuno", 22: "veintidós", 23: "veintitrés", 24: "veinticuatro", 25: "veinticinco",
+            26: "veintiséis", 27: "veintisiete", 28: "veintiocho", 29: "veintinueve", 30: "treinta",
+            31: "treinta y uno", 32: "treinta y dos", 33: "treinta y tres", 34: "treinta y cuatro", 35: "treinta y cinco",
+            36: "treinta y seis", 37: "treinta y siete", 38: "treinta y ocho", 39: "treinta y nueve", 40: "cuarenta",
+            41: "cuarenta y uno", 42: "cuarenta y dos", 43: "cuarenta y tres", 44: "cuarenta y cuatro", 45: "cuarenta y cinco",
+            46: "cuarenta y seis", 47: "cuarenta y siete", 48: "cuarenta y ocho", 49: "cuarenta y nueve", 50: "cincuenta"
+        };
+
+        const EMOJIS_CONTAR = ['🍎', '🍓', '🍌', '🍊', '⭐', '🎈', '🐥', '🐢', '🚗', '🧁'];
+
+        // Estado global de la aplicación
+        let appState = {
+            stars: 0,
+            soundEnabled: true,
+            currentTab: 'tablero',
+            // Estado Tablero 1-50
+            inspectedNumber: 24,
+            boardChallengeTarget: null,
+            // Estado Clasificar
+            classifyMode: 'par-impar', // 'par-impar', 'mayor-menor', 'decenas'
+            classifyPivot: 25,
+            classifyQueue: [],
+            classifyIndex: 0,
+            // Estado Unir Parejas
+            matchPairs: [],
+            selectedLeft: null,
+            selectedRight: null,
+            matchedIds: [],
+            // Estado Contar Objetos
+            countSubmode: 'count', // 'count' o 'build'
+            countTarget: 34,
+            countEmoji: '🍎',
+            buildTarget: 35,
+            buildTens: 0,
+            buildUnits: 0
+        };
+
+        /* ==========================================================================
+           2. SISTEMA DE SONIDO SINTETIZADO (WEB AUDIO API) Y VOZ (SPEECH SYNTHESIS)
+           ========================================================================== */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!appState.soundEnabled) return;
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'pop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(420, now);
+                    osc.frequency.exponentialRampToValueAtTime(680, now + 0.08);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'success') {
+                    // Acorde alegre Do - Mi - Sol - Do
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.type = 'triangle';
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.setValueAtTime(freq, now + idx * 0.07);
+                        g.gain.setValueAtTime(0.2, now + idx * 0.07);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+                        o.start(now + idx * 0.07);
+                        o.stop(now + idx * 0.07 + 0.25);
+                    });
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(150, now + 0.22);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                }
+            } catch (e) {
+                // Silencioso si el navegador bloquea el audio antes de interacción
+            }
+        }
+
+        function speakText(text) {
+            if (!appState.soundEnabled || !('speechSynthesis' in window)) return;
+            try {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'es-ES';
+                utterance.rate = 0.95;
+                utterance.pitch = 1.1;
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {}
+        }
+
+        function toggleSound() {
+            appState.soundEnabled = !appState.soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (appState.soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-sky-600';
+                playSound('pop');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            }
+        }
+
+        function speakCurrentMessage() {
+            const msg = document.getElementById('mascot-message').innerText;
+            speakText(msg);
+        }
+
+        /* ==========================================================================
+           3. SISTEMA DE PUNTAJE, RETROALIMENTACIÓN POSITIVA Y NAVEGACIÓN
+           ========================================================================== */
+        function addStars(amount = 1, customMsg = null) {
+            appState.stars += amount;
+            const scoreEl = document.getElementById('score-display');
+            scoreEl.innerText = appState.stars;
+            scoreEl.classList.remove('animate-pop');
+            void scoreEl.offsetWidth;
+            scoreEl.classList.add('animate-pop');
+
+            playSound('success');
+
+            // Lanzar confeti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 55,
+                    spread: 65,
+                    origin: { y: 0.7 }
+                });
+            }
+
+            const praises = [
+                "¡Excelente trabajo! Ganaste una estrella brillante ⭐",
+                "¡Fantástico! Eres un genio de los números 🎉",
+                "¡Super bien! Sigue así, lo lograste 🌟",
+                "¡Bravo! Qué bien cuentas hasta el 50 🏆"
+            ];
+            const msg = customMsg || praises[Math.floor(Math.random() * praises.length)];
+            setMascotFeedback(msg, '🎉', 'border-emerald-400 bg-emerald-50/60');
+        }
+
+        function setMascotFeedback(message, emoji = '🦉', borderClass = 'border-sky-300 bg-white') {
+            const banner = document.getElementById('feedback-banner');
+            const avatar = document.getElementById('mascot-avatar');
+            const textEl = document.getElementById('mascot-message');
+
+            banner.className = `border-4 rounded-3xl p-3 md:p-4 mb-4 md:mb-6 shadow-md flex items-center justify-between gap-3 transition-all duration-300 ${borderClass}`;
+            avatar.innerText = emoji;
+            textEl.innerText = message;
+        }
+
+        function switchTab(tabName) {
+            playSound('pop');
+            appState.currentTab = tabName;
+
+            // Ocultar todas las secciones
+            document.querySelectorAll('.game-section').forEach(sec => {
+                sec.classList.add('hidden');
+                sec.classList.remove('flex');
+            });
+
+            // Mostrar la sección activa
+            const activeSec = document.getElementById(`sec-${tabName}`);
+            activeSec.classList.remove('hidden');
+            if (tabName !== 'tablero') {
+                activeSec.classList.add('flex');
+            }
+
+            // Actualizar estilos de pestañas
+            const tabStyles = {
+                'tablero': 'btn-blue',
+                'clasificar': 'btn-purple',
+                'unir': 'btn-pink',
+                'contar': 'btn-green'
+            };
+
+            ['tablero', 'clasificar', 'unir', 'contar'].forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (t === tabName) {
+                    btn.className = `nav-btn btn-3d ${tabStyles[t]} py-2 px-3 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2`;
+                } else {
+                    btn.className = `nav-btn btn-3d bg-white text-slate-600 border-2 border-slate-200 py-2 px-3 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2`;
+                }
+            });
+
+            // Mensajes iniciales e inicializaciones de cada sección
+            if (tabName === 'tablero') {
+                setMascotFeedback("¡Toca cualquier número del 1 al 50 para ver sus decenas y unidades, o juega a Buscar el Número!", "🦉");
+            } else if (tabName === 'clasificar') {
+                setMascotFeedback("¡Observa la tarjeta del centro y toca la caja correcta para clasificarla!", "📦");
+                if (appState.classifyQueue.length === 0) initClassifyGame();
+            } else if (tabName === 'unir') {
+                setMascotFeedback("¡Une cada número de la izquierda con su pareja correcta de la derecha!", "🔗");
+                initMatchGame();
+            } else if (tabName === 'contar') {
+                setMascotFeedback("¡Cuenta las cajas de 10 y las unidades sueltas para descubrir cuántos objetos hay!", "🧮");
+                initCountGame();
+            }
+        }
+
+        /* ==========================================================================
+           4. JUEGO 1: TABLERO INTERACTIVO DEL 1 AL 50
+           ========================================================================== */
+        function renderBoardGrid() {
+            const grid = document.getElementById('board-grid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 50; i++) {
+                const btn = document.createElement('button');
+                btn.id = `cell-num-${i}`;
+                btn.onclick = () => onBoardCellClick(i);
+
+                // Colores suaves por cada fila (decena)
+                const rowIdx = Math.floor((i - 1) / 10);
+                const rowColors = [
+                    'bg-sky-50 hover:bg-sky-100 text-sky-900 border-sky-200',
+                    'bg-purple-50 hover:bg-purple-100 text-purple-900 border-purple-200',
+                    'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200',
+                    'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200',
+                    'bg-rose-50 hover:bg-rose-100 text-rose-900 border-rose-200'
+                ];
+
+                btn.className = `board-cell btn-3d border-2 ${rowColors[rowIdx]} rounded-xl py-2.5 md:py-3 font-bold text-base md:text-lg flex items-center justify-center transition`;
+                btn.innerText = i;
+                grid.appendChild(btn);
+            }
+            inspectNumber(appState.inspectedNumber, false);
+        }
+
+        function onBoardCellClick(num) {
+            // Si estamos en modo desafío de búsqueda
+            if (appState.boardChallengeTarget !== null) {
+                if (num === appState.boardChallengeTarget) {
+                    const target = appState.boardChallengeTarget;
+                    appState.boardChallengeTarget = null;
+                    inspectNumber(num, false);
+                    addStars(1, `¡Sí! Encontraste el número ${target} (${NOMBRES_NUMEROS[target]}). ¡Ganaste una estrella!`);
+                    speakText(`¡Muy bien! Encontraste el ${NOMBRES_NUMEROS[target]}`);
+                } else {
+                    playSound('error');
+                    const cell = document.getElementById(`cell-num-${num}`);
+                    cell.classList.add('animate-shake');
+                    setTimeout(() => cell.classList.remove('animate-shake'), 400);
+
+                    const hint = num < appState.boardChallengeTarget ? "más grande" : "más pequeño";
+                    setMascotFeedback(`Ese es el ${num}. ¡Busca un número ${hint}! Tienes que encontrar el ${appState.boardChallengeTarget}.`, "🕵️", "border-amber-400 bg-amber-50");
+                }
+                return;
+            }
+
+            inspectNumber(num, true);
+        }
+
+        function inspectNumber(num, shouldSpeak = true) {
+            if (num < 1) num = 50;
+            if (num > 50) num = 1;
+            appState.inspectedNumber = num;
+
+            // Resaltar celda activa
+            document.querySelectorAll('.board-cell').forEach(cell => {
+                cell.classList.remove('ring-4', 'ring-sky-500', 'scale-105', 'z-10');
+            });
+            const activeCell = document.getElementById(`cell-num-${num}`);
+            if (activeCell) {
+                activeCell.classList.add('ring-4', 'ring-sky-500', 'scale-105', 'z-10');
+            }
+
+            const tens = Math.floor(num / 10);
+            const units = num % 10;
+            const isEven = num % 2 === 0;
+
+            document.getElementById('insp-number').innerText = num;
+            document.getElementById('insp-word').innerText = NOMBRES_NUMEROS[num];
+            document.getElementById('insp-tens-count').innerText = tens;
+            document.getElementById('insp-tens-val').innerText = `= ${tens * 10} unidades`;
+            document.getElementById('insp-units-count').innerText = units;
+            document.getElementById('insp-units-val').innerText = `= ${units} ${units === 1 ? 'unidad' : 'unidades'}`;
+
+            document.getElementById('insp-equation').innerHTML = `${tens * 10} + ${units} = ${num} &nbsp;|&nbsp; ${isEven ? '🟢 Número Par' : '🟠 Número Impar'}`;
+
+            // Dibujar barras de decenas
+            const tensContainer = document.getElementById('insp-tens-blocks');
+            tensContainer.innerHTML = '';
+            for (let t = 0; t < tens; t++) {
+                const rod = document.createElement('div');
+                rod.className = 'ten-rod animate-pop';
+                rod.style.animationDelay = `${t * 0.05}s`;
+                for (let s = 0; s < 10; s++) {
+                    const seg = document.createElement('div');
+                    seg.className = 'ten-segment';
+                    rod.appendChild(seg);
+                }
+                tensContainer.appendChild(rod);
+            }
+
+            // Dibujar cubos de unidades
+            const unitsContainer = document.getElementById('insp-units-blocks');
+            unitsContainer.innerHTML = '';
+            for (let u = 0; u < units; u++) {
+                const cube = document.createElement('div');
+                cube.className = 'unit-cube animate-pop';
+                cube.style.animationDelay = `${(tens + u) * 0.04}s`;
+                unitsContainer.appendChild(cube);
+            }
+
+            if (shouldSpeak) {
+                playSound('pop');
+                speakText(`${num}. ${NOMBRES_NUMEROS[num]}. Tiene ${tens} ${tens === 1 ? 'decena' : 'decenas'} y ${units} ${units === 1 ? 'unidad' : 'unidades'}.`);
+            }
+        }
+
+        function changeInspectedNumber(delta) {
+            inspectNumber(appState.inspectedNumber + delta, true);
+        }
+
+        function speakNumberInfo() {
+            const num = appState.inspectedNumber;
+            const tens = Math.floor(num / 10);
+            const units = num % 10;
+            speakText(`Número ${num}, ${NOMBRES_NUMEROS[num]}. Formado por ${tens} ${tens === 1 ? 'decena' : 'decenas'} y ${units} ${units === 1 ? 'unidad' : 'unidades'}.`);
+        }
+
+        function highlightBoard(filterType) {
+            playSound('pop');
+            for (let i = 1; i <= 50; i++) {
+                const cell = document.getElementById(`cell-num-${i}`);
+                cell.classList.remove('opacity-25', 'scale-95');
+
+                if (filterType === 'even' && i % 2 !== 0) {
+                    cell.classList.add('opacity-25', 'scale-95');
+                } else if (filterType === 'odd' && i % 2 === 0) {
+                    cell.classList.add('opacity-25', 'scale-95');
+                } else if (filterType === 'tens' && i % 10 !== 0) {
+                    cell.classList.add('opacity-25', 'scale-95');
+                }
+            }
+        }
+
+        function startBoardChallenge() {
+            playSound('pop');
+            highlightBoard('none');
+            const randomNum = Math.floor(Math.random() * 50) + 1;
+            appState.boardChallengeTarget = randomNum;
+            const tens = Math.floor(randomNum / 10);
+            const units = randomNum % 10;
+
+            const msg = `¡Desafío! Busca y toca en el tablero el número "${NOMBRES_NUMEROS[randomNum].toUpperCase()}" (${tens} decenas y ${units} unidades).`;
+            setMascotFeedback(msg, "🕵️", "border-amber-400 bg-amber-50");
+            speakText(`Busca en el tablero el número ${NOMBRES_NUMEROS[randomNum]}, que tiene ${tens} decenas y ${units} unidades.`);
+        }
+
+        /* ==========================================================================
+           5. JUEGO 2: CLASIFICAR OBJETOS Y NÚMEROS
+           ========================================================================== */
+        function setClassifyMode(mode) {
+            playSound('pop');
+            appState.classifyMode = mode;
+
+            // Actualizar botones de modo
+            const modes = {
+                'par-impar': 'cls-mode-par',
+                'mayor-menor': 'cls-mode-mayor',
+                'decenas': 'cls-mode-decenas'
+            };
+            Object.keys(modes).forEach(m => {
+                const btn = document.getElementById(modes[m]);
+                if (m === mode) {
+                    btn.className = 'btn-3d btn-purple px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2';
+                } else {
+                    btn.className = 'btn-3d bg-slate-100 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2';
+                }
+            });
+
+            initClassifyGame();
+        }
+
+        function initClassifyGame() {
+            appState.classifyQueue = [];
+            appState.classifyIndex = 0;
+
+            // Pivote aleatorio para mayor/menor (ej: 20, 25 o 30)
+            const pivots = [20, 25, 30];
+            appState.classifyPivot = pivots[Math.floor(Math.random() * pivots.length)];
+
+            // Generar 6 números aleatorios del 1 al 50 sin repetir
+            const used = new Set();
+            while (appState.classifyQueue.length < 6) {
+                const n = Math.floor(Math.random() * 50) + 1;
+                if (appState.classifyMode === 'mayor-menor' && n === appState.classifyPivot) continue;
+                if (!used.has(n)) {
+                    used.add(n);
+                    appState.classifyQueue.push(n);
+                }
+            }
+
+            renderClassifyBins();
+            renderCurrentClassifyCard();
+        }
+
+        function renderClassifyBins() {
+            const container = document.getElementById('cls-bins-container');
+            container.innerHTML = '';
+
+            if (appState.classifyMode === 'par-impar') {
+                container.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4';
+                container.innerHTML = `
+                    <button onclick="handleClassifyChoice('par')" class="btn-3d bg-emerald-100 hover:bg-emerald-200 border-4 border-emerald-400 rounded-3xl p-5 flex flex-col items-center justify-center gap-2 transition">
+                        <span class="text-3xl md:text-4xl">🟢 👟</span>
+                        <span class="text-lg md:text-2xl font-bold text-emerald-900">Números PARES</span>
+                        <span class="text-xs font-semibold text-emerald-700 bg-white/80 px-3 py-1 rounded-full">Terminan en 0, 2, 4, 6, 8</span>
+                    </button>
+                    <button onclick="handleClassifyChoice('impar')" class="btn-3d bg-amber-100 hover:bg-amber-200 border-4 border-amber-400 rounded-3xl p-5 flex flex-col items-center justify-center gap-2 transition">
+                        <span class="text-3xl md:text-4xl">🟠 🧦</span>
+                        <span class="text-lg md:text-2xl font-bold text-amber-900">Números IMPARES</span>
+                        <span class="text-xs font-semibold text-amber-700 bg-white/80 px-3 py-1 rounded-full">Terminan en 1, 3, 5, 7, 9</span>
+                    </button>
+                `;
+            } else if (appState.classifyMode === 'mayor-menor') {
+                const p = appState.classifyPivot;
+                container.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4';
+                container.innerHTML = `
+                    <button onclick="handleClassifyChoice('menor')" class="btn-3d bg-sky-100 hover:bg-sky-200 border-4 border-sky-400 rounded-3xl p-5 flex flex-col items-center justify-center gap-2 transition">
+                        <span class="text-3xl md:text-4xl">🐣 ⬇️</span>
+                        <span class="text-lg md:text-2xl font-bold text-sky-900">MENORES que ${p}</span>
+                        <span class="text-xs font-semibold text-sky-700 bg-white/80 px-3 py-1 rounded-full">Del 1 al ${p - 1}</span>
+                    </button>
+                    <button onclick="handleClassifyChoice('mayor')" class="btn-3d bg-rose-100 hover:bg-rose-200 border-4 border-rose-400 rounded-3xl p-5 flex flex-col items-center justify-center gap-2 transition">
+                        <span class="text-3xl md:text-4xl">🦖 ⬆️</span>
+                        <span class="text-lg md:text-2xl font-bold text-rose-900">MAYORES que ${p}</span>
+                        <span class="text-xs font-semibold text-rose-700 bg-white/80 px-3 py-1 rounded-full">Del ${p + 1} al 50</span>
+                    </button>
+                `;
+            } else if (appState.classifyMode === 'decenas') {
+                container.className = 'grid grid-cols-2 sm:grid-cols-5 gap-2.5';
+                const ranges = [
+                    { id: '1-10', label: '1 al 10', color: 'sky' },
+                    { id: '11-20', label: '11 al 20', color: 'purple' },
+                    { id: '21-30', label: '21 al 30', color: 'amber' },
+                    { id: '31-40', label: '31 al 40', color: 'emerald' },
+                    { id: '41-50', label: '41 al 50', color: 'rose' }
+                ];
+                ranges.forEach(r => {
+                    container.innerHTML += `
+                        <button onclick="handleClassifyChoice('${r.id}')" class="btn-3d bg-${r.color}-100 hover:bg-${r.color}-200 border-4 border-${r.color}-400 rounded-2xl p-3 flex flex-col items-center justify-center gap-1 transition">
+                            <span class="text-xl">📦</span>
+                            <span class="text-sm md:text-base font-bold text-slate-800">Del ${r.label}</span>
+                        </button>
+                    `;
+                });
+            }
+        }
+
+        function renderCurrentClassifyCard() {
+            const card = document.getElementById('cls-current-card');
+            if (appState.classifyIndex >= appState.classifyQueue.length) {
+                document.getElementById('cls-progress').innerText = "¡Ronda Completada!";
+                document.getElementById('cls-card-visual').innerText = "🏆🌟🎉";
+                document.getElementById('cls-card-number').innerText = "¡Bien!";
+                document.getElementById('cls-card-hint').innerText = "Toca 'Nuevas Tarjetas' para seguir";
+                return;
+            }
+
+            const num = appState.classifyQueue[appState.classifyIndex];
+            const tens = Math.floor(num / 10);
+            const units = num % 10;
+
+            document.getElementById('cls-progress').innerText = `Tarjeta ${appState.classifyIndex + 1} de ${appState.classifyQueue.length} — ¡Elige la caja correcta!`;
+            document.getElementById('cls-card-number').innerText = num;
+            document.getElementById('cls-card-hint').innerText = `${tens} ${tens === 1 ? 'decena' : 'decenas'} y ${units} ${units === 1 ? 'unidad' : 'unidades'}`;
+
+            // Iconos representativos (📦 por cada 10, ⭐ por cada unidad)
+            let icons = '📦'.repeat(tens) + '⭐'.repeat(units);
+            document.getElementById('cls-card-visual').innerText = icons;
+
+            card.classList.remove('animate-pop');
+            void card.offsetWidth;
+            card.classList.add('animate-pop');
+        }
+
+        function speakCurrentCard() {
+            if (appState.classifyIndex < appState.classifyQueue.length) {
+                const num = appState.classifyQueue[appState.classifyIndex];
+                speakText(`${num}, ${NOMBRES_NUMEROS[num]}`);
+            }
+        }
+
+        function handleClassifyChoice(choice) {
+            if (appState.classifyIndex >= appState.classifyQueue.length) {
+                initClassifyGame();
+                return;
+            }
+
+            const num = appState.classifyQueue[appState.classifyIndex];
+            let isCorrect = false;
+
+            if (appState.classifyMode === 'par-impar') {
+                isCorrect = (choice === 'par' && num % 2 === 0) || (choice === 'impar' && num % 2 !== 0);
+            } else if (appState.classifyMode === 'mayor-menor') {
+                isCorrect = (choice === 'menor' && num < appState.classifyPivot) || (choice === 'mayor' && num > appState.classifyPivot);
+            } else if (appState.classifyMode === 'decenas') {
+                const [min, max] = choice.split('-').map(Number);
+                isCorrect = num >= min && num <= max;
+            }
+
+            if (isCorrect) {
+                appState.classifyIndex++;
+                if (appState.classifyIndex >= appState.classifyQueue.length) {
+                    addStars(2, "¡Increíble! Clasificaste todas las tarjetas correctamente. ¡Ganaste 2 estrellas!");
+                } else {
+                    playSound('success');
+                    setMascotFeedback(`¡Correcto! El número ${num} (${NOMBRES_NUMEROS[num]}) va en esa caja.`, "🌟", "border-emerald-400 bg-emerald-50");
+                }
+                renderCurrentClassifyCard();
+            } else {
+                playSound('error');
+                const card = document.getElementById('cls-current-card');
+                card.classList.add('animate-shake');
+                setTimeout(() => card.classList.remove('animate-shake'), 400);
+                setMascotFeedback(`¡Ups! Fíjate bien en el número ${num} (${NOMBRES_NUMEROS[num]}) e inténtalo en otra caja.`, "🤔", "border-amber-400 bg-amber-50");
+            }
+        }
+
+        /* ==========================================================================
+           6. JUEGO 3: UNIR CON LÍNEAS / EMPAREJAR
+           ========================================================================== */
+        function initMatchGame() {
+            appState.selectedLeft = null;
+            appState.selectedRight = null;
+            appState.matchedIds = [];
+
+            const svg = document.getElementById('match-svg');
+            if (svg) svg.innerHTML = '';
+
+            // Elegir 4 números aleatorios del 1 al 50
+            const nums = [];
+            while (nums.length < 4) {
+                const n = Math.floor(Math.random() * 50) + 1;
+                if (!nums.includes(n)) nums.push(n);
+            }
+
+            // Crear distintos tipos de representaciones para hacerlo educativo y variado
+            appState.matchPairs = nums.map((num, idx) => {
+                const tens = Math.floor(num / 10);
+                const units = num % 10;
+                let rightLabel = '';
+                let rightSub = '';
+
+                if (idx % 3 === 0) {
+                    rightLabel = `${tens} Decenas y ${units} Unidades`;
+                    rightSub = `${tens * 10} + ${units}`;
+                } else if (idx % 3 === 1) {
+                    rightLabel = NOMBRES_NUMEROS[num].toUpperCase();
+                    rightSub = `Nombre del número`;
+                } else {
+                    const boxes = '📦'.repeat(tens);
+                    const apples = '🍎'.repeat(units);
+                    rightLabel = `${boxes} ${apples}`.trim();
+                    rightSub = `${tens} cajas de 10 y ${units} sueltos`;
+                }
+
+                return { id: num, number: num, rightLabel, rightSub };
+            });
+
+            // Desordenar columna derecha
+            const rightItems = [...appState.matchPairs].sort(() => Math.random() - 0.5);
+
+            const leftCol = document.getElementById('match-left-col');
+            const rightCol = document.getElementById('match-right-col');
+            leftCol.innerHTML = '';
+            rightCol.innerHTML = '';
+
+            appState.matchPairs.forEach(pair => {
+                const btn = document.createElement('button');
+                btn.id = `match-left-${pair.id}`;
+                btn.onclick = () => selectMatchItem('left', pair.id);
+                btn.className = 'btn-3d bg-sky-50 hover:bg-sky-100 border-3 border-sky-300 rounded-2xl p-3 md:p-4 flex items-center justify-between font-bold text-2xl md:text-3xl text-sky-900 transition h-20';
+                btn.innerHTML = `
+                    <span>${pair.number}</span>
+                    <span class="w-4 h-4 rounded-full bg-sky-400 inline-block"></span>
+                `;
+                leftCol.appendChild(btn);
+            });
+
+            rightItems.forEach(pair => {
+                const btn = document.createElement('button');
+                btn.id = `match-right-${pair.id}`;
+                btn.onclick = () => selectMatchItem('right', pair.id);
+                btn.className = 'btn-3d bg-pink-50 hover:bg-pink-100 border-3 border-pink-300 rounded-2xl p-3 md:p-4 flex items-center justify-between text-left transition h-20';
+                btn.innerHTML = `
+                    <span class="w-4 h-4 rounded-full bg-pink-400 inline-block flex-shrink-0 mr-2"></span>
+                    <div class="flex-grow text-right">
+                        <div class="font-bold text-sm md:text-lg text-slate-800 leading-tight">${pair.rightLabel}</div>
+                        <div class="text-xs text-slate-500">${pair.rightSub}</div>
+                    </div>
+                `;
+                rightCol.appendChild(btn);
+            });
+        }
+
+        function selectMatchItem(side, id) {
+            if (appState.matchedIds.includes(id)) return;
+            playSound('pop');
+
+            if (side === 'left') {
+                appState.selectedLeft = id;
+                speakText(`${id}`);
+            } else {
+                appState.selectedRight = id;
+            }
+
+            updateMatchHighlights();
+
+            // Si ambos lados están seleccionados, comprobar si coinciden
+            if (appState.selectedLeft !== null && appState.selectedRight !== null) {
+                if (appState.selectedLeft === appState.selectedRight) {
+                    const matchedId = appState.selectedLeft;
+                    appState.matchedIds.push(matchedId);
+                    appState.selectedLeft = null;
+                    appState.selectedRight = null;
+
+                    drawMatchLines();
+                    updateMatchHighlights();
+
+                    if (appState.matchedIds.length === appState.matchPairs.length) {
+                        addStars(2, "¡Excelente! Uniste todas las parejas correctamente. ¡Ganaste 2 estrellas!");
+                    } else {
+                        playSound('success');
+                        setMascotFeedback(`¡Muy bien! Emparejaste el número ${matchedId} (${NOMBRES_NUMEROS[matchedId]}).`, "🔗", "border-emerald-400 bg-emerald-50");
+                    }
+                } else {
+                    playSound('error');
+                    const lBtn = document.getElementById(`match-left-${appState.selectedLeft}`);
+                    const rBtn = document.getElementById(`match-right-${appState.selectedRight}`);
+                    if (lBtn) lBtn.classList.add('animate-shake');
+                    if (rBtn) rBtn.classList.add('animate-shake');
+                    setTimeout(() => {
+                        if (lBtn) lBtn.classList.remove('animate-shake');
+                        if (rBtn) rBtn.classList.remove('animate-shake');
+                    }, 400);
+
+                    appState.selectedLeft = null;
+                    appState.selectedRight = null;
+                    updateMatchHighlights();
+                    setMascotFeedback("¡Casi! Esos dos no forman pareja. Cuenta las decenas y unidades e inténtalo otra vez.", "🧐", "border-amber-400 bg-amber-50");
+                }
+            }
+        }
+
+        function updateMatchHighlights() {
+            appState.matchPairs.forEach(pair => {
+                const lBtn = document.getElementById(`match-left-${pair.id}`);
+                const rBtn = document.getElementById(`match-right-${pair.id}`);
+                if (!lBtn || !rBtn) return;
+
+                if (appState.matchedIds.includes(pair.id)) {
+                    lBtn.className = 'bg-emerald-100 border-3 border-emerald-500 rounded-2xl p-3 md:p-4 flex items-center justify-between font-bold text-2xl md:text-3xl text-emerald-900 h-20 opacity-85';
+                    rBtn.className = 'bg-emerald-100 border-3 border-emerald-500 rounded-2xl p-3 md:p-4 flex items-center justify-between text-left h-20 opacity-85';
+                } else {
+                    const isLeftSel = appState.selectedLeft === pair.id;
+                    const isRightSel = appState.selectedRight === pair.id;
+
+                    lBtn.className = `btn-3d ${isLeftSel ? 'bg-amber-200 ring-4 ring-amber-400' : 'bg-sky-50 hover:bg-sky-100'} border-3 border-sky-300 rounded-2xl p-3 md:p-4 flex items-center justify-between font-bold text-2xl md:text-3xl text-sky-900 transition h-20`;
+                    rBtn.className = `btn-3d ${isRightSel ? 'bg-amber-200 ring-4 ring-amber-400' : 'bg-pink-50 hover:bg-pink-100'} border-3 border-pink-300 rounded-2xl p-3 md:p-4 flex items-center justify-between text-left transition h-20`;
+                }
+            });
+        }
+
+        function drawMatchLines() {
+            const svg = document.getElementById('match-svg');
+            const wrapper = document.getElementById('match-board-wrapper');
+            if (!svg || !wrapper) return;
+
+            svg.innerHTML = '';
+            const wrapRect = wrapper.getBoundingClientRect();
+
+            appState.matchedIds.forEach(id => {
+                const lBtn = document.getElementById(`match-left-${id}`);
+                const rBtn = document.getElementById(`match-right-${id}`);
+                if (!lBtn || !rBtn) return;
+
+                const lRect = lBtn.getBoundingClientRect();
+                const rRect = rBtn.getBoundingClientRect();
+
+                const x1 = lRect.right - wrapRect.left - 12;
+                const y1 = lRect.top + lRect.height / 2 - wrapRect.top;
+                const x2 = rRect.left - wrapRect.left + 12;
+                const y2 = rRect.top + rRect.height / 2 - wrapRect.top;
+
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', '#10b981');
+                line.setAttribute('stroke-width', '6');
+                line.setAttribute('stroke-linecap', 'round');
+                svg.appendChild(line);
+            });
+        }
+
+        window.addEventListener('resize', () => {
+            if (appState.currentTab === 'unir') drawMatchLines();
+        });
+
+        /* ==========================================================================
+           7. JUEGO 4: CONTAR OBJETOS AGRUPADOS Y CONSTRUIR NÚMEROS
+           ========================================================================== */
+        function setCountSubmode(submode) {
+            playSound('pop');
+            appState.countSubmode = submode;
+
+            const btnCount = document.getElementById('cnt-mode-count');
+            const btnBuild = document.getElementById('cnt-mode-build');
+            const secCount = document.getElementById('count-submode-count');
+            const secBuild = document.getElementById('count-submode-build');
+
+            if (submode === 'count') {
+                btnCount.className = 'btn-3d btn-green px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2';
+                btnBuild.className = 'btn-3d bg-slate-100 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2';
+                secCount.classList.remove('hidden');
+                secCount.classList.add('flex');
+                secBuild.classList.add('hidden');
+                secBuild.classList.remove('flex');
+            } else {
+                btnBuild.className = 'btn-3d btn-green px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2';
+                btnCount.className = 'btn-3d bg-slate-100 text-slate-700 px-3 py-2 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2';
+                secBuild.classList.remove('hidden');
+                secBuild.classList.add('flex');
+                secCount.classList.add('hidden');
+                secCount.classList.remove('flex');
+            }
+
+            initCountGame();
+        }
+
+        function initCountGame() {
+            if (appState.countSubmode === 'count') {
+                // Número objetivo entre 11 y 50 para practicar decenas y unidades
+                appState.countTarget = Math.floor(Math.random() * 40) + 11;
+                appState.countEmoji = EMOJIS_CONTAR[Math.floor(Math.random() * EMOJIS_CONTAR.length)];
+                renderCountStage();
+            } else {
+                appState.buildTarget = Math.floor(Math.random() * 40) + 11;
+                appState.buildTens = 0;
+                appState.buildUnits = 0;
+                renderBuilderStage();
+            }
+        }
+
+        function renderCountStage() {
+            const target = appState.countTarget;
+            const emoji = appState.countEmoji;
+            const tens = Math.floor(target / 10);
+            const units = target % 10;
+
+            const tensArea = document.getElementById('count-tens-area');
+            const unitsArea = document.getElementById('count-units-area');
+            tensArea.innerHTML = '';
+            unitsArea.innerHTML = '';
+
+            // Crear cajas de 10 (2 filas x 5 columnas dentro de cada caja)
+            for (let t = 0; t < tens; t++) {
+                const box = document.createElement('div');
+                box.className = 'bg-amber-100 border-3 border-amber-400 rounded-2xl p-2.5 shadow-sm flex flex-col items-center animate-pop';
+                box.style.animationDelay = `${t * 0.06}s`;
+
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-5 gap-1 text-lg md:text-xl';
+                for (let i = 0; i < 10; i++) {
+                    const span = document.createElement('span');
+                    span.innerText = emoji;
+                    grid.appendChild(span);
+                }
+
+                const badge = document.createElement('span');
+                badge.className = 'mt-1.5 text-xs font-bold bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full';
+                badge.innerText = '1 Decena = 10';
+
+                box.appendChild(grid);
+                box.appendChild(badge);
+                tensArea.appendChild(box);
+            }
+
+            // Crear objetos sueltos
+            if (units > 0) {
+                unitsArea.classList.remove('hidden');
+                const uGrid = document.createElement('div');
+                uGrid.className = 'grid grid-cols-5 gap-1.5 text-xl md:text-2xl';
+                for (let u = 0; u < units; u++) {
+                    const span = document.createElement('span');
+                    span.className = 'animate-pop';
+                    span.innerText = emoji;
+                    uGrid.appendChild(span);
+                }
+                const uBadge = document.createElement('span');
+                uBadge.className = 'mt-2 text-xs font-bold text-emerald-800 bg-emerald-200 px-2.5 py-0.5 rounded-full';
+                uBadge.innerText = `${units} ${units === 1 ? 'suelto' : 'sueltos'}`;
+                unitsArea.appendChild(uGrid);
+                unitsArea.appendChild(uBadge);
+            } else {
+                unitsArea.classList.add('hidden');
+            }
+
+            // Generar 4 opciones de respuesta
+            const optionsSet = new Set([target]);
+            // Añadir distractor inverso si aplica (ej. 24 vs 42)
+            const reversed = units * 10 + tens;
+            if (reversed >= 1 && reversed <= 50 && reversed !== target) {
+                optionsSet.add(reversed);
+            }
+            while (optionsSet.size < 4) {
+                const rand = Math.floor(Math.random() * 50) + 1;
+                optionsSet.add(rand);
+            }
+
+            const optionsArr = Array.from(optionsSet).sort(() => Math.random() - 0.5);
+            const optionsContainer = document.getElementById('count-options');
+            optionsContainer.innerHTML = '';
+
+            optionsArr.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.onclick = () => checkCountAnswer(opt, btn);
+                btn.className = 'btn-3d btn-blue py-3 px-4 rounded-2xl font-bold text-2xl md:text-3xl flex flex-col items-center justify-center';
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    <span class="text-xs font-medium opacity-90 capitalize">${NOMBRES_NUMEROS[opt]}</span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkCountAnswer(selected, btnElement) {
+            if (selected === appState.countTarget) {
+                const t = appState.countTarget;
+                addStars(1, `¡Exacto! Hay ${t} (${NOMBRES_NUMEROS[t]}) objetos en total. ¡Ganaste una estrella!`);
+                speakText(`¡Correcto! Hay ${NOMBRES_NUMEROS[t]}.`);
+                setTimeout(() => initCountGame(), 1200);
+            } else {
+                playSound('error');
+                btnElement.classList.add('animate-shake');
+                setTimeout(() => btnElement.classList.remove('animate-shake'), 400);
+
+                const tens = Math.floor(appState.countTarget / 10);
+                const units = appState.countTarget % 10;
+                setMascotFeedback(`¡Cuenta con cuidado! Hay ${tens} ${tens === 1 ? 'caja' : 'cajas'} de 10 (${tens * 10}) más ${units} ${units === 1 ? 'suelto' : 'sueltos'}.`, "🧮", "border-amber-400 bg-amber-50");
+            }
+        }
+
+        /* Sub-modo Constructor de Números */
+        function renderBuilderStage() {
+            document.getElementById('build-target-num').innerText = appState.buildTarget;
+            document.getElementById('build-target-word').innerText = NOMBRES_NUMEROS[appState.buildTarget].toUpperCase();
+            updateBuilderVisuals();
+        }
+
+        function modifyBuilder(amount) {
+            playSound('pop');
+            if (amount === 10 && appState.buildTens < 5) appState.buildTens++;
+            if (amount === -10 && appState.buildTens > 0) appState.buildTens--;
+            if (amount === 1 && appState.buildUnits < 9) appState.buildUnits++;
+            if (amount === -1 && appState.buildUnits > 0) appState.buildUnits--;
+
+            updateBuilderVisuals();
+        }
+
+        function updateBuilderVisuals() {
+            document.getElementById('build-tens-counter').innerText = appState.buildTens;
+            document.getElementById('build-units-counter').innerText = appState.buildUnits;
+
+            const currentTotal = appState.buildTens * 10 + appState.buildUnits;
+            document.getElementById('build-current-total').innerText = `${currentTotal} (${NOMBRES_NUMEROS[currentTotal]})`;
+
+            const stage = document.getElementById('build-visual-stage');
+            stage.innerHTML = '';
+
+            for (let t = 0; t < appState.buildTens; t++) {
+                const box = document.createElement('div');
+                box.className = 'bg-rose-100 border-2 border-rose-400 rounded-xl p-2 flex flex-col items-center animate-pop';
+                box.innerHTML = `<span class="text-2xl">📦</span><span class="text-xs font-bold text-rose-800">10</span>`;
+                stage.appendChild(box);
+            }
+
+            for (let u = 0; u < appState.buildUnits; u++) {
+                const item = document.createElement('div');
+                item.className = 'bg-blue-100 border-2 border-blue-300 rounded-xl p-2 flex flex-col items-center animate-pop';
+                item.innerHTML = `<span class="text-2xl">🍓</span><span class="text-xs font-bold text-blue-800">1</span>`;
+                stage.appendChild(item);
+            }
+        }
+
+        function checkBuilderAnswer() {
+            const total = appState.buildTens * 10 + appState.buildUnits;
+            if (total === appState.buildTarget) {
+                addStars(2, `¡Fantástico! Construiste el número ${total} (${NOMBRES_NUMEROS[total]}) con ${appState.buildTens} decenas y ${appState.buildUnits} unidades.`);
+                speakText(`¡Excelente! Construiste el ${NOMBRES_NUMEROS[total]}.`);
+                setTimeout(() => initCountGame(), 1400);
+            } else {
+                playSound('error');
+                setMascotFeedback(`Tienes ${total} en la mesa, pero necesitamos construir el ${appState.buildTarget}. ¡Agrega o quita cajas y unidades!`, "🛠️", "border-amber-400 bg-amber-50");
+            }
+        }
+
+        /* ==========================================================================
+           8. INICIALIZACIÓN AL CARGAR LA PÁGINA
+           ========================================================================== */
+        window.onload = function () {
+            renderBoardGrid();
+        };
+    </script>
+</body>
+</html>
