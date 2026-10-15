@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matemática 5° Básico - Gráficos de Línea (OA 26)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+            background-image: radial-gradient(#bae6fd 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        h1, h2, h3, .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 8px;
+        }
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s infinite;
+        }
+        @keyframes shake-error {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .animate-shake {
+            animation: shake-error 0.4s ease-in-out;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <!-- MODAL DE NOTIFICACIONES / RETROALIMENTACIÓN (Sin alert()) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- MODAL DE AUTENTICACIÓN DOCENTE (CONTRASEÑA: Stik) -->
+    <div id="teacher-auth-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div id="teacher-auth-card" class="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border-4 border-indigo-500">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-2xl shadow-sm">
+                        <i class="fa-solid fa-user-lock"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Acceso Modo Docente</h2>
+                        <p class="text-xs text-slate-500">Exclusivo para el profesor/a de la sesión</p>
+                    </div>
+                </div>
+                <button onclick="closeTeacherAuthModal()" class="text-slate-400 hover:text-slate-600 text-xl p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <p class="text-sm text-slate-600 mb-4">
+                Ingresa la clave docente para desbloquear la guía de 80 minutos, el solucionario y las herramientas de modelaje en proyector.
+            </p>
+
+            <div class="space-y-3">
+                <div class="relative">
+                    <input 
+                        type="password" 
+                        id="teacher-pwd-input" 
+                        placeholder="Ingresa la contraseña docente..." 
+                        onkeydown="if(event.key === 'Enter') verifyTeacherPassword()"
+                        class="w-full px-4 py-3 pr-11 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:outline-none font-bold text-slate-800 text-sm transition"
+                    >
+                    <button 
+                        type="button" 
+                        onclick="togglePasswordVisibility()" 
+                        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition"
+                        title="Mostrar/Ocultar contraseña"
+                    >
+                        <i id="pwd-eye-icon" class="fa-solid fa-eye"></i>
+                    </button>
+                </div>
+
+                <div id="teacher-auth-error" class="hidden bg-rose-50 border border-rose-300 text-rose-800 text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation text-rose-600"></i>
+                    <span>Contraseña incorrecta. Verifica mayúsculas y minúsculas.</span>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-2">
+                    <button onclick="closeTeacherAuthModal()" class="px-4 py-2.5 rounded-xl font-bold text-xs text-slate-600 hover:bg-slate-100 transition">
+                        Cancelar
+                    </button>
+                    <button onclick="verifyTeacherPassword()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition text-xs md:text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-key"></i> Ingresar al Panel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GUÍA DOCENTE / PROYECTOR (DESBLOQUEADO CON 'Stik') -->
+    <div id="teacher-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-6 md:p-8 shadow-2xl border-4 border-indigo-500 max-h-[92vh] overflow-y-auto custom-scroll">
+            <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-4 mb-5">
+                <div class="flex items-center gap-3">
+                    <span class="bg-indigo-100 text-indigo-700 p-3 rounded-2xl text-2xl"><i class="fa-solid fa-chalkboard-user"></i></span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-2xl font-bold text-slate-800">Panel Docente y Estructura (80 Minutos)</h2>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                                <i class="fa-solid fa-shield-halved mr-1"></i>Sesión Activa
+                            </span>
+                        </div>
+                        <p class="text-sm text-slate-500">OA 26 - Matemática 5° Básico | Jueves 15 de Octubre</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="lockTeacherSession()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5" title="Cerrar sesión docente y volver a pedir contraseña">
+                        <i class="fa-solid fa-lock"></i> Bloquear Modo Docente
+                    </button>
+                    <button onclick="toggleTeacherModal()" class="text-slate-400 hover:text-slate-600 text-2xl p-2"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            
+            <div class="space-y-5 text-sm md:text-base">
+                <!-- HERRAMIENTAS EXCLUSIVAS DEL PROFESOR -->
+                <div class="bg-indigo-50/90 border-2 border-indigo-200 rounded-2xl p-4 md:p-5 space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h3 class="font-bold text-indigo-950 text-base md:text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-indigo-600"></i> Herramientas Exclusivas del Profesor (Modo Pizarra / Proyector)
+                        </h3>
+                        <span class="text-xs font-semibold text-indigo-700 bg-white px-2.5 py-1 rounded-lg border border-indigo-200">
+                            Controles rápidos de modelaje
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <button onclick="autoCompleteCurrentMission()" class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-xl font-bold text-xs md:text-sm shadow transition flex flex-col items-start gap-1 text-left">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bolt"></i> Autocompletar Misión Actual</span>
+                            <span class="text-[11px] font-normal text-indigo-100">Resuelve los pasos 1, 2 y 3 de la misión activa para modelar en pizarra.</span>
+                        </button>
+
+                        <button onclick="unlockAllMissions()" class="bg-white hover:bg-indigo-100 text-indigo-900 border-2 border-indigo-300 p-3 rounded-xl font-bold text-xs md:text-sm transition flex flex-col items-start gap-1 text-left">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-unlock-keyhole text-indigo-600"></i> Activar Salto Libre de Pasos</span>
+                            <span class="text-[11px] font-normal text-slate-600">Permite avanzar a cualquier paso del Módulo 2 sin restricciones.</span>
+                        </button>
+
+                        <button onclick="toggleProjectorFont()" class="bg-white hover:bg-indigo-100 text-indigo-900 border-2 border-indigo-300 p-3 rounded-xl font-bold text-xs md:text-sm transition flex flex-col items-start gap-1 text-left">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass-plus text-indigo-600"></i> Zoom Texto Proyector</span>
+                            <span class="text-[11px] font-normal text-slate-600">Aumenta o normaliza el tamaño de letra para lectura desde el fondo de la sala.</span>
+                        </button>
+                    </div>
+
+                    <!-- Solucionario Rápido Desplegable -->
+                    <div class="bg-white rounded-xl p-4 border border-indigo-200">
+                        <h4 class="font-bold text-slate-800 text-xs md:text-sm uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                            <i class="fa-solid fa-key text-amber-500"></i> Solucionario Rápido (Misiones y Ticket de Salida)
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div class="space-y-1.5 bg-slate-50 p-3 rounded-lg border">
+                                <p class="font-bold text-indigo-900">Módulo 2: Misiones Guiadas</p>
+                                <p>• <strong>Misión 1 (Planta):</strong> Escala de <strong>4 en 4</strong> (Máx 20 cm). Mayor subida: Sem 3 a Sem 4 (+6 cm). Tendencia: Creciente.</p>
+                                <p>• <strong>Misión 2 (Agua):</strong> Escala de <strong>20 en 20</strong> (Máx 90 L). Baja en: Mayo (a 30 L). Subida Mayo-Junio: +40 L.</p>
+                                <p>• <strong>Misión 3 (Reciclaje):</strong> Escala de <strong>100 en 100</strong> (Máx 500). 250 va a mitad entre 200 y 300. Diferencia J1-J5: 400 latas.</p>
+                            </div>
+                            <div class="space-y-1.5 bg-slate-50 p-3 rounded-lg border">
+                                <p class="font-bold text-emerald-900">Módulo 4: Respuestas Ticket de Salida</p>
+                                <p>• <strong>Desafío 1:</strong> Opción A (No mantuvo saltos iguales en Eje Y).</p>
+                                <p>• <strong>Desafío 2:</strong> Opción B (Dejar el espacio de Junio para mantener intervalos iguales).</p>
+                                <p>• <strong>Desafío 3:</strong> Opción B (Escala de 5 en 5 para llegar a 40 libros).</p>
+                                <p>• <strong>Desafío 4:</strong> Opción A (A mitad entre la línea del 20 y 30).</p>
+                                <p>• <strong>Desafío 5:</strong> Opción B (Temperatura constante).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl">
+                    <p class="font-bold text-amber-900"><i class="fa-solid fa-lightbulb mr-2"></i>Foco Pedagógico de la Sesión:</p>
+                    <p class="text-amber-800 mt-1">Los errores más comunes en 5° básico al construir gráficos de línea son: <strong>1)</strong> Colocar directamente los números de la tabla en el eje Y sin mantener una escala proporcional (ej. poner 5, 12, 18, 40 a igual distancia), y <strong>2)</strong> No respetar intervalos regulares de tiempo en el eje X. Esta app ataca directamente ambos conceptos.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border rounded-2xl p-4 bg-blue-50/50">
+                        <span class="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">Módulo 1: 0 a 15 min</span>
+                        <h3 class="font-bold text-lg mt-2 text-blue-950">Exploración e Inicio</h3>
+                        <p class="text-slate-600 text-sm mt-1">Proyectar o explorar en conjunto la anatomía del gráfico y el simulador de temperatura en Quilpué. Observar qué pasa cuando elegimos una escala de 1 en 1 (se sale del gráfico) vs 50 en 50 (queda aplastado).</p>
+                    </div>
+                    <div class="border rounded-2xl p-4 bg-emerald-50/50">
+                        <span class="bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">Módulo 2: 15 a 40 min</span>
+                        <h3 class="font-bold text-lg mt-2 text-emerald-950">Práctica Guiada (3 Misiones)</h3>
+                        <p class="text-slate-600 text-sm mt-1">Trabajo individual o en parejas. Construyen 3 gráficos paso a paso: 1° Graduar Eje X, 2° Elegir escala Eje Y, 3° Ubicar coordenadas haciendo clic en la cuadrícula, y 4° Unir puntos y responder preguntas.</p>
+                    </div>
+                    <div class="border rounded-2xl p-4 bg-purple-50/50">
+                        <span class="bg-purple-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">Módulo 3: 40 a 65 min</span>
+                        <h3 class="font-bold text-lg mt-2 text-purple-950">Laboratorio Creativo</h3>
+                        <p class="text-slate-600 text-sm mt-1">Creación libre o con plantillas. Ingresan sus propios datos en la tabla, eligen su escala y dibujan los puntos en el plano para luego comparar con el botón "Comparar / Autoevaluar".</p>
+                    </div>
+                    <div class="border rounded-2xl p-4 bg-rose-50/50">
+                        <span class="bg-rose-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">Módulo 4: 65 a 80 min</span>
+                        <h3 class="font-bold text-lg mt-2 text-rose-950">Ticket de Salida y Cierre</h3>
+                        <p class="text-slate-600 text-sm mt-1">5 desafíos de evaluación formativa enfocados en encontrar errores en ejes mal graduados y seleccionar escalas. Genera diploma imprimible con el resumen de logro.</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-end gap-4 pt-4 border-t">
+                    <button onclick="toggleTeacherModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl transition">Cerrar Panel Docente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENCABEZADO OBLIGATORIO Y BARRA DE GESTIÓN DE 80 MINUTOS -->
+    <header class="bg-white border-b-2 border-blue-100 shadow-sm sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 py-2.5">
+            <!-- Fila Superior: Datos de la clase, Cronómetro de 80 min y Puntaje -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-br from-blue-600 to-indigo-600 text-white w-11 h-11 rounded-2xl flex items-center justify-center text-xl font-bold shadow-md">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                                <i class="fa-regular fa-calendar-check mr-1"></i>Jueves 15 de Octubre
+                            </span>
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                                <i class="fa-solid fa-graduation-cap mr-1"></i>5° Básico - Matemática (OA 26)
+                            </span>
+                        </div>
+                        <h1 class="text-lg md:text-xl font-bold text-slate-800 leading-tight mt-0.5">Laboratorio de Gráficos de Línea y Escalas</h1>
+                    </div>
+                </div>
+
+                <!-- Cronómetro Interactivo 80 Minutos -->
+                <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-2xl border border-slate-200">
+                    <div class="text-xs">
+                        <span class="text-slate-500 font-semibold block">Duración: 80 min</span>
+                        <select id="timer-phase" onchange="changeTimerPhase()" class="bg-transparent font-bold text-blue-700 focus:outline-none cursor-pointer">
+                            <option value="80">Clase Completa (80m)</option>
+                            <option value="15">Fase 1: Inicio (15m)</option>
+                            <option value="25">Fase 2: Práctica (25m)</option>
+                            <option value="25_lab">Fase 3: Laboratorio (25m)</option>
+                            <option value="15_end">Fase 4: Cierre (15m)</option>
+                        </select>
+                    </div>
+                    <div id="timer-display" class="font-mono text-xl font-extrabold bg-white px-3 py-1 rounded-xl border text-slate-800 shadow-inner">
+                        80:00
+                    </div>
+                    <button onclick="toggleTimer()" id="timer-btn" class="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded-xl flex items-center justify-center transition" title="Iniciar/Pausar Cronómetro">
+                        <i class="fa-solid fa-play text-xs"></i>
+                    </button>
+                    <button onclick="resetTimer()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-8 h-8 rounded-xl flex items-center justify-center transition" title="Reiniciar Cronómetro">
+                        <i class="fa-solid fa-rotate-right text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- Estrellas / Puntos y Botón Docente -->
+                <div class="flex items-center gap-2">
+                    <div class="bg-amber-50 border-2 border-amber-300 px-3.5 py-1 rounded-2xl flex items-center gap-2">
+                        <i class="fa-solid fa-star text-amber-400 text-lg animate-pulse-soft"></i>
+                        <div>
+                            <span class="text-[10px] uppercase tracking-wider font-bold text-amber-700 block leading-none">Puntaje</span>
+                            <span id="score-display" class="font-display font-bold text-lg text-amber-900">0 pts</span>
+                        </div>
+                    </div>
+                    <button onclick="openTeacherAccess()" id="teacher-access-btn" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5" title="Modo Docente (Requiere contraseña)">
+                        <i id="teacher-lock-icon" class="fa-solid fa-lock"></i>
+                        <span class="hidden sm:inline">Modo Docente</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fila Inferior: Objetivo de la clase -->
+            <div class="pt-2 flex flex-col md:flex-row md:items-center justify-between gap-2 text-xs md:text-sm">
+                <p class="text-slate-700 bg-blue-50/80 px-3 py-1.5 rounded-xl border border-blue-100 flex-1">
+                    <strong class="text-blue-800"><i class="fa-solid fa-bullseye mr-1"></i>Objetivo de la clase:</strong> 
+                    Construir gráficos de línea a partir de tablas de datos, seleccionando escalas adecuadas para el eje vertical y graduando el tiempo en el eje horizontal.
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVEGACIÓN DE LOS 4 MÓDULOS PEDAGÓGICOS -->
+    <nav class="max-w-7xl mx-auto w-full px-4 pt-4 no-print">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <button onclick="switchModule(1)" id="nav-mod-1" class="tab-active flex items-center gap-3 p-3 rounded-2xl font-display font-bold text-left transition bg-white border border-slate-200 shadow-sm">
+                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">1</div>
+                <div class="overflow-hidden">
+                    <span class="text-[11px] uppercase tracking-wider opacity-85 block">Inicio • 15 min</span>
+                    <span class="text-sm md:text-base truncate block">Exploración y Escalas</span>
+                </div>
+            </button>
+            <button onclick="switchModule(2)" id="nav-mod-2" class="flex items-center gap-3 p-3 rounded-2xl font-display font-bold text-left transition bg-white hover:bg-blue-50 text-slate-700 border border-slate-200 shadow-sm">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-lg shrink-0">2</div>
+                <div class="overflow-hidden">
+                    <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Desarrollo • 25 min</span>
+                    <span class="text-sm md:text-base truncate block">Constructor Guiado</span>
+                </div>
+            </button>
+            <button onclick="switchModule(3)" id="nav-mod-3" class="flex items-center gap-3 p-3 rounded-2xl font-display font-bold text-left transition bg-white hover:bg-blue-50 text-slate-700 border border-slate-200 shadow-sm">
+                <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-lg shrink-0">3</div>
+                <div class="overflow-hidden">
+                    <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Laboratorio • 25 min</span>
+                    <span class="text-sm md:text-base truncate block">Crea tu Propio Gráfico</span>
+                </div>
+            </button>
+            <button onclick="switchModule(4)" id="nav-mod-4" class="flex items-center gap-3 p-3 rounded-2xl font-display font-bold text-left transition bg-white hover:bg-blue-50 text-slate-700 border border-slate-200 shadow-sm">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg shrink-0">4</div>
+                <div class="overflow-hidden">
+                    <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Cierre • 15 min</span>
+                    <span class="text-sm md:text-base truncate block">Ticket de Salida</span>
+                </div>
+            </button>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="max-w-7xl mx-auto w-full px-4 py-5 flex-1">
+
+        <!-- =========================================================================
+             MÓDULO 1: EXPLORACIÓN E INICIO (15 MIN) - DETECTIVES DEL TIEMPO Y ESCALAS
+             ========================================================================= -->
+        <section id="module-1" class="space-y-6">
+            <!-- Parte 1A: Anatomía Interactiva de un Gráfico de Líneas -->
+            <div class="bg-white rounded-3xl p-5 md:p-6 shadow-md border border-blue-100">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4 mb-5">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Actividad 1.1 • Conceptos Clave</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800 mt-1">🕵️‍♂️ Las 5 Partes Secretas de un Gráfico de Línea</h2>
+                    </div>
+                    <p class="text-sm text-slate-500">Haz clic en cada botón numerado para descubrir cómo se construye correctamente.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <!-- Botones de las 5 partes -->
+                    <div class="lg:col-span-5 space-y-2.5">
+                        <button onclick="inspectAnatomy(1)" id="anat-btn-1" class="w-full text-left p-3.5 rounded-2xl border-2 border-blue-500 bg-blue-50 transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center shrink-0">1</span>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm md:text-base">Título Claro</h4>
+                                <p class="text-xs text-slate-600">Nos dice de qué trata la información que estamos viendo.</p>
+                            </div>
+                        </button>
+                        <button onclick="inspectAnatomy(2)" id="anat-btn-2" class="w-full text-left p-3.5 rounded-2xl border-2 border-slate-200 hover:border-blue-300 bg-white transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0">2</span>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm md:text-base">Eje Horizontal (X): El Tiempo Graduado</h4>
+                                <p class="text-xs text-slate-600">Siempre va abajo. Se ordena cronológicamente y a igual distancia.</p>
+                            </div>
+                        </button>
+                        <button onclick="inspectAnatomy(3)" id="anat-btn-3" class="w-full text-left p-3.5 rounded-2xl border-2 border-slate-200 hover:border-blue-300 bg-white transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-xl bg-purple-600 text-white font-bold flex items-center justify-center shrink-0">3</span>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm md:text-base">Eje Vertical (Y): Escala Numérica</h4>
+                                <p class="text-xs text-slate-600">Parte desde 0 y avanza dando "saltos iguales" (de 2 en 2, 5 en 5, 10 en 10...).</p>
+                            </div>
+                        </button>
+                        <button onclick="inspectAnatomy(4)" id="anat-btn-4" class="w-full text-left p-3.5 rounded-2xl border-2 border-slate-200 hover:border-blue-300 bg-white transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-xl bg-amber-500 text-white font-bold flex items-center justify-center shrink-0">4</span>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm md:text-base">Puntos de Datos (Coordenadas)</h4>
+                                <p class="text-xs text-slate-600">Se marcan justo donde se cruza el Tiempo (X) con el Valor (Y).</p>
+                            </div>
+                        </button>
+                        <button onclick="inspectAnatomy(5)" id="anat-btn-5" class="w-full text-left p-3.5 rounded-2xl border-2 border-slate-200 hover:border-blue-300 bg-white transition flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-xl bg-rose-600 text-white font-bold flex items-center justify-center shrink-0">5</span>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm md:text-base">Línea de Tendencia</h4>
+                                <p class="text-xs text-slate-600">Une los puntos de izquierda a derecha para ver si sube, baja o se mantiene.</p>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Vista interactiva SVG de Anatomía -->
+                    <div class="lg:col-span-7 bg-slate-50 rounded-2xl p-4 border-2 border-slate-200 flex flex-col items-center">
+                        <div id="anatomy-explanation" class="w-full bg-blue-600 text-white p-3 rounded-xl mb-3 text-sm font-medium shadow-sm flex items-center gap-3">
+                            <i class="fa-solid fa-circle-info text-xl"></i>
+                            <span id="anatomy-text"><strong>1. Título Claro:</strong> "Temperatura en Quilpué durante el Jueves 15 de Octubre". Permite entender de inmediato qué mide el gráfico.</span>
+                        </div>
+
+                        <!-- Gráfico SVG Demostrativo -->
+                        <div class="w-full overflow-x-auto flex justify-center">
+                            <svg id="anatomy-svg" viewBox="0 0 560 300" class="w-full max-w-[560px] h-auto bg-white rounded-xl border border-slate-200 shadow-inner">
+                                <!-- Cuadrícula -->
+                                <g stroke="#e2e8f0" stroke-width="1">
+                                    <line x1="70" y1="50" x2="510" y2="50"/>
+                                    <line x1="70" y1="90" x2="510" y2="90"/>
+                                    <line x1="70" y1="130" x2="510" y2="130"/>
+                                    <line x1="70" y1="170" x2="510" y2="170"/>
+                                    <line x1="70" y1="210" x2="510" y2="210"/>
+                                    <line x1="110" y1="50" x2="110" y2="250"/>
+                                    <line x1="200" y1="50" x2="200" y2="250"/>
+                                    <line x1="290" y1="50" x2="290" y2="250"/>
+                                    <line x1="380" y1="50" x2="380" y2="250"/>
+                                    <line x1="470" y1="50" x2="470" y2="250"/>
+                                </g>
+
+                                <!-- Destacado 1: Título -->
+                                <g id="svg-part-1" class="transition-all duration-300">
+                                    <rect x="90" y="8" width="380" height="30" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+                                    <text x="280" y="28" text-anchor="middle" font-weight="bold" fill="#1e3a8a" font-size="14">Temperatura en Quilpué (Jueves 15 de Octubre)</text>
+                                </g>
+
+                                <!-- Destacado 3: Eje Y -->
+                                <g id="svg-part-3" opacity="0.85">
+                                    <rect id="hl-part-3" x="8" y="42" width="60" height="215" rx="8" fill="transparent" stroke="transparent" stroke-width="2"/>
+                                    <line x1="70" y1="45" x2="70" y2="250" stroke="#7c3aed" stroke-width="3"/>
+                                    <text x="22" y="150" text-anchor="middle" transform="rotate(-90 22 150)" fill="#6d28d9" font-size="12" font-weight="bold">Temperatura (°C)</text>
+                                    <text x="60" y="254" text-anchor="end" font-size="12" fill="#334155" font-weight="bold">0</text>
+                                    <text x="60" y="214" text-anchor="end" font-size="12" fill="#334155" font-weight="bold">5</text>
+                                    <text x="60" y="174" text-anchor="end" font-size="12" fill="#334155" font-weight="bold">10</text>
+                                    <text x="60" y="134" text-anchor="end" font-size="12" fill="#334155" font-weight="bold">15</text>
+                                    <text x="60" y="94" text-anchor="end" font-size="12" fill="#334155" font-weight="bold">20</text>
+                                    <text x="60" y="54" text-anchor="end" font-size="12" fill="#334155" font-weight="bold">25</text>
+                                </g>
+
+                                <!-- Destacado 2: Eje X -->
+                                <g id="svg-part-2" opacity="0.85">
+                                    <rect id="hl-part-2" x="70" y="252" width="445" height="44" rx="8" fill="transparent" stroke="transparent" stroke-width="2"/>
+                                    <line x1="70" y1="250" x2="515" y2="250" stroke="#059669" stroke-width="3"/>
+                                    <text x="110" y="270" text-anchor="middle" font-size="12" fill="#065f46" font-weight="bold">08:00</text>
+                                    <text x="200" y="270" text-anchor="middle" font-size="12" fill="#065f46" font-weight="bold">10:00</text>
+                                    <text x="290" y="270" text-anchor="middle" font-size="12" fill="#065f46" font-weight="bold">12:00</text>
+                                    <text x="380" y="270" text-anchor="middle" font-size="12" fill="#065f46" font-weight="bold">14:00</text>
+                                    <text x="470" y="270" text-anchor="middle" font-size="12" fill="#065f46" font-weight="bold">16:00</text>
+                                    <text x="290" y="290" text-anchor="middle" font-size="12" fill="#047857" font-weight="bold">Hora del día (Intervalos iguales de 2 horas)</text>
+                                </g>
+
+                                <!-- Destacado 5: Línea de tendencia -->
+                                <g id="svg-part-5">
+                                    <polyline points="110,170 200,130 290,98 380,74 470,90" fill="none" stroke="#e11d48" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </g>
+
+                                <!-- Destacado 4: Puntos -->
+                                <g id="svg-part-4">
+                                    <circle cx="110" cy="170" r="6" fill="#f59e0b" stroke="#fff" stroke-width="2"/>
+                                    <circle cx="200" cy="130" r="6" fill="#f59e0b" stroke="#fff" stroke-width="2"/>
+                                    <circle cx="290" cy="98" r="6" fill="#f59e0b" stroke="#fff" stroke-width="2"/>
+                                    <circle cx="380" cy="74" r="6" fill="#f59e0b" stroke="#fff" stroke-width="2"/>
+                                    <circle cx="470" cy="90" r="6" fill="#f59e0b" stroke="#fff" stroke-width="2"/>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parte 1B: Simulador Interactivo "¿Qué pasa si cambio la escala del Eje Y?" -->
+            <div class="bg-white rounded-3xl p-5 md:p-6 shadow-md border border-blue-100">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b pb-4 mb-5">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Actividad 1.2 • Simulador en Tiempo Real</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800 mt-1">🔬 Experimento: ¿Qué pasa si elijo mal la escala del Eje Vertical?</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Tabla y Controles de Escala -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-slate-700 text-sm mb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-table text-blue-600"></i> Tabla de Datos: Temperatura en Quilpué
+                            </h3>
+                            <table class="w-full text-sm text-center bg-white rounded-xl overflow-hidden border">
+                                <thead class="bg-blue-600 text-white">
+                                    <tr>
+                                        <th class="py-1.5 px-2">Hora (Eje X)</th>
+                                        <th class="py-1.5 px-2">08:00</th>
+                                        <th class="py-1.5 px-2">10:00</th>
+                                        <th class="py-1.5 px-2">12:00</th>
+                                        <th class="py-1.5 px-2">14:00</th>
+                                        <th class="py-1.5 px-2">16:00</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="font-bold text-slate-700">
+                                        <td class="py-2 px-2 bg-slate-100">Temp. (°C)</td>
+                                        <td class="py-2 px-2">10°</td>
+                                        <td class="py-2 px-2">15°</td>
+                                        <td class="py-2 px-2">19°</td>
+                                        <td class="py-2 px-2 text-rose-600">22° (Máx)</td>
+                                        <td class="py-2 px-2">20°</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="text-xs text-slate-500 mt-2">Observa: El valor más alto que debemos graficar es <strong>22 °C</strong> y nuestra hoja tiene <strong>6 líneas horizontales</strong> sobre el cero.</p>
+                        </div>
+
+                        <div class="bg-purple-50 p-4 rounded-2xl border-2 border-purple-200">
+                            <label class="font-bold text-purple-950 block mb-2 text-sm">👇 Prueba cambiar la escala del Eje Vertical (Y):</label>
+                            <div class="grid grid-cols-5 gap-2">
+                                <button onclick="updateScaleSimulator(1)" id="sim-scale-1" class="py-2 px-1 rounded-xl font-bold text-xs md:text-sm border-2 border-purple-200 bg-white hover:bg-purple-100 transition">1 en 1</button>
+                                <button onclick="updateScaleSimulator(2)" id="sim-scale-2" class="py-2 px-1 rounded-xl font-bold text-xs md:text-sm border-2 border-purple-200 bg-white hover:bg-purple-100 transition">2 en 2</button>
+                                <button onclick="updateScaleSimulator(5)" id="sim-scale-5" class="py-2 px-1 rounded-xl font-bold text-xs md:text-sm border-2 border-purple-600 bg-purple-600 text-white shadow transition">5 en 5</button>
+                                <button onclick="updateScaleSimulator(10)" id="sim-scale-10" class="py-2 px-1 rounded-xl font-bold text-xs md:text-sm border-2 border-purple-200 bg-white hover:bg-purple-100 transition">10 en 10</button>
+                                <button onclick="updateScaleSimulator(50)" id="sim-scale-50" class="py-2 px-1 rounded-xl font-bold text-xs md:text-sm border-2 border-purple-200 bg-white hover:bg-purple-100 transition">50 en 50</button>
+                            </div>
+
+                            <div id="sim-feedback-box" class="mt-3 p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs md:text-sm font-medium">
+                                ✅ <strong>¡Escala de 5 en 5 (0, 5, 10, 15, 20, 25, 30)!</strong> Es ideal porque el valor máximo (22°C) cabe perfectamente y los cambios se ven con claridad.
+                            </div>
+                        </div>
+
+                        <!-- Mini Pregunta de Verificación del Módulo 1 -->
+                        <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200">
+                            <h4 class="font-bold text-amber-950 text-sm mb-2"><i class="fa-solid fa-circle-question mr-1"></i> Desafío Rápido (+50 pts):</h4>
+                            <p class="text-xs text-amber-900 mb-2.5">Si tuvieras una tabla donde los datos van desde <strong>100 hasta 450</strong> y tu cuaderno tiene 5 líneas en el eje Y, ¿qué escala elegirías?</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="checkMod1Quiz(2, this)" class="bg-white hover:bg-amber-100 border border-amber-300 py-2 rounded-xl text-xs font-bold text-amber-900 transition">De 2 en 2</button>
+                                <button onclick="checkMod1Quiz(100, this)" class="bg-white hover:bg-amber-100 border border-amber-300 py-2 rounded-xl text-xs font-bold text-amber-900 transition">De 100 en 100</button>
+                                <button onclick="checkMod1Quiz(1000, this)" class="bg-white hover:bg-amber-100 border border-amber-300 py-2 rounded-xl text-xs font-bold text-amber-900 transition">De 1000 en 1000</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lienzo Canvas del Simulador -->
+                    <div class="lg:col-span-7 bg-slate-50 rounded-2xl p-4 border-2 border-slate-200 flex flex-col items-center">
+                        <div class="w-full flex justify-between items-center mb-2 px-2">
+                            <span class="text-xs font-bold text-slate-500 uppercase">Vista en Tiempo Real de la Cuadrícula</span>
+                            <span id="sim-scale-badge" class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full">Escala actual: de 5 en 5</span>
+                        </div>
+                        <canvas id="scale-sim-canvas" width="600" height="340" class="w-full max-w-[600px] h-auto bg-white rounded-xl border border-slate-200 shadow-inner"></canvas>
+                        <div class="mt-4 flex justify-end w-full">
+                            <button onclick="switchModule(2)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-md transition flex items-center gap-2 text-sm">
+                                ¡Ir al Constructor Guiado (Módulo 2)! <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             MÓDULO 2: PRÁCTICA GUIADA PASO A PASO (25 MIN) - CONSTRUCTOR DE GRÁFICOS
+             ========================================================================= -->
+        <section id="module-2" class="hidden space-y-6">
+            <!-- Selector de las 3 Misiones -->
+            <div class="bg-white rounded-3xl p-4 md:p-5 shadow-md border border-blue-100">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">Módulo 2 • 25 Minutos</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800 mt-1">🛠️ Constructor de Gráficos Paso a Paso</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadMission(0)" id="mission-btn-0" class="px-4 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white shadow transition flex items-center gap-2">
+                            <i class="fa-solid fa-seedling"></i> Misión 1: Planta
+                        </button>
+                        <button onclick="loadMission(1)" id="mission-btn-1" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-droplet"></i> Misión 2: Agua
+                        </button>
+                        <button onclick="loadMission(2)" id="mission-btn-2" class="px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-2">
+                            <i class="fa-solid fa-recycle"></i> Misión 3: Reciclaje
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Barra de progreso de los 4 pasos de la misión -->
+                <div class="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100">
+                    <div id="step-ind-1" class="p-2 rounded-xl bg-blue-50 border-2 border-blue-500 text-center">
+                        <span class="text-[11px] font-bold text-blue-600 block">PASO 1</span>
+                        <span class="text-xs font-bold text-slate-800">Graduar Eje X (Tiempo)</span>
+                    </div>
+                    <div id="step-ind-2" class="p-2 rounded-xl bg-slate-50 border border-slate-200 text-center opacity-60">
+                        <span class="text-[11px] font-bold text-slate-500 block">PASO 2</span>
+                        <span class="text-xs font-bold text-slate-700">Elegir Escala Eje Y</span>
+                    </div>
+                    <div id="step-ind-3" class="p-2 rounded-xl bg-slate-50 border border-slate-200 text-center opacity-60">
+                        <span class="text-[11px] font-bold text-slate-500 block">PASO 3</span>
+                        <span class="text-xs font-bold text-slate-700">Ubicar Puntos</span>
+                    </div>
+                    <div id="step-ind-4" class="p-2 rounded-xl bg-slate-50 border border-slate-200 text-center opacity-60">
+                        <span class="text-[11px] font-bold text-slate-500 block">PASO 4</span>
+                        <span class="text-xs font-bold text-slate-700">Trazar Línea y Analizar</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cuerpo del Constructor: Izquierda Controles y Tabla / Derecha Lienzo Interactivo -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <!-- Columna Izquierda (5 cols): Tabla de Datos y Panel del Paso Actual -->
+                <div class="lg:col-span-5 space-y-4">
+                    <!-- Tarjeta Tabla de Datos de la Misión -->
+                    <div class="bg-white rounded-3xl p-5 shadow-md border border-slate-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span id="mission-badge" class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">Misión 1 de 3</span>
+                            <span class="text-xs text-slate-400 font-medium">Tabla de Datos Oficial</span>
+                        </div>
+                        <h3 id="mission-title" class="font-bold text-lg text-slate-800">Crecimiento de un Poroto en Ciencias</h3>
+                        <p id="mission-desc" class="text-xs text-slate-600 mt-0.5 mb-3">Registramos la altura de una planta durante 5 semanas seguidas.</p>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-center border rounded-xl overflow-hidden">
+                                <thead class="bg-slate-800 text-white" id="mission-table-head"></thead>
+                                <tbody class="bg-slate-50 font-bold text-slate-800" id="mission-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel Dinámico de los 4 Pasos -->
+                    <div class="bg-white rounded-3xl p-5 shadow-md border-2 border-blue-400">
+                        <!-- PASO 1: Graduar el Tiempo en el Eje X -->
+                        <div id="panel-step-1" class="space-y-3">
+                            <div class="flex items-center gap-2 text-blue-700 font-bold">
+                                <span class="bg-blue-600 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm">1</span>
+                                <h4>Paso 1: Graduar el Tiempo en el Eje Horizontal (X)</h4>
+                            </div>
+                            <p class="text-xs md:text-sm text-slate-600">¿Cuál de las siguientes opciones ordena correctamente el tiempo en el eje horizontal respetando el orden y los intervalos iguales?</p>
+                            <div id="step1-options" class="space-y-2 pt-1"></div>
+                            <div id="step1-feedback" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+                        </div>
+
+                        <!-- PASO 2: Seleccionar Escala del Eje Y -->
+                        <div id="panel-step-2" class="hidden space-y-3">
+                            <div class="flex items-center gap-2 text-purple-700 font-bold">
+                                <span class="bg-purple-600 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm">2</span>
+                                <h4>Paso 2: Seleccionar la Escala del Eje Vertical (Y)</h4>
+                            </div>
+                            <p class="text-xs md:text-sm text-slate-600" id="step2-prompt">Observa el valor mínimo y máximo de la tabla. Nuestra cuadrícula tiene <strong>6 líneas horizontales</strong> sobre el cero. ¿Qué escala es la más adecuada?</p>
+                            <div id="step2-options" class="grid grid-cols-2 gap-2.5 pt-1"></div>
+                            <div id="step2-feedback" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+                        </div>
+
+                        <!-- PASO 3: Ubicar Puntos en el Plano -->
+                        <div id="panel-step-3" class="hidden space-y-3">
+                            <div class="flex items-center gap-2 text-amber-600 font-bold">
+                                <span class="bg-amber-500 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm">3</span>
+                                <h4>Paso 3: ¡Haz Clic en la Cuadrícula para Ubicar los Puntos!</h4>
+                            </div>
+                            <p class="text-xs md:text-sm text-slate-600">Busca en el gráfico de la derecha dónde se cruza cada período de tiempo con su valor y <strong>haz clic en esa intersección</strong>.</p>
+                            <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl flex items-center justify-between">
+                                <span class="text-xs font-bold text-amber-900" id="step3-target-text">Punto actual: Busca Semana 1 → 4 cm</span>
+                                <span class="bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full" id="step3-counter">0 / 5</span>
+                            </div>
+                            <p class="text-xs text-slate-400 italic"><i class="fa-solid fa-computer-mouse mr-1"></i>Pista: Pasa el mouse por la cuadrícula para ver la coordenada antes de hacer clic.</p>
+                        </div>
+
+                        <!-- PASO 4: Trazar la Línea y Analizar -->
+                        <div id="panel-step-4" class="hidden space-y-4">
+                            <div class="flex items-center gap-2 text-emerald-700 font-bold">
+                                <span class="bg-emerald-600 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm">4</span>
+                                <h4>Paso 4: Unir Puntos e Interpretar el Gráfico</h4>
+                            </div>
+                            
+                            <button onclick="animateMissionLine()" id="btn-draw-line" class="w-full py-3 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 animate-pulse-soft">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> ¡Trazar Línea de Tendencia Ahora!
+                            </button>
+
+                            <div id="step4-questions" class="hidden space-y-3 pt-2 border-t">
+                                <p class="text-xs font-bold uppercase text-emerald-700">Preguntas de Análisis del Gráfico:</p>
+                                <div id="q1-box" class="bg-slate-50 p-3 rounded-xl border space-y-2">
+                                    <p id="q1-text" class="text-xs font-bold text-slate-800"></p>
+                                    <div id="q1-opts" class="grid grid-cols-1 gap-1.5"></div>
+                                </div>
+                                <div id="q2-box" class="bg-slate-50 p-3 rounded-xl border space-y-2">
+                                    <p id="q2-text" class="text-xs font-bold text-slate-800"></p>
+                                    <div id="q2-opts" class="grid grid-cols-1 gap-1.5"></div>
+                                </div>
+                                <button onclick="nextMissionOrModule()" id="btn-next-mission" class="hidden w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow transition">
+                                    Siguiente Desafío <i class="fa-solid fa-arrow-right ml-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha (7 cols): Lienzo Canvas Interactivo -->
+                <div class="lg:col-span-7 bg-white rounded-3xl p-4 md:p-6 shadow-md border border-slate-200 flex flex-col items-center">
+                    <div class="w-full flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                            <span class="text-xs font-bold text-slate-600 uppercase tracking-wider">Pizarra Cuadriculada Interactiva</span>
+                        </div>
+                        <div id="hover-coord-badge" class="bg-slate-800 text-white text-xs font-mono px-3 py-1 rounded-full">
+                            Coordenada: (-- , --)
+                        </div>
+                    </div>
+
+                    <canvas id="builder-canvas" width="640" height="400" class="w-full max-w-[640px] h-auto bg-slate-50 rounded-2xl border-2 border-slate-200 cursor-crosshair shadow-inner"></canvas>
+
+                    <div class="w-full flex justify-between items-center mt-3 text-xs text-slate-500 px-1">
+                        <span><i class="fa-solid fa-ruler-combined mr-1"></i>Eje X: Intervalos iguales de tiempo</span>
+                        <span><i class="fa-solid fa-arrows-up-down mr-1"></i>Eje Y: Escala proporcional desde 0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             MÓDULO 3: LABORATORIO CREATIVO / DESAFÍO EN PAREJAS (25 MIN)
+             ========================================================================= -->
+        <section id="module-3" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-5 md:p-6 shadow-md border border-purple-100">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-4 mb-5">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-100 px-3 py-1 rounded-full">Módulo 3 • Laboratorio Creativo (25 min)</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800 mt-1">🎨 Crea y Dibuja tu Propio Gráfico de Línea</h2>
+                        <p class="text-xs md:text-sm text-slate-500">Inventa tus datos o carga una plantilla rápida, elige la escala más inteligente y ubica los puntos en el plano.</p>
+                    </div>
+                    <!-- Plantillas rápidas -->
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadLabPreset('games')" class="bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                            🎮 Tema: Puntos en Videojuego
+                        </button>
+                        <button onclick="loadLabPreset('pets')" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                            🐶 Tema: Peso de mi Mascota
+                        </button>
+                        <button onclick="loadLabPreset('sport')" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                            ⚽ Tema: Goles por Mes
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Configuración de Tabla y Escala -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+                            <div>
+                                <label class="text-xs font-bold text-slate-700 block mb-1">1. Título de tu Gráfico:</label>
+                                <input type="text" id="lab-title" value="Puntaje en Torneo de Videojuegos" oninput="renderLabCanvas()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm font-bold text-slate-800 focus:outline-none focus:border-purple-500">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-xs font-bold text-slate-700 block mb-1">Etiqueta Eje X (Tiempo):</label>
+                                    <input type="text" id="lab-xlabel" value="Día de la semana" oninput="renderLabCanvas()" class="w-full px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-slate-700 block mb-1">Etiqueta Eje Y (Variable):</label>
+                                    <input type="text" id="lab-ylabel" value="Puntos obtenidos" oninput="renderLabCanvas()" class="w-full px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold">
+                                </div>
+                            </div>
+
+                            <!-- Escala Eje Y en el Laboratorio -->
+                            <div>
+                                <label class="text-xs font-bold text-purple-900 block mb-1">2. Selecciona la Escala del Eje Vertical (Y):</label>
+                                <select id="lab-scale" onchange="onLabScaleChange()" class="w-full px-3 py-2 rounded-xl border-2 border-purple-400 bg-white font-bold text-sm text-purple-900">
+                                    <option value="2">Escala de 2 en 2 (Máx: 12)</option>
+                                    <option value="5">Escala de 5 en 5 (Máx: 30)</option>
+                                    <option value="10" selected>Escala de 10 en 10 (Máx: 60)</option>
+                                    <option value="20">Escala de 20 en 20 (Máx: 120)</option>
+                                    <option value="50">Escala de 50 en 50 (Máx: 300)</option>
+                                    <option value="100">Escala de 100 en 100 (Máx: 600)</option>
+                                </select>
+                                <p id="lab-scale-hint" class="text-[11px] text-slate-500 mt-1"></p>
+                            </div>
+                        </div>
+
+                        <!-- Tabla Editable -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-xs font-bold text-slate-700">3. Edita tu Tabla de Datos (Tiempo y Valor):</label>
+                                <div class="flex gap-1">
+                                    <button onclick="addLabRow()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg transition" title="Agregar fila">+ Fila</button>
+                                    <button onclick="removeLabRow()" class="bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-lg transition" title="Quitar fila">- Fila</button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-center border bg-white rounded-xl overflow-hidden">
+                                    <thead class="bg-purple-700 text-white">
+                                        <tr>
+                                            <th class="py-2 px-2">Período de Tiempo (Eje X)</th>
+                                            <th class="py-2 px-2">Valor Numérico (Eje Y)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lab-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lienzo del Laboratorio -->
+                    <div class="lg:col-span-7 bg-slate-50 rounded-3xl p-4 md:p-5 border-2 border-slate-200 flex flex-col items-center">
+                        <div class="w-full flex flex-wrap justify-between items-center gap-2 mb-3">
+                            <span class="text-xs font-bold text-purple-900 bg-purple-100 px-3 py-1 rounded-full">
+                                <i class="fa-solid fa-hand-pointer mr-1"></i> Haz clic en la cuadrícula para marcar los puntos de tu tabla
+                            </span>
+                            <div class="flex gap-2">
+                                <button onclick="clearLabUserPoints()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-xl transition">
+                                    <i class="fa-solid fa-eraser mr-1"></i> Limpiar mis puntos
+                                </button>
+                                <button onclick="verifyLabGraph()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow transition">
+                                    <i class="fa-solid fa-check-double mr-1"></i> Comparar / Autoevaluar
+                                </button>
+                            </div>
+                        </div>
+
+                        <canvas id="lab-canvas" width="640" height="400" class="w-full max-w-[640px] h-auto bg-white rounded-2xl border-2 border-slate-200 cursor-crosshair shadow-inner"></canvas>
+
+                        <div id="lab-feedback" class="w-full mt-3 p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 font-medium">
+                            💡 <strong>Instrucción:</strong> Primero revisa tu tabla a la izquierda, elige una escala donde quepa tu número mayor y luego haz clic en cada columna del gráfico para dibujar tus puntos.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             MÓDULO 4: TICKET DE SALIDA Y EVALUACIÓN FORMATIVA (15 MIN)
+             ========================================================================= -->
+        <section id="module-4" class="hidden space-y-6">
+            <div class="bg-white rounded-3xl p-5 md:p-6 shadow-md border border-emerald-100 no-print">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b pb-4 mb-5">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">Módulo 4 • Cierre de la Clase (15 min)</span>
+                        <h2 class="text-xl md:text-2xl font-bold text-slate-800 mt-1">🏆 Ticket de Salida: Detectives de Gráficos</h2>
+                        <p class="text-xs md:text-sm text-slate-500">Responde estos 5 desafíos para demostrar que dominas la graduación del tiempo y la selección de escalas.</p>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-2xl text-right">
+                        <span class="text-xs text-emerald-700 font-bold block">Progreso del Ticket</span>
+                        <span id="quiz-progress-text" class="text-lg font-display font-bold text-emerald-900">0 / 5 respondidas</span>
+                    </div>
+                </div>
+
+                <!-- Contenedor de las 5 preguntas del Ticket de Salida -->
+                <div id="quiz-container" class="space-y-6"></div>
+            </div>
+
+            <!-- Tarjeta de Reporte Final / Diploma Imprimible -->
+            <div class="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-amber-400">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                    <div class="md:col-span-8 space-y-3">
+                        <div class="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-400/40 text-amber-300 px-3 py-1 rounded-full text-xs font-bold">
+                            <i class="fa-solid fa-medal"></i> Reporte Oficial de la Sesión • Jueves 15 de Octubre
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-display font-bold">Resumen de Logro - 5° Básico (OA 26)</h3>
+                        <p class="text-blue-200 text-sm">Objetivo: Construir gráficos de línea a partir de tablas de datos, seleccionando escalas adecuadas para el eje vertical y graduando el tiempo en el eje horizontal.</p>
+                        
+                        <div class="pt-2 flex flex-wrap gap-3 items-center no-print">
+                            <input type="text" id="student-name" placeholder="Escribe tu nombre y apellido aquí..." oninput="updateDiplomaName()" class="px-4 py-2.5 rounded-xl text-slate-900 font-bold text-sm w-full sm:w-72 focus:outline-none border-2 border-amber-400">
+                            <button onclick="window.print()" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-5 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2 text-sm">
+                                <i class="fa-solid fa-print"></i> Imprimir / Guardar Reporte PDF
+                            </button>
+                        </div>
+                        <p id="print-student-name" class="hidden print-only text-lg font-bold text-amber-300 pt-2"></p>
+                    </div>
+
+                    <div class="md:col-span-4 bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 text-center space-y-3">
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-blue-200 block">Puntaje Total Acumulado</span>
+                            <span id="final-score-banner" class="text-4xl font-display font-bold text-amber-400">0 pts</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-white/10">
+                            <div class="bg-white/10 p-2 rounded-xl">
+                                <i class="fa-solid fa-compass text-blue-300 block text-base mb-1"></i>
+                                <span id="badge-m1" class="font-bold">Explorador</span>
+                            </div>
+                            <div class="bg-white/10 p-2 rounded-xl">
+                                <i class="fa-solid fa-hammer text-emerald-300 block text-base mb-1"></i>
+                                <span id="badge-m2" class="font-bold">0/3 Misiones</span>
+                            </div>
+                            <div class="bg-white/10 p-2 rounded-xl">
+                                <i class="fa-solid fa-check-circle text-amber-300 block text-base mb-1"></i>
+                                <span id="badge-m4" class="font-bold">Ticket: 0/5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-xs text-slate-500 mt-8 no-print">
+        Recurso Educativo Interactivo • <strong>Matemática 5° Básico (OA 26)</strong> • Jueves 15 de Octubre • Diseñado para sesión de 80 minutos.
+    </footer>
+
+    <!-- =========================================================================
+         LÓGICA JAVASCRIPT AUTÓNOMA
+         ========================================================================= -->
+    <script>
+        /*************************************************************************
+         * 1. ESTADO GLOBAL, PUNTOS, NOTIFICACIONES Y CRONÓMETRO DE 80 MINUTOS
+         *************************************************************************/
+        let totalScore = 0;
+        let unlockedFreeMode = false;
+        let timerSeconds = 80 * 60;
+        let timerInterval = null;
+        let timerRunning = false;
+
+        function addScore(points, message) {
+            totalScore += points;
+            document.getElementById('score-display').textContent = `${totalScore} pts`;
+            document.getElementById('final-score-banner').textContent = `${totalScore} pts`;
+            if (message) showToast(`+${points} pts: ${message}`, 'success');
+        }
+
+        function showToast(text, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-emerald-600 text-white border-emerald-400',
+                error: 'bg-rose-600 text-white border-rose-400',
+                info: 'bg-blue-600 text-white border-blue-400'
+            };
+            const icons = {
+                success: 'fa-circle-check',
+                error: 'fa-triangle-exclamation',
+                info: 'fa-circle-info'
+            };
+            toast.className = `${colors[type]} border-2 px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-bold pointer-events-auto transition-all duration-300`;
+            toast.innerHTML = `<i class="fa-solid ${icons[type]} text-lg"></i><span>${text}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3400);
+        }
+
+        // Cronómetro de 80 minutos configurable por fases
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timer-display').textContent = formatTime(timerSeconds);
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if (timerRunning) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+            } else {
+                timerRunning = true;
+                btn.innerHTML = '<i class="fa-solid fa-pause text-xs"></i>';
+                timerInterval = setInterval(() => {
+                    if (timerSeconds > 0) {
+                        timerSeconds--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        timerRunning = false;
+                        btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i>';
+                        showToast('¡Tiempo de la fase completado!', 'info');
+                    }
+                }, 1000);
+            }
+        }
+
+        function changeTimerPhase() {
+            const val = document.getElementById('timer-phase').value;
+            if (timerRunning) toggleTimer();
+            if (val === '80') timerSeconds = 80 * 60;
+            else if (val === '15' || val === '15_end') timerSeconds = 15 * 60;
+            else timerSeconds = 25 * 60;
+            updateTimerDisplay();
+        }
+
+        function resetTimer() {
+            changeTimerPhase();
+        }
+
+        // Autenticación y Modal Guía Docente (Contraseña requerida: Stik)
+        let isTeacherAuthenticated = false;
+        const TEACHER_PASSWORD = 'Stik';
+
+        function openTeacherAccess() {
+            if (isTeacherAuthenticated) {
+                toggleTeacherModal();
+            } else {
+                const authModal = document.getElementById('teacher-auth-modal');
+                const pwdInput = document.getElementById('teacher-pwd-input');
+                const errBox = document.getElementById('teacher-auth-error');
+                pwdInput.value = '';
+                errBox.classList.add('hidden');
+                authModal.classList.remove('hidden');
+                setTimeout(() => pwdInput.focus(), 80);
+            }
+        }
+
+        function closeTeacherAuthModal() {
+            document.getElementById('teacher-auth-modal').classList.add('hidden');
+        }
+
+        function togglePasswordVisibility() {
+            const pwdInput = document.getElementById('teacher-pwd-input');
+            const eyeIcon = document.getElementById('pwd-eye-icon');
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                eyeIcon.className = 'fa-solid fa-eye-slash';
+            } else {
+                pwdInput.type = 'password';
+                eyeIcon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function verifyTeacherPassword() {
+            const pwdInput = document.getElementById('teacher-pwd-input');
+            const errBox = document.getElementById('teacher-auth-error');
+            const card = document.getElementById('teacher-auth-card');
+
+            if (pwdInput.value.trim() === TEACHER_PASSWORD) {
+                isTeacherAuthenticated = true;
+                closeTeacherAuthModal();
+                updateTeacherBtnUI();
+                toggleTeacherModal();
+                showToast('Modo Docente desbloqueado correctamente', 'success');
+            } else {
+                errBox.classList.remove('hidden');
+                card.classList.remove('animate-shake');
+                void card.offsetWidth; // Reiniciar animación
+                card.classList.add('animate-shake');
+                pwdInput.select();
+            }
+        }
+
+        function lockTeacherSession() {
+            isTeacherAuthenticated = false;
+            unlockedFreeMode = false;
+            updateTeacherBtnUI();
+            document.getElementById('teacher-modal').classList.add('hidden');
+            showToast('Sesión docente bloqueada', 'info');
+        }
+
+        function updateTeacherBtnUI() {
+            const lockIcon = document.getElementById('teacher-lock-icon');
+            const btn = document.getElementById('teacher-access-btn');
+            if (isTeacherAuthenticated) {
+                lockIcon.className = 'fa-solid fa-chalkboard-user';
+                btn.className = 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5';
+            } else {
+                lockIcon.className = 'fa-solid fa-lock';
+                btn.className = 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5';
+            }
+        }
+
+        function toggleTeacherModal() {
+            const modal = document.getElementById('teacher-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        let largeFontMode = false;
+        function toggleProjectorFont() {
+            largeFontMode = !largeFontMode;
+            document.documentElement.style.fontSize = largeFontMode ? '18px' : '16px';
+            showToast(largeFontMode ? 'Modo Proyector Activado (Texto Ampliado)' : 'Tamaño de texto normalizado', 'info');
+        }
+
+        function unlockAllMissions() {
+            unlockedFreeMode = true;
+            currentStep = 3;
+            updateStepUI();
+            drawBuilderCanvas();
+            showToast('Modo Libre Docente activado: Pasos 1 y 2 desbloqueados', 'success');
+        }
+
+        function autoCompleteCurrentMission() {
+            switchModule(2);
+            const m = missions[currentMissionIdx];
+            missionPlottedCount = m.data.length;
+            missionLineProgress = 1;
+            currentStep = 4;
+            updateStepUI();
+            drawBuilderCanvas();
+            animateMissionLine();
+            document.getElementById('teacher-modal').classList.add('hidden');
+            showToast(`Misión "${m.title}" autocompletada para modelaje en pizarra`, 'info');
+        }
+
+        // Navegación entre los 4 Módulos
+        function switchModule(modNum) {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`module-${i}`).classList.toggle('hidden', i !== modNum);
+                const navBtn = document.getElementById(`nav-mod-${i}`);
+                if (i === modNum) {
+                    navBtn.classList.add('tab-active');
+                    navBtn.classList.remove('bg-white', 'text-slate-700');
+                } else {
+                    navBtn.classList.remove('tab-active');
+                    navBtn.classList.add('bg-white', 'text-slate-700');
+                }
+            }
+            if (modNum === 1) drawScaleSimulator();
+            if (modNum === 2) drawBuilderCanvas();
+            if (modNum === 3) renderLabCanvas();
+        }
+
+        /*************************************************************************
+         * 2. MÓDULO 1: ANATOMÍA DEL GRÁFICO Y SIMULADOR DE ESCALAS (QUILPUÉ)
+         *************************************************************************/
+        const anatomyDetails = {
+            1: '<strong>1. Título Claro:</strong> "Temperatura en Quilpué durante el Jueves 15 de Octubre". Permite entender de inmediato qué mide el gráfico.',
+            2: '<strong>2. Eje Horizontal (X) - El Tiempo:</strong> Siempre ubicamos aquí el tiempo (horas, días, semanas, meses) ordenado y con <strong>intervalos iguales</strong> (aquí va de 2 en 2 horas).',
+            3: '<strong>3. Eje Vertical (Y) - La Escala:</strong> Comienza en 0 y sube dando <strong>saltos iguales</strong> (de 5 en 5: 0, 5, 10, 15, 20, 25). ¡Nunca se ponen los números desordenados!',
+            4: '<strong>4. Puntos de Datos:</strong> Cada punto representa un par de datos de la tabla. Por ejemplo, a las 12:00 hrs subimos hasta el 19 °C.',
+            5: '<strong>5. Línea de Tendencia:</strong> Al unir los puntos en orden temporal vemos que la temperatura subió hasta las 14:00 hrs y luego comenzó a bajar.'
+        };
+
+        function inspectAnatomy(part) {
+            document.getElementById('anatomy-text').innerHTML = anatomyDetails[part];
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`anat-btn-${i}`);
+                btn.className = i === part
+                    ? 'w-full text-left p-3.5 rounded-2xl border-2 border-blue-600 bg-blue-50 transition flex items-center gap-3 shadow-sm'
+                    : 'w-full text-left p-3.5 rounded-2xl border-2 border-slate-200 hover:border-blue-300 bg-white transition flex items-center gap-3';
+            }
+            document.getElementById('hl-part-2').setAttribute('stroke', part === 2 ? '#059669' : 'transparent');
+            document.getElementById('hl-part-2').setAttribute('fill', part === 2 ? '#ecfdf5' : 'transparent');
+            document.getElementById('hl-part-3').setAttribute('stroke', part === 3 ? '#7c3aed' : 'transparent');
+            document.getElementById('hl-part-3').setAttribute('fill', part === 3 ? '#f5f3ff' : 'transparent');
+        }
+
+        // Simulador de Escalas del Módulo 1
+        let currentSimScale = 5;
+        const simData = [
+            { time: '08:00', val: 10 },
+            { time: '10:00', val: 15 },
+            { time: '12:00', val: 19 },
+            { time: '14:00', val: 22 },
+            { time: '16:00', val: 20 }
+        ];
+
+        function updateScaleSimulator(scaleStep) {
+            currentSimScale = scaleStep;
+            [1, 2, 5, 10, 50].forEach(s => {
+                const btn = document.getElementById(`sim-scale-${s}`);
+                if (s === scaleStep) {
+                    btn.className = 'py-2 px-1 rounded-xl font-bold text-xs md:text-sm border-2 border-purple-600 bg-purple-600 text-white shadow transition';
+                } else {
+                    btn.className = 'py-2 px-1 rounded-xl font-bold text-xs md:text-sm border-2 border-purple-200 bg-white hover:bg-purple-100 transition';
+                }
+            });
+
+            document.getElementById('sim-scale-badge').textContent = `Escala actual: de ${scaleStep} en ${scaleStep}`;
+            const fb = document.getElementById('sim-feedback-box');
+
+            if (scaleStep === 1) {
+                fb.className = 'mt-3 p-3 rounded-xl bg-rose-100 border border-rose-300 text-rose-950 text-xs md:text-sm font-medium';
+                fb.innerHTML = '❌ <strong>¡Escala demasiado pequeña (1 en 1)!</strong> Como tenemos 6 líneas, solo llegamos hasta 6°C y todos los puntos (10° a 22°) se salen por arriba del cuaderno.';
+            } else if (scaleStep === 2) {
+                fb.className = 'mt-3 p-3 rounded-xl bg-amber-100 border border-amber-300 text-amber-950 text-xs md:text-sm font-medium';
+                fb.innerHTML = '⚠️ <strong>¡Escala insuficiente (2 en 2)!</strong> El eje Y solo llega hasta 12°C. Solo alcanza a entrar el primer punto (10°C) y los demás quedan fuera.';
+            } else if (scaleStep === 5) {
+                fb.className = 'mt-3 p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-950 text-xs md:text-sm font-medium';
+                fb.innerHTML = '✅ <strong>¡Escala Perfecta (5 en 5)!</strong> Llega hasta 30°C. El valor máximo (22°C) cabe muy bien y se aprovecha casi todo el espacio del gráfico.';
+            } else if (scaleStep === 10) {
+                fb.className = 'mt-3 p-3 rounded-xl bg-blue-100 border border-blue-300 text-blue-950 text-xs md:text-sm font-medium';
+                fb.innerHTML = 'ℹ️ <strong>Escala Aceptable pero Grande (10 en 10):</strong> Llega hasta 60°C. Los datos caben, pero sobra más de la mitad superior del gráfico vacía.';
+            } else if (scaleStep === 50) {
+                fb.className = 'mt-3 p-3 rounded-xl bg-rose-100 border border-rose-300 text-rose-950 text-xs md:text-sm font-medium';
+                fb.innerHTML = '❌ <strong>¡Escala Gigante (50 en 50)!</strong> Llega hasta 300°C. Nuestro gráfico queda totalmente aplastado abajo cerca del cero y cuesta leer los cambios.';
+            }
+
+            drawScaleSimulator();
+        }
+
+        function drawScaleSimulator() {
+            const canvas = document.getElementById('scale-sim-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const padL = 75, padR = 40, padT = 40, padB = 55;
+            const plotW = canvas.width - padL - padR;
+            const plotH = canvas.height - padT - padB;
+            const numRows = 6;
+            const maxY = currentSimScale * numRows;
+
+            // Título
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 14px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Temperatura en Quilpué (°C) según Escala Elegida', canvas.width / 2, 22);
+
+            // Cuadrícula y etiquetas Eje Y
+            for (let i = 0; i <= numRows; i++) {
+                const y = padT + plotH - (i / numRows) * plotH;
+                const val = i * currentSimScale;
+
+                ctx.strokeStyle = i === 0 ? '#334155' : '#e2e8f0';
+                ctx.lineWidth = i === 0 ? 2 : 1;
+                ctx.beginPath();
+                ctx.moveTo(padL, y);
+                ctx.lineTo(padL + plotW, y);
+                ctx.stroke();
+
+                ctx.fillStyle = '#475569';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(`${val}°`, padL - 10, y + 4);
+            }
+
+            // Columnas y etiquetas Eje X
+            const stepX = plotW / (simData.length - 1);
+            simData.forEach((d, idx) => {
+                const x = padL + idx * stepX;
+                ctx.strokeStyle = idx === 0 ? '#334155' : '#e2e8f0';
+                ctx.lineWidth = idx === 0 ? 2 : 1;
+                ctx.beginPath();
+                ctx.moveTo(x, padT);
+                ctx.lineTo(x, padT + plotH);
+                ctx.stroke();
+
+                ctx.fillStyle = '#0f766e';
+                ctx.font = 'bold 12px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(d.time, x, padT + plotH + 22);
+            });
+
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.fillText('Hora del día (Intervalos iguales de 2 hrs)', padL + plotW / 2, canvas.height - 10);
+
+            // Dibujar línea y puntos
+            const points = simData.map((d, idx) => {
+                const x = padL + idx * stepX;
+                const y = padT + plotH - (d.val / maxY) * plotH;
+                return { x, y, val: d.val, out: d.val > maxY };
+            });
+
+            ctx.strokeStyle = '#7c3aed';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                const clampedY = Math.max(12, p.y);
+                if (i === 0) ctx.moveTo(p.x, clampedY);
+                else ctx.lineTo(p.x, clampedY);
+            });
+            ctx.stroke();
+
+            points.forEach(p => {
+                const drawY = Math.max(12, p.y);
+                ctx.fillStyle = p.out ? '#ef4444' : '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(p.x, drawY, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = p.out ? '#dc2626' : '#1e293b';
+                ctx.font = 'bold 11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(p.out ? `¡${p.val}° sale!` : `${p.val}°`, p.x, drawY - 10);
+            });
+        }
+
+        let mod1QuizDone = false;
+        function checkMod1Quiz(choice, btnEl) {
+            if (choice === 100) {
+                btnEl.className = 'bg-emerald-600 text-white py-2 rounded-xl text-xs font-bold shadow';
+                if (!mod1QuizDone) {
+                    mod1QuizDone = true;
+                    addScore(50, '¡Excelente elección de escala de 100 en 100!');
+                } else {
+                    showToast('¡Correcto! Con escala de 100 en 100 llegas a 500 en 5 líneas.', 'success');
+                }
+            } else {
+                btnEl.className = 'bg-rose-100 text-rose-800 border border-rose-300 py-2 rounded-xl text-xs font-bold';
+                showToast('Pista: Con 5 líneas, de 100 en 100 llegas a 500 y el 450 cabe perfecto.', 'error');
+            }
+        }
+
+        /*************************************************************************
+         * 3. MÓDULO 2: CONSTRUCTOR GUIADO (3 MISIONES EN 4 PASOS)
+         *************************************************************************/
+        const missions = [
+            {
+                id: 0,
+                badge: 'Misión 1 de 3 • Nivel Inicial',
+                title: 'Crecimiento de una Planta de Poroto (cm)',
+                desc: 'Registramos la altura de una planta en el laboratorio de ciencias durante 5 semanas seguidas.',
+                xLabel: 'Tiempo (Semanas)',
+                yLabel: 'Altura (cm)',
+                data: [
+                    { label: 'Sem 1', val: 4 },
+                    { label: 'Sem 2', val: 8 },
+                    { label: 'Sem 3', val: 10 },
+                    { label: 'Sem 4', val: 16 },
+                    { label: 'Sem 5', val: 20 }
+                ],
+                step1Options: [
+                    { text: 'Sem 1 - Sem 2 - Sem 3 - Sem 4 - Sem 5 (En orden y a igual distancia)', correct: true, feedback: '¡Muy bien! El tiempo siempre va ordenado y con espacios iguales entre cada semana.' },
+                    { text: 'Sem 1 - Sem 3 - Sem 2 - Sem 5 - Sem 4 (Desordenado)', correct: false, feedback: 'Cuidado: El tiempo en el eje horizontal siempre debe ir en orden cronológico.' },
+                    { text: 'Poner los centímetros (4, 8, 10, 16, 20) abajo en el Eje X', correct: false, feedback: 'Recuerda: El tiempo (Semanas) se ubica en el eje horizontal (X).' }
+                ],
+                scaleOptions: [
+                    { step: 1, label: 'De 1 en 1 (Llega a 6 cm)', correct: false, reason: 'Con escala de 1 en 1 solo llegas a 6 cm en las 6 líneas y la planta mide hasta 20 cm.' },
+                    { step: 4, label: 'De 4 en 4 (Llega a 24 cm)', correct: true, reason: '¡Excelente! Como el máximo es 20 cm, avanzando de 4 en 4 (0, 4, 8, 12, 16, 20, 24) todos los datos caben exactos.' },
+                    { step: 50, label: 'De 50 en 50 (Llega a 300 cm)', correct: false, reason: 'Con 50 en 50 el gráfico quedará aplastado abajo porque la planta solo mide 20 cm.' },
+                    { step: 100, label: 'De 100 en 100 (Llega a 600 cm)', correct: false, reason: 'Una escala de 100 en 100 es gigante para datos que llegan solo hasta 20.' }
+                ],
+                correctScale: 4,
+                questions: [
+                    {
+                        q: '1. ¿Entre qué semanas ocurrió el MAYOR crecimiento de la planta?',
+                        opts: ['Entre Sem 2 y Sem 3 (subió 2 cm)', 'Entre Sem 3 y Sem 4 (subió 6 cm)', 'Entre Sem 4 y Sem 5 (subió 4 cm)'],
+                        ans: 1
+                    },
+                    {
+                        q: '2. ¿Cuál es la tendencia general del gráfico construido?',
+                        opts: ['Creciente (la altura aumenta con las semanas)', 'Decreciente (la planta se achica)', 'Constante (nunca cambia de altura)'],
+                        ans: 0
+                    }
+                ]
+            },
+            {
+                id: 1,
+                badge: 'Misión 2 de 3 • Nivel Intermedio',
+                title: 'Litros de Agua Ahorrados por el 5° Básico',
+                desc: 'Campaña ecológica escolar registrada mes a mes desde Marzo hasta Julio.',
+                xLabel: 'Meses del Año',
+                yLabel: 'Agua ahorrada (Litros)',
+                data: [
+                    { label: 'Marzo', val: 20 },
+                    { label: 'Abril', val: 40 },
+                    { label: 'Mayo', val: 30 },
+                    { label: 'Junio', val: 70 },
+                    { label: 'Julio', val: 90 }
+                ],
+                step1Options: [
+                    { text: 'Marzo - Mayo - Junio - Julio (Saltarse Abril sin dejar espacio)', correct: false, feedback: '¡Ojo! No podemos saltarnos un mes de la tabla sin representarlo en el eje X.' },
+                    { text: 'Marzo - Abril - Mayo - Junio - Julio (Meses consecutivos a igual distancia)', correct: true, feedback: '¡Correcto! Graduaste los meses en orden y manteniendo intervalos iguales.' },
+                    { text: 'Julio - Junio - Mayo - Abril - Marzo (Al revés)', correct: false, feedback: 'El tiempo se gradúa de izquierda a derecha desde el primer mes al último.' }
+                ],
+                scaleOptions: [
+                    { step: 2, label: 'De 2 en 2 (Llega a 12 L)', correct: false, reason: 'En Julio se ahorraron 90 litros. Con escala de 2 en 2 necesitarías 45 líneas hacia arriba.' },
+                    { step: 5, label: 'De 5 en 5 (Llega a 30 L)', correct: false, reason: 'Con 6 líneas solo llegas a 30 litros, y necesitamos graficar hasta 90 litros.' },
+                    { step: 20, label: 'De 20 en 20 (Llega a 120 L)', correct: true, reason: '¡Brillante! De 20 en 20 (0, 20, 40, 60, 80, 100, 120) el 90 cabe muy bien entre 80 y 100.' },
+                    { step: 500, label: 'De 500 en 500 (Llega a 3000 L)', correct: false, reason: 'Es una escala demasiado grande; todos tus puntos quedarían pegados al piso.' }
+                ],
+                correctScale: 20,
+                questions: [
+                    {
+                        q: '1. ¿En qué mes disminuyó el ahorro de agua respecto al mes anterior?',
+                        opts: ['En Abril', 'En Mayo (bajó de 40 L a 30 L)', 'En Julio'],
+                        ans: 1
+                    },
+                    {
+                        q: '2. ¿Cuántos litros aumentó el ahorro entre Mayo (30 L) y Junio (70 L)?',
+                        opts: ['Aumentó 40 litros', 'Aumentó 10 litros', 'Aumentó 70 litros'],
+                        ans: 0
+                    }
+                ]
+            },
+            {
+                id: 2,
+                badge: 'Misión 3 de 3 • Nivel Experto',
+                title: 'Reciclaje de Latas en el Colegio',
+                desc: 'Cantidad de latas recolectadas durante las 5 jornadas ambientales del semestre.',
+                xLabel: 'Jornadas (Tiempo)',
+                yLabel: 'Cantidad de Latas',
+                data: [
+                    { label: 'Jornada 1', val: 100 },
+                    { label: 'Jornada 2', val: 250 },
+                    { label: 'Jornada 3', val: 200 },
+                    { label: 'Jornada 4', val: 400 },
+                    { label: 'Jornada 5', val: 500 }
+                ],
+                step1Options: [
+                    { text: 'Jornada 1 - Jornada 2 - Jornada 3 - Jornada 4 - Jornada 5', correct: true, feedback: '¡Excelente! Las 5 jornadas quedan graduadas a igual distancia en el Eje X.' },
+                    { text: '100 - 250 - 200 - 400 - 500', correct: false, feedback: 'Esos son los valores de las latas (van en el eje vertical Y), no el tiempo.' }
+                ],
+                scaleOptions: [
+                    { step: 10, label: 'De 10 en 10 (Llega a 60)', correct: false, reason: 'Necesitas llegar a 500 latas. De 10 en 10 solo llegas a 60.' },
+                    { step: 25, label: 'De 25 en 25 (Llega a 150)', correct: false, reason: 'Solo llegarías a 150 latas y el máximo de la tabla es 500.' },
+                    { step: 100, label: 'De 100 en 100 (Llega a 600)', correct: true, reason: '¡Maestría total! De 100 en 100 llegas a 600 latas y puedes ubicar 250 justo a mitad entre 200 y 300.' },
+                    { step: 1000, label: 'De 1000 en 1000 (Llega a 6000)', correct: false, reason: 'Sobraría casi todo el gráfico vacío arriba de 500.' }
+                ],
+                correctScale: 100,
+                questions: [
+                    {
+                        q: '1. ¿Cómo se ubica el valor 250 latas de la Jornada 2 usando la escala de 100 en 100?',
+                        opts: ['Justo en la mitad entre la línea del 200 y la línea del 300', 'En la línea del 200', 'En la línea del 500'],
+                        ans: 0
+                    },
+                    {
+                        q: '2. ¿Cuántas latas de diferencia hay entre la Jornada 1 y la Jornada 5?',
+                        opts: ['100 latas', '400 latas de diferencia (500 - 100)', '250 latas'],
+                        ans: 1
+                    }
+                ]
+            }
+        ];
+
+        let currentMissionIdx = 0;
+        let currentStep = 1;
+        let missionPlottedCount = 0;
+        let missionLineProgress = 0;
+        let missionCompletedFlags = [false, false, false];
+        let missionQAnswered = [false, false];
+
+        function loadMission(idx) {
+            currentMissionIdx = idx;
+            currentStep = unlockedFreeMode ? 3 : 1;
+            missionPlottedCount = 0;
+            missionLineProgress = 0;
+            missionQAnswered = [false, false];
+
+            [0, 1, 2].forEach(i => {
+                const btn = document.getElementById(`mission-btn-${i}`);
+                btn.className = i === idx
+                    ? 'px-4 py-2 rounded-xl font-bold text-sm bg-emerald-600 text-white shadow transition flex items-center gap-2'
+                    : 'px-4 py-2 rounded-xl font-bold text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-2';
+            });
+
+            const m = missions[idx];
+            document.getElementById('mission-badge').textContent = m.badge;
+            document.getElementById('mission-title').textContent = m.title;
+            document.getElementById('mission-desc').textContent = m.desc;
+
+            // Renderizar tabla de la misión
+            let headHTML = `<tr><th class="py-2 px-2 bg-slate-900">${m.xLabel}</th>`;
+            let bodyHTML = `<tr><td class="py-2 px-2 bg-slate-200 text-slate-900">${m.yLabel}</td>`;
+            m.data.forEach(d => {
+                headHTML += `<th class="py-2 px-2">${d.label}</th>`;
+                bodyHTML += `<td class="py-2 px-2">${d.val}</td>`;
+            });
+            headHTML += '</tr>';
+            bodyHTML += '</tr>';
+            document.getElementById('mission-table-head').innerHTML = headHTML;
+            document.getElementById('mission-table-body').innerHTML = bodyHTML;
+
+            // Preparar Paso 1
+            const s1Container = document.getElementById('step1-options');
+            s1Container.innerHTML = '';
+            document.getElementById('step1-feedback').classList.add('hidden');
+            m.step1Options.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = 'w-full text-left p-3 rounded-xl border-2 border-slate-200 hover:border-blue-400 bg-slate-50 text-xs md:text-sm font-bold text-slate-700 transition';
+                b.textContent = opt.text;
+                b.onclick = () => handleStep1Choice(opt, b);
+                s1Container.appendChild(b);
+            });
+
+            // Preparar Paso 2
+            const s2Container = document.getElementById('step2-options');
+            s2Container.innerHTML = '';
+            document.getElementById('step2-feedback').classList.add('hidden');
+            m.scaleOptions.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = 'p-3 rounded-xl border-2 border-slate-200 hover:border-purple-400 bg-slate-50 text-xs font-bold text-slate-700 transition text-left';
+                b.innerHTML = `<i class="fa-solid fa-layer-group text-purple-600 mr-1"></i> ${opt.label}`;
+                b.onclick = () => handleStep2Choice(opt, b);
+                s2Container.appendChild(b);
+            });
+
+            // Preparar Paso 4
+            document.getElementById('step4-questions').classList.add('hidden');
+            document.getElementById('btn-draw-line').classList.remove('hidden');
+            document.getElementById('btn-next-mission').classList.add('hidden');
+
+            updateStepUI();
+            drawBuilderCanvas();
+        }
+
+        function updateStepUI() {
+            for (let s = 1; s <= 4; s++) {
+                document.getElementById(`panel-step-${s}`).classList.toggle('hidden', s !== currentStep);
+                const ind = document.getElementById(`step-ind-${s}`);
+                if (s === currentStep) {
+                    ind.className = 'p-2 rounded-xl bg-blue-50 border-2 border-blue-600 text-center shadow-sm';
+                } else if (s < currentStep) {
+                    ind.className = 'p-2 rounded-xl bg-emerald-50 border border-emerald-300 text-center';
+                } else {
+                    ind.className = 'p-2 rounded-xl bg-slate-50 border border-slate-200 text-center opacity-60';
+                }
+            }
+
+            if (currentStep === 3) {
+                const m = missions[currentMissionIdx];
+                if (missionPlottedCount < m.data.length) {
+                    const target = m.data[missionPlottedCount];
+                    document.getElementById('step3-target-text').textContent = `Ubica ahora: (${target.label} , ${target.val})`;
+                }
+                document.getElementById('step3-counter').textContent = `${missionPlottedCount} / ${m.data.length}`;
+            }
+        }
+
+        function handleStep1Choice(opt, btn) {
+            const fb = document.getElementById('step1-feedback');
+            fb.classList.remove('hidden');
+            if (opt.correct) {
+                btn.className = 'w-full text-left p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-xs md:text-sm font-bold text-emerald-900';
+                fb.className = 'p-3 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900';
+                fb.innerHTML = `✅ ${opt.feedback}`;
+                addScore(30, 'Eje X graduado correctamente');
+                setTimeout(() => {
+                    currentStep = 2;
+                    updateStepUI();
+                    drawBuilderCanvas();
+                }, 1100);
+            } else {
+                btn.className = 'w-full text-left p-3 rounded-xl border-2 border-rose-400 bg-rose-50 text-xs md:text-sm font-bold text-rose-900';
+                fb.className = 'p-3 rounded-xl text-xs font-bold bg-rose-100 text-rose-900';
+                fb.innerHTML = `❌ ${opt.feedback}`;
+            }
+        }
+
+        function handleStep2Choice(opt, btn) {
+            const fb = document.getElementById('step2-feedback');
+            fb.classList.remove('hidden');
+            if (opt.correct) {
+                btn.className = 'p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-xs font-bold text-emerald-900 text-left';
+                fb.className = 'p-3 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900';
+                fb.innerHTML = `✅ ${opt.reason}`;
+                addScore(40, 'Escala del Eje Y seleccionada');
+                setTimeout(() => {
+                    currentStep = 3;
+                    updateStepUI();
+                    drawBuilderCanvas();
+                }, 1200);
+            } else {
+                btn.className = 'p-3 rounded-xl border-2 border-rose-400 bg-rose-50 text-xs font-bold text-rose-900 text-left';
+                fb.className = 'p-3 rounded-xl text-xs font-bold bg-rose-100 text-rose-900';
+                fb.innerHTML = `❌ ${opt.reason}`;
+            }
+        }
+
+        // Dibujo e Interacción en el Lienzo del Constructor (Módulo 2)
+        const builderCanvas = document.getElementById('builder-canvas');
+        const bCtx = builderCanvas.getContext('2d');
+        let hoverGridPos = null;
+
+        function getBuilderGeometry() {
+            const padL = 80, padR = 45, padT = 50, padB = 65;
+            const plotW = builderCanvas.width - padL - padR;
+            const plotH = builderCanvas.height - padT - padB;
+            const numRows = 6; // 12 medios pasos
+            const m = missions[currentMissionIdx];
+            const maxVal = m.correctScale * numRows;
+            return { padL, padR, padT, padB, plotW, plotH, numRows, maxVal, m };
+        }
+
+        function drawBuilderCanvas() {
+            const { padL, padT, plotW, plotH, numRows, maxVal, m } = getBuilderGeometry();
+            bCtx.clearRect(0, 0, builderCanvas.width, builderCanvas.height);
+
+            // Título del gráfico
+            bCtx.fillStyle = '#0f172a';
+            bCtx.font = 'bold 16px Fredoka, sans-serif';
+            bCtx.textAlign = 'center';
+            bCtx.fillText(m.title, builderCanvas.width / 2, 28);
+
+            // Sub-líneas de media unidad y líneas principales Eje Y
+            for (let i = 0; i <= numRows * 2; i++) {
+                const y = padT + plotH - (i / (numRows * 2)) * plotH;
+                const isMain = i % 2 === 0;
+                bCtx.strokeStyle = i === 0 ? '#1e293b' : (isMain ? '#cbd5e1' : '#f1f5f9');
+                bCtx.lineWidth = i === 0 ? 2.5 : 1;
+                bCtx.beginPath();
+                bCtx.moveTo(padL, y);
+                bCtx.lineTo(padL + plotW, y);
+                bCtx.stroke();
+
+                if (isMain && (currentStep >= 3 || unlockedFreeMode)) {
+                    const val = (i / 2) * m.correctScale;
+                    bCtx.fillStyle = '#4c1d95';
+                    bCtx.font = 'bold 12px Inter, sans-serif';
+                    bCtx.textAlign = 'right';
+                    bCtx.fillText(val, padL - 10, y + 4);
+                }
+            }
+
+            // Etiqueta Eje Y
+            bCtx.save();
+            bCtx.translate(22, padT + plotH / 2);
+            bCtx.rotate(-Math.PI / 2);
+            bCtx.fillStyle = '#6d28d9';
+            bCtx.font = 'bold 13px Inter, sans-serif';
+            bCtx.textAlign = 'center';
+            bCtx.fillText(m.yLabel, 0, 0);
+            bCtx.restore();
+
+            // Eje X y columnas
+            const stepX = plotW / (m.data.length - 1);
+            m.data.forEach((d, idx) => {
+                const x = padL + idx * stepX;
+                bCtx.strokeStyle = idx === 0 ? '#1e293b' : '#cbd5e1';
+                bCtx.lineWidth = idx === 0 ? 2.5 : 1;
+                bCtx.beginPath();
+                bCtx.moveTo(x, padT);
+                bCtx.lineTo(x, padT + plotH);
+                bCtx.stroke();
+
+                if (currentStep >= 2 || unlockedFreeMode) {
+                    bCtx.fillStyle = '#065f46';
+                    bCtx.font = 'bold 12px Inter, sans-serif';
+                    bCtx.textAlign = 'center';
+                    bCtx.fillText(d.label, x, padT + plotH + 24);
+                }
+            });
+
+            // Etiqueta Eje X
+            bCtx.fillStyle = '#047857';
+            bCtx.font = 'bold 13px Inter, sans-serif';
+            bCtx.textAlign = 'center';
+            bCtx.fillText(m.xLabel, padL + plotW / 2, builderCanvas.height - 12);
+
+            // Destacar columna objetivo en el Paso 3
+            if (currentStep === 3 && missionPlottedCount < m.data.length) {
+                const targetX = padL + missionPlottedCount * stepX;
+                bCtx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+                bCtx.lineWidth = 10;
+                bCtx.beginPath();
+                bCtx.moveTo(targetX, padT);
+                bCtx.lineTo(targetX, padT + plotH);
+                bCtx.stroke();
+            }
+
+            // Línea de tendencia animada si estamos en Paso 4
+            if (missionLineProgress > 0) {
+                bCtx.strokeStyle = '#e11d48';
+                bCtx.lineWidth = 4;
+                bCtx.lineCap = 'round';
+                bCtx.lineJoin = 'round';
+                bCtx.beginPath();
+                m.data.forEach((d, idx) => {
+                    const x = padL + idx * stepX;
+                    const y = padT + plotH - (d.val / maxVal) * plotH;
+                    if (idx === 0) bCtx.moveTo(x, y);
+                    else bCtx.lineTo(x, y);
+                });
+                bCtx.stroke();
+            }
+
+            // Puntos ya ubicados
+            for (let i = 0; i < missionPlottedCount; i++) {
+                const d = m.data[i];
+                const x = padL + i * stepX;
+                const y = padT + plotH - (d.val / maxVal) * plotH;
+
+                bCtx.fillStyle = '#f59e0b';
+                bCtx.beginPath();
+                bCtx.arc(x, y, 7, 0, Math.PI * 2);
+                bCtx.fill();
+                bCtx.strokeStyle = '#ffffff';
+                bCtx.lineWidth = 2.5;
+                bCtx.stroke();
+
+                bCtx.fillStyle = '#1e293b';
+                bCtx.font = 'bold 11px Inter, sans-serif';
+                bCtx.textAlign = 'center';
+                bCtx.fillText(d.val, x, y - 11);
+            }
+
+            // Sombra del cursor en Paso 3
+            if (currentStep === 3 && hoverGridPos) {
+                bCtx.fillStyle = 'rgba(37, 99, 235, 0.5)';
+                bCtx.beginPath();
+                bCtx.arc(hoverGridPos.x, hoverGridPos.y, 7, 0, Math.PI * 2);
+                bCtx.fill();
+            }
+        }
+
+        function getSnappedBuilderCoord(evt) {
+            const rect = builderCanvas.getBoundingClientRect();
+            const scaleX = builderCanvas.width / rect.width;
+            const scaleY = builderCanvas.height / rect.height;
+            const mouseX = (evt.clientX - rect.left) * scaleX;
+            const mouseY = (evt.clientY - rect.top) * scaleY;
+
+            const { padL, padT, plotW, plotH, numRows, m } = getBuilderGeometry();
+            const stepX = plotW / (m.data.length - 1);
+
+            let colIdx = Math.round((mouseX - padL) / stepX);
+            colIdx = Math.max(0, Math.min(m.data.length - 1, colIdx));
+
+            // Snap en medios intervalos (12 divisiones)
+            const halfSteps = numRows * 2;
+            let rowHalfIdx = Math.round(((padT + plotH - mouseY) / plotH) * halfSteps);
+            rowHalfIdx = Math.max(0, Math.min(halfSteps, rowHalfIdx));
+
+            const snappedX = padL + colIdx * stepX;
+            const snappedY = padT + plotH - (rowHalfIdx / halfSteps) * plotH;
+            const snappedVal = (rowHalfIdx / 2) * m.correctScale;
+
+            return { colIdx, snappedVal, x: snappedX, y: snappedY, label: m.data[colIdx].label };
+        }
+
+        builderCanvas.addEventListener('mousemove', (evt) => {
+            if (currentStep < 3) return;
+            const snap = getSnappedBuilderCoord(evt);
+            hoverGridPos = snap;
+            document.getElementById('hover-coord-badge').textContent = `Coordenada: (${snap.label} , ${snap.snappedVal})`;
+            drawBuilderCanvas();
+        });
+
+        builderCanvas.addEventListener('click', (evt) => {
+            if (currentStep !== 3) return;
+            const m = missions[currentMissionIdx];
+            if (missionPlottedCount >= m.data.length) return;
+
+            const snap = getSnappedBuilderCoord(evt);
+            const expected = m.data[missionPlottedCount];
+
+            if (snap.colIdx === missionPlottedCount && Math.abs(snap.snappedVal - expected.val) < 0.01) {
+                missionPlottedCount++;
+                addScore(25, `Punto (${expected.label}, ${expected.val}) bien ubicado`);
+                if (missionPlottedCount === m.data.length) {
+                    currentStep = 4;
+                }
+                updateStepUI();
+                drawBuilderCanvas();
+            } else {
+                showToast(`Apunta a (${expected.label} , ${expected.val}). Hiciste clic en (${snap.label} , ${snap.snappedVal})`, 'error');
+            }
+        });
+
+        function animateMissionLine() {
+            missionLineProgress = 1;
+            drawBuilderCanvas();
+            document.getElementById('btn-draw-line').classList.add('hidden');
+            addScore(30, '¡Línea de tendencia trazada!');
+
+            // Mostrar las 2 preguntas de análisis
+            const m = missions[currentMissionIdx];
+            const qBox = document.getElementById('step4-questions');
+            qBox.classList.remove('hidden');
+
+            [0, 1].forEach(qIdx => {
+                const qObj = m.questions[qIdx];
+                document.getElementById(`q${qIdx + 1}-text`).textContent = qObj.q;
+                const optsDiv = document.getElementById(`q${qIdx + 1}-opts`);
+                optsDiv.innerHTML = '';
+                qObj.opts.forEach((optText, oIdx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'text-left px-3 py-2 rounded-lg border bg-white hover:bg-blue-50 text-xs font-semibold text-slate-700 transition';
+                    btn.textContent = optText;
+                    btn.onclick = () => checkMissionQuestion(qIdx, oIdx, qObj.ans, btn);
+                    optsDiv.appendChild(btn);
+                });
+            });
+        }
+
+        function checkMissionQuestion(qIdx, chosen, ans, btnEl) {
+            if (chosen === ans) {
+                btnEl.className = 'text-left px-3 py-2 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-xs font-bold text-emerald-900';
+                if (!missionQAnswered[qIdx]) {
+                    missionQAnswered[qIdx] = true;
+                    addScore(35, '¡Análisis correcto del gráfico!');
+                }
+                if (missionQAnswered[0] && missionQAnswered[1]) {
+                    missionCompletedFlags[currentMissionIdx] = true;
+                    const doneCount = missionCompletedFlags.filter(Boolean).length;
+                    document.getElementById('badge-m2').textContent = `${doneCount}/3 Misiones`;
+                    document.getElementById('btn-next-mission').classList.remove('hidden');
+                }
+            } else {
+                btnEl.className = 'text-left px-3 py-2 rounded-lg border border-rose-400 bg-rose-50 text-xs font-semibold text-rose-900';
+                showToast('Observa bien la inclinación de la línea y los valores en el Eje Y.', 'error');
+            }
+        }
+
+        function nextMissionOrModule() {
+            if (currentMissionIdx < 2) {
+                loadMission(currentMissionIdx + 1);
+            } else {
+                switchModule(3);
+            }
+        }
+
+        /*************************************************************************
+         * 4. MÓDULO 3: LABORATORIO CREATIVO (CREA TU PROPIO GRÁFICO)
+         *************************************************************************/
+        let labData = [
+            { period: 'Lunes', val: 20 },
+            { period: 'Martes', val: 30 },
+            { period: 'Miércoles', val: 25 },
+            { period: 'Jueves', val: 45 },
+            { period: 'Viernes', val: 50 }
+        ];
+        let labUserPoints = []; // puntos clicados por el estudiante [{colIdx, val}]
+        let showLabAutoSolution = false;
+
+        function renderLabTable() {
+            const tbody = document.getElementById('lab-table-body');
+            tbody.innerHTML = '';
+            labData.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b';
+                tr.innerHTML = `
+                    <td class="p-1.5">
+                        <input type="text" value="${row.period}" oninput="updateLabCell(${idx}, 'period', this.value)" class="w-full px-2 py-1 border rounded-lg text-center font-semibold text-slate-700">
+                    </td>
+                    <td class="p-1.5">
+                        <input type="number" min="0" max="600" value="${row.val}" oninput="updateLabCell(${idx}, 'val', this.value)" class="w-full px-2 py-1 border rounded-lg text-center font-bold text-purple-800">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateLabScaleHint();
+            renderLabCanvas();
+        }
+
+        function updateLabCell(idx, field, value) {
+            if (field === 'val') {
+                labData[idx].val = Math.max(0, Number(value) || 0);
+            } else {
+                labData[idx].period = value || `Período ${idx + 1}`;
+            }
+            showLabAutoSolution = false;
+            updateLabScaleHint();
+            renderLabCanvas();
+        }
+
+        function addLabRow() {
+            if (labData.length >= 7) {
+                showToast('Máximo 7 períodos de tiempo para mantener la cuadrícula clara.', 'info');
+                return;
+            }
+            labData.push({ period: `Período ${labData.length + 1}`, val: 20 });
+            renderLabTable();
+        }
+
+        function removeLabRow() {
+            if (labData.length <= 4) {
+                showToast('El gráfico debe tener al menos 4 períodos de tiempo.', 'info');
+                return;
+            }
+            labData.pop();
+            labUserPoints = labUserPoints.filter(p => p.colIdx < labData.length);
+            renderLabTable();
+        }
+
+        function loadLabPreset(type) {
+            labUserPoints = [];
+            showLabAutoSolution = false;
+            if (type === 'games') {
+                document.getElementById('lab-title').value = 'Puntaje en Torneo de Videojuegos';
+                document.getElementById('lab-xlabel').value = 'Días de práctica';
+                document.getElementById('lab-ylabel').value = 'Puntos';
+                document.getElementById('lab-scale').value = '10';
+                labData = [
+                    { period: 'Lunes', val: 20 },
+                    { period: 'Martes', val: 30 },
+                    { period: 'Miércoles', val: 25 },
+                    { period: 'Jueves', val: 45 },
+                    { period: 'Viernes', val: 50 }
+                ];
+            } else if (type === 'pets') {
+                document.getElementById('lab-title').value = 'Crecimiento de mi Cachorro (kg)';
+                document.getElementById('lab-xlabel').value = 'Mes de vida';
+                document.getElementById('lab-ylabel').value = 'Peso (kg)';
+                document.getElementById('lab-scale').value = '2';
+                labData = [
+                    { period: 'Mes 1', val: 2 },
+                    { period: 'Mes 2', val: 4 },
+                    { period: 'Mes 3', val: 7 },
+                    { period: 'Mes 4', val: 9 },
+                    { period: 'Mes 5', val: 11 }
+                ];
+            } else if (type === 'sport') {
+                document.getElementById('lab-title').value = 'Asistencia al Taller Deportivo';
+                document.getElementById('lab-xlabel').value = 'Meses';
+                document.getElementById('lab-ylabel').value = 'N° Estudiantes';
+                document.getElementById('lab-scale').value = '20';
+                labData = [
+                    { period: 'Abril', val: 40 },
+                    { period: 'Mayo', val: 60 },
+                    { period: 'Junio', val: 50 },
+                    { period: 'Julio', val: 90 },
+                    { period: 'Agosto', val: 110 }
+                ];
+            }
+            renderLabTable();
+        }
+
+        function onLabScaleChange() {
+            showLabAutoSolution = false;
+            updateLabScaleHint();
+            renderLabCanvas();
+        }
+
+        function updateLabScaleHint() {
+            const scale = Number(document.getElementById('lab-scale').value);
+            const maxAxis = scale * 6;
+            const maxData = Math.max(...labData.map(d => d.val));
+            const hintEl = document.getElementById('lab-scale-hint');
+            if (maxData > maxAxis) {
+                hintEl.className = 'text-[11px] text-rose-600 font-bold mt-1';
+                hintEl.textContent = `⚠️ ¡Atención! Tu dato mayor es ${maxData} y esta escala solo llega hasta ${maxAxis}. Elige una escala mayor.`;
+            } else if (maxData < maxAxis * 0.25 && maxData > 0) {
+                hintEl.className = 'text-[11px] text-amber-600 font-bold mt-1';
+                hintEl.textContent = `ℹ️ Tu dato mayor es ${maxData} y la escala llega a ${maxAxis}. Una escala más pequeña se vería mejor.`;
+            } else {
+                hintEl.className = 'text-[11px] text-emerald-700 font-bold mt-1';
+                hintEl.textContent = `✅ ¡Escala adecuada! Tu valor máximo (${maxData}) cabe muy bien en el límite de ${maxAxis}.`;
+            }
+        }
+
+        const labCanvas = document.getElementById('lab-canvas');
+        const lCtx = labCanvas.getContext('2d');
+
+        function renderLabCanvas() {
+            if (!labCanvas) return;
+            lCtx.clearRect(0, 0, labCanvas.width, labCanvas.height);
+
+            const padL = 80, padR = 45, padT = 50, padB = 65;
+            const plotW = labCanvas.width - padL - padR;
+            const plotH = labCanvas.height - padT - padB;
+            const numRows = 6;
+            const scale = Number(document.getElementById('lab-scale').value);
+            const maxVal = scale * numRows;
+
+            const title = document.getElementById('lab-title').value || 'Mi Gráfico de Línea';
+            const xLabel = document.getElementById('lab-xlabel').value || 'Tiempo';
+            const yLabel = document.getElementById('lab-ylabel').value || 'Valor';
+
+            // Título
+            lCtx.fillStyle = '#1e1b4b';
+            lCtx.font = 'bold 16px Fredoka, sans-serif';
+            lCtx.textAlign = 'center';
+            lCtx.fillText(title, labCanvas.width / 2, 28);
+
+            // Líneas horizontales y escala Y
+            for (let i = 0; i <= numRows * 2; i++) {
+                const y = padT + plotH - (i / (numRows * 2)) * plotH;
+                const isMain = i % 2 === 0;
+                lCtx.strokeStyle = i === 0 ? '#1e293b' : (isMain ? '#cbd5e1' : '#f1f5f9');
+                lCtx.lineWidth = i === 0 ? 2.5 : 1;
+                lCtx.beginPath();
+                lCtx.moveTo(padL, y);
+                lCtx.lineTo(padL + plotW, y);
+                lCtx.stroke();
+
+                if (isMain) {
+                    const val = (i / 2) * scale;
+                    lCtx.fillStyle = '#4c1d95';
+                    lCtx.font = 'bold 12px Inter, sans-serif';
+                    lCtx.textAlign = 'right';
+                    lCtx.fillText(val, padL - 10, y + 4);
+                }
+            }
+
+            // Etiqueta Eje Y
+            lCtx.save();
+            lCtx.translate(22, padT + plotH / 2);
+            lCtx.rotate(-Math.PI / 2);
+            lCtx.fillStyle = '#6d28d9';
+            lCtx.font = 'bold 13px Inter, sans-serif';
+            lCtx.textAlign = 'center';
+            lCtx.fillText(yLabel, 0, 0);
+            lCtx.restore();
+
+            // Columnas Eje X
+            const stepX = plotW / (labData.length - 1);
+            labData.forEach((d, idx) => {
+                const x = padL + idx * stepX;
+                lCtx.strokeStyle = idx === 0 ? '#1e293b' : '#cbd5e1';
+                lCtx.lineWidth = idx === 0 ? 2.5 : 1;
+                lCtx.beginPath();
+                lCtx.moveTo(x, padT);
+                lCtx.lineTo(x, padT + plotH);
+                lCtx.stroke();
+
+                lCtx.fillStyle = '#065f46';
+                lCtx.font = 'bold 12px Inter, sans-serif';
+                lCtx.textAlign = 'center';
+                lCtx.fillText(d.period, x, padT + plotH + 24);
+            });
+
+            // Etiqueta Eje X
+            lCtx.fillStyle = '#047857';
+            lCtx.font = 'bold 13px Inter, sans-serif';
+            lCtx.textAlign = 'center';
+            lCtx.fillText(xLabel, padL + plotW / 2, labCanvas.height - 12);
+
+            // Si se activó "Comparar / Autoevaluar", dibujar solución automática en verde punteado
+            if (showLabAutoSolution) {
+                lCtx.strokeStyle = '#10b981';
+                lCtx.lineWidth = 3;
+                lCtx.setLineDash([6, 4]);
+                lCtx.beginPath();
+                labData.forEach((d, idx) => {
+                    const x = padL + idx * stepX;
+                    const y = padT + plotH - (d.val / maxVal) * plotH;
+                    if (idx === 0) lCtx.moveTo(x, y);
+                    else lCtx.lineTo(x, y);
+                });
+                lCtx.stroke();
+                lCtx.setLineDash([]);
+
+                labData.forEach((d, idx) => {
+                    const x = padL + idx * stepX;
+                    const y = padT + plotH - (d.val / maxVal) * plotH;
+                    lCtx.fillStyle = '#10b981';
+                    lCtx.beginPath();
+                    lCtx.arc(x, y, 5, 0, Math.PI * 2);
+                    lCtx.fill();
+                });
+            }
+
+            // Dibujar línea y puntos marcados por el estudiante
+            const sortedUser = [...labUserPoints].sort((a, b) => a.colIdx - b.colIdx);
+            if (sortedUser.length > 1) {
+                lCtx.strokeStyle = '#7c3aed';
+                lCtx.lineWidth = 3.5;
+                lCtx.beginPath();
+                sortedUser.forEach((p, idx) => {
+                    const x = padL + p.colIdx * stepX;
+                    const y = padT + plotH - (p.val / maxVal) * plotH;
+                    if (idx === 0) lCtx.moveTo(x, y);
+                    else lCtx.lineTo(x, y);
+                });
+                lCtx.stroke();
+            }
+
+            sortedUser.forEach(p => {
+                const x = padL + p.colIdx * stepX;
+                const y = padT + plotH - (p.val / maxVal) * plotH;
+                lCtx.fillStyle = '#f59e0b';
+                lCtx.beginPath();
+                lCtx.arc(x, y, 7, 0, Math.PI * 2);
+                lCtx.fill();
+                lCtx.strokeStyle = '#fff';
+                lCtx.lineWidth = 2;
+                lCtx.stroke();
+
+                lCtx.fillStyle = '#1e293b';
+                lCtx.font = 'bold 11px Inter, sans-serif';
+                lCtx.textAlign = 'center';
+                lCtx.fillText(p.val, x, y - 10);
+            });
+        }
+
+        labCanvas.addEventListener('click', (evt) => {
+            const rect = labCanvas.getBoundingClientRect();
+            const scaleX = labCanvas.width / rect.width;
+            const scaleY = labCanvas.height / rect.height;
+            const mouseX = (evt.clientX - rect.left) * scaleX;
+            const mouseY = (evt.clientY - rect.top) * scaleY;
+
+            const padL = 80, padR = 45, padT = 50, padB = 65;
+            const plotW = labCanvas.width - padL - padR;
+            const plotH = labCanvas.height - padT - padB;
+            const numRows = 6;
+            const scale = Number(document.getElementById('lab-scale').value);
+            const stepX = plotW / (labData.length - 1);
+
+            let colIdx = Math.round((mouseX - padL) / stepX);
+            colIdx = Math.max(0, Math.min(labData.length - 1, colIdx));
+
+            const halfSteps = numRows * 2;
+            let rowHalfIdx = Math.round(((padT + plotH - mouseY) / plotH) * halfSteps);
+            rowHalfIdx = Math.max(0, Math.min(halfSteps, rowHalfIdx));
+            const val = (rowHalfIdx / 2) * scale;
+
+            // Reemplazar o agregar punto en esa columna
+            labUserPoints = labUserPoints.filter(p => p.colIdx !== colIdx);
+            labUserPoints.push({ colIdx, val });
+            renderLabCanvas();
+        });
+
+        function clearLabUserPoints() {
+            labUserPoints = [];
+            showLabAutoSolution = false;
+            renderLabCanvas();
+        }
+
+        let labRewarded = false;
+        function verifyLabGraph() {
+            showLabAutoSolution = true;
+            renderLabCanvas();
+
+            let matches = 0;
+            labData.forEach((d, idx) => {
+                const found = labUserPoints.find(p => p.colIdx === idx);
+                if (found && Math.abs(found.val - d.val) <= Number(document.getElementById('lab-scale').value) * 0.25) {
+                    matches++;
+                }
+            });
+
+            const fb = document.getElementById('lab-feedback');
+            if (matches === labData.length) {
+                fb.className = 'w-full mt-3 p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-xs text-emerald-950 font-bold';
+                fb.innerHTML = `🎉 ¡Felicitaciones! Ubicaste los ${matches}/${labData.length} puntos con total precisión en tu propio gráfico.`;
+                if (!labRewarded) {
+                    labRewarded = true;
+                    addScore(80, '¡Gráfico propio construido en el Laboratorio!');
+                }
+            } else {
+                fb.className = 'w-full mt-3 p-3 rounded-xl bg-amber-100 border border-amber-300 text-xs text-amber-950 font-bold';
+                fb.innerHTML = `🔍 Coinciden ${matches} de ${labData.length} puntos. La línea verde punteada muestra dónde van exactamente los datos de tu tabla. ¡Corrige los puntos que falten!`;
+            }
+        }
+
+        /*************************************************************************
+         * 5. MÓDULO 4: TICKET DE SALIDA GAMIFICADO (5 DESAFÍOS DE EVALUACIÓN)
+         *************************************************************************/
+        const exitTicketQuestions = [
+            {
+                id: 1,
+                title: 'Desafío 1: Detective de Errores en el Eje Vertical (Y)',
+                prompt: 'Un estudiante construyó un gráfico y escribió en las líneas del Eje Vertical (Y) los números: 0 - 5 - 10 - 15 - 40 - 100. ¿Qué error cometió?',
+                options: [
+                    'No mantuvo una escala con saltos iguales; cambió la escala a mitad del eje vertical.',
+                    'Está bien hecho porque puso todos los números de su tabla.',
+                    'El eje vertical nunca debe empezar en 0.'
+                ],
+                correct: 0,
+                explanation: '¡Exacto! El Eje Vertical (Y) siempre debe mantener la misma escala de principio a fin (por ejemplo, siempre de 10 en 10 o siempre de 20 en 20).'
+            },
+            {
+                id: 2,
+                title: 'Desafío 2: Detective de Errores en el Eje Horizontal (X)',
+                prompt: 'Una tabla registra las lluvias de: Abril, Mayo, Julio y Agosto (en Junio no se midió). Al graduar el Eje X a intervalos iguales de 1 mes, ¿qué se debe hacer con Junio?',
+                options: [
+                    'Eliminar Junio para que Mayo quede pegado a Julio.',
+                    'Incluir el espacio de Junio en el eje horizontal para conservar intervalos iguales de 1 mes.',
+                    'Poner Junio al final después de Agosto.'
+                ],
+                correct: 1,
+                explanation: '¡Muy bien! Graduar el tiempo significa mantener intervalos iguales (mes a mes) en orden cronológico.'
+            },
+            {
+                id: 3,
+                title: 'Desafío 3: Selección de Escala Adecuada',
+                prompt: 'Quieres graficar la cantidad de libros prestados en la biblioteca: Lunes (12), Martes (25), Miércoles (18), Jueves (35) y Viernes (28). Si tu cuadrícula tiene 8 líneas sobre el cero, ¿cuál es la mejor escala para el Eje Y?',
+                options: [
+                    'De 1 en 1 (Llega hasta 8 libros)',
+                    'De 5 en 5 (Llega hasta 40 libros)',
+                    'De 100 en 100 (Llega hasta 800 libros)'
+                ],
+                correct: 1,
+                explanation: '¡Perfecto! Con escala de 5 en 5 en 8 líneas llegas a 40, por lo que el valor máximo (35 libros) cabe de forma óptima.'
+            },
+            {
+                id: 4,
+                title: 'Desafío 4: Ubicar Puntos Entre Dos Líneas',
+                prompt: 'Si el Eje Vertical está graduado de 10 en 10 (0, 10, 20, 30, 40...) y debes ubicar el valor 25, ¿dónde debes marcar el punto?',
+                options: [
+                    'Justo en la mitad entre la línea del 20 y la línea del 30.',
+                    'Sobre la línea del 20 porque el 25 no aparece escrito.',
+                    'Sobre la línea del 30.'
+                ],
+                correct: 0,
+                explanation: '¡Correcto! El número 25 se ubica exactamente a mitad de camino entre 20 y 30.'
+            },
+            {
+                id: 5,
+                title: 'Desafío 5: Interpretación de la Línea',
+                prompt: 'En un gráfico de línea sobre la temperatura de un enfermo, entre las 14:00 y las 18:00 hrs la línea es completamente horizontal (plana). ¿Qué significa eso?',
+                options: [
+                    'Que la temperatura subió muy rápido.',
+                    'Que la temperatura se mantuvo constante (no cambió) durante esas horas.',
+                    'Que el termómetro se apagó.'
+                ],
+                correct: 1,
+                explanation: '¡Excelente! Un tramo horizontal indica que el valor se mantuvo igual entre esos dos momentos de tiempo.'
+            }
+        ];
+
+        let quizAnsweredState = [false, false, false, false, false];
+
+        function renderExitTicket() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            exitTicketQuestions.forEach((q, qIdx) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 rounded-2xl p-4 md:p-5 border border-slate-200 space-y-3';
+                
+                let optsHTML = '';
+                q.options.forEach((opt, oIdx) => {
+                    optsHTML += `
+                        <button onclick="answerTicket(${qIdx}, ${oIdx}, this)" id="ticket-q${qIdx}-o${oIdx}" class="w-full text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-400 text-xs md:text-sm font-semibold text-slate-700 transition flex items-center gap-3">
+                            <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0">${String.fromCharCode(65 + oIdx)}</span>
+                            <span>${opt}</span>
+                        </button>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <h3 class="font-bold text-slate-800 text-sm md:text-base">${q.title}</h3>
+                    <p class="text-xs md:text-sm text-slate-600">${q.prompt}</p>
+                    <div class="space-y-2 pt-1">${optsHTML}</div>
+                    <div id="ticket-fb-${qIdx}" class="hidden p-3 rounded-xl text-xs font-bold"></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function answerTicket(qIdx, chosenIdx, btnEl) {
+            const q = exitTicketQuestions[qIdx];
+            const fb = document.getElementById(`ticket-fb-${qIdx}`);
+            fb.classList.remove('hidden');
+
+            if (chosenIdx === q.correct) {
+                btnEl.className = 'w-full text-left p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-xs md:text-sm font-bold text-emerald-900 flex items-center gap-3';
+                fb.className = 'p-3 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-900';
+                fb.innerHTML = `✅ ${q.explanation}`;
+
+                if (!quizAnsweredState[qIdx]) {
+                    quizAnsweredState[qIdx] = true;
+                    addScore(40, `Desafío ${qIdx + 1} del Ticket superado`);
+                    const totalDone = quizAnsweredState.filter(Boolean).length;
+                    document.getElementById('quiz-progress-text').textContent = `${totalDone} / 5 respondidas`;
+                    document.getElementById('badge-m4').textContent = `Ticket: ${totalDone}/5`;
+                }
+            } else {
+                btnEl.className = 'w-full text-left p-3 rounded-xl border-2 border-rose-400 bg-rose-50 text-xs md:text-sm font-bold text-rose-900 flex items-center gap-3';
+                fb.className = 'p-3 rounded-xl text-xs font-bold bg-rose-100 text-rose-900';
+                fb.innerHTML = '❌ Revisa bien el concepto de escala proporcional e intervalos iguales e inténtalo de nuevo.';
+            }
+        }
+
+        function updateDiplomaName() {
+            const name = document.getElementById('student-name').value;
+            const printEl = document.getElementById('print-student-name');
+            printEl.textContent = name ? `Estudiante: ${name}` : '';
+        }
+
+        /*************************************************************************
+         * INICIALIZACIÓN AL CARGAR LA VENTANA
+         *************************************************************************/
+        window.onload = function () {
+            drawScaleSimulator();
+            loadMission(0);
+            renderLabTable();
+            renderExitTicket();
+        };
+    </script>
+</body>
+</html>
