@@ -1,0 +1,3662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoCompás 7° Básico | Construcción con Regla y Compás (OA 12)</title>
+    <style>
+        /* ==========================================================================
+           SISTEMA DE DISEÑO AUTÓNOMO (100% OFFLINE - SIN CDN EXTERNOS)
+           Inspirado en GeoGebra Classroom & Pizarra Digital Interactiva
+           ========================================================================== */
+        :root {
+            --bg-app: #f1f5f9;
+            --bg-panel: #ffffff;
+            --bg-header: #0f172a;
+            --bg-subbar: #1e293b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #dbeafe;
+            --secondary: #0ea5e9;
+            --accent: #f59e0b;
+            --accent-light: #fef3c7;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --purple: #7c3aed;
+            --purple-light: #ede9fe;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-light: #f8fafc;
+            --border: #cbd5e1;
+            --border-subtle: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.1);
+            --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.15);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* ==================== BARRA SUPERIOR (CLASE 70 MIN Y MODOS) ==================== */
+        .top-header {
+            background: var(--bg-header);
+            color: var(--text-light);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #334155;
+            z-index: 30;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+            flex-shrink: 0;
+        }
+
+        .brand-title {
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .brand-subtitle {
+            font-size: 0.72rem;
+            color: #93c5fd;
+            font-family: var(--font-mono);
+        }
+
+        /* Navegador de las 5 Etapas de la Clase de 70 Minutos */
+        .stage-nav {
+            display: flex;
+            align-items: center;
+            background: #1e293b;
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid #334155;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .stage-btn {
+            background: transparent;
+            color: #cbd5e1;
+            border: none;
+            padding: 6px 11px;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .stage-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .stage-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.45);
+        }
+
+        .stage-time-pill {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            opacity: 0.85;
+            background: rgba(15, 23, 42, 0.35);
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        /* Controles de Temporizador y Docente */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timer-widget {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            padding: 4px 10px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-mono);
+        }
+
+        .timer-display {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .timer-stage-label {
+            font-size: 0.7rem;
+            color: #fbbf24;
+        }
+
+        .icon-btn-sm {
+            background: #334155;
+            color: #f8fafc;
+            border: none;
+            width: 26px;
+            height: 26px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+
+        .icon-btn-sm:hover {
+            background: #475569;
+        }
+
+        .btn-teacher {
+            background: #059669;
+            color: #ffffff;
+            border: 1px solid #34d399;
+            padding: 6px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-teacher:hover {
+            background: #047857;
+        }
+
+        /* Barra de Progreso General de la Clase */
+        .class-progress-bar {
+            height: 4px;
+            background: #1e293b;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .class-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #38bdf8, #10b981, #f59e0b);
+            width: 20%;
+            transition: width 0.35s ease;
+        }
+
+        /* ==================== SUB-BARRA DE MODOS DE APRENDIZAJE Y DIFICULTAD ==================== */
+        .sub-bar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            z-index: 20;
+        }
+
+        .mode-selector-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .group-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.03em;
+        }
+
+        .segmented-control {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .seg-btn {
+            border: none;
+            background: transparent;
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .seg-btn.active {
+            background: #ffffff;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .seg-btn.mode-aprender.active { color: #0284c7; }
+        .seg-btn.mode-practicar.active { color: #059669; }
+        .seg-btn.mode-desafio.active { color: #d97706; }
+
+        /* ==================== LAYOUT CENTRAL DE TRABAJO ==================== */
+        .workspace-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Vista especial para Etapa 1 (Inicio) y Etapa 5 (Ticket de Salida) cuando requieren pantalla dividida o tarjetas */
+        .stage-overlay-view {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-app);
+            z-index: 15;
+            overflow-y: auto;
+            padding: 20px;
+            display: none;
+        }
+
+        .stage-overlay-view.active {
+            display: block;
+        }
+
+        /* BARRA DE HERRAMIENTAS GEOMÉTRICAS (IZQUIERDA - ESTILO GEOGEBRA) */
+        .geo-toolbar {
+            width: 86px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 6px;
+            gap: 8px;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tool-btn {
+            width: 72px;
+            min-height: 62px;
+            border-radius: var(--radius-md);
+            border: 2px solid transparent;
+            background: #f8fafc;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+            position: relative;
+        }
+
+        .tool-btn svg {
+            width: 26px;
+            height: 26px;
+            stroke-width: 2;
+        }
+
+        .tool-btn span {
+            font-size: 0.68rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary-light);
+            border-color: #93c5fd;
+        }
+
+        .tool-btn.active {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+        }
+
+        .tool-btn.highlight-hint {
+            animation: pulseTool 1.4s infinite;
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+
+        @keyframes pulseTool {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+        }
+
+        .toolbar-divider {
+            width: 80%;
+            height: 1px;
+            background: var(--border-subtle);
+            margin: 2px 0;
+        }
+
+        /* ÁREA DEL LIENZO GEOMÉTRICO (PIZARRA CENTRAL) */
+        .canvas-area {
+            flex: 1;
+            position: relative;
+            background: #ffffff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #geo-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        /* Controles Flotantes sobre el Lienzo (Arriba: Bloqueo de Compás y Estado) */
+        .canvas-top-hud {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            pointer-events: none;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .hud-pill {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border);
+            padding: 7px 14px;
+            border-radius: 999px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .compass-lock-bar {
+            background: #fffbeb;
+            border: 2px solid #f59e0b;
+            color: #92400e;
+        }
+
+        .lock-toggle-btn {
+            background: #f59e0b;
+            color: #ffffff;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s;
+        }
+
+        .lock-toggle-btn.locked {
+            background: #059669;
+        }
+
+        /* Controles Flotantes Abajo-Izquierda (Zoom, Cuadrícula, Deshacer/Rehacer) */
+        .canvas-bottom-hud {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+        }
+
+        .hud-icon-btn {
+            background: #f8fafc;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s;
+        }
+
+        .hud-icon-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* PANEL LATERAL DERECHO (INSTRUCCIONES, DESAFÍOS Y VERIFICACIÓN) */
+        .side-panel {
+            width: 390px;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 10;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .panel-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 3px 9px;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            margin-bottom: 8px;
+        }
+
+        .badge-blue { background: var(--primary-light); color: var(--primary); }
+        .badge-amber { background: var(--accent-light); color: #b45309; }
+        .badge-green { background: var(--success-light); color: #047857; }
+        .badge-purple { background: var(--purple-light); color: var(--purple); }
+
+        .challenge-title {
+            font-size: 1.08rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            line-height: 1.25;
+        }
+
+        .challenge-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* Lista de pasos en Modo Aprender / Procedimiento */
+        .steps-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 9px 11px;
+            border-radius: var(--radius-md);
+            background: #f8fafc;
+            border: 1px solid var(--border-subtle);
+            font-size: 0.82rem;
+            line-height: 1.35;
+            transition: all 0.2s;
+        }
+
+        .step-item.current {
+            background: #eff6ff;
+            border-color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .step-item.done {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            color: #065f46;
+        }
+
+        .step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            color: #0f172a;
+            font-weight: 800;
+            font-size: 0.74rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .step-item.current .step-num {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .step-item.done .step-num {
+            background: var(--success);
+            color: #ffffff;
+        }
+
+        /* Botones de Acción Pedagógica */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-main-verify {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            border: none;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.92rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            transition: transform 0.12s, box-shadow 0.12s;
+        }
+
+        .btn-main-verify:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-secondary-action {
+            background: #f1f5f9;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 9px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-secondary-action:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-new-challenge {
+            grid-column: span 2;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid #93c5fd;
+            padding: 9px 12px;
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-new-challenge:hover {
+            background: #bfdbfe;
+        }
+
+        /* Cajas de Retroalimentación y Justificación Geométrica */
+        .feedback-card {
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-md);
+            font-size: 0.84rem;
+            line-height: 1.45;
+            display: none;
+        }
+
+        .feedback-card.success {
+            display: block;
+            background: var(--success-light);
+            border: 1px solid #34d399;
+            color: #064e3b;
+        }
+
+        .feedback-card.warning {
+            display: block;
+            background: var(--accent-light);
+            border: 1px solid #fbbf24;
+            color: #78350f;
+        }
+
+        .feedback-card.error {
+            display: block;
+            background: var(--danger-light);
+            border: 1px solid #f87171;
+            color: #7f1d1d;
+        }
+
+        .why-it-works-box {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            font-size: 0.8rem;
+            color: #1e3a8a;
+            line-height: 1.45;
+            display: none;
+        }
+
+        /* ==================== TARJETAS PARA ETAPA 1 (INICIO) Y ETAPA 5 (TICKET SALIDA) ==================== */
+        .stage-card-container {
+            max-width: 1060px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .hero-banner {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: #ffffff;
+            padding: 22px 26px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .grid-2-cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 18px;
+        }
+
+        .white-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 11px 14px;
+            margin-top: 8px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            font-size: 0.86rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:hover {
+            background: var(--primary-light);
+            border-color: #60a5fa;
+        }
+
+        .option-btn.correct {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #065f46;
+        }
+
+        .option-btn.wrong {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #7f1d1d;
+        }
+
+        /* ==================== MODAL PANEL DOCENTE ==================== */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.72);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+        }
+
+        .modal-window {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            max-width: 880px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            padding: 16px 22px;
+            background: var(--bg-header);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-body {
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: var(--font-mono);
+        }
+
+        .stat-label {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .math-symbol {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        /* Responsividad para Tablets y Pantallas Interactivas */
+        @media (max-width: 960px) {
+            .workspace-container {
+                flex-direction: column;
+            }
+            .geo-toolbar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                overflow-x: auto;
+                padding: 6px;
+            }
+            .tool-btn {
+                min-width: 66px;
+                min-height: 54px;
+            }
+            .side-panel {
+                width: 100%;
+                max-height: 42vh;
+                border-left: none;
+                border-top: 1px solid var(--border);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== BARRA SUPERIOR: CLASE DE 70 MINUTOS ==================== -->
+    <header class="top-header">
+        <div class="brand-box">
+            <div class="brand-logo" title="Laboratorio de Geometría con Regla y Compás">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" width="22" height="22">
+                    <circle cx="12" cy="5" r="2"/>
+                    <path d="M10.5 6.8L5 20M13.5 6.8L19 20"/>
+                    <path d="M7 14h10"/>
+                </svg>
+            </div>
+            <div>
+                <div class="brand-title">GeoCompás 7° Básico</div>
+                <div class="brand-subtitle">OA 12 • Regla y Compás • L₁ ∥ L₂ y L₁ ⊥ L₂</div>
+            </div>
+        </div>
+
+        <!-- Secuencia Pedagógica de 70 Minutos (5 Etapas) -->
+        <nav class="stage-nav" aria-label="Etapas de la clase de 70 minutos">
+            <button class="stage-btn" id="stage-btn-1" onclick="setClassStage(1)">
+                <span>1. Inicio y Activación</span>
+                <span class="stage-time-pill">10m</span>
+            </button>
+            <button class="stage-btn active" id="stage-btn-2" onclick="setClassStage(2)">
+                <span>2. Exploración Guiada</span>
+                <span class="stage-time-pill">15m</span>
+            </button>
+            <button class="stage-btn" id="stage-btn-3" onclick="setClassStage(3)">
+                <span>3. Construcción</span>
+                <span class="stage-time-pill">20m</span>
+            </button>
+            <button class="stage-btn" id="stage-btn-4" onclick="setClassStage(4)">
+                <span>4. Aplicación Real</span>
+                <span class="stage-time-pill">20m</span>
+            </button>
+            <button class="stage-btn" id="stage-btn-5" onclick="setClassStage(5)">
+                <span>5. Ticket de Salida</span>
+                <span class="stage-time-pill">5m</span>
+            </button>
+        </nav>
+
+        <!-- Temporizador Dual y Acceso Docente -->
+        <div class="header-controls">
+            <div class="timer-widget" title="Tiempo restante de la clase (70 min) y de la etapa actual">
+                <div>
+                    <div class="timer-display" id="global-timer-text">70:00</div>
+                    <div class="timer-stage-label" id="stage-timer-text">Etapa: 15:00</div>
+                </div>
+                <button class="icon-btn-sm" onclick="toggleClassTimer()" id="timer-play-btn" title="Iniciar / Pausar reloj de clase">▶</button>
+                <button class="icon-btn-sm" onclick="resetClassTimer()" title="Reiniciar reloj de 70 minutos">↺</button>
+            </div>
+
+            <button class="btn-teacher" onclick="openTeacherModal()">
+                <span>Panel Docente</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="class-progress-bar">
+        <div class="class-progress-fill" id="class-progress-fill" style="width: 35%;"></div>
+    </div>
+
+    <!-- ==================== SUB-BARRA: MODOS DE APRENDIZAJE Y ACTIVIDADES ==================== -->
+    <div class="sub-bar" id="geometry-subbar">
+        <div class="mode-selector-group">
+            <span class="group-label">Modo de Aprendizaje:</span>
+            <div class="segmented-control">
+                <button class="seg-btn mode-aprender active" id="mode-btn-aprender" onclick="setLearningMode('aprender')">1. Modo Aprender (Guiado)</button>
+                <button class="seg-btn mode-practicar" id="mode-btn-practicar" onclick="setLearningMode('practicar')">2. Modo Practicar</button>
+                <button class="seg-btn mode-desafio" id="mode-btn-desafio" onclick="setLearningMode('desafio')">3. Modo Desafío</button>
+            </div>
+        </div>
+
+        <div class="mode-selector-group">
+            <span class="group-label">Actividad:</span>
+            <div class="segmented-control" id="activity-selector-bar">
+                <button class="seg-btn active" id="act-btn-perp_on" onclick="loadCoreActivity('perp_on')">Act 1: ⊥ por punto en la recta</button>
+                <button class="seg-btn" id="act-btn-perp_ext" onclick="loadCoreActivity('perp_ext')">Act 2: ⊥ desde punto exterior</button>
+                <button class="seg-btn" id="act-btn-par_ext" onclick="loadCoreActivity('par_ext')">Act 3: ∥ por punto exterior</button>
+            </div>
+        </div>
+
+        <div class="mode-selector-group">
+            <span class="group-label">Nivel:</span>
+            <div class="segmented-control">
+                <button class="seg-btn active" id="diff-btn-basico" onclick="setDifficulty('basico')">Básico</button>
+                <button class="seg-btn" id="diff-btn-intermedio" onclick="setDifficulty('intermedio')">Intermedio</button>
+                <button class="seg-btn" id="diff-btn-avanzado" onclick="setDifficulty('avanzado')">Avanzado</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== ÁREA DE TRABAJO PRINCIPAL ==================== -->
+    <main class="workspace-container">
+
+        <!-- =========================================================================
+             VISTA SUPERPUESTA PARA ETAPA 1: INICIO Y ACTIVACIÓN (10 MIN)
+             ========================================================================= -->
+        <section class="stage-overlay-view" id="stage-1-view">
+            <div class="stage-card-container">
+                <div class="hero-banner">
+                    <div style="max-width: 680px;">
+                        <span class="badge-tag badge-amber">Etapa 1 • Inicio y Activación (10 Minutos)</span>
+                        <h1 style="font-size: 1.5rem; margin-bottom: 6px;">Rectas Paralelas y Perpendiculares en Nuestro Entorno</h1>
+                        <p style="font-size: 0.9rem; opacity: 0.92; line-height: 1.45;">
+                            Antes de construir con regla y compás, identifiquemos las propiedades fundamentales de las rectas en un plano: cuándo son <strong>paralelas (L₁ ∥ L₂)</strong>, cuándo son <strong>perpendiculares (L₁ ⊥ L₂)</strong> y qué ocurre al relacionar tres rectas.
+                        </p>
+                    </div>
+                    <button class="btn-main-verify" style="width: auto; padding: 12px 22px;" onclick="setClassStage(2)">
+                        Ir a la Pizarra de Regla y Compás →
+                    </button>
+                </div>
+
+                <div class="grid-2-cols">
+                    <!-- Tarjeta Interactiva de Exploración Visual -->
+                    <div class="white-card">
+                        <span class="badge-tag badge-blue">Exploración Visual en Situaciones Cotidianas</span>
+                        <h3 class="challenge-title" id="s1-scene-title">1. Vía Férrea y Durmientes del Tren</h3>
+                        <p class="challenge-desc" id="s1-scene-desc">
+                            Observa el esquema geométrico. Los dos rieles de acero mantienen siempre la misma distancia entre sí, mientras que los durmientes de madera cruzan los rieles formando ángulos rectos de 90°.
+                        </p>
+
+                        <div style="margin: 14px 0; background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 10px; text-align: center;" id="s1-svg-box">
+                            <!-- Renderizado por JS -->
+                        </div>
+
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button class="seg-btn active" id="s1-tab-0" onclick="renderStage1Scene(0)">1. Rieles de Tren</button>
+                            <button class="seg-btn" id="s1-tab-1" onclick="renderStage1Scene(1)">2. Calles de una Ciudad</button>
+                            <button class="seg-btn" id="s1-tab-2" onclick="renderStage1Scene(2)">3. Esquina de Cancha</button>
+                            <button class="seg-btn" id="s1-tab-3" onclick="renderStage1Scene(3)">4. Propiedad de 2 Perpendiculares</button>
+                        </div>
+                    </div>
+
+                    <!-- Generador Dinámico de Preguntas de Identificación y Razonamiento (Tipo B) -->
+                    <div class="white-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="badge-tag badge-purple">Ejercicios de Identificación y Razonamiento</span>
+                            <button class="hud-icon-btn" onclick="generateReasoningQuestion()">↻ Nueva Pregunta</button>
+                        </div>
+                        <h3 class="challenge-title" id="reasoning-q-title">Pregunta de Razonamiento Geométrico</h3>
+                        <p class="challenge-desc" id="reasoning-q-text" style="font-weight: 600; color: var(--text-main); margin-top: 6px;"></p>
+
+                        <div id="reasoning-options-box" style="margin-top: 10px;"></div>
+                        <div class="feedback-card" id="reasoning-feedback"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             PIZARRA GEOMÉTRICA CENTRAL (ETAPAS 2, 3, 4 Y CONSTRUCCIÓN DE ETAPA 5)
+             ========================================================================= -->
+
+        <!-- Barra de Herramientas Geométricas Izquierda -->
+        <aside class="geo-toolbar" aria-label="Instrumentos geométricos">
+            <button class="tool-btn" id="tool-move" onclick="selectTool('move')" title="Seleccionar y mover puntos libres o arrastrar el plano">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
+                </svg>
+                <span>Mover Plano</span>
+            </button>
+
+            <button class="tool-btn" id="tool-point" onclick="selectTool('point')" title="Crear punto libre o marcar punto de intersección exacto entre arcos y rectas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="4" fill="currentColor"/>
+                    <path d="M4 12h4M16 12h4M12 4v4M12 16v4"/>
+                </svg>
+                <span>Punto / Intersec.</span>
+            </button>
+
+            <button class="tool-btn" id="tool-ruler" onclick="selectTool('ruler')" title="Regla sin graduación: selecciona 2 puntos para trazar la recta que pasa por ellos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="3" y="8" width="18" height="8" rx="1.5" transform="rotate(-20 12 12)"/>
+                    <circle cx="7" cy="14" r="2" fill="currentColor"/>
+                    <circle cx="17" cy="10" r="2" fill="currentColor"/>
+                </svg>
+                <span>Regla (2 Puntos)</span>
+            </button>
+
+            <button class="tool-btn" id="tool-compass" onclick="selectTool('compass')" title="Compás: haz clic en el centro y ajusta o mantén la abertura (radio) para trazar arcos reales">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="4" r="2"/>
+                    <path d="M11 6L5 20M13 6l6 14"/>
+                    <path d="M4 17a9 9 0 0 0 16 0" stroke-dasharray="2 2"/>
+                </svg>
+                <span>Compás</span>
+            </button>
+
+            <div class="toolbar-divider"></div>
+
+            <button class="tool-btn" id="tool-aux" onclick="toggleAuxiliaryVisibility()" title="Mostrar o atenuar los arcos y rectas auxiliares de construcción">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span id="aux-btn-label">Auxiliares: Visibles</span>
+            </button>
+
+            <button class="tool-btn" id="tool-measure" onclick="selectTool('measure')" title="Medidor de ángulos y distancias (Para etapa de comprobación)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M3 18h18M5 18a7 7 0 0 1 14 0"/>
+                    <path d="M12 18v-5"/>
+                </svg>
+                <span>Comprobar Ángulo</span>
+            </button>
+        </aside>
+
+        <!-- Pizarra Digital Central (HTML5 Canvas) -->
+        <div class="canvas-area">
+            <canvas id="geo-canvas"></canvas>
+
+            <!-- HUD Superior Flotante: Estado de la Herramienta y Bloqueo de Abertura del Compás -->
+            <div class="canvas-top-hud">
+                <div class="hud-pill" id="tool-status-banner">
+                    <span style="width: 10px; height: 10px; border-radius: 50%; background: var(--primary); display: inline-block;"></span>
+                    <span id="tool-instruction-live">Selecciona el Compás o haz clic en un punto para comenzar.</span>
+                </div>
+
+                <!-- Control de Compás: Mantener exactamente la misma abertura -->
+                <div class="hud-pill compass-lock-bar" id="compass-hud-widget">
+                    <span>Abertura del Compás: <strong id="compass-radius-label">Libre</strong></span>
+                    <button class="lock-toggle-btn" id="lock-radius-btn" onclick="toggleCompassLock()" title="Permite conservar exactamente el mismo radio al cambiar de centro">
+                        <span id="lock-icon">🔓</span>
+                        <span id="lock-text">Fijar Abertura</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- HUD Inferior Flotante: Deshacer, Rehacer, Limpiar, Zoom y Cuadrícula -->
+            <div class="canvas-bottom-hud">
+                <button class="hud-icon-btn" onclick="undoAction()" title="Deshacer último paso (Ctrl+Z)">↶ Deshacer</button>
+                <button class="hud-icon-btn" onclick="redoAction()" title="Rehacer paso">↷ Rehacer</button>
+                <button class="hud-icon-btn" onclick="clearUserConstructions()" title="Borrar mis trazos y mantener el problema inicial">🗑 Borrar trazos</button>
+                <button class="hud-icon-btn" onclick="resetCurrentExercise()" title="Reiniciar ejercicio completo">↺ Reiniciar</button>
+                <span style="color: var(--border);">|</span>
+                <button class="hud-icon-btn" onclick="toggleGrid()" id="grid-toggle-btn">⊞ Cuadrícula: ON</button>
+                <button class="hud-icon-btn" onclick="zoomCanvas(1.15)" title="Acercar vista">＋</button>
+                <button class="hud-icon-btn" onclick="zoomCanvas(0.87)" title="Alejar vista">－</button>
+                <button class="hud-icon-btn" onclick="resetViewTransform()" title="Centrar plano">Centrar</button>
+            </div>
+        </div>
+
+        <!-- Panel Lateral Derecho: Guía, Pasos, Problemas de Aplicación y Verificación Matemática -->
+        <aside class="side-panel">
+            <!-- Encabezado del Desafío Actual -->
+            <div class="panel-section">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="badge-tag badge-blue" id="panel-category-badge">Construcción Fundamental</span>
+                    <span style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted);" id="panel-progress-indicator">Progreso: 0 / 3</span>
+                </div>
+                <h2 class="challenge-title" id="panel-challenge-title">Actividad 1: Recta perpendicular por un punto P de la recta</h2>
+                <p class="challenge-desc" id="panel-challenge-desc">
+                    Dada la recta azul y el punto <strong>P</strong> que pertenece a ella, utiliza el compás y la regla sin graduación para construir una recta perpendicular (<strong>90°</strong>) que pase exactamente por <strong>P</strong>.
+                </p>
+
+                <!-- Selector rápido de los 6 Problemas Contextualizados cuando está en Etapa 4 -->
+                <div id="context-problem-selector" style="display: none; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                    <div class="group-label" style="margin-bottom: 6px;">Seleccionar Escenario de Aplicación:</div>
+                    <select id="app-scenario-select" onchange="loadApplicationProblem(parseInt(this.value))" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); font-weight: 600; font-size: 0.82rem;">
+                        <option value="0">1. Diseño de Calles: Pasaje ⊥ a una Avenida</option>
+                        <option value="1">2. Plano de una Plaza: Senderos Paralelos ∥</option>
+                        <option value="2">3. Cancha Deportiva: Línea de Fondo ⊥ en la Esquina</option>
+                        <option value="3">4. Mundo Minecraft: Camino de Bloques ⊥ al Riel</option>
+                        <option value="4">5. Diseño de Parque: Ciclovía Paralela ∥ al Canal</option>
+                        <option value="5">6. Arquitectura: Muro Divisorio ⊥ en Habitación</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Controles de Demostración Animada (Modo Aprender) -->
+            <div class="panel-section" id="demo-controls-section" style="background: #f8fafc; padding: 10px 16px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.78rem; font-weight: 700; color: #0369a1;">Demostración con Regla y Compás:</span>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="hud-icon-btn" id="demo-play-btn" onclick="toggleDemoAnimation()">▶ Ver Animación</button>
+                        <button class="hud-icon-btn" onclick="restartDemoAnimation()">↺ Repetir</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pasos Guiados / Procedimiento -->
+            <div class="panel-section" id="steps-panel-section" style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="group-label" id="steps-header-label">Pasos de Construcción:</span>
+                    <span style="font-size: 0.72rem; color: var(--primary); font-weight: 700;" id="current-step-badge">Paso 1</span>
+                </div>
+                <ul class="steps-list" id="steps-list-container">
+                    <!-- Dinámico vía JS -->
+                </ul>
+
+                <!-- Caja de Pregunta de Reflexión para Problemas de Aplicación (Se muestra tras validar con éxito) -->
+                <div id="reflection-question-box" style="display: none; margin-top: 14px; padding: 12px; background: #faf5ff; border: 1px solid #d8b4fe; border-radius: 10px;">
+                    <div style="font-size: 0.75rem; font-weight: 800; color: #6d28d9; text-transform: uppercase; margin-bottom: 4px;">Pregunta de Reflexión Final:</div>
+                    <p id="reflection-q-text" style="font-size: 0.82rem; font-weight: 600; color: var(--text-main); margin-bottom: 8px;"></p>
+                    <div id="reflection-q-options"></div>
+                    <div id="reflection-q-feedback" style="margin-top: 6px; font-size: 0.78rem; font-weight: 700;"></div>
+                </div>
+            </div>
+
+            <!-- Botones de Verificación, Pistas y Nuevo Desafío -->
+            <div class="panel-section">
+                <div class="action-grid">
+                    <button class="btn-main-verify" onclick="verifyConstruction()">
+                        <span>✓ Comprobar Construcción</span>
+                    </button>
+                    <button class="btn-secondary-action" onclick="requestProgressiveHint()">
+                        <span>💡 Mostrar Pista</span>
+                    </button>
+                    <button class="btn-secondary-action" onclick="toggleProcedureVisibility()">
+                        <span>📋 Ver Procedimiento</span>
+                    </button>
+                    <button class="btn-new-challenge" onclick="generateNewDynamicChallenge()">
+                        <span>🎲 Nuevo Desafío (Cambiar Posición y Orientación)</span>
+                    </button>
+                </div>
+
+                <!-- Resultado de la Verificación Matemática -->
+                <div class="feedback-card" id="verification-feedback"></div>
+
+                <!-- Explicación Geométrica de por qué funciona -->
+                <div class="why-it-works-box" id="why-it-works-box"></div>
+            </div>
+        </aside>
+
+    </main>
+
+    <!-- ==================== MODAL: TICKET DE SALIDA Y RESUMEN (ETAPA 5 - 5 MIN) ==================== -->
+    <div class="modal-backdrop" id="exit-ticket-modal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div>
+                    <span class="badge-tag badge-amber" style="margin-bottom: 2px;">Etapa 5 • Cierre y Evaluación Formativa (5 Minutos)</span>
+                    <h3 style="font-size: 1.15rem;">Ticket de Salida y Resumen de Aprendizajes</h3>
+                </div>
+                <button class="icon-btn-sm" onclick="closeExitTicketModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.88rem; color: var(--text-muted);">
+                    Completa estos 3 breves desafíos de cierre para evaluar lo aprendido hoy sobre construcciones con regla y compás:
+                </p>
+
+                <!-- Parte 1: Pregunta Conceptual -->
+                <div class="white-card" style="padding: 15px;">
+                    <div style="font-weight: 800; font-size: 0.9rem; color: var(--primary); margin-bottom: 6px;">
+                        Desafío 1 (Conceptual): Propiedad de dos perpendiculares a una misma recta
+                    </div>
+                    <p style="font-size: 0.85rem; margin-bottom: 8px;">
+                        Si construyes con regla y compás una recta <strong>L₁</strong> perpendicular a una recta auxiliar <strong>M</strong> (L₁ ⊥ M), y luego construyes otra recta <strong>L₂</strong> también perpendicular a la misma recta <strong>M</strong> (L₂ ⊥ M), ¿cómo son entre sí <strong>L₁</strong> y <strong>L₂</strong>?
+                    </p>
+                    <div id="et-q1-options">
+                        <button class="option-btn" onclick="answerExitTicket(1, 0, this)">A) Son rectas paralelas entre sí (L₁ ∥ L₂) porque mantienen el mismo ángulo de 90° respecto a M.</button>
+                        <button class="option-btn" onclick="answerExitTicket(1, 1, this)">B) Son rectas secantes que se cortan en un ángulo de 45°.</button>
+                        <button class="option-btn" onclick="answerExitTicket(1, 2, this)">C) Son perpendiculares entre sí (L₁ ⊥ L₂).</button>
+                    </div>
+                </div>
+
+                <!-- Parte 2: Verificación de Construcción en la Pizarra -->
+                <div class="white-card" style="padding: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <div>
+                        <div style="font-weight: 800; font-size: 0.9rem; color: #059669; margin-bottom: 4px;">
+                            Desafío 2 (Práctico): Construcción Geométrica con Regla y Compás
+                        </div>
+                        <p style="font-size: 0.84rem; color: var(--text-muted);" id="et-construction-status">
+                            Estado: Se registran tus construcciones validadas en la pizarra durante la sesión.
+                        </p>
+                    </div>
+                    <button class="btn-secondary-action" onclick="launchExitTicketPractical()">Ir a Construir en la Pizarra</button>
+                </div>
+
+                <!-- Parte 3: Justificación del Procedimiento -->
+                <div class="white-card" style="padding: 15px;">
+                    <div style="font-weight: 800; font-size: 0.9rem; color: var(--purple); margin-bottom: 6px;">
+                        Desafío 3 (Justificación del Procedimiento): Uso del Compás
+                    </div>
+                    <p style="font-size: 0.85rem; margin-bottom: 8px;">
+                        Al construir una recta perpendicular desde dos puntos equidistantes <strong>A</strong> y <strong>B</strong>, ¿por qué es indispensable mantener <strong>exactamente la misma abertura (radio) del compás</strong> al trazar los dos arcos que se cruzan en <strong>C</strong>?
+                    </p>
+                    <div id="et-q3-options">
+                        <button class="option-btn" onclick="answerExitTicket(3, 0, this)">A) Solo para que el dibujo se vea más simétrico y decorativo.</button>
+                        <button class="option-btn" onclick="answerExitTicket(3, 1, this)">B) Para asegurar que el punto de intersección C esté a igual distancia de A y de B (triángulos congruentes), garantizando un ángulo exacto de 90°.</button>
+                        <button class="option-btn" onclick="answerExitTicket(3, 2, this)">C) No es necesario mantener el radio; cualquier abertura diferente produce 90°.</button>
+                    </div>
+                </div>
+
+                <!-- Resumen Formativo para el Estudiante -->
+                <div class="white-card" style="background: #f0fdf4; border-color: #86efac; padding: 16px;">
+                    <h4 style="font-size: 0.95rem; color: #065f46; margin-bottom: 6px;">Resumen Formativo de tu Sesión:</h4>
+                    <p style="font-size: 0.84rem; color: #064e3b; line-height: 1.5;" id="student-formative-summary">
+                        Calculando tu progreso...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: PANEL DOCENTE Y EXPORTACIÓN CSV ==================== -->
+    <div class="modal-backdrop" id="teacher-modal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div>
+                    <span class="badge-tag badge-green" style="margin-bottom: 2px;">Gestión Pedagógica • OA 12 (7° Básico)</span>
+                    <h3 style="font-size: 1.15rem;">Panel Docente y Seguimiento de la Sesión (70 Minutos)</h3>
+                </div>
+                <button class="icon-btn-sm" onclick="closeTeacherModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Métricas Formativas Registradas -->
+                <div>
+                    <h4 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted); text-transform: uppercase;">Indicadores de Desempeño en esta Sesión</h4>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-value" id="stat-attempted">0</div>
+                            <div class="stat-label">Ejercicios Intentados</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="stat-completed" style="color: var(--success);">0</div>
+                            <div class="stat-label">Construcciones Correctas</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="stat-app-solved" style="color: #0284c7;">0</div>
+                            <div class="stat-label">Problemas de Aplicación</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="stat-hints" style="color: var(--accent);">0</div>
+                            <div class="stat-label">Pistas Solicitadas</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="stat-exit-score" style="color: var(--purple);">0/3</div>
+                            <div class="stat-label">Ticket de Salida</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Errores Frecuentes Detectados -->
+                <div class="white-card" style="padding: 14px;">
+                    <div style="font-weight: 800; font-size: 0.86rem; margin-bottom: 6px;">Diagnóstico Automático de Errores Frecuentes:</div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted);" id="teacher-error-log">
+                        Aún no se registran errores recurrentes en las construcciones.
+                    </p>
+                </div>
+
+                <!-- Controles Rápidos para Proyección en Pizarra Digital -->
+                <div class="white-card" style="padding: 14px;">
+                    <div style="font-weight: 800; font-size: 0.86rem; margin-bottom: 10px;">Proyectar Demostración en Pizarra Digital:</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn-secondary-action" onclick="projectTeacherDemo('perp_on')">Proyectar Demo 1: ⊥ por punto en la recta</button>
+                        <button class="btn-secondary-action" onclick="projectTeacherDemo('perp_ext')">Proyectar Demo 2: ⊥ desde punto exterior</button>
+                        <button class="btn-secondary-action" onclick="projectTeacherDemo('par_ext')">Proyectar Demo 3: ∥ con dos perpendiculares</button>
+                    </div>
+                </div>
+
+                <!-- Tabla de la Secuencia de 70 Minutos -->
+                <div class="white-card" style="padding: 14px;">
+                    <div style="font-weight: 800; font-size: 0.86rem; margin-bottom: 8px;">Organización Pedagógica de la Clase (70 min):</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+                        <thead>
+                            <tr style="background: #f1f5f9; text-align: left;">
+                                <th style="padding: 6px 8px; border-bottom: 1px solid var(--border);">Etapa</th>
+                                <th style="padding: 6px 8px; border-bottom: 1px solid var(--border);">Duración</th>
+                                <th style="padding: 6px 8px; border-bottom: 1px solid var(--border);">Actividad Pedagógica</th>
+                                <th style="padding: 6px 8px; border-bottom: 1px solid var(--border);">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">1. Inicio y activación</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">10 min</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">Reconocer paralelas y perpendiculares en situaciones cotidianas</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);"><button class="hud-icon-btn" onclick="setClassStage(1); closeTeacherModal();">Ir</button></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">2. Exploración guiada</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">15 min</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">Aprender a utilizar la regla y el compás virtual (Modo Aprender)</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);"><button class="hud-icon-btn" onclick="setClassStage(2); closeTeacherModal();">Ir</button></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">3. Construcción geométrica</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">20 min</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">Resolver ejercicios de construcción con variación de ángulos</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);"><button class="hud-icon-btn" onclick="setClassStage(3); closeTeacherModal();">Ir</button></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">4. Problemas de aplicación</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">20 min</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);">Resolver desafíos contextualizados (Calles, Plaza, Minecraft, Cancha)</td>
+                                <td style="padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);"><button class="hud-icon-btn" onclick="setClassStage(4); closeTeacherModal();">Ir</button></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 8px;">5. Cierre y evaluación</td>
+                                <td style="padding: 6px 8px;">5 min</td>
+                                <td style="padding: 6px 8px;">Ticket de salida con retroalimentación formativa</td>
+                                <td style="padding: 6px 8px;"><button class="hud-icon-btn" onclick="setClassStage(5); closeTeacherModal();">Ir</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Botón de Exportación CSV sin servidor -->
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn-secondary-action" onclick="clearSessionMetrics()">Reiniciar Estadísticas</button>
+                    <button class="btn-main-verify" style="width: auto; padding: 10px 20px;" onclick="exportSessionCSV()">
+                        ⬇ Descargar Reporte de Sesión (.CSV)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MOTOR GEOMÉTRICO, GENERADOR Y LÓGICA DE APLICACIÓN ==================== -->
+    <script>
+        /* ==========================================================================
+           1. ESTADO GLOBAL DE LA SESIÓN, CRONÓMETRO 70 MIN Y PERSISTENCIA LOCAL
+           ========================================================================== */
+        const STAGE_DURATIONS = { 1: 10 * 60, 2: 15 * 60, 3: 20 * 60, 4: 20 * 60, 5: 5 * 60 };
+
+        const sessionState = {
+            currentStage: 2,
+            learningMode: 'aprender', // 'aprender' | 'practicar' | 'desafio'
+            difficulty: 'basico',     // 'basico' | 'intermedio' | 'avanzado'
+            currentActivityType: 'perp_on', // 'perp_on' | 'perp_ext' | 'par_ext'
+            isApplicationMode: false,
+            currentScenarioIdx: 0,
+
+            // Cronómetro de 70 minutos
+            totalSecondsLeft: 70 * 60,
+            stageSecondsLeft: 15 * 60,
+            timerRunning: false,
+            timerInterval: null,
+
+            // Métricas de Evaluación Formativa
+            metrics: {
+                attempted: 0,
+                completed: 0,
+                appProblemsSolved: 0,
+                hintsUsed: 0,
+                completedTypes: { perp_on: false, perp_ext: false, par_ext: false },
+                errorCounts: {
+                    noCompassUsed: 0,
+                    unequalRadii: 0,
+                    notPassingThroughP: 0,
+                    wrongAngle: 0
+                },
+                exitTicket: { q1: false, practical: false, q3: false }
+            }
+        };
+
+        // Cargar progreso guardado localmente en el navegador
+        function loadSavedSession() {
+            try {
+                const saved = localStorage.getItem('geocompas_7b_session');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.metrics) {
+                        Object.assign(sessionState.metrics, parsed.metrics);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function saveSessionProgress() {
+            try {
+                localStorage.setItem('geocompas_7b_session', JSON.stringify({
+                    metrics: sessionState.metrics,
+                    timestamp: new Date().toISOString()
+                }));
+            } catch (e) {}
+            updateProgressUI();
+        }
+
+        /* ==========================================================================
+           2. MODELO MATEMÁTICO DEL MOTOR GEOMÉTRICO (PUNTOS, RECTAS, COMPÁS E INTERSECCIONES)
+           ========================================================================== */
+        const geoModel = {
+            points: [],   // { id, label, x, y, kind: 'given'|'free'|'intersection', parents: [] }
+            lines: [],    // { id, p1Id, p2Id, isGiven, isAux, color }
+            circles: [],  // { id, centerId, radius, radiusSourceDesc, isAux, createdWithLockedRadius }
+            history: [],
+            redoStack: [],
+
+            // Vista y transformación del lienzo
+            showGrid: true,
+            showAux: true,
+            scale: 1,
+            offsetX: 0,
+            offsetY: 0,
+
+            // Configuración de la tarea geométrica actual
+            task: {
+                type: 'perp_on', // 'perp_on' | 'perp_ext' | 'par_ext'
+                baseLineId: null,
+                targetPointId: null,
+                verifiedSuccess: false,
+                measuredAngleDeg: null,
+                verifiedLineId: null
+            }
+        };
+
+        // Estado interactivo de los instrumentos virtuales
+        const toolState = {
+            activeTool: 'compass', // 'move' | 'point' | 'ruler' | 'compass' | 'measure'
+            mouseWorld: { x: 0, y: 0 },
+            hoveredPoint: null,
+            hoveredIntersection: null, // { x, y, parents: [objId1, objId2] }
+
+            // Estado de la Regla sin graduación
+            rulerFirstPoint: null,
+
+            // Estado del Compás virtual
+            compassCenterPoint: null,
+            compassLocked: false,
+            compassLockedRadius: 110,
+            compassCurrentRadius: 0,
+
+            // Estado de arrastre (Mover punto o plano)
+            draggingPoint: null,
+            isPanning: false,
+            panStartScreen: { x: 0, y: 0 },
+
+            // Animación demostrativa en Modo Aprender
+            demoPlaying: false,
+            demoProgress: 0,
+            demoAnimFrame: null,
+
+            // Nivel de pista progresiva actual
+            hintIndex: 0,
+            forceShowProcedure: false
+        };
+
+        const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        function getNextPointLabel() {
+            const used = new Set(geoModel.points.map(p => p.label));
+            for (let i = 0; i < LETTERS.length; i++) {
+                if (!used.has(LETTERS[i])) return LETTERS[i];
+            }
+            return "P" + (geoModel.points.length + 1);
+        }
+
+        function cloneModelSnapshot() {
+            return JSON.parse(JSON.stringify({
+                points: geoModel.points,
+                lines: geoModel.lines,
+                circles: geoModel.circles
+            }));
+        }
+
+        function pushHistorySnapshot() {
+            geoModel.history.push(cloneModelSnapshot());
+            if (geoModel.history.length > 40) geoModel.history.shift();
+            geoModel.redoStack = [];
+        }
+
+        function undoAction() {
+            if (geoModel.history.length === 0) return;
+            geoModel.redoStack.push(cloneModelSnapshot());
+            const prev = geoModel.history.pop();
+            geoModel.points = prev.points;
+            geoModel.lines = prev.lines;
+            geoModel.circles = prev.circles;
+            toolState.rulerFirstPoint = null;
+            toolState.compassCenterPoint = null;
+            recalculateAllIntersections();
+            updateActiveStepTracker();
+            renderCanvas();
+        }
+
+        function redoAction() {
+            if (geoModel.redoStack.length === 0) return;
+            geoModel.history.push(cloneModelSnapshot());
+            const next = geoModel.redoStack.pop();
+            geoModel.points = next.points;
+            geoModel.lines = next.lines;
+            geoModel.circles = next.circles;
+            recalculateAllIntersections();
+            updateActiveStepTracker();
+            renderCanvas();
+        }
+
+        function clearUserConstructions() {
+            pushHistorySnapshot();
+            geoModel.points = geoModel.points.filter(p => p.kind === 'given');
+            geoModel.lines = geoModel.lines.filter(l => l.isGiven);
+            geoModel.circles = [];
+            geoModel.task.verifiedSuccess = false;
+            geoModel.task.measuredAngleDeg = null;
+            toolState.rulerFirstPoint = null;
+            toolState.compassCenterPoint = null;
+            hideFeedbackBoxes();
+            recalculateAllIntersections();
+            updateActiveStepTracker();
+            renderCanvas();
+        }
+
+        /* ==========================================================================
+           3. CÁLCULO ANALÍTICO EXACTO DE INTERSECCIONES (RECTAS Y CIRCUNFERENCIAS)
+           ========================================================================== */
+        let candidateIntersections = []; // Puntos de intersección calculados dinámicamente
+
+        function getPointById(id) {
+            return geoModel.points.find(p => p.id === id) || null;
+        }
+
+        function getLineCoords(line) {
+            const p1 = getPointById(line.p1Id);
+            const p2 = getPointById(line.p2Id);
+            if (!p1 || !p2) return null;
+            return { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y };
+        }
+
+        // Intersección exacta entre dos rectas infinitas
+        function intersectLineLine(l1, l2) {
+            const c1 = getLineCoords(l1);
+            const c2 = getLineCoords(l2);
+            if (!c1 || !c2) return [];
+
+            const x1 = c1.x1, y1 = c1.y1, x2 = c1.x2, y2 = c1.y2;
+            const x3 = c2.x1, y3 = c2.y1, x4 = c2.x2, y4 = c2.y2;
+
+            const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+            if (Math.abs(denom) < 1e-7) return []; // Paralelas
+
+            const px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denom;
+            const py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denom;
+            return [{ x: px, y: py, parents: [l1.id, l2.id] }];
+        }
+
+        // Intersección exacta entre recta infinita y circunferencia
+        function intersectLineCircle(line, circle) {
+            const c = getLineCoords(line);
+            const center = getPointById(circle.centerId);
+            if (!c || !center) return [];
+
+            const dx = c.x2 - c.x1;
+            const dy = c.y2 - c.y1;
+            const len = Math.hypot(dx, dy);
+            if (len < 1e-7) return [];
+
+            const ux = dx / len;
+            const uy = dy / len;
+
+            // Proyección del centro sobre la recta
+            const fx = center.x - c.x1;
+            const fy = center.y - c.y1;
+            const proj = fx * ux + fy * uy;
+
+            const closestX = c.x1 + proj * ux;
+            const closestY = c.y1 + proj * uy;
+
+            const distSq = (center.x - closestX) ** 2 + (center.y - closestY) ** 2;
+            const rSq = circle.radius ** 2;
+
+            if (distSq > rSq + 1e-4) return [];
+
+            if (Math.abs(distSq - rSq) <= 1e-4) {
+                return [{ x: closestX, y: closestY, parents: [line.id, circle.id] }];
+            }
+
+            const offset = Math.sqrt(Math.max(0, rSq - distSq));
+            return [
+                { x: closestX + offset * ux, y: closestY + offset * uy, parents: [line.id, circle.id] },
+                { x: closestX - offset * ux, y: closestY - offset * uy, parents: [line.id, circle.id] }
+            ];
+        }
+
+        // Intersección exacta entre dos circunferencias (Arcos de compás)
+        function intersectCircleCircle(cir1, cir2) {
+            const c1 = getPointById(cir1.centerId);
+            const c2 = getPointById(cir2.centerId);
+            if (!c1 || !c2) return [];
+
+            const dx = c2.x - c1.x;
+            const dy = c2.y - c1.y;
+            const d = Math.hypot(dx, dy);
+            const r1 = cir1.radius;
+            const r2 = cir2.radius;
+
+            // Exteriores o una dentro de otra o concéntricas
+            if (d > r1 + r2 + 1e-4 || d < Math.abs(r1 - r2) - 1e-4 || d < 1e-7) return [];
+
+            const a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+            const hSq = r1 * r1 - a * a;
+            const h = Math.sqrt(Math.max(0, hSq));
+
+            const x2 = c1.x + a * (dx / d);
+            const y2 = c1.y + a * (dy / d);
+
+            const rx = -dy * (h / d);
+            const ry = dx * (h / d);
+
+            if (h < 1e-3) {
+                return [{ x: x2, y: y2, parents: [cir1.id, cir2.id] }];
+            }
+
+            return [
+                { x: x2 + rx, y: y2 + ry, parents: [cir1.id, cir2.id] },
+                { x: x2 - rx, y: y2 - ry, parents: [cir1.id, cir2.id] }
+            ];
+        }
+
+        function recalculateAllIntersections() {
+            const raw = [];
+            // Recta - Recta
+            for (let i = 0; i < geoModel.lines.length; i++) {
+                for (let j = i + 1; j < geoModel.lines.length; j++) {
+                    raw.push(...intersectLineLine(geoModel.lines[i], geoModel.lines[j]));
+                }
+            }
+            // Recta - Circunferencia
+            for (let i = 0; i < geoModel.lines.length; i++) {
+                for (let j = 0; j < geoModel.circles.length; j++) {
+                    raw.push(...intersectLineCircle(geoModel.lines[i], geoModel.circles[j]));
+                }
+            }
+            // Circunferencia - Circunferencia
+            for (let i = 0; i < geoModel.circles.length; i++) {
+                for (let j = i + 1; j < geoModel.circles.length; j++) {
+                    raw.push(...intersectCircleCircle(geoModel.circles[i], geoModel.circles[j]));
+                }
+            }
+
+            // Filtrar aquellas que ya tienen un punto creado encima y deduplicar cercanas
+            candidateIntersections = [];
+            for (const cand of raw) {
+                if (!isFinite(cand.x) || !isFinite(cand.y)) continue;
+                const alreadyPoint = geoModel.points.some(p => Math.hypot(p.x - cand.x, p.y - cand.y) < 5);
+                if (alreadyPoint) continue;
+
+                const existingCand = candidateIntersections.find(c => Math.hypot(c.x - cand.x, c.y - cand.y) < 5);
+                if (existingCand) {
+                    cand.parents.forEach(pid => {
+                        if (!existingCand.parents.includes(pid)) existingCand.parents.push(pid);
+                    });
+                } else {
+                    candidateIntersections.push(cand);
+                }
+            }
+        }
+
+        /* ==========================================================================
+           4. ACTIVIDADES DE CONSTRUCCIÓN Y PROBLEMAS DE APLICACIÓN CONTEXTUALIZADOS
+           ========================================================================== */
+        const CORE_ACTIVITIES_INFO = {
+            perp_on: {
+                badge: "Actividad 1 • Perpendicular en la Recta",
+                title: "Recta perpendicular por un punto P perteneciente a la recta",
+                desc: "Presentamos una recta azul y un punto P sobre ella. Construye con regla y compás una recta perpendicular (90°) que pase exactamente por P.",
+                steps: [
+                    "Selecciona el Compás y, con centro en P, traza una circunferencia para cortar la recta en dos puntos equidistantes A y B.",
+                    "Con la herramienta Punto o el mismo Compás, apóyate en A y abre el compás con un radio mayor a la distancia AP. Fija la abertura.",
+                    "Manteniendo exactamente la misma abertura del compás, traza dos arcos desde A y desde B hasta que se intersecten en un punto C fuera de la recta.",
+                    "Selecciona la Regla sin graduación y une el punto P con la intersección C para obtener la recta perpendicular (90°)."
+                ],
+                hints: [
+                    "Pista 1: Primero necesitas dos puntos A y B en la recta que estén a igual distancia de P. Usa el compás con centro en P.",
+                    "Pista 2: Al trazar los arcos desde A y desde B, usa el botón 'Fijar Abertura' con un radio más grande que la distancia de A a P para que los arcos se crucen.",
+                    "Pista 3: Haz clic con la Regla sobre el punto P y luego sobre el punto C donde se cruzaron los dos arcos."
+                ],
+                whyItWorks: "¿Por qué funciona geométricamente? Como A y B están a igual distancia de P (radios iguales desde P) y el punto C se obtuvo con arcos de igual radio desde A y B (AC = BC), los triángulos △APC y △BPC tienen sus tres lados iguales (criterio LLL). Por lo tanto, los ángulos adyacentes en P son iguales y suman 180°, midiendo exactamente 90° cada uno."
+            },
+            perp_ext: {
+                badge: "Actividad 2 • Perpendicular Exterior",
+                title: "Recta perpendicular a una recta desde un punto exterior P",
+                desc: "El punto P se encuentra fuera de la recta azul. Construye con regla y compás la recta perpendicular que pasa por P y corta a la recta a 90°.",
+                steps: [
+                    "Selecciona el Compás con centro en el punto exterior P y abre un radio suficiente para cortar la recta original en dos puntos A y B.",
+                    "Activa 'Fijar Abertura' en el compás (o elige una abertura igual desde A y B) y traza un arco con centro en A hacia el lado opuesto de P.",
+                    "Con exactamente la misma abertura del compás, haz centro en B y traza un segundo arco que corte al anterior en el punto Q.",
+                    "Usa la Regla sin graduación para trazar la recta que pasa por P y por la intersección Q."
+                ],
+                hints: [
+                    "Pista 1: Apoya la punta del compás en el punto exterior P y abre el compás hasta que atraviese la recta azul en dos puntos A y B.",
+                    "Pista 2: Ahora apoya el compás en las intersecciones A y B sobre la recta. Recuerda mantener fijo el radio para hallar el cruce Q.",
+                    "Pista 3: Une con la Regla el punto P original y el nuevo punto de intersección Q."
+                ],
+                whyItWorks: "¿Por qué funciona geométricamente? Al trazar el primer arco desde P, los puntos A y B sobre la recta quedan a igual distancia de P (PA = PB). Luego, al usar el mismo radio desde A y B para hallar Q, también se cumple QA = QB. Así, la recta PQ es la mediatriz del segmento AB y lo corta formando un ángulo recto exacto de 90°."
+            },
+            par_ext: {
+                badge: "Actividad 3 • Recta Paralela por Punto Exterior",
+                title: "Recta paralela por un punto exterior P (Doble Perpendicular)",
+                desc: "Construye una recta paralela (L₂ ∥ L₁) que pase por el punto exterior P utilizando el método de dos perpendiculares sucesivas con regla y compás.",
+                steps: [
+                    "Paso A (Primera Perpendicular): Con centro en P, corta la recta original en dos puntos y construye con el compás una recta auxiliar perpendicular a la recta original que pase por P.",
+                    "Paso B (Puntos sobre la auxiliar): Con centro en P, traza una circunferencia que corte a tu recta auxiliar perpendicular en dos puntos equidistantes M y N.",
+                    "Paso C (Segunda Perpendicular): Desde M y N, traza dos arcos del mismo radio (mayor a MP) que se crucen en un punto R.",
+                    "Paso D (Trazar Paralela): Une con la Regla el punto P y el punto R. Como esta nueva recta es perpendicular a la recta auxiliar, ¡es paralela a la recta original!"
+                ],
+                hints: [
+                    "Pista 1: Recuerda la propiedad clave: 'Dos rectas perpendiculares a una misma tercera recta son paralelas entre sí'. Primero traza una perpendicular auxiliar que pase por P.",
+                    "Pista 2: Una vez que tengas la recta auxiliar pasando por P, úsala como base y construye una perpendicular a ella en el mismo punto P (como hiciste en la Actividad 1).",
+                    "Pista 3: También puedes emplear el método de arcos de igual radio (rombo) siempre que uses intersecciones reales de compás y la recta pase por P."
+                ],
+                whyItWorks: "¿Por qué funciona geométricamente? Si una recta auxiliar T es perpendicular a la recta original L₁ (formando 90°) y construimos una nueva recta L₂ que también es perpendicular a T en el punto P (formando 90°), los ángulos correspondientes miden ambos 90°. Por lo tanto, L₁ y L₂ mantienen distancia constante y nunca se intersectan (L₁ ∥ L₂)."
+            }
+        };
+
+        // 6 Problemas de Aplicación Contextualizados (Sección 10.C del Prompt)
+        const APPLICATION_PROBLEMS = [
+            {
+                id: 0,
+                theme: 'streets',
+                taskType: 'perp_ext',
+                badge: "Aplicación 1 • Diseño Vial Urbano",
+                title: "Diseño de Calles: Pasaje Peatonal hacia la Avenida",
+                desc: "En el plano urbano se observa la Avenida Principal y un Paradero Escolar en el punto exterior P. Construye con regla y compás un nuevo pasaje peatonal que salga desde P y llegue de forma perpendicular (90°) a la avenida para minimizar la distancia de cruce.",
+                reflectionQ: "¿Por qué los ingenieros viales diseñan los cruces peatonales de forma perpendicular (90°) a la avenida?",
+                reflectionOpts: [
+                    "Porque la perpendicular representa la distancia más corta entre el punto P y la recta, reduciendo el tiempo de exposición del peatón.",
+                    "Porque las líneas oblicuas no se pueden dibujar con regla.",
+                    "Porque dos rectas perpendiculares nunca se cruzan."
+                ],
+                reflectionCorrect: 0
+            },
+            {
+                id: 1,
+                theme: 'plaza',
+                taskType: 'par_ext',
+                badge: "Aplicación 2 • Paisajismo y Urbanismo",
+                title: "Plano de una Plaza: Senderos Peatonales Paralelos",
+                desc: "El sendero sur de la plaza ya está trazado. La municipalidad instaló una fuente de agua en el punto P y necesita construir un segundo sendero peatonal que pase por la fuente P y sea exactamente paralelo (∥) al sendero principal.",
+                reflectionQ: "Si ambos senderos de la plaza se construyeron perpendiculares al borde oeste de la plaza, ¿qué relación mantienen entre sí?",
+                reflectionOpts: [
+                    "Se cortarán a 100 metros de la plaza.",
+                    "Son paralelos entre sí y mantienen siempre la misma distancia de separación.",
+                    "Forman un ángulo de 60°."
+                ],
+                reflectionCorrect: 1
+            },
+            {
+                id: 2,
+                theme: 'court',
+                taskType: 'perp_on',
+                badge: "Aplicación 3 • Infraestructura Deportiva",
+                title: "Construcción de una Cancha: Línea de Fondo en el Córner P",
+                desc: "Estás marcando con cal la cancha multideportiva del colegio. Ya trazaste la línea de banda lateral y marcaste el banderín de esquina en el punto P sobre ella. Construye con regla y compás la línea de fondo perpendicular (90°) que pasa por P.",
+                reflectionQ: "¿Qué ocurriría con la forma de la cancha si el ángulo en la esquina P midiera 82° en vez de 90°?",
+                reflectionOpts: [
+                    "Dejaría de ser un rectángulo reglamentario y se transformaría en un paralelogramo oblicuo o trapecio.",
+                    "Seguiría siendo un rectángulo perfecto.",
+                    "Las líneas serían paralelas."
+                ],
+                reflectionCorrect: 0
+            },
+            {
+                id: 3,
+                theme: 'minecraft',
+                taskType: 'perp_ext',
+                badge: "Aplicación 4 • Diseño de Ciudad en Minecraft",
+                title: "Mundo Minecraft: Camino de Bloques hacia el Riel de Vagonetas",
+                desc: "Construiste un Portal en las coordenadas del punto P y cerca pasa una línea recta de rieles propulsores. Usa la regla y el compás para trazar un puente recto de bloques desde el Portal P que se conecte perpendicularmente (90°) a la vía férrea.",
+                reflectionQ: "Al usar el compás desde el Portal P para cortar el riel en dos puntos A y B, ¿qué propiedad cumplen los segmentos PA y PB?",
+                reflectionOpts: [
+                    "Tienen igual longitud porque ambos son radios de la misma circunferencia centrada en P.",
+                    "PA es el doble de largo que PB.",
+                    "Son paralelos entre sí."
+                ],
+                reflectionCorrect: 0
+            },
+            {
+                id: 4,
+                theme: 'park',
+                taskType: 'par_ext',
+                badge: "Aplicación 5 • Diseño de Parque Ecológico",
+                title: "Diseño de un Parque: Ciclovía Paralela al Canal de Agua",
+                desc: "Un canal de regadío atraviesa el parque en línea recta. Diseña con regla y compás el trazado de una nueva ciclovía que pase por el Mirador (Punto P) y mantenga una dirección paralela (∥) al canal en todo su recorrido.",
+                reflectionQ: "¿Qué condición matemática confirma que la ciclovía construida y el canal son efectivamente paralelos?",
+                reflectionOpts: [
+                    "Que sus vectores directores tienen la misma dirección (o que ambas rectas son perpendiculares a una misma recta auxiliar).",
+                    "Que se cruzan en el punto P.",
+                    "Que se dibujaron sin usar el compás."
+                ],
+                reflectionCorrect: 0
+            },
+            {
+                id: 5,
+                theme: 'architecture',
+                taskType: 'perp_on',
+                badge: "Aplicación 6 • Arquitectura y Planos",
+                title: "Plano de una Habitación: Muro Divisorio en el Pilar P",
+                desc: "En el plano arquitectónico de una vivienda se muestra el Muro Maestro y la ubicación del Pilar estructural P sobre dicho muro. Construye con regla y compás el eje del nuevo tabique divisorio perpendicular (90°) que nace en el Pilar P.",
+                reflectionQ: "En el procedimiento de regla y compás sobre el Pilar P, ¿por qué abrimos el compás a un radio mayor que la distancia AP antes de trazar los arcos desde A y B?",
+                reflectionOpts: [
+                    "Porque si el radio fuera menor o igual a la mitad del segmento AB, los dos arcos no alcanzarían a intersectarse.",
+                    "Para cambiar la posición del pilar P.",
+                    "Para que la recta quede paralela al muro maestro."
+                ],
+                reflectionCorrect: 0
+            }
+        ];
+
+        /* ==========================================================================
+           5. GENERADOR ALGORÍTMICO DE EJERCICIOS (VARIACIÓN DE POSICIÓN Y ORIENTACIÓN)
+           ========================================================================== */
+        function setupGeometricTask(taskType, randomizeOrientation = false) {
+            const canvas = document.getElementById('geo-canvas');
+            const w = canvas.clientWidth || 800;
+            const h = canvas.clientHeight || 540;
+
+            geoModel.points = [];
+            geoModel.lines = [];
+            geoModel.circles = [];
+            geoModel.history = [];
+            geoModel.redoStack = [];
+            geoModel.scale = 1;
+            geoModel.offsetX = 0;
+            geoModel.offsetY = 0;
+
+            geoModel.task.type = taskType;
+            geoModel.task.verifiedSuccess = false;
+            geoModel.task.measuredAngleDeg = null;
+            geoModel.task.verifiedLineId = null;
+
+            toolState.rulerFirstPoint = null;
+            toolState.compassCenterPoint = null;
+            toolState.hintIndex = 0;
+            toolState.forceShowProcedure = false;
+            stopDemoAnimation();
+            hideFeedbackBoxes();
+
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Determinar ángulo según nivel de dificultad o si se solicitó variación
+            let angleRad = 0;
+            if (sessionState.difficulty === 'intermedio' || randomizeOrientation) {
+                const anglesDeg = [-28, -18, -12, 14, 22, 32];
+                const pick = anglesDeg[Math.floor(Math.random() * anglesDeg.length)];
+                angleRad = (pick * Math.PI) / 180;
+            } else if (sessionState.difficulty === 'avanzado') {
+                const anglesDeg = [-48, -35, 27, 42, 55, -22];
+                const pick = anglesDeg[Math.floor(Math.random() * anglesDeg.length)];
+                angleRad = (pick * Math.PI) / 180;
+            }
+
+            const cosA = Math.cos(angleRad);
+            const sinA = Math.sin(angleRad);
+            const normalX = -sinA;
+            const normalY = cosA;
+
+            const jitterX = randomizeOrientation ? (Math.random() - 0.5) * 50 : 0;
+            const jitterY = randomizeOrientation ? (Math.random() - 0.5) * 40 : 0;
+
+            if (taskType === 'perp_on') {
+                // Recta base pasa cerca del centro y P pertenece exactamente a la recta
+                const baseCy = cy + 35 + jitterY;
+                const baseCx = cx + jitterX;
+
+                const pL1 = { id: 'pt_L1', label: 'L₁', x: baseCx - 190 * cosA, y: baseCy - 190 * sinA, kind: 'given', hiddenLabel: true };
+                const pL2 = { id: 'pt_L2', label: 'L₂', x: baseCx + 190 * cosA, y: baseCy + 190 * sinA, kind: 'given', hiddenLabel: true };
+                const pP = { id: 'pt_P', label: 'P', x: baseCx, y: baseCy, kind: 'given' };
+
+                geoModel.points.push(pL1, pL2, pP);
+                geoModel.lines.push({ id: 'line_base', p1Id: 'pt_L1', p2Id: 'pt_L2', isGiven: true, isAux: false, color: '#2563eb' });
+                geoModel.task.baseLineId = 'line_base';
+                geoModel.task.targetPointId = 'pt_P';
+
+            } else if (taskType === 'perp_ext') {
+                // Recta base desplazada y punto P exterior a una distancia cómoda (95 a 115 px) para que los arcos queden dentro del lienzo
+                const baseCx = cx + jitterX;
+                const baseCy = cy + 35 + jitterY;
+                const distP = -105; // Hacia arriba en la normal
+
+                const pL1 = { id: 'pt_L1', label: 'L₁', x: baseCx - 190 * cosA, y: baseCy - 190 * sinA, kind: 'given', hiddenLabel: true };
+                const pL2 = { id: 'pt_L2', label: 'L₂', x: baseCx + 190 * cosA, y: baseCy + 190 * sinA, kind: 'given', hiddenLabel: true };
+                const pP = {
+                    id: 'pt_P',
+                    label: 'P',
+                    x: baseCx + distP * normalX + (randomizeOrientation ? (Math.random() - 0.5) * 35 * cosA : 0),
+                    y: baseCy + distP * normalY + (randomizeOrientation ? (Math.random() - 0.5) * 35 * sinA : 0),
+                    kind: 'given'
+                };
+
+                geoModel.points.push(pL1, pL2, pP);
+                geoModel.lines.push({ id: 'line_base', p1Id: 'pt_L1', p2Id: 'pt_L2', isGiven: true, isAux: false, color: '#2563eb' });
+                geoModel.task.baseLineId = 'line_base';
+                geoModel.task.targetPointId = 'pt_P';
+
+            } else if (taskType === 'par_ext') {
+                // Recta base y punto exterior P
+                const baseCx = cx + jitterX;
+                const baseCy = cy + 60 + jitterY;
+                const distP = -110;
+
+                const pL1 = { id: 'pt_L1', label: 'L₁', x: baseCx - 190 * cosA, y: baseCy - 190 * sinA, kind: 'given', hiddenLabel: true };
+                const pL2 = { id: 'pt_L2', label: 'L₂', x: baseCx + 190 * cosA, y: baseCy + 190 * sinA, kind: 'given', hiddenLabel: true };
+                const pP = {
+                    id: 'pt_P',
+                    label: 'P',
+                    x: baseCx + distP * normalX,
+                    y: baseCy + distP * normalY,
+                    kind: 'given'
+                };
+
+                geoModel.points.push(pL1, pL2, pP);
+                geoModel.lines.push({ id: 'line_base', p1Id: 'pt_L1', p2Id: 'pt_L2', isGiven: true, isAux: false, color: '#2563eb' });
+                geoModel.task.baseLineId = 'line_base';
+                geoModel.task.targetPointId = 'pt_P';
+            }
+
+            recalculateAllIntersections();
+            updateSidePanelUI();
+            updateActiveStepTracker();
+            renderCanvas();
+        }
+
+        function loadCoreActivity(actType) {
+            sessionState.isApplicationMode = false;
+            sessionState.currentActivityType = actType;
+
+            ['perp_on', 'perp_ext', 'par_ext'].forEach(k => {
+                const btn = document.getElementById(`act-btn-${k}`);
+                if (btn) btn.classList.toggle('active', k === actType);
+            });
+
+            setupGeometricTask(actType, sessionState.learningMode === 'desafio');
+        }
+
+        function loadApplicationProblem(scenarioIdx) {
+            sessionState.isApplicationMode = true;
+            sessionState.currentScenarioIdx = scenarioIdx;
+            const prob = APPLICATION_PROBLEMS[scenarioIdx];
+            sessionState.currentActivityType = prob.taskType;
+
+            const sel = document.getElementById('app-scenario-select');
+            if (sel) sel.value = String(scenarioIdx);
+
+            setupGeometricTask(prob.taskType, true);
+        }
+
+        function generateNewDynamicChallenge() {
+            if (sessionState.isApplicationMode) {
+                const nextIdx = (sessionState.currentScenarioIdx + 1) % APPLICATION_PROBLEMS.length;
+                loadApplicationProblem(nextIdx);
+            } else {
+                setupGeometricTask(sessionState.currentActivityType, true);
+            }
+        }
+
+        function resetCurrentExercise() {
+            setupGeometricTask(sessionState.currentActivityType, false);
+        }
+
+        /* ==========================================================================
+           6. RENDERIZADO DEL LIENZO GEOMÉTRICO (PIZARRA, REGLA FÍSICA, COMPÁS Y ESCENARIOS)
+           ========================================================================== */
+        function worldToScreen(wx, wy) {
+            return {
+                x: wx * geoModel.scale + geoModel.offsetX,
+                y: wy * geoModel.scale + geoModel.offsetY
+            };
+        }
+
+        function screenToWorld(sx, sy) {
+            return {
+                x: (sx - geoModel.offsetX) / geoModel.scale,
+                y: (sy - geoModel.offsetY) / geoModel.scale
+            };
+        }
+
+        function resizeCanvas() {
+            const canvas = document.getElementById('geo-canvas');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            renderCanvas();
+        }
+
+        function renderCanvas() {
+            const canvas = document.getElementById('geo-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+
+            ctx.clearRect(0, 0, w, h);
+
+            ctx.save();
+            ctx.translate(geoModel.offsetX, geoModel.offsetY);
+            ctx.scale(geoModel.scale, geoModel.scale);
+
+            // 1. Cuadrícula suave estilo GeoGebra
+            if (geoModel.showGrid) {
+                drawGridBackground(ctx, w, h);
+            }
+
+            // 2. Si estamos en Problemas de Aplicación (Etapa 4), dibujar decoración contextual sutil
+            if (sessionState.isApplicationMode) {
+                drawContextualBackdrop(ctx);
+            }
+
+            // 3. Dibujar Circunferencias / Arcos del Compás (Reales)
+            geoModel.circles.forEach(cir => {
+                const center = getPointById(cir.centerId);
+                if (!center) return;
+                ctx.save();
+                const alpha = geoModel.showAux ? 0.85 : 0.18;
+                ctx.strokeStyle = cir.createdWithLockedRadius
+                    ? `rgba(5, 150, 105, ${alpha})`
+                    : `rgba(245, 158, 11, ${alpha})`;
+                ctx.lineWidth = 1.8 / geoModel.scale;
+                ctx.setLineDash([6 / geoModel.scale, 4 / geoModel.scale]);
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, cir.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            // 4. Dibujar Rectas (Dadas, Auxiliares y Finales)
+            geoModel.lines.forEach(ln => {
+                const c = getLineCoords(ln);
+                if (!c) return;
+                const isVerifiedTarget = geoModel.task.verifiedLineId === ln.id;
+                if (!ln.isGiven && !isVerifiedTarget && !geoModel.showAux && geoModel.lines.length > 2) {
+                    // Atenuar rectas auxiliares si el usuario ocultó auxiliares
+                    drawInfiniteLine(ctx, c.x1, c.y1, c.x2, c.y2, 'rgba(100, 116, 139, 0.22)', 1.5 / geoModel.scale);
+                } else {
+                    const color = isVerifiedTarget ? '#059669' : (ln.isGiven ? '#2563eb' : '#475569');
+                    const width = (isVerifiedTarget || ln.isGiven ? 3.2 : 2.2) / geoModel.scale;
+                    drawInfiniteLine(ctx, c.x1, c.y1, c.x2, c.y2, color, width);
+                }
+            });
+
+            // 5. Si la construcción fue verificada o se activó el medidor de comprobación, mostrar símbolo de 90° o paralelismo
+            if (geoModel.task.verifiedSuccess || toolState.activeTool === 'measure') {
+                drawVerificationSymbols(ctx);
+            }
+
+            // 6. Dibujar Puntos de Intersección Candidatos (Resaltados para que el estudiante los identifique)
+            candidateIntersections.forEach(inter => {
+                const isHovered = toolState.hoveredIntersection &&
+                    Math.hypot(toolState.hoveredIntersection.x - inter.x, toolState.hoveredIntersection.y - inter.y) < 2;
+
+                ctx.save();
+                ctx.fillStyle = isHovered ? '#f59e0b' : 'rgba(245, 158, 11, 0.45)';
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5 / geoModel.scale;
+                ctx.beginPath();
+                ctx.arc(inter.x, inter.y, (isHovered ? 7.5 : 5) / geoModel.scale, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                if (isHovered) {
+                    ctx.fillStyle = '#b45309';
+                    ctx.font = `bold ${12 / geoModel.scale}px sans-serif`;
+                    ctx.fillText('Intersección exacta (Clic)', inter.x + 10 / geoModel.scale, inter.y - 10 / geoModel.scale);
+                }
+                ctx.restore();
+            });
+
+            // 7. Dibujar Puntos Creados y Dados (A, B, C, P...)
+            geoModel.points.forEach(pt => {
+                if (pt.hiddenLabel) return;
+                const isHovered = toolState.hoveredPoint && toolState.hoveredPoint.id === pt.id;
+                const isTargetP = pt.id === geoModel.task.targetPointId;
+
+                ctx.save();
+                ctx.beginPath();
+                const r = (isHovered ? 7.5 : (isTargetP ? 6.5 : 5.5)) / geoModel.scale;
+                ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+
+                if (isTargetP) {
+                    ctx.fillStyle = '#dc2626';
+                } else if (pt.kind === 'intersection') {
+                    ctx.fillStyle = '#d97706';
+                } else {
+                    ctx.fillStyle = '#1d4ed8';
+                }
+                ctx.fill();
+                ctx.lineWidth = 2 / geoModel.scale;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                // Etiqueta de la letra (A, B, C, P...)
+                ctx.fillStyle = '#0f172a';
+                ctx.font = `800 ${13.5 / geoModel.scale}px sans-serif`;
+                ctx.fillText(pt.label, pt.x + 9 / geoModel.scale, pt.y - 8 / geoModel.scale);
+                ctx.restore();
+            });
+
+            // 8. Dibujar Instrumento Activo en Tiempo Real (Regla translúcida o Compás con aguja y lápiz)
+            drawActiveInstrumentOverlay(ctx);
+
+            // 9. Dibujar Demostración Animada si está activa en Modo Aprender
+            if (toolState.demoPlaying) {
+                drawDemoAnimationOverlay(ctx);
+            }
+
+            ctx.restore();
+        }
+
+        function drawGridBackground(ctx, w, h) {
+            const step = 40;
+            const startWorld = screenToWorld(0, 0);
+            const endWorld = screenToWorld(w, h);
+
+            const minX = Math.floor(startWorld.x / step) * step;
+            const maxX = Math.ceil(endWorld.x / step) * step;
+            const minY = Math.floor(startWorld.y / step) * step;
+            const maxY = Math.ceil(endWorld.y / step) * step;
+
+            ctx.save();
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1 / geoModel.scale;
+            ctx.beginPath();
+            for (let x = minX; x <= maxX; x += step) {
+                ctx.moveTo(x, minY);
+                ctx.lineTo(x, maxY);
+            }
+            for (let y = minY; y <= maxY; y += step) {
+                ctx.moveTo(minX, y);
+                ctx.lineTo(maxX, y);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawInfiniteLine(ctx, x1, y1, x2, y2, color, width) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const len = Math.hypot(dx, dy);
+            if (len < 1e-5) return;
+            const ux = dx / len;
+            const uy = dy / len;
+            const span = 2500;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            ctx.moveTo(x1 - ux * span, y1 - uy * span);
+            ctx.lineTo(x1 + ux * span, y1 + uy * span);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Visualización realista de la Regla sin graduación y del Compás con punta fija y lápiz
+        function drawActiveInstrumentOverlay(ctx) {
+            const mw = toolState.hoveredPoint
+                ? { x: toolState.hoveredPoint.x, y: toolState.hoveredPoint.y }
+                : (toolState.hoveredIntersection
+                    ? { x: toolState.hoveredIntersection.x, y: toolState.hoveredIntersection.y }
+                    : toolState.mouseWorld);
+
+            // REGLA SIN GRADUACIÓN
+            if (toolState.activeTool === 'ruler' && toolState.rulerFirstPoint) {
+                const p1 = toolState.rulerFirstPoint;
+                const p2 = mw;
+                const dx = p2.x - p1.x;
+                const dy = p2.y - p1.y;
+                const angle = Math.atan2(dy, dx);
+
+                // Línea guía preliminar
+                drawInfiniteLine(ctx, p1.x, p1.y, p2.x, p2.y, 'rgba(37, 99, 235, 0.5)', 2 / geoModel.scale);
+
+                // Dibujar cuerpo físico de la regla sin graduación apoyada en el borde
+                ctx.save();
+                ctx.translate(p1.x, p1.y);
+                ctx.rotate(angle);
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.32)';
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 1.5 / geoModel.scale;
+                ctx.fillRect(-120, 2, 520, 28 / geoModel.scale);
+                ctx.strokeRect(-120, 2, 520, 28 / geoModel.scale);
+                ctx.fillStyle = '#334155';
+                ctx.font = `bold ${10 / geoModel.scale}px sans-serif`;
+                ctx.fillText('REGLA SIN GRADUACIÓN', 40, 19 / geoModel.scale);
+                ctx.restore();
+            }
+
+            // COMPÁS VIRTUAL CON AGUJA METÁLICA Y LÁPIZ
+            if (toolState.activeTool === 'compass' && toolState.compassCenterPoint) {
+                const center = toolState.compassCenterPoint;
+                const radius = toolState.compassLocked
+                    ? toolState.compassLockedRadius
+                    : Math.hypot(mw.x - center.x, mw.y - center.y);
+
+                const angle = Math.atan2(mw.y - center.y, mw.x - center.x);
+                const pencilX = center.x + radius * Math.cos(angle);
+                const pencilY = center.y + radius * Math.sin(angle);
+
+                ctx.save();
+                // Circunferencia previsualizada
+                ctx.strokeStyle = toolState.compassLocked ? 'rgba(5, 150, 105, 0.75)' : 'rgba(245, 158, 11, 0.75)';
+                ctx.lineWidth = 2 / geoModel.scale;
+                ctx.setLineDash([5 / geoModel.scale, 5 / geoModel.scale]);
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Dibujo de los dos brazos del compás (Punta fija en center y Lápiz en pencilX, pencilY)
+                const hingeX = (center.x + pencilX) / 2;
+                const hingeY = (center.y + pencilY) / 2 - Math.min(95, Math.max(45, radius * 0.55));
+
+                // Brazo de la aguja fija
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 3.5 / geoModel.scale;
+                ctx.beginPath();
+                ctx.moveTo(hingeX, hingeY);
+                ctx.lineTo(center.x, center.y);
+                ctx.stroke();
+
+                // Brazo del lápiz
+                ctx.strokeStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.moveTo(hingeX, hingeY);
+                ctx.lineTo(pencilX, pencilY);
+                ctx.stroke();
+
+                // Bisagra superior del compás
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(hingeX, hingeY, 6 / geoModel.scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Punta del lápiz
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(pencilX, pencilY, 4.5 / geoModel.scale, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // Decoración contextual en el lienzo para los 6 Problemas de Aplicación
+        function drawContextualBackdrop(ctx) {
+            const baseLine = geoModel.lines.find(l => l.isGiven);
+            const ptP = getPointById(geoModel.task.targetPointId);
+            if (!baseLine || !ptP) return;
+            const c = getLineCoords(baseLine);
+            if (!c) return;
+
+            const prob = APPLICATION_PROBLEMS[sessionState.currentScenarioIdx];
+            ctx.save();
+            if (prob.theme === 'streets') {
+                // Dibujar calzada asfaltada suave sobre la recta base
+                drawInfiniteLine(ctx, c.x1, c.y1, c.x2, c.y2, 'rgba(148, 163, 184, 0.28)', 26);
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('🏢 Paradero Escolar (P)', ptP.x + 12, ptP.y + 16);
+            } else if (prob.theme === 'plaza') {
+                drawInfiniteLine(ctx, c.x1, c.y1, c.x2, c.y2, 'rgba(217, 119, 6, 0.18)', 18);
+                ctx.fillStyle = '#0369a1';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('⛲ Fuente de la Plaza (P)', ptP.x + 12, ptP.y + 16);
+            } else if (prob.theme === 'court') {
+                ctx.fillStyle = '#047857';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('🚩 Banderín de Córner (P)', ptP.x + 12, ptP.y + 18);
+            } else if (prob.theme === 'minecraft') {
+                drawInfiniteLine(ctx, c.x1, c.y1, c.x2, c.y2, 'rgba(234, 88, 12, 0.2)', 14);
+                ctx.fillStyle = '#7c3aed';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('🟪 Portal Nether (P)', ptP.x + 12, ptP.y + 16);
+            } else if (prob.theme === 'park') {
+                drawInfiniteLine(ctx, c.x1, c.y1, c.x2, c.y2, 'rgba(56, 189, 248, 0.28)', 22);
+                ctx.fillStyle = '#0f766e';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('🌲 Mirador del Parque (P)', ptP.x + 12, ptP.y + 16);
+            } else if (prob.theme === 'architecture') {
+                drawInfiniteLine(ctx, c.x1, c.y1, c.x2, c.y2, 'rgba(71, 85, 105, 0.25)', 14);
+                ctx.fillStyle = '#334155';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('🧱 Pilar Maestro (P)', ptP.x + 12, ptP.y + 16);
+            }
+            ctx.restore();
+        }
+
+        // Dibuja el cuadradito de 90° o indicador de paralelismo durante la comprobación
+        function drawVerificationSymbols(ctx) {
+            const baseLine = geoModel.lines.find(l => l.id === geoModel.task.baseLineId);
+            if (!baseLine) return;
+            const userLines = geoModel.lines.filter(l => !l.isGiven);
+            if (userLines.length === 0) return;
+
+            const lastLine = geoModel.task.verifiedLineId
+                ? geoModel.lines.find(l => l.id === geoModel.task.verifiedLineId)
+                : userLines[userLines.length - 1];
+            if (!lastLine) return;
+
+            const inter = intersectLineLine(baseLine, lastLine);
+            const cBase = getLineCoords(baseLine);
+            const cUser = getLineCoords(lastLine);
+            if (!cBase || !cUser) return;
+
+            const angDeg = computeAngleBetweenLinesDeg(cBase, cUser);
+
+            ctx.save();
+            if (inter.length > 0) {
+                const pt = inter[0];
+                // Vector unitario de ambas rectas
+                const u1 = normalizeVec(cBase.x2 - cBase.x1, cBase.y2 - cBase.y1);
+                const u2 = normalizeVec(cUser.x2 - cUser.x1, cUser.y2 - cUser.y1);
+                const sz = 18 / geoModel.scale;
+
+                if (Math.abs(angDeg - 90) < 2.2) {
+                    // Dibujar recuadro de ángulo recto (90°)
+                    ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+                    ctx.strokeStyle = '#059669';
+                    ctx.lineWidth = 2 / geoModel.scale;
+                    ctx.beginPath();
+                    ctx.moveTo(pt.x, pt.y);
+                    ctx.lineTo(pt.x + u1.x * sz, pt.y + u1.y * sz);
+                    ctx.lineTo(pt.x + (u1.x + u2.x) * sz, pt.y + (u1.y + u2.y) * sz);
+                    ctx.lineTo(pt.x + u2.x * sz, pt.y + u2.y * sz);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = '#047857';
+                ctx.font = `bold ${13 / geoModel.scale}px monospace`;
+                ctx.fillText(`∡ = ${angDeg.toFixed(1)}°`, pt.x + 14 / geoModel.scale, pt.y - 12 / geoModel.scale);
+            } else if (angDeg < 2.2) {
+                // Paralelas: mostrar distancia constante
+                const ptP = getPointById(geoModel.task.targetPointId);
+                if (ptP) {
+                    ctx.fillStyle = '#047857';
+                    ctx.font = `bold ${13 / geoModel.scale}px monospace`;
+                    ctx.fillText(`L₁ ∥ L₂ (Desviación: ${angDeg.toFixed(1)}°)`, ptP.x + 16 / geoModel.scale, ptP.y + 22 / geoModel.scale);
+                }
+            }
+            ctx.restore();
+        }
+
+        /* ==========================================================================
+           7. INTERACCIÓN CON EL LIENZO (MOUSE Y PANTALLA TÁCTIL)
+           ========================================================================== */
+        function findNearestExistingPoint(wx, wy) {
+            const threshold = 14 / geoModel.scale;
+            let best = null;
+            let bestDist = threshold;
+            for (const p of geoModel.points) {
+                if (p.hiddenLabel) continue;
+                const d = Math.hypot(p.x - wx, p.y - wy);
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = p;
+                }
+            }
+            return best;
+        }
+
+        function findNearestIntersectionCandidate(wx, wy) {
+            const threshold = 15 / geoModel.scale;
+            let best = null;
+            let bestDist = threshold;
+            for (const cand of candidateIntersections) {
+                const d = Math.hypot(cand.x - wx, cand.y - wy);
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = cand;
+                }
+            }
+            return best;
+        }
+
+        // Si el usuario hace clic sobre una intersección candidata o sobre la recta base, crea/retorna el Punto Matemático
+        function getOrCreatePointAtCursor(wx, wy) {
+            const existing = findNearestExistingPoint(wx, wy);
+            if (existing) return existing;
+
+            const inter = findNearestIntersectionCandidate(wx, wy);
+            if (inter) {
+                pushHistorySnapshot();
+                const newPt = {
+                    id: 'pt_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+                    label: getNextPointLabel(),
+                    x: inter.x,
+                    y: inter.y,
+                    kind: 'intersection',
+                    parents: [...inter.parents]
+                };
+                geoModel.points.push(newPt);
+                recalculateAllIntersections();
+                return newPt;
+            }
+
+            // Si hace clic cerca de una recta existente, proyectar ortogonalmente sobre esa recta
+            for (const ln of geoModel.lines) {
+                const c = getLineCoords(ln);
+                if (!c) continue;
+                const proj = projectPointOnLine(wx, wy, c.x1, c.y1, c.x2, c.y2);
+                if (proj && proj.dist < 10 / geoModel.scale) {
+                    pushHistorySnapshot();
+                    const onLinePt = {
+                        id: 'pt_' + Date.now(),
+                        label: getNextPointLabel(),
+                        x: proj.x,
+                        y: proj.y,
+                        kind: 'free',
+                        parents: [ln.id]
+                    };
+                    geoModel.points.push(onLinePt);
+                    recalculateAllIntersections();
+                    return onLinePt;
+                }
+            }
+
+            // Punto libre en el plano
+            pushHistorySnapshot();
+            const freePt = {
+                id: 'pt_' + Date.now(),
+                label: getNextPointLabel(),
+                x: wx,
+                y: wy,
+                kind: 'free',
+                parents: []
+            };
+            geoModel.points.push(freePt);
+            recalculateAllIntersections();
+            return freePt;
+        }
+
+        function projectPointOnLine(px, py, x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const lenSq = dx * dx + dy * dy;
+            if (lenSq < 1e-7) return null;
+            const t = ((px - x1) * dx + (py - y1) * dy) / lenSq;
+            const projX = x1 + t * dx;
+            const projY = y1 + t * dy;
+            return { x: projX, y: projY, dist: Math.hypot(px - projX, py - projY) };
+        }
+
+        function setupCanvasEvents() {
+            const canvas = document.getElementById('geo-canvas');
+
+            const getEventScreenCoords = (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { sx: clientX - rect.left, sy: clientY - rect.top };
+            };
+
+            const onPointerMove = (e) => {
+                const { sx, sy } = getEventScreenCoords(e);
+                const world = screenToWorld(sx, sy);
+                toolState.mouseWorld = world;
+
+                if (toolState.isPanning) {
+                    geoModel.offsetX += sx - toolState.panStartScreen.x;
+                    geoModel.offsetY += sy - toolState.panStartScreen.y;
+                    toolState.panStartScreen = { sx, sy };
+                    toolState.panStartScreen.x = sx;
+                    toolState.panStartScreen.y = sy;
+                    renderCanvas();
+                    return;
+                }
+
+                if (toolState.draggingPoint && toolState.draggingPoint.kind === 'free') {
+                    toolState.draggingPoint.x = world.x;
+                    toolState.draggingPoint.y = world.y;
+                    recalculateAllIntersections();
+                    renderCanvas();
+                    return;
+                }
+
+                toolState.hoveredPoint = findNearestExistingPoint(world.x, world.y);
+                toolState.hoveredIntersection = toolState.hoveredPoint ? null : findNearestIntersectionCandidate(world.x, world.y);
+
+                // Actualizar radio en vivo si el compás está activo y no bloqueado
+                if (toolState.activeTool === 'compass' && toolState.compassCenterPoint && !toolState.compassLocked) {
+                    const target = toolState.hoveredPoint || toolState.hoveredIntersection || world;
+                    const r = Math.hypot(target.x - toolState.compassCenterPoint.x, target.y - toolState.compassCenterPoint.y);
+                    toolState.compassCurrentRadius = r;
+                    document.getElementById('compass-radius-label').textContent = `${Math.round(r)} u`;
+                }
+
+                renderCanvas();
+            };
+
+            const onPointerDown = (e) => {
+                const { sx, sy } = getEventScreenCoords(e);
+                const world = screenToWorld(sx, sy);
+                toolState.mouseWorld = world;
+
+                toolState.hoveredPoint = findNearestExistingPoint(world.x, world.y);
+                toolState.hoveredIntersection = toolState.hoveredPoint ? null : findNearestIntersectionCandidate(world.x, world.y);
+
+                if (toolState.activeTool === 'move') {
+                    if (toolState.hoveredPoint && toolState.hoveredPoint.kind === 'free') {
+                        pushHistorySnapshot();
+                        toolState.draggingPoint = toolState.hoveredPoint;
+                    } else {
+                        toolState.isPanning = true;
+                        toolState.panStartScreen = { x: sx, y: sy };
+                    }
+                    return;
+                }
+
+                if (toolState.activeTool === 'point') {
+                    getOrCreatePointAtCursor(world.x, world.y);
+                    updateActiveStepTracker();
+                    renderCanvas();
+                    return;
+                }
+
+                if (toolState.activeTool === 'ruler') {
+                    const pt = getOrCreatePointAtCursor(world.x, world.y);
+                    if (!toolState.rulerFirstPoint) {
+                        toolState.rulerFirstPoint = pt;
+                        updateLiveToolBanner(`Regla apoyada en ${pt.label}. Ahora haz clic en el segundo punto para trazar la recta.`);
+                    } else if (toolState.rulerFirstPoint.id !== pt.id) {
+                        pushHistorySnapshot();
+                        geoModel.lines.push({
+                            id: 'line_' + Date.now(),
+                            p1Id: toolState.rulerFirstPoint.id,
+                            p2Id: pt.id,
+                            isGiven: false,
+                            isAux: false,
+                            color: '#334155'
+                        });
+                        toolState.rulerFirstPoint = null;
+                        recalculateAllIntersections();
+                        updateActiveStepTracker();
+                        updateLiveToolBanner(`Recta trazada. Puedes usar "Comprobar Construcción" o continuar trazando.`);
+                    }
+                    renderCanvas();
+                    return;
+                }
+
+                if (toolState.activeTool === 'compass') {
+                    if (!toolState.compassCenterPoint) {
+                        const centerPt = getOrCreatePointAtCursor(world.x, world.y);
+                        toolState.compassCenterPoint = centerPt;
+                        if (toolState.compassLocked) {
+                            updateLiveToolBanner(`Compás en ${centerPt.label} con abertura fija (${Math.round(toolState.compassLockedRadius)} u). Haz clic para trazar el arco.`);
+                        } else {
+                            updateLiveToolBanner(`Punta fija del compás en ${centerPt.label}. Mueve el cursor para abrir el compás y haz clic para trazar.`);
+                        }
+                    } else {
+                        const target = toolState.hoveredPoint || toolState.hoveredIntersection || world;
+                        const radius = toolState.compassLocked
+                            ? toolState.compassLockedRadius
+                            : Math.hypot(target.x - toolState.compassCenterPoint.x, target.y - toolState.compassCenterPoint.y);
+
+                        if (radius > 12) {
+                            pushHistorySnapshot();
+                            toolState.compassLockedRadius = radius;
+                            document.getElementById('compass-radius-label').textContent = `${Math.round(radius)} u`;
+
+                            geoModel.circles.push({
+                                id: 'cir_' + Date.now(),
+                                centerId: toolState.compassCenterPoint.id,
+                                radius: radius,
+                                isAux: true,
+                                createdWithLockedRadius: toolState.compassLocked
+                            });
+
+                            // Al trazar un arco, sugerir mantener la abertura fija automáticamente para comodidad del alumno de 7° básico
+                            if (!toolState.compassLocked) {
+                                setCompassLockState(true);
+                            }
+
+                            toolState.compassCenterPoint = null;
+                            recalculateAllIntersections();
+                            updateActiveStepTracker();
+                            updateLiveToolBanner(`Arco trazado y abertura guardada (${Math.round(radius)} u). Haz clic en otro punto si deseas usar la misma abertura.`);
+                        }
+                    }
+                    renderCanvas();
+                    return;
+                }
+
+                if (toolState.activeTool === 'measure') {
+                    renderCanvas();
+                }
+            };
+
+            const onPointerUp = () => {
+                toolState.draggingPoint = null;
+                toolState.isPanning = false;
+            };
+
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mousedown', onPointerDown);
+            window.addEventListener('mouseup', onPointerUp);
+
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                    onPointerDown(e);
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                    onPointerMove(e);
+                }
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', onPointerUp);
+        }
+
+        /* ==========================================================================
+           8. CONTROLES DE HERRAMIENTAS, BLOQUEO DE COMPÁS Y DEMOSTRACIÓN ANIMADA
+           ========================================================================== */
+        function selectTool(toolName) {
+            toolState.activeTool = toolName;
+            toolState.rulerFirstPoint = null;
+            toolState.compassCenterPoint = null;
+
+            ['move', 'point', 'ruler', 'compass', 'measure'].forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (btn) btn.classList.toggle('active', t === toolName);
+            });
+
+            const messages = {
+                move: "Modo Mover: Arrastra el plano o mueve puntos libres.",
+                point: "Herramienta Punto: Haz clic sobre cualquier cruce de arcos o rectas (puntos ámbar) para marcar la intersección exacta.",
+                ruler: "Regla sin graduación: Haz clic en el 1° punto y luego en el 2° punto para trazar la recta.",
+                compass: "Compás: Haz clic en el punto que será el centro y luego haz clic para definir el radio y trazar la circunferencia.",
+                measure: "Modo Comprobación: Visualiza el ángulo de intersección entre tu recta construida y la recta original."
+            };
+            updateLiveToolBanner(messages[toolName] || "");
+            updateActiveStepTracker();
+            renderCanvas();
+        }
+
+        function updateLiveToolBanner(text) {
+            const el = document.getElementById('tool-instruction-live');
+            if (el) el.textContent = text;
+        }
+
+        function toggleCompassLock() {
+            setCompassLockState(!toolState.compassLocked);
+        }
+
+        function setCompassLockState(locked) {
+            toolState.compassLocked = locked;
+            const btn = document.getElementById('lock-radius-btn');
+            const icon = document.getElementById('lock-icon');
+            const text = document.getElementById('lock-text');
+
+            if (locked) {
+                btn.classList.add('locked');
+                icon.textContent = '🔒';
+                text.textContent = `Abertura Fija (${Math.round(toolState.compassLockedRadius)} u)`;
+                document.getElementById('compass-radius-label').textContent = `${Math.round(toolState.compassLockedRadius)} u (Bloqueada)`;
+            } else {
+                btn.classList.remove('locked');
+                icon.textContent = '🔓';
+                text.textContent = 'Fijar Abertura';
+                document.getElementById('compass-radius-label').textContent = 'Libre (Ajustable)';
+            }
+        }
+
+        function toggleAuxiliaryVisibility() {
+            geoModel.showAux = !geoModel.showAux;
+            document.getElementById('aux-btn-label').textContent = geoModel.showAux ? 'Auxiliares: Visibles' : 'Auxiliares: Atenuados';
+            renderCanvas();
+        }
+
+        function toggleGrid() {
+            geoModel.showGrid = !geoModel.showGrid;
+            document.getElementById('grid-toggle-btn').textContent = `⊞ Cuadrícula: ${geoModel.showGrid ? 'ON' : 'OFF'}`;
+            renderCanvas();
+        }
+
+        function zoomCanvas(factor) {
+            const canvas = document.getElementById('geo-canvas');
+            const cx = canvas.clientWidth / 2;
+            const cy = canvas.clientHeight / 2;
+            const newScale = Math.min(2.4, Math.max(0.5, geoModel.scale * factor));
+            const ratio = newScale / geoModel.scale;
+            geoModel.offsetX = cx - (cx - geoModel.offsetX) * ratio;
+            geoModel.offsetY = cy - (cy - geoModel.offsetY) * ratio;
+            geoModel.scale = newScale;
+            renderCanvas();
+        }
+
+        function resetViewTransform() {
+            geoModel.scale = 1;
+            geoModel.offsetX = 0;
+            geoModel.offsetY = 0;
+            renderCanvas();
+        }
+
+        // Demostración animada pausable en Modo Aprender
+        function toggleDemoAnimation() {
+            const btn = document.getElementById('demo-play-btn');
+            if (toolState.demoPlaying) {
+                stopDemoAnimation();
+            } else {
+                toolState.demoPlaying = true;
+                btn.textContent = '⏸ Pausar Demo';
+                animateDemoStep();
+            }
+        }
+
+        function restartDemoAnimation() {
+            toolState.demoProgress = 0;
+            if (!toolState.demoPlaying) {
+                toggleDemoAnimation();
+            }
+        }
+
+        function stopDemoAnimation() {
+            toolState.demoPlaying = false;
+            if (toolState.demoAnimFrame) cancelAnimationFrame(toolState.demoAnimFrame);
+            const btn = document.getElementById('demo-play-btn');
+            if (btn) btn.textContent = '▶ Ver Animación';
+            renderCanvas();
+        }
+
+        function animateDemoStep() {
+            if (!toolState.demoPlaying) return;
+            toolState.demoProgress += 0.0045;
+            if (toolState.demoProgress > 1) toolState.demoProgress = 0;
+            renderCanvas();
+            toolState.demoAnimFrame = requestAnimationFrame(animateDemoStep);
+        }
+
+        function drawDemoAnimationOverlay(ctx) {
+            const baseLine = geoModel.lines.find(l => l.id === geoModel.task.baseLineId);
+            const ptP = getPointById(geoModel.task.targetPointId);
+            if (!baseLine || !ptP) return;
+            const c = getLineCoords(baseLine);
+            if (!c) return;
+
+            const u = normalizeVec(c.x2 - c.x1, c.y2 - c.y1);
+            const n = { x: -u.y, y: u.x };
+            const t = toolState.demoProgress; // 0..1
+
+            ctx.save();
+            ctx.strokeStyle = 'rgba(124, 58, 237, 0.75)';
+            ctx.fillStyle = 'rgba(124, 58, 237, 0.15)';
+            ctx.lineWidth = 2.5 / geoModel.scale;
+            ctx.setLineDash([4 / geoModel.scale, 4 / geoModel.scale]);
+
+            if (geoModel.task.type === 'perp_on') {
+                const r1 = 75;
+                const r2 = 110;
+                const A = { x: ptP.x - r1 * u.x, y: ptP.y - r1 * u.y };
+                const B = { x: ptP.x + r1 * u.x, y: ptP.y + r1 * u.y };
+                const h = Math.sqrt(r2 * r2 - r1 * r1);
+                const C = { x: ptP.x - h * n.x, y: ptP.y - h * n.y };
+
+                if (t >= 0.05) {
+                    ctx.beginPath();
+                    ctx.arc(ptP.x, ptP.y, r1, 0, Math.PI * 2 * Math.min(1, t * 4));
+                    ctx.stroke();
+                }
+                if (t >= 0.3) {
+                    ctx.beginPath();
+                    ctx.arc(A.x, A.y, r2, -Math.PI, Math.PI * Math.min(1, (t - 0.3) * 4));
+                    ctx.stroke();
+                }
+                if (t >= 0.55) {
+                    ctx.beginPath();
+                    ctx.arc(B.x, B.y, r2, -Math.PI, Math.PI * Math.min(1, (t - 0.55) * 4));
+                    ctx.stroke();
+                }
+                if (t >= 0.8) {
+                    drawInfiniteLine(ctx, ptP.x, ptP.y, C.x, C.y, 'rgba(124, 58, 237, 0.9)', 3 / geoModel.scale);
+                }
+            } else {
+                // Demo para punto exterior (perp_ext y primer tramo de par_ext)
+                const proj = projectPointOnLine(ptP.x, ptP.y, c.x1, c.y1, c.x2, c.y2);
+                if (proj) {
+                    const r1 = Math.max(135, proj.dist * 1.32);
+                    const halfSpan = Math.sqrt(Math.max(100, r1 * r1 - proj.dist * proj.dist));
+                    const A = { x: proj.x - halfSpan * u.x, y: proj.y - halfSpan * u.y };
+                    const B = { x: proj.x + halfSpan * u.x, y: proj.y + halfSpan * u.y };
+                    const Q = { x: 2 * proj.x - ptP.x, y: 2 * proj.y - ptP.y };
+
+                    if (t >= 0.05) {
+                        ctx.beginPath();
+                        ctx.arc(ptP.x, ptP.y, r1, 0, Math.PI * 2 * Math.min(1, t * 4));
+                        ctx.stroke();
+                    }
+                    if (t >= 0.35) {
+                        ctx.beginPath();
+                        ctx.arc(A.x, A.y, r1, 0, Math.PI * 2 * Math.min(1, (t - 0.35) * 4));
+                        ctx.stroke();
+                    }
+                    if (t >= 0.6) {
+                        ctx.beginPath();
+                        ctx.arc(B.x, B.y, r1, 0, Math.PI * 2 * Math.min(1, (t - 0.6) * 4));
+                        ctx.stroke();
+                    }
+                    if (t >= 0.82) {
+                        drawInfiniteLine(ctx, ptP.x, ptP.y, Q.x, Q.y, 'rgba(124, 58, 237, 0.9)', 3 / geoModel.scale);
+                    }
+                }
+            }
+            ctx.restore();
+        }
+
+        /* ==========================================================================
+           9. MOTOR DE VERIFICACIÓN MATEMÁTICA AUTOMÁTICA (SECCIÓN 6 DEL PROMPT)
+           Analiza producto escalar, vectores directores, paso por P, igualdad de radios
+           y autenticidad del uso de regla y compás.
+           ========================================================================== */
+        function normalizeVec(vx, vy) {
+            const len = Math.hypot(vx, vy);
+            if (len < 1e-7) return { x: 1, y: 0 };
+            return { x: vx / len, y: vy / len };
+        }
+
+        function computeAngleBetweenLinesDeg(c1, c2) {
+            const u1 = normalizeVec(c1.x2 - c1.x1, c1.y2 - c1.y1);
+            const u2 = normalizeVec(c2.x2 - c2.x1, c2.y2 - c2.y1);
+            const dot = Math.min(1, Math.max(0, Math.abs(u1.x * u2.x + u1.y * u2.y)));
+            return (Math.acos(dot) * 180) / Math.PI;
+        }
+
+        function distancePointToLine(px, py, c) {
+            const dx = c.x2 - c.x1;
+            const dy = c.y2 - c.y1;
+            const len = Math.hypot(dx, dy);
+            if (len < 1e-7) return Infinity;
+            return Math.abs(dy * px - dx * py + c.x2 * c.y1 - c.y2 * c.x1) / len;
+        }
+
+        // Verifica si existe al menos un par de circunferencias con el mismo radio (tolerancia 2.5 px)
+        function checkEqualRadiusPairExists() {
+            for (let i = 0; i < geoModel.circles.length; i++) {
+                for (let j = i + 1; j < geoModel.circles.length; j++) {
+                    if (Math.abs(geoModel.circles[i].radius - geoModel.circles[j].radius) <= 2.5) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function verifyConstruction() {
+            sessionState.metrics.attempted++;
+            const baseLine = geoModel.lines.find(l => l.id === geoModel.task.baseLineId);
+            const ptP = getPointById(geoModel.task.targetPointId);
+            const userLines = geoModel.lines.filter(l => !l.isGiven);
+
+            if (!baseLine || !ptP) return;
+            const cBase = getLineCoords(baseLine);
+
+            // 1. Verificar que se haya trazado al menos una recta con la regla
+            if (userLines.length === 0) {
+                showVerificationFeedback('error', 'Aún no has trazado la recta final con la Regla sin graduación. Completa los arcos del compás y une los puntos con la Regla.');
+                saveSessionProgress();
+                return;
+            }
+
+            // 2. Verificar que el estudiante haya utilizado el compás (no una línea al ojo)
+            if (geoModel.circles.length < 2) {
+                sessionState.metrics.errorCounts.noCompassUsed++;
+                showVerificationFeedback('warning', 'Tu recta fue trazada sin realizar los arcos necesarios con el Compás. Recuerda que debes construir los puntos de intersección con regla y compás.');
+                saveSessionProgress();
+                return;
+            }
+
+            // 3. Verificar que existan arcos con la misma abertura del compás
+            const hasEqualRadii = checkEqualRadiusPairExists();
+            if (!hasEqualRadii) {
+                sessionState.metrics.errorCounts.unequalRadii++;
+                showVerificationFeedback('warning', 'Revisa la abertura del compás: ambos arcos deben tener exactamente el mismo radio. Usa el botón "Fijar Abertura" antes de trazar el segundo arco.');
+                saveSessionProgress();
+                return;
+            }
+
+            // Evaluar las rectas construidas por el estudiante
+            const taskType = geoModel.task.type;
+            let bestCandidateLine = null;
+            let passesThroughP = false;
+            let correctOrientation = false;
+            let usesCompassIntersection = false;
+
+            for (const ul of userLines) {
+                const cUser = getLineCoords(ul);
+                if (!cUser) continue;
+
+                const distP = distancePointToLine(ptP.x, ptP.y, cUser);
+                const linePassesP = distP <= 4.5;
+
+                // Producto escalar y vectorial mediante vectores directores unitarios
+                const uBase = normalizeVec(cBase.x2 - cBase.x1, cBase.y2 - cBase.y1);
+                const uUser = normalizeVec(cUser.x2 - cUser.x1, cUser.y2 - cUser.y1);
+                const dotProduct = Math.abs(uBase.x * uUser.x + uBase.y * uUser.y); // ~0 si perpendiculares
+                const crossProduct = Math.abs(uBase.x * uUser.y - uBase.y * uUser.x); // ~0 si paralelas
+
+                const isPerp = dotProduct <= 0.038; // Tolerancia ~2.1 grados
+                const isPar = crossProduct <= 0.038;
+
+                // Verificar si alguno de los dos puntos que definen la recta proviene de una intersección de circunferencia
+                const p1 = getPointById(ul.p1Id);
+                const p2 = getPointById(ul.p2Id);
+                const pointNearCircleIntersection = [p1, p2].some(pt => {
+                    if (!pt) return false;
+                    if (pt.kind === 'intersection') return true;
+                    // O bien está a menos de 4 px del cruce real de dos circunferencias
+                    for (let i = 0; i < geoModel.circles.length; i++) {
+                        for (let j = i + 1; j < geoModel.circles.length; j++) {
+                            const cc = intersectCircleCircle(geoModel.circles[i], geoModel.circles[j]);
+                            if (cc.some(inter => Math.hypot(inter.x - pt.x, inter.y - pt.y) < 5)) return true;
+                        }
+                    }
+                    return false;
+                });
+
+                if (linePassesP) passesThroughP = true;
+
+                if ((taskType === 'perp_on' || taskType === 'perp_ext') && isPerp) {
+                    correctOrientation = true;
+                    if (linePassesP) {
+                        bestCandidateLine = ul;
+                        if (pointNearCircleIntersection) usesCompassIntersection = true;
+                    }
+                } else if (taskType === 'par_ext' && isPar) {
+                    correctOrientation = true;
+                    if (linePassesP) {
+                        bestCandidateLine = ul;
+                        if (pointNearCircleIntersection) usesCompassIntersection = true;
+                    }
+                }
+            }
+
+            if (!passesThroughP) {
+                sessionState.metrics.errorCounts.notPassingThroughP++;
+                showVerificationFeedback('error', 'La recta todavía no pasa por el punto P solicitado. Asegúrate de anclar la Regla exactamente sobre el punto P.');
+                saveSessionProgress();
+                return;
+            }
+
+            if (!correctOrientation || !bestCandidateLine) {
+                sessionState.metrics.errorCounts.wrongAngle++;
+                const expectedMsg = taskType === 'par_ext'
+                    ? 'La recta pasa por P, pero todavía no es paralela a la recta original. Verifica que hayas construido las dos perpendiculares con precisión.'
+                    : 'La recta pasa por P, pero no forma un ángulo de 90° con la recta original. Verifica que los puntos A y B sobre la recta sean equidistantes y que los arcos tengan el mismo radio.';
+                showVerificationFeedback('error', expectedMsg);
+                saveSessionProgress();
+                return;
+            }
+
+            if (!usesCompassIntersection) {
+                sessionState.metrics.errorCounts.noCompassUsed++;
+                showVerificationFeedback('warning', 'Tu recta parece tener la inclinación correcta al ojo, pero no utilizaste el punto de intersección de los arcos del compás para trazarla. Haz clic sobre la intersección de los arcos.');
+                saveSessionProgress();
+                return;
+            }
+
+            // ¡CONSTRUCCIÓN MATEMÁTICAMENTE VÁLIDA Y AUTÉNTICA!
+            geoModel.task.verifiedSuccess = true;
+            geoModel.task.verifiedLineId = bestCandidateLine.id;
+            sessionState.metrics.completed++;
+            sessionState.metrics.completedTypes[taskType] = true;
+            sessionState.metrics.exitTicket.practical = true;
+
+            if (sessionState.isApplicationMode) {
+                sessionState.metrics.appProblemsSolved++;
+                showApplicationReflectionQuestion();
+            }
+
+            const successMsg = taskType === 'par_ext'
+                ? '¡Muy bien! Dos rectas perpendiculares a una misma recta son paralelas entre sí (L₁ ∥ L₂). Tu construcción con regla y compás es matemáticamente exacta.'
+                : '¡Excelente! Construiste una recta perpendicular (90°) exacta utilizando regla y compás.';
+
+            showVerificationFeedback('success', successMsg);
+
+            const whyBox = document.getElementById('why-it-works-box');
+            whyBox.style.display = 'block';
+            whyBox.textContent = CORE_ACTIVITIES_INFO[taskType].whyItWorks;
+
+            updateSidePanelUI();
+            saveSessionProgress();
+            renderCanvas();
+        }
+
+        function showVerificationFeedback(type, message) {
+            const box = document.getElementById('verification-feedback');
+            box.className = `feedback-card ${type}`;
+            box.innerHTML = `<strong>Resultado de la Verificación:</strong><br>${message}`;
+        }
+
+        function hideFeedbackBoxes() {
+            const fb = document.getElementById('verification-feedback');
+            if (fb) fb.className = 'feedback-card';
+            const why = document.getElementById('why-it-works-box');
+            if (why) why.style.display = 'none';
+            const ref = document.getElementById('reflection-question-box');
+            if (ref) ref.style.display = 'none';
+        }
+
+        /* ==========================================================================
+           10. PISTAS PROGRESIVAS, SEGUIMIENTO DE PASOS Y REFLEXIÓN
+           ========================================================================== */
+        function requestProgressiveHint() {
+            sessionState.metrics.hintsUsed++;
+            const info = CORE_ACTIVITIES_INFO[geoModel.task.type];
+            const hintText = info.hints[toolState.hintIndex % info.hints.length];
+            toolState.hintIndex++;
+            showVerificationFeedback('warning', `💡 ${hintText}`);
+            saveSessionProgress();
+        }
+
+        function toggleProcedureVisibility() {
+            toolState.forceShowProcedure = !toolState.forceShowProcedure;
+            updateSidePanelUI();
+        }
+
+        // Detecta automáticamente en qué paso va el estudiante según los objetos geométricos creados
+        function computeCurrentStepIndex() {
+            const cCount = geoModel.circles.length;
+            const userLines = geoModel.lines.filter(l => !l.isGiven).length;
+
+            if (geoModel.task.verifiedSuccess || userLines >= 1 && cCount >= 2) return 4;
+            if (cCount === 0) return 0;
+            if (cCount === 1) return 1;
+            if (cCount === 2) return 2;
+            return 3;
+        }
+
+        function updateActiveStepTracker() {
+            const stepIdx = computeCurrentStepIndex();
+            const badge = document.getElementById('current-step-badge');
+            if (badge) {
+                badge.textContent = stepIdx >= 4 ? '¡Listo para Comprobar!' : `Paso ${stepIdx + 1} de 4`;
+            }
+
+            // Resaltar herramienta sugerida en Modo Aprender
+            ['tool-compass', 'tool-point', 'tool-ruler'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove('highlight-hint');
+            });
+
+            if (sessionState.learningMode === 'aprender') {
+                if (stepIdx <= 2) {
+                    document.getElementById('tool-compass').classList.add('highlight-hint');
+                } else if (stepIdx === 3) {
+                    document.getElementById('tool-ruler').classList.add('highlight-hint');
+                }
+            }
+
+            renderStepsList(stepIdx);
+        }
+
+        function renderStepsList(activeIdx) {
+            const container = document.getElementById('steps-list-container');
+            if (!container) return;
+
+            const showSteps = sessionState.learningMode === 'aprender' || toolState.forceShowProcedure;
+            if (!showSteps) {
+                container.innerHTML = `
+                    <li class="step-item">
+                        <span class="step-num">?</span>
+                        <span>Estás en <strong>Modo ${sessionState.learningMode === 'practicar' ? 'Practicar' : 'Desafío'}</strong>. Desarrolla tu construcción con autonomía o presiona <strong>"Ver Procedimiento"</strong> si necesitas consultar los pasos.</span>
+                    </li>
+                `;
+                return;
+            }
+
+            const steps = CORE_ACTIVITIES_INFO[geoModel.task.type].steps;
+            container.innerHTML = steps.map((txt, idx) => {
+                const stateClass = idx < activeIdx ? 'done' : (idx === activeIdx ? 'current' : '');
+                const numLabel = idx < activeIdx ? '✓' : (idx + 1);
+                return `
+                    <li class="step-item ${stateClass}">
+                        <span class="step-num">${numLabel}</span>
+                        <span>${txt}</span>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function updateSidePanelUI() {
+            const doneCount = Object.values(sessionState.metrics.completedTypes).filter(Boolean).length;
+            document.getElementById('panel-progress-indicator').textContent = `Dominio Base: ${doneCount} / 3`;
+
+            const demoSec = document.getElementById('demo-controls-section');
+            if (demoSec) {
+                demoSec.style.display = sessionState.learningMode === 'aprender' ? 'block' : 'none';
+            }
+
+            const contextSelector = document.getElementById('context-problem-selector');
+            if (sessionState.isApplicationMode) {
+                contextSelector.style.display = 'block';
+                const prob = APPLICATION_PROBLEMS[sessionState.currentScenarioIdx];
+                document.getElementById('panel-category-badge').textContent = prob.badge;
+                document.getElementById('panel-challenge-title').textContent = prob.title;
+                document.getElementById('panel-challenge-desc').textContent = prob.desc;
+            } else {
+                contextSelector.style.display = 'none';
+                const info = CORE_ACTIVITIES_INFO[geoModel.task.type];
+                document.getElementById('panel-category-badge').textContent = info.badge;
+                document.getElementById('panel-challenge-title').textContent = info.title;
+                document.getElementById('panel-challenge-desc').textContent = info.desc;
+            }
+
+            updateActiveStepTracker();
+        }
+
+        function showApplicationReflectionQuestion() {
+            const prob = APPLICATION_PROBLEMS[sessionState.currentScenarioIdx];
+            const box = document.getElementById('reflection-question-box');
+            const qText = document.getElementById('reflection-q-text');
+            const qOpts = document.getElementById('reflection-q-options');
+            const qFb = document.getElementById('reflection-q-feedback');
+
+            box.style.display = 'block';
+            qText.textContent = prob.reflectionQ;
+            qFb.textContent = '';
+
+            qOpts.innerHTML = prob.reflectionOpts.map((opt, idx) => `
+                <button class="option-btn" style="font-size: 0.78rem; padding: 8px 10px;" onclick="answerReflectionQuestion(${idx})">
+                    ${opt}
+                </button>
+            `).join('');
+        }
+
+        function answerReflectionQuestion(chosenIdx) {
+            const prob = APPLICATION_PROBLEMS[sessionState.currentScenarioIdx];
+            const qFb = document.getElementById('reflection-q-feedback');
+            if (chosenIdx === prob.reflectionCorrect) {
+                qFb.style.color = '#059669';
+                qFb.textContent = '✓ ¡Excelente reflexión geométrica! Has comprendido por qué el procedimiento resuelve el problema real.';
+            } else {
+                qFb.style.color = '#dc2626';
+                qFb.textContent = '✗ Revisa la propiedad geométrica involucrada e intenta con otra opción.';
+            }
+        }
+
+        /* ==========================================================================
+           11. GESTIÓN DE LAS 5 ETAPAS DE LA CLASE DE 70 MINUTOS Y MODOS
+           ========================================================================== */
+        function setClassStage(stageNum) {
+            sessionState.currentStage = stageNum;
+            sessionState.stageSecondsLeft = STAGE_DURATIONS[stageNum];
+            updateTimerDisplay();
+
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`stage-btn-${i}`);
+                if (btn) btn.classList.toggle('active', i === stageNum);
+            }
+
+            const stage1View = document.getElementById('stage-1-view');
+            const subBar = document.getElementById('geometry-subbar');
+
+            if (stageNum === 1) {
+                stage1View.classList.add('active');
+                subBar.style.display = 'none';
+                renderStage1Scene(0);
+                generateReasoningQuestion();
+            } else {
+                stage1View.classList.remove('active');
+                subBar.style.display = 'flex';
+
+                if (stageNum === 2) {
+                    // Etapa 2: Exploración Guiada (15 min)
+                    setLearningMode('aprender');
+                    loadCoreActivity('perp_on');
+                } else if (stageNum === 3) {
+                    // Etapa 3: Construcción Geométrica (20 min)
+                    setLearningMode('practicar');
+                    loadCoreActivity('perp_ext');
+                } else if (stageNum === 4) {
+                    // Etapa 4: Problemas de Aplicación (20 min)
+                    setLearningMode('practicar');
+                    loadApplicationProblem(0);
+                } else if (stageNum === 5) {
+                    // Etapa 5: Cierre y Ticket de Salida (5 min)
+                    openExitTicketModal();
+                }
+
+                setTimeout(resizeCanvas, 30);
+            }
+
+            updateProgressUI();
+        }
+
+        function setLearningMode(mode) {
+            sessionState.learningMode = mode;
+            ['aprender', 'practicar', 'desafio'].forEach(m => {
+                const btn = document.getElementById(`mode-btn-${m}`);
+                if (btn) btn.classList.toggle('active', m === mode);
+            });
+
+            if (mode === 'desafio') {
+                setDifficulty('intermedio');
+                setupGeometricTask(sessionState.currentActivityType, true);
+            } else {
+                updateSidePanelUI();
+            }
+        }
+
+        function setDifficulty(diff) {
+            sessionState.difficulty = diff;
+            ['basico', 'intermedio', 'avanzado'].forEach(d => {
+                const btn = document.getElementById(`diff-btn-${d}`);
+                if (btn) btn.classList.toggle('active', d === diff);
+            });
+            setupGeometricTask(sessionState.currentActivityType, diff !== 'basico');
+        }
+
+        /* ==========================================================================
+           12. ETAPA 1: ESCENAS VISUALES Y GENERADOR DE RAZONAMIENTO (SECCIÓN 10.B)
+           ========================================================================== */
+        const STAGE1_SCENES = [
+            {
+                title: "1. Vía Férrea y Durmientes del Tren",
+                desc: "Los rieles celestes mantienen siempre una distancia constante (L₁ ∥ L₂). Los durmientes cafés cruzan los rieles formando ángulos rectos de 90° (perpendiculares).",
+                svg: `<svg viewBox="0 0 460 170" width="100%" height="150">
+                    <g stroke="#94a3b8" stroke-width="8" stroke-linecap="round">
+                        <line x1="70" y1="25" x2="70" y2="145"/><line x1="140" y1="25" x2="140" y2="145"/>
+                        <line x1="210" y1="25" x2="210" y2="145"/><line x1="280" y1="25" x2="280" y2="145"/>
+                        <line x1="350" y1="25" x2="350" y2="145"/><line x1="410" y1="25" x2="410" y2="145"/>
+                    </g>
+                    <line x1="20" y1="55" x2="440" y2="55" stroke="#2563eb" stroke-width="5"/>
+                    <line x1="20" y1="115" x2="440" y2="115" stroke="#2563eb" stroke-width="5"/>
+                    <rect x="210" y="55" width="16" height="16" fill="rgba(16,185,129,0.3)" stroke="#059669" stroke-width="2"/>
+                    <text x="232" y="72" fill="#047857" font-size="13" font-weight="bold">90° (⊥)</text>
+                    <text x="30" y="45" fill="#1e3a8a" font-size="13" font-weight="bold">Riel L₁ ∥ Riel L₂</text>
+                </svg>`
+            },
+            {
+                title: "2. Plano Urbano de Calles en Cuadrícula",
+                desc: "En un plano de ciudad, dos avenidas que corren en la misma dirección nunca se intersectan (paralelas), mientras que una calle transversal las corta a 90°.",
+                svg: `<svg viewBox="0 0 460 170" width="100%" height="150">
+                    <rect x="40" y="20" width="160" height="50" rx="6" fill="#e2e8f0"/>
+                    <rect x="250" y="20" width="160" height="50" rx="6" fill="#e2e8f0"/>
+                    <rect x="40" y="105" width="160" height="50" rx="6" fill="#e2e8f0"/>
+                    <rect x="250" y="105" width="160" height="50" rx="6" fill="#e2e8f0"/>
+                    <line x1="20" y1="88" x2="440" y2="88" stroke="#2563eb" stroke-width="4"/>
+                    <line x1="225" y1="10" x2="225" y2="162" stroke="#d97706" stroke-width="4"/>
+                    <rect x="225" y="70" width="18" height="18" fill="rgba(16,185,129,0.3)" stroke="#059669" stroke-width="2"/>
+                    <text x="250" y="83" fill="#047857" font-size="13" font-weight="bold">Cruce a 90°</text>
+                </svg>`
+            },
+            {
+                title: "3. Líneas Reglamentarias de una Cancha",
+                desc: "Las dos líneas laterales son paralelas entre sí, y cada línea de fondo es perpendicular (90°) a las líneas laterales en los cuatro tiros de esquina.",
+                svg: `<svg viewBox="0 0 460 170" width="100%" height="150">
+                    <rect x="60" y="20" width="340" height="130" fill="#d1fae5" stroke="#059669" stroke-width="4"/>
+                    <line x1="230" y1="20" x2="230" y2="150" stroke="#059669" stroke-width="2"/>
+                    <circle cx="230" cy="85" r="26" fill="none" stroke="#059669" stroke-width="2"/>
+                    <rect x="60" y="130" width="20" height="20" fill="rgba(37,99,235,0.25)" stroke="#2563eb" stroke-width="2"/>
+                    <text x="88" y="144" fill="#1e3a8a" font-size="13" font-weight="bold">Esquina = 90°</text>
+                </svg>`
+            },
+            {
+                title: "4. Teorema Clave: Dos Perpendiculares a una Misma Recta",
+                desc: "Si la recta L₁ es perpendicular a una recta auxiliar T (90°), y la recta L₂ también es perpendicular a T (90°), entonces L₁ y L₂ son necesariamente PARALELAS (L₁ ∥ L₂).",
+                svg: `<svg viewBox="0 0 460 170" width="100%" height="150">
+                    <line x1="60" y1="45" x2="400" y2="45" stroke="#059669" stroke-width="4"/>
+                    <line x1="60" y1="125" x2="400" y2="125" stroke="#2563eb" stroke-width="4"/>
+                    <line x1="180" y1="10" x2="180" y2="160" stroke="#64748b" stroke-width="3" stroke-dasharray="5 4"/>
+                    <rect x="180" y="27" width="18" height="18" fill="rgba(16,185,129,0.25)" stroke="#059669" stroke-width="2"/>
+                    <rect x="180" y="107" width="18" height="18" fill="rgba(37,99,235,0.25)" stroke="#2563eb" stroke-width="2"/>
+                    <text x="210" y="40" fill="#047857" font-size="12" font-weight="bold">L₂ ⊥ T (90°)</text>
+                    <text x="210" y="120" fill="#1e3a8a" font-size="12" font-weight="bold">L₁ ⊥ T (90°)</text>
+                    <text x="285" y="88" fill="#b45309" font-size="13" font-weight="bold">⇒ L₁ ∥ L₂</text>
+                </svg>`
+            }
+        ];
+
+        function renderStage1Scene(idx) {
+            const sc = STAGE1_SCENES[idx];
+            document.getElementById('s1-scene-title').textContent = sc.title;
+            document.getElementById('s1-scene-desc').textContent = sc.desc;
+            document.getElementById('s1-svg-box').innerHTML = sc.svg;
+            for (let i = 0; i < 4; i++) {
+                const btn = document.getElementById(`s1-tab-${i}`);
+                if (btn) btn.classList.toggle('active', i === idx);
+            }
+        }
+
+        // Generador Dinámico de Preguntas de Razonamiento (Tipo B)
+        const REASONING_TEMPLATES = [
+            {
+                title: "Relación entre Tres Rectas en el Plano",
+                text: "En una construcción con regla y compás, sabemos que la recta A es perpendicular a la recta B (A ⊥ B), y que la recta C también es perpendicular a la recta B (C ⊥ B). ¿Cuál es la relación entre A y C?",
+                options: [
+                    "A y C son paralelas entre sí (A ∥ C).",
+                    "A y C son perpendiculares entre sí (A ⊥ C).",
+                    "A y C se cortan formando un ángulo de 60°."
+                ],
+                correct: 0,
+                explanation: "¡Correcto! Dos rectas coplanares que son perpendiculares a una misma tercera recta nunca se intersectan, por lo que son paralelas entre sí."
+            },
+            {
+                title: "Identificación de un Error en el Uso del Compás",
+                text: "Matías intentó construir una perpendicular desde dos puntos equidistantes A y B. Trazó el primer arco desde A con un radio de 80 unidades, pero al cambiar a B cerró sin querer el compás a 60 unidades. ¿Qué ocurrirá con la recta que pase por P y la intersección de esos arcos?",
+                options: [
+                    "Formará igualmente un ángulo exacto de 90°.",
+                    "Quedará inclinada (oblicua, distinta de 90°) porque el punto de intersección no es equidistante de A y B.",
+                    "Quedará paralela a la recta original."
+                ],
+                correct: 1,
+                explanation: "¡Exacto! Si los dos arcos desde A y B no tienen el mismo radio, la intersección se desplaza hacia uno de los lados y el ángulo deja de medir 90°."
+            },
+            {
+                title: "Selección del Siguiente Paso en la Construcción",
+                text: "Sofía tiene una recta L y un punto P fuera de ella. Ya usó el compás con centro en P para cortar la recta L en dos puntos A y B. ¿Cuál es el siguiente paso correcto para construir la perpendicular?",
+                options: [
+                    "Unir directamente P con A usando la regla.",
+                    "Con centro en A y luego en B, trazar dos arcos de igual radio que se intersecten en un punto Q al otro lado de la recta.",
+                    "Borrar los puntos A y B."
+                ],
+                correct: 1,
+                explanation: "¡Muy bien! Esos dos arcos de igual radio desde A y B determinan el punto Q que, al unirse con P, genera la recta perpendicular."
+            },
+            {
+                title: "Verdadero o Falso: Propiedad de Perpendicularidad",
+                text: "Afirmación: 'Si dos rectas se intersectan formando un ángulo recto de 90°, entonces los otros tres ángulos que se forman en ese mismo cruce también miden 90° cada uno'.",
+                options: [
+                    "Verdadero, porque los ángulos opuestos por el vértice y los suplementarios a 90° miden todos 90°.",
+                    "Falso, solo uno de los cuatro ángulos mide 90°."
+                ],
+                correct: 0,
+                explanation: "¡Correcto! Dos rectas perpendiculares dividen el plano en cuatro ángulos rectos congruentes de 90° (4 × 90° = 360°)."
+            }
+        ];
+
+        let lastReasoningIdx = -1;
+        function generateReasoningQuestion() {
+            let idx = Math.floor(Math.random() * REASONING_TEMPLATES.length);
+            if (idx === lastReasoningIdx) idx = (idx + 1) % REASONING_TEMPLATES.length;
+            lastReasoningIdx = idx;
+
+            const q = REASONING_TEMPLATES[idx];
+            document.getElementById('reasoning-q-title').textContent = q.title;
+            document.getElementById('reasoning-q-text').textContent = q.text;
+
+            const fb = document.getElementById('reasoning-feedback');
+            fb.className = 'feedback-card';
+
+            const box = document.getElementById('reasoning-options-box');
+            box.innerHTML = q.options.map((opt, oIdx) => `
+                <button class="option-btn" onclick="checkReasoningAnswer(${idx}, ${oIdx}, this)">
+                    <span>${opt}</span>
+                </button>
+            `).join('');
+        }
+
+        function checkReasoningAnswer(qIdx, oIdx, btnEl) {
+            const q = REASONING_TEMPLATES[qIdx];
+            const fb = document.getElementById('reasoning-feedback');
+            if (oIdx === q.correct) {
+                btnEl.classList.add('correct');
+                fb.className = 'feedback-card success';
+                fb.textContent = q.explanation;
+            } else {
+                btnEl.classList.add('wrong');
+                fb.className = 'feedback-card error';
+                fb.textContent = 'Piénsalo nuevamente: revisa cómo influyen los radios iguales y los ángulos de 90°.';
+            }
+        }
+
+        /* ==========================================================================
+           13. TICKET DE SALIDA (ETAPA 5) Y PANEL DOCENTE CON EXPORTACIÓN CSV
+           ========================================================================== */
+        function openExitTicketModal() {
+            updateFormativeSummaryText();
+            document.getElementById('exit-ticket-modal').classList.add('open');
+        }
+
+        function closeExitTicketModal() {
+            document.getElementById('exit-ticket-modal').classList.remove('open');
+        }
+
+        function launchExitTicketPractical() {
+            closeExitTicketModal();
+            setClassStage(3);
+            setLearningMode('desafio');
+            loadCoreActivity('perp_ext');
+        }
+
+        function answerExitTicket(partNum, optIdx, btnEl) {
+            const parent = btnEl.parentElement;
+            Array.from(parent.children).forEach(b => b.classList.remove('correct', 'wrong'));
+
+            if (partNum === 1) {
+                if (optIdx === 0) {
+                    btnEl.classList.add('correct');
+                    sessionState.metrics.exitTicket.q1 = true;
+                } else {
+                    btnEl.classList.add('wrong');
+                }
+            } else if (partNum === 3) {
+                if (optIdx === 1) {
+                    btnEl.classList.add('correct');
+                    sessionState.metrics.exitTicket.q3 = true;
+                } else {
+                    btnEl.classList.add('wrong');
+                }
+            }
+            saveSessionProgress();
+            updateFormativeSummaryText();
+        }
+
+        function updateFormativeSummaryText() {
+            const m = sessionState.metrics;
+            const etScore = (m.exitTicket.q1 ? 1 : 0) + (m.exitTicket.practical ? 1 : 0) + (m.exitTicket.q3 ? 1 : 0);
+
+            const statusEl = document.getElementById('et-construction-status');
+            if (statusEl) {
+                statusEl.innerHTML = m.completed > 0
+                    ? `<strong style="color:#059669;">✓ Logrado:</strong> Has completado ${m.completed} construcción(es) válida(s) con regla y compás en esta sesión.`
+                    : `Aún no registras construcciones verificadas. Haz clic en el botón de la derecha para realizar una construcción.`;
+            }
+
+            let reinforcement = "Has demostrado un excelente manejo del compás manteniendo su abertura y encontrando intersecciones exactas.";
+            if (m.errorCounts.unequalRadii > 0) {
+                reinforcement = "Aspecto a reforzar: Recuerda mantener siempre la misma abertura del compás (botón 'Fijar Abertura') al trazar los dos arcos desde A y B.";
+            } else if (m.errorCounts.noCompassUsed > 0) {
+                reinforcement = "Aspecto a reforzar: Evita trazar rectas al ojo; apoya siempre la regla en los puntos de intersección reales de los arcos del compás.";
+            }
+
+            const sumEl = document.getElementById('student-formative-summary');
+            if (sumEl) {
+                sumEl.innerHTML = `
+                    • <strong>Construcciones geométricas logradas:</strong> ${m.completed} (${m.appProblemsSolved} en problemas de aplicación)<br>
+                    • <strong>Puntaje Ticket de Salida:</strong> ${etScore} / 3 desafíos completados<br>
+                    • <strong>Retroalimentación pedagógica:</strong> ${reinforcement}
+                `;
+            }
+        }
+
+        function openTeacherModal() {
+            const m = sessionState.metrics;
+            document.getElementById('stat-attempted').textContent = m.attempted;
+            document.getElementById('stat-completed').textContent = m.completed;
+            document.getElementById('stat-app-solved').textContent = m.appProblemsSolved;
+            document.getElementById('stat-hints').textContent = m.hintsUsed;
+
+            const etScore = (m.exitTicket.q1 ? 1 : 0) + (m.exitTicket.practical ? 1 : 0) + (m.exitTicket.q3 ? 1 : 0);
+            document.getElementById('stat-exit-score').textContent = `${etScore}/3`;
+
+            const errParts = [];
+            if (m.errorCounts.noCompassUsed > 0) errParts.push(`Intento de trazar sin arcos de compás (${m.errorCounts.noCompassUsed} veces)`);
+            if (m.errorCounts.unequalRadii > 0) errParts.push(`Arcos con distinto radio (${m.errorCounts.unequalRadii} veces)`);
+            if (m.errorCounts.notPassingThroughP > 0) errParts.push(`Recta no pasa por el punto P (${m.errorCounts.notPassingThroughP} veces)`);
+            if (m.errorCounts.wrongAngle > 0) errParts.push(`Ángulo distinto al solicitado (${m.errorCounts.wrongAngle} veces)`);
+
+            document.getElementById('teacher-error-log').textContent = errParts.length > 0
+                ? errParts.join(' • ')
+                : 'No se han detectado errores recurrentes en la sesión.';
+
+            document.getElementById('teacher-modal').classList.add('open');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('teacher-modal').classList.remove('open');
+        }
+
+        function projectTeacherDemo(actType) {
+            closeTeacherModal();
+            setClassStage(2);
+            setLearningMode('aprender');
+            loadCoreActivity(actType);
+            setTimeout(() => {
+                if (!toolState.demoPlaying) toggleDemoAnimation();
+            }, 150);
+        }
+
+        function clearSessionMetrics() {
+            sessionState.metrics = {
+                attempted: 0,
+                completed: 0,
+                appProblemsSolved: 0,
+                hintsUsed: 0,
+                completedTypes: { perp_on: false, perp_ext: false, par_ext: false },
+                errorCounts: { noCompassUsed: 0, unequalRadii: 0, notPassingThroughP: 0, wrongAngle: 0 },
+                exitTicket: { q1: false, practical: false, q3: false }
+            };
+            saveSessionProgress();
+            openTeacherModal();
+        }
+
+        function exportSessionCSV() {
+            const m = sessionState.metrics;
+            const etScore = (m.exitTicket.q1 ? 1 : 0) + (m.exitTicket.practical ? 1 : 0) + (m.exitTicket.q3 ? 1 : 0);
+            const dateStr = new Date().toLocaleString('es-CL');
+
+            const rows = [
+                ["Fecha y Hora", "Nivel", "Ejercicios Intentados", "Construcciones Correctas", "Problemas Aplicacion Resueltos", "Pistas Solicitadas", "Ticket de Salida (de 3)", "Errores Sin Compas", "Errores Radios Distintos", "Errores No Pasa Por P"],
+                [dateStr, "7mo Basico OA12", m.attempted, m.completed, m.appProblemsSolved, m.hintsUsed, etScore, m.errorCounts.noCompassUsed, m.errorCounts.unequalRadii, m.errorCounts.notPassingThroughP]
+            ];
+
+            const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + rows.map(r => r.join(";")).join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "reporte_geocompas_7basico.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /* ==========================================================================
+           14. TEMPORIZADOR DE CLASE DE 70 MINUTOS Y BARRA DE PROGRESO
+           ========================================================================== */
+        function toggleClassTimer() {
+            const btn = document.getElementById('timer-play-btn');
+            if (sessionState.timerRunning) {
+                clearInterval(sessionState.timerInterval);
+                sessionState.timerRunning = false;
+                btn.textContent = '▶';
+            } else {
+                sessionState.timerRunning = true;
+                btn.textContent = '⏸';
+                sessionState.timerInterval = setInterval(() => {
+                    if (sessionState.totalSecondsLeft > 0) sessionState.totalSecondsLeft--;
+                    if (sessionState.stageSecondsLeft > 0) sessionState.stageSecondsLeft--;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+        }
+
+        function resetClassTimer() {
+            clearInterval(sessionState.timerInterval);
+            sessionState.timerRunning = false;
+            document.getElementById('timer-play-btn').textContent = '▶';
+            sessionState.totalSecondsLeft = 70 * 60;
+            sessionState.stageSecondsLeft = STAGE_DURATIONS[sessionState.currentStage];
+            updateTimerDisplay();
+        }
+
+        function formatMMSS(sec) {
+            const m = String(Math.floor(sec / 60)).padStart(2, '0');
+            const s = String(sec % 60).padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('global-timer-text').textContent = formatMMSS(sessionState.totalSecondsLeft);
+            document.getElementById('stage-timer-text').textContent = `Etapa: ${formatMMSS(sessionState.stageSecondsLeft)}`;
+        }
+
+        function updateProgressUI() {
+            const stagePct = (sessionState.currentStage / 5) * 60;
+            const bonusPct = Math.min(40, sessionState.metrics.completed * 10);
+            const totalPct = Math.min(100, Math.round(stagePct + bonusPct));
+            const bar = document.getElementById('class-progress-fill');
+            if (bar) bar.style.width = `${totalPct}%`;
+        }
+
+        /* ==========================================================================
+           INICIALIZACIÓN AL ABRIR EN EL NAVEGADOR
+           ========================================================================== */
+        window.onload = function () {
+            loadSavedSession();
+            setupCanvasEvents();
+            resizeCanvas();
+            selectTool('compass');
+            setClassStage(2); // Inicia directamente en la pizarra de Exploración Guiada lista para usar
+
+            window.addEventListener('resize', resizeCanvas);
+            window.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                    e.preventDefault();
+                    undoAction();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
