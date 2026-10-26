@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafíos SIMCE por Grupos - 6° Básico Matemática</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f1f5f9;
+            user-select: none;
+        }
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 0.2rem;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+        .frac-num {
+            border-bottom: 2px solid currentColor;
+            padding: 0 0.25rem 0.05rem 0.25rem;
+            text-align: center;
+            min-width: 1.5rem;
+        }
+        .frac-den {
+            padding: 0.05rem 0.25rem 0 0.25rem;
+            text-align: center;
+            min-width: 1.5rem;
+        }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-800 overflow-x-hidden">
+
+    <!-- TOP HEADER: Topic Slide Navigation & Classroom Scoreboard -->
+    <header class="bg-slate-900 text-white border-b-4 border-indigo-600 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Title & Badge -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-lg">
+                    6°
+                </div>
+                <div>
+                    <h1 class="font-black text-base sm:text-lg text-white leading-tight">Trabajo Simultáneo por Grupos • SIMCE</h1>
+                    <p class="text-xs font-bold text-indigo-400">6 Equipos en la misma pantalla • Actualización independiente</p>
+                </div>
+            </div>
+
+            <!-- Topic Switcher (Slide by Content) -->
+            <nav class="flex flex-wrap items-center gap-1.5 sm:gap-2" aria-label="Temas de la clase">
+                <button onclick="switchContentSlide(0)" id="topic-btn-0" class="topic-tab px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm transition-all shadow">
+                    🔄 1. Transformaciones
+                </button>
+                <button onclick="switchContentSlide(1)" id="topic-btn-1" class="topic-tab px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm transition-all shadow">
+                    ➕ 2. Adición Fracciones
+                </button>
+                <button onclick="switchContentSlide(2)" id="topic-btn-2" class="topic-tab px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm transition-all shadow">
+                    🎯 3. Decimales
+                </button>
+                <button onclick="switchContentSlide(3)" id="topic-btn-3" class="topic-tab px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm transition-all shadow">
+                    🏆 4. Desafío Mixto SIMCE
+                </button>
+            </nav>
+
+            <!-- Fullscreen & Quick Reset -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleFullScreen()" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm transition" title="Pantalla Completa">
+                    ⛶ Proyector
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA: 6 INDEPENDENT GROUP PANELS -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-5 flex flex-col justify-center">
+
+        <!-- Topic Banner / Instructions -->
+        <div class="mb-5 bg-white border-2 border-slate-200 rounded-3xl p-4 sm:p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <span id="current-slide-badge" class="bg-indigo-100 text-indigo-800 font-black px-3.5 py-1 rounded-full text-xs sm:text-sm uppercase tracking-wide">
+                    Tema Actual
+                </span>
+                <h2 id="current-slide-title" class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
+                    Cargando...
+                </h2>
+                <p id="current-slide-desc" class="text-sm sm:text-base font-medium text-slate-600 mt-0.5">
+                    Cada grupo resuelve su propio ejercicio. Si un grupo termina, presiona "Comprobar" y luego "Nuevo para este Grupo" para generar uno nuevo sin alterar a los demás.
+                </p>
+            </div>
+            <div class="bg-gradient-to-br from-amber-400 to-orange-500 text-slate-950 font-black px-5 py-3 rounded-2xl shadow-md text-center">
+                <span class="block text-xs uppercase opacity-85">Puntaje Total Curso</span>
+                <span id="global-score" class="text-2xl sm:text-3xl">0 pts</span>
+            </div>
+        </div>
+
+        <!-- 6 INDEPENDENT GROUP CARDS GRID -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="groups-grid">
+            <!-- Injected dynamically via JavaScript for Groups 1 to 6 -->
+        </div>
+
+    </main>
+
+    <!-- FOOTER INFO -->
+    <footer class="bg-white border-t-2 border-slate-200 py-3 px-4 text-center text-xs sm:text-sm font-extrabold text-slate-500">
+        Preparación SIMCE 6° Básico • Modo Colaborativo por Equipos • Cada grupo avanza a su propio ritmo en la misma diapositiva.
+    </footer>
+
+    <!-- JAVASCRIPT: INDEPENDENT GROUP STATE ENGINE -->
+    <script>
+        // ==========================================
+        // 1. DATA POOLS & STATE DEFINITIONS
+        // ==========================================
+        const themes = [
+            {
+                id: 0,
+                name: "Transformaciones (Mixto <-> Impropia)",
+                badge: "Módulo 1 • Transformaciones",
+                desc: "Cada grupo transforma un número mixto a fracción impropia o viceversa."
+            },
+            {
+                id: 1,
+                name: "Adición de Fracciones (Igual y Distinto Denominador)",
+                badge: "Módulo 2 • Suma de Fracciones",
+                desc: "Resuelve sumas usando amplificación, MCM o productos cruzados."
+            },
+            {
+                id: 2,
+                name: "Números Decimales (Suma y Resta alineando comas)",
+                badge: "Módulo 3 • Operatoria Decimal",
+                desc: "Alinea la coma decimal, rellena con ceros si falta y calcula."
+            },
+            {
+                id: 3,
+                name: "Desafío Mixto SIMCE (Selección Múltiple A, B, C, D)",
+                badge: "Módulo 4 • Problemas Cotidianos SIMCE",
+                desc: "Problemas integrados con alternativas estilo prueba SIMCE."
+            }
+        ];
+
+        let activeThemeIdx = 0;
+        let globalScore = 0;
+
+        // State for each of the 6 groups across all 4 themes
+        // Each group maintains its own exercise object and status per theme to prevent resetting others.
+        const groupsState = [
+            { id: 1, name: "Grupo 1", color: "indigo", score: 0, exercises: [null, null, null, null] },
+            { id: 2, name: "Grupo 2", color: "emerald", score: 0, exercises: [null, null, null, null] },
+            { id: 3, name: "Grupo 3", color: "amber", score: 0, exercises: [null, null, null, null] },
+            { id: 4, name: "Grupo 4", color: "rose", score: 0, exercises: [null, null, null, null] },
+            { id: 5, name: "Grupo 5", color: "purple", score: 0, exercises: [null, null, null, null] },
+            { id: 6, name: "Grupo 6", color: "sky", score: 0, exercises: [null, null, null, null] }
+        ];
+
+        // Theme-specific color mappings for Tailwind classes
+        const colorMap = {
+            indigo: { border: "border-indigo-300", bgHeader: "bg-indigo-600", text: "text-indigo-700", lightBg: "bg-indigo-50/70", btn: "bg-indigo-600 hover:bg-indigo-700" },
+            emerald: { border: "border-emerald-300", bgHeader: "bg-emerald-600", text: "text-emerald-700", lightBg: "bg-emerald-50/70", btn: "bg-emerald-600 hover:bg-emerald-700" },
+            amber: { border: "border-amber-300", bgHeader: "bg-amber-600", text: "text-amber-700", lightBg: "bg-amber-50/70", btn: "bg-amber-600 hover:bg-amber-700" },
+            rose: { border: "border-rose-300", bgHeader: "bg-rose-600", text: "text-rose-700", lightBg: "bg-rose-50/70", btn: "bg-rose-600 hover:bg-rose-700" },
+            purple: { border: "border-purple-300", bgHeader: "bg-purple-600", text: "text-purple-700", lightBg: "bg-purple-50/70", btn: "bg-purple-600 hover:bg-purple-700" },
+            sky: { border: "border-sky-300", bgHeader: "bg-sky-600", text: "text-sky-700", lightBg: "bg-sky-50/70", btn: "bg-sky-600 hover:bg-sky-700" }
+        };
+
+        // ==========================================
+        // 2. EXERCISE GENERATORS (UNIQUE PER GROUP/THEME)
+        // ==========================================
+        function generateExercise(themeId, seed) {
+            if (themeId === 0) {
+                // Topic 1: Transformations (Mixed <-> Improper)
+                const type = seed % 2; // 0: Mixed to Improper, 1: Improper to Mixed
+                if (type === 0) {
+                    const whole = (seed % 3) + 2; // 2 to 4
+                    const den = (seed % 3) + 3;   // 3 to 5
+                    const num = (seed % (den - 1)) + 1;
+                    return {
+                        subType: 'mixedToImp',
+                        questionText: `Transforma a fracción impropia:`,
+                        displayHtml: `<span class="text-3xl font-black text-indigo-600 mr-1">${whole}</span><span class="frac"><span class="frac-num">${num}</span><span class="frac-den">${den}</span></span>`,
+                        ansNum: whole * den + num,
+                        ansDen: den,
+                        solved: false,
+                        userInputNum: '',
+                        userInputDen: '',
+                        feedbackMsg: ''
+                    };
+                } else {
+                    const den = (seed % 3) + 3; // 3 to 5
+                    const whole = (seed % 3) + 2;
+                    const num = (seed % (den - 1)) + 1;
+                    const impNum = whole * den + num;
+                    return {
+                        subType: 'impToMixed',
+                        questionText: `Transforma a número mixto:`,
+                        displayHtml: `<span class="frac frac-lg"><span class="frac-num text-indigo-600">${impNum}</span><span class="frac-den">${den}</span></span>`,
+                        ansWhole: whole,
+                        ansNum: num,
+                        ansDen: den,
+                        solved: false,
+                        userInputWhole: '',
+                        userInputNum: '',
+                        userInputDen: '',
+                        feedbackMsg: ''
+                    };
+                }
+            } else if (themeId === 1) {
+                // Topic 2: Fraction Addition
+                const subType = seed % 2;
+                if (subType === 0) {
+                    // Equal denominator or multiple
+                    const d = ((seed % 2) + 1) * 4; // 4 or 8
+                    const n1 = (seed % 3) + 1;
+                    const n2 = ((seed + 1) % 3) + 1;
+                    return {
+                        subType: 'addSimple',
+                        questionText: `Resuelve la adición:`,
+                        displayHtml: `<span class="frac"><span class="frac-num">${n1}</span><span class="frac-den">${d}</span></span> + <span class="frac"><span class="frac-num">${n2}</span><span class="frac-den">${d}</span></span>`,
+                        ansNum: n1 + n2,
+                        ansDen: d,
+                        solved: false,
+                        userInputNum: '',
+                        userInputDen: '',
+                        feedbackMsg: ''
+                    };
+                } else {
+                    // Distinct denominator
+                    const d1 = 2 + (seed % 3); // 2, 3, 4
+                    const d2 = d1 + 1 + (seed % 2); // 3, 4, 5
+                    const n1 = 1;
+                    const n2 = 1;
+                    // Compute common denominator and numerator
+                    const lcm = (d1 * d2) / gcd(d1, d2);
+                    const top = (lcm / d1) * n1 + (lcm / d2) * n2;
+                    return {
+                        subType: 'addDiff',
+                        questionText: `Resuelve con distinto denominador:`,
+                        displayHtml: `<span class="frac"><span class="frac-num">${n1}</span><span class="frac-den">${d1}</span></span> + <span class="frac"><span class="frac-num">${n2}</span><span class="frac-den">${d2}</span></span>`,
+                        ansNum: top,
+                        ansDen: lcm,
+                        solved: false,
+                        userInputNum: '',
+                        userInputDen: '',
+                        feedbackMsg: ''
+                    };
+                }
+            } else if (themeId === 2) {
+                // Topic 3: Decimals (Addition / Subtraction aligning commas)
+                const isSub = seed % 2 === 0;
+                const a = ((seed % 5) + 3) * 1.5; // e.g. 4.5, 6.0, 7.5
+                const b = ((seed % 3) + 1) * 1.25; // e.g. 1.25, 2.5, 3.75
+                const exactAns = isSub ? parseFloat((Math.max(a, b) - Math.min(a, b)).toFixed(2)) : parseFloat((a + b).toFixed(2));
+                const expr = isSub ? `${Math.max(a, b).toFixed(2).replace('.', ',')} − ${Math.min(a, b).toFixed(2).replace('.', ',')}` : `${a.toFixed(2).replace('.', ',')} + ${b.toFixed(2).replace('.', ',')}`;
+                
+                return {
+                    subType: 'decimalOp',
+                    questionText: `Calcula alineando la coma:`,
+                    displayHtml: `<span class="text-2xl font-black text-slate-900">${expr} =</span>`,
+                    ansVal: exactAns,
+                    solved: false,
+                    userInputVal: '',
+                    feedbackMsg: ''
+                };
+            } else {
+                // Topic 4: SIMCE Multiple Choice Contextualized Challenge
+                const simcePool = [
+                    {
+                        text: `Sofía compró <span class="text-indigo-700 font-black">1,5 kg</span> de naranjas y <span class="frac"><span class="frac-num">1</span><span class="frac-den">2</span></span> <strong>kg</strong> de plátanos. ¿Cuántos kilos de fruta llevó en total?`,
+                        options: [
+                            { letter: 'A', text: '1,55 kg', correct: false },
+                            { letter: 'B', text: '2,00 kg', correct: true },
+                            { letter: 'C', text: '2,50 kg', correct: false },
+                            { letter: 'D', text: '3,00 kg', correct: false }
+                        ],
+                        correctLetter: 'B'
+                    },
+                    {
+                        text: `Un estanque tiene <span class="text-indigo-700 font-black">3,75 litros</span> de agua. Si se utilizan <span class="frac"><span class="frac-num">1</span><span class="frac-den">4</span></span> <strong>litro</strong>, ¿cuánta agua queda en el estanque?`,
+                        options: [
+                            { letter: 'A', text: '3,50 litros', correct: true },
+                            { letter: 'B', text: '3,65 litros', correct: false },
+                            { letter: 'C', text: '3,70 litros', correct: false },
+                            { letter: 'D', text: '4,00 litros', correct: false }
+                        ],
+                        correctLetter: 'A'
+                    },
+                    {
+                        text: `En una cinta métrica se unen dos tramos: uno de <span class="frac"><span class="frac-num">3</span><span class="frac-den">4</span></span> <strong>m</strong> y otro de <span class="text-indigo-700 font-black">0,25 m</span>. ¿Cuál es la longitud total?`,
+                        options: [
+                            { letter: 'A', text: '0,50 m', correct: false },
+                            { letter: 'B', text: '0,95 m', correct: false },
+                            { letter: 'C', text: '1,00 m', correct: true },
+                            { letter: 'D', text: '1,25 m', correct: false }
+                        ],
+                        correctLetter: 'C'
+                    }
+                ];
+                const q = simcePool[seed % simcePool.length];
+                return {
+                    subType: 'simceChoice',
+                    questionText: q.text,
+                    options: q.options,
+                    correctLetter: q.correctLetter,
+                    solved: false,
+                    selectedOption: null,
+                    feedbackMsg: ''
+                };
+            }
+        }
+
+        // Helper GCD
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        // ==========================================
+        // 3. RENDER ENGINE (6 PANELS ON THE ACTIVE SLIDE)
+        // ==========================================
+        function switchContentSlide(themeIndex) {
+            activeThemeIdx = themeIndex;
+
+            // Highlight active tab
+            for (let i = 0; i < themes.length; i++) {
+                const btn = document.getElementById(`topic-btn-${i}`);
+                if (i === themeIndex) {
+                    btn.className = "topic-tab px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm bg-indigo-600 text-white shadow-md transition-all";
+                } else {
+                    btn.className = "topic-tab px-3.5 py-2 rounded-xl font-black text-xs sm:text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all";
+                }
+            }
+
+            // Update banner
+            const th = themes[themeIndex];
+            document.getElementById('current-slide-badge').textContent = th.badge;
+            document.getElementById('current-slide-title').textContent = th.name;
+            document.getElementById('current-slide-desc').textContent = th.desc;
+
+            renderGroupsGrid();
+        }
+
+        function renderGroupsGrid() {
+            const grid = document.getElementById('groups-grid');
+            grid.innerHTML = '';
+
+            groupsState.forEach((group, gIndex) => {
+                const cfg = colorMap[group.color];
+
+                // Initialize exercise for this group & theme if not present
+                if (!group.exercises[activeThemeIdx]) {
+                    group.exercises[activeThemeIdx] = generateExercise(activeThemeIdx, group.id * 10 + activeThemeIdx + Math.floor(Math.random() * 50));
+                }
+                const ex = group.exercises[activeThemeIdx];
+
+                const card = document.createElement('div');
+                card.className = `bg-white border-3 ${cfg.border} rounded-3xl p-5 shadow-sm flex flex-col justify-between space-y-4 relative overflow-hidden transition-all`;
+
+                // Card Header (Group Name & Score)
+                let headerHtml = `
+                    <div class="flex items-center justify-between border-b-2 border-slate-100 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl ${cfg.bgHeader} text-white flex items-center justify-center font-black text-base shadow">
+                                ${group.id}
+                            </div>
+                            <h3 class="text-lg font-black text-slate-900">${group.name}</h3>
+                        </div>
+                        <div class="bg-amber-100 border border-amber-300 text-amber-900 px-3 py-1 rounded-xl font-black text-xs">
+                            ⭐ <span id="g-score-${group.id}">${group.score} pts</span>
+                        </div>
+                    </div>
+                `;
+
+                // Card Body based on Active Theme & Exercise subType
+                let bodyHtml = `<div class="space-y-3 my-auto">`;
+                bodyHtml += `<p class="text-xs sm:text-sm font-extrabold text-slate-500">${ex.questionText}</p>`;
+                bodyHtml += `<div class="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl flex items-center justify-center gap-3">${ex.displayHtml}</div>`;
+
+                if (ex.subType === 'mixedToImp') {
+                    bodyHtml += `
+                        <div class="flex items-center justify-center gap-2 pt-2">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="g${group.id}-num" value="${ex.userInputNum}" placeholder="?" class="w-20 h-12 text-center text-2xl font-black bg-white border-3 border-indigo-300 focus:border-indigo-600 rounded-xl outline-none" aria-label="Numerador">
+                                <div class="w-20 h-1 bg-slate-800 my-1 rounded-full"></div>
+                                <input type="number" id="g${group.id}-den" value="${ex.userInputDen}" placeholder="?" class="w-20 h-12 text-center text-2xl font-black bg-white border-3 border-amber-300 focus:border-amber-600 rounded-xl outline-none" aria-label="Denominador">
+                            </div>
+                        </div>
+                    `;
+                } else if (ex.subType === 'impToMixed') {
+                    bodyHtml += `
+                        <div class="flex items-center justify-center gap-2 pt-2">
+                            <input type="number" id="g${group.id}-whole" value="${ex.userInputWhole || ''}" placeholder="E" class="w-16 h-16 text-center text-3xl font-black bg-white border-3 border-indigo-300 focus:border-indigo-600 rounded-xl outline-none" title="Entero">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="g${group.id}-num" value="${ex.userInputNum}" placeholder="?" class="w-16 h-10 text-center text-xl font-black bg-white border-3 border-emerald-300 focus:border-emerald-600 rounded-lg outline-none" title="Numerador">
+                                <div class="w-16 h-1 bg-slate-800 my-1 rounded-full"></div>
+                                <input type="number" id="g${group.id}-den" value="${ex.userInputDen}" placeholder="?" class="w-16 h-10 text-center text-xl font-black bg-white border-3 border-amber-300 focus:border-amber-600 rounded-lg outline-none" title="Denominador">
+                            </div>
+                        </div>
+                    `;
+                } else if (ex.subType === 'addSimple' || ex.subType === 'addDiff') {
+                    bodyHtml += `
+                        <div class="flex items-center justify-center gap-2 pt-2">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="g${group.id}-num" value="${ex.userInputNum}" placeholder="?" class="w-20 h-12 text-center text-2xl font-black bg-white border-3 border-indigo-300 focus:border-indigo-600 rounded-xl outline-none" aria-label="Numerador">
+                                <div class="w-20 h-1 bg-slate-800 my-1 rounded-full"></div>
+                                <input type="number" id="g${group.id}-den" value="${ex.userInputDen}" placeholder="?" class="w-20 h-12 text-center text-2xl font-black bg-white border-3 border-amber-300 focus:border-amber-600 rounded-xl outline-none" aria-label="Denominador">
+                            </div>
+                        </div>
+                    `;
+                } else if (ex.subType === 'decimalOp') {
+                    bodyHtml += `
+                        <div class="flex items-center justify-center pt-2">
+                            <input type="text" id="g${group.id}-dec" value="${ex.userInputVal || ''}" placeholder="Ej: 5,25" class="w-40 h-14 text-center text-2xl font-black bg-white border-3 border-amber-400 focus:border-amber-600 rounded-2xl outline-none shadow-inner">
+                        </div>
+                    `;
+                } else if (ex.subType === 'simceChoice') {
+                    bodyHtml += `<div class="grid grid-cols-2 gap-2 pt-1">`;
+                    ex.options.forEach(opt => {
+                        const isSelected = ex.selectedOption === opt.letter;
+                        const btnStyle = isSelected ? "bg-indigo-600 text-white border-indigo-600" : "bg-white hover:bg-slate-50 text-slate-800 border-slate-200";
+                        bodyHtml += `
+                            <button onclick="selectSimceChoice(${group.id}, '${opt.letter}')" class="p-2.5 rounded-xl border-2 ${btnStyle} font-black text-sm transition text-left flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-800 flex items-center justify-center text-xs shrink-0">${opt.letter}</span>
+                                <span class="truncate">${opt.text}</span>
+                            </button>
+                        `;
+                    });
+                    bodyHtml += `</div>`;
+                }
+                bodyHtml += `</div>`;
+
+                // Feedback box
+                let feedbackDisplay = ex.feedbackMsg ? `<div class="p-3 rounded-xl font-bold text-xs sm:text-sm ${ex.solved ? 'bg-emerald-100 text-emerald-950 border border-emerald-300' : 'bg-amber-100 text-amber-950 border border-amber-300'}">${ex.feedbackMsg}</div>` : '';
+
+                // Card Footer Actions (Check & New Exercise for ONLY this group)
+                let footerHtml = `
+                    <div class="space-y-2 pt-2 border-t border-slate-100">
+                        ${feedbackDisplay}
+                        <div class="flex items-center gap-2">
+                            <button onclick="checkGroupAnswer(${group.id})" class="flex-1 ${cfg.btn} text-white font-black py-2.5 px-3 rounded-xl text-sm shadow transition">
+                                ✓ Comprobar
+                            </button>
+                            <button onclick="newGroupExercise(${group.id})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold py-2.5 px-3 rounded-xl text-sm transition" title="Nuevo ejercicio solo para este grupo">
+                                🔄 Nuevo Grupo
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                card.innerHTML = headerHtml + bodyHtml + footerHtml;
+                grid.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // 4. CHECK & UPDATE INDEPENDENT GROUP LOGIC
+        // ==========================================
+        function checkGroupAnswer(groupId) {
+            const group = groupsState.find(g => g.id === groupId);
+            const ex = group.exercises[activeThemeIdx];
+
+            if (ex.subType === 'mixedToImp') {
+                const nInput = parseInt(document.getElementById(`g${groupId}-num`).value, 10);
+                const dInput = parseInt(document.getElementById(`g${groupId}-den`).value, 10);
+                ex.userInputNum = document.getElementById(`g${groupId}-num`).value;
+                ex.userInputDen = document.getElementById(`g${groupId}-den`).value;
+
+                if (nInput === ex.ansNum && dInput === ex.ansDen) {
+                    if (!ex.solved) { ex.solved = true; group.score += 10; updateGlobalScore(); }
+                    ex.feedbackMsg = `🎉 ¡Correcto! +10 pts para ${group.name}.`;
+                } else {
+                    ex.feedbackMsg = `💡 Pista: Multiplica entero por denominador y súmale el numerador.`;
+                }
+            } else if (ex.subType === 'impToMixed') {
+                const wInput = parseInt(document.getElementById(`g${groupId}-whole`).value, 10);
+                const nInput = parseInt(document.getElementById(`g${groupId}-num`).value, 10);
+                const dInput = parseInt(document.getElementById(`g${groupId}-den`).value, 10);
+                ex.userInputWhole = document.getElementById(`g${groupId}-whole`).value;
+                ex.userInputNum = document.getElementById(`g${groupId}-num`).value;
+                ex.userInputDen = document.getElementById(`g${groupId}-den`).value;
+
+                if (wInput === ex.ansWhole && nInput === ex.ansNum && dInput === ex.ansDen) {
+                    if (!ex.solved) { ex.solved = true; group.score += 10; updateGlobalScore(); }
+                    ex.feedbackMsg = `🎉 ¡Excelente! +10 pts para ${group.name}.`;
+                } else {
+                    ex.feedbackMsg = `💡 Pista: Divide numerador entre denominador para sacar los enteros.`;
+                }
+            } else if (ex.subType === 'addSimple' || ex.subType === 'addDiff') {
+                const nInput = parseInt(document.getElementById(`g${groupId}-num`).value, 10);
+                const dInput = parseInt(document.getElementById(`g${groupId}-den`).value, 10);
+                ex.userInputNum = document.getElementById(`g${groupId}-num`).value;
+                ex.userInputDen = document.getElementById(`g${groupId}-den`).value;
+
+                if (dInput > 0 && (nInput * ex.ansDen === ex.ansNum * dInput)) {
+                    if (!ex.solved) { ex.solved = true; group.score += 10; updateGlobalScore(); }
+                    ex.feedbackMsg = `🎉 ¡Muy bien! Resultado correcto: ${ex.ansNum}/${ex.ansDen}. (+10 pts)`;
+                } else {
+                    ex.feedbackMsg = `💡 Pista: Igualar denominadores antes de sumar los numeradores.`;
+                }
+            } else if (ex.subType === 'decimalOp') {
+                const raw = document.getElementById(`g${groupId}-dec`).value.trim().replace(',', '.');
+                const val = parseFloat(raw);
+                ex.userInputVal = document.getElementById(`g${groupId}-dec`).value;
+
+                if (!isNaN(val) && Math.abs(val - ex.ansVal) < 0.001) {
+                    if (!ex.solved) { ex.solved = true; group.score += 10; updateGlobalScore(); }
+                    ex.feedbackMsg = `🎉 ¡Correcto! El valor es ${ex.ansVal.toString().replace('.', ',')}. (+10 pts)`;
+                } else {
+                    ex.feedbackMsg = `💡 Pista: Alinea la coma decimal y rellena con ceros si falta.`;
+                }
+            } else if (ex.subType === 'simceChoice') {
+                if (!ex.selectedOption) {
+                    ex.feedbackMsg = `⚠️ Selecciona una alternativa (A, B, C o D) primero.`;
+                } else if (ex.selectedOption === ex.correctLetter) {
+                    if (!ex.solved) { ex.solved = true; group.score += 15; updateGlobalScore(); }
+                    ex.feedbackMsg = `🏆 ¡Alternativa correcta (${ex.correctLetter})! (+15 pts)`;
+                } else {
+                    ex.feedbackMsg = `❌ Incorrecto. Vuelve a revisar el enunciado y transforma a decimal.`;
+                }
+            }
+
+            renderGroupsGrid();
+        }
+
+        function selectSimceChoice(groupId, letter) {
+            const group = groupsState.find(g => g.id === groupId);
+            const ex = group.exercises[activeThemeIdx];
+            ex.selectedOption = letter;
+            renderGroupsGrid();
+        }
+
+        function newGroupExercise(groupId) {
+            const group = groupsState.find(g => g.id === groupId);
+            // Generate a fresh exercise seed using timestamp + random
+            const newSeed = Math.floor(Math.random() * 1000) + groupId;
+            group.exercises[activeThemeIdx] = generateExercise(activeThemeIdx, newSeed);
+            renderGroupsGrid();
+        }
+
+        function updateGlobalScore() {
+            globalScore = groupsState.reduce((sum, g) => sum + g.score, 0);
+            document.getElementById('global-score').textContent = `${globalScore} pts`;
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        // Initialize application on load
+        window.onload = function() {
+            switchContentSlide(0);
+        };
+    </script>
+</body>
+</html>
