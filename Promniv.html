@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laboratorio del Promedio - 5° básico</title>
+<style>
+:root{
+  --bg1:#f6fbff;--bg2:#fff8ee;--panel:#fff;--ink:#18324a;--muted:#6a7d8f;
+  --line:#dbe6ef;--blue:#4f7cff;--blue2:#edf3ff;--green:#2fa36f;--green2:#ecfaf3;
+  --orange:#f2a63b;--orange2:#fff4df;--red:#d9534f;--red2:#fff0ef;--purple:#8065d8;
+  --shadow:0 10px 30px rgba(34,72,110,.12)
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:linear-gradient(135deg,var(--bg1),var(--bg2))}
+body{min-height:100vh}
+button,input{font:inherit}
+button{border:0;border-radius:14px;padding:11px 16px;font-weight:900;cursor:pointer;transition:.18s}
+button:hover{transform:translateY(-1px)}
+button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.primary{background:var(--blue);color:#fff}
+.secondary{background:var(--blue2);color:var(--blue)}
+.ghost{background:#f3f6f9;color:var(--ink)}
+.dark{background:#17324d;color:#fff}
+#app{min-height:100vh;display:flex;flex-direction:column}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(255,255,255,.95);border-bottom:1px solid var(--line)}
+.brand{font-weight:950;font-size:18px;white-space:nowrap}
+.meta{font-size:13px;color:var(--muted);white-space:nowrap}
+.progress{flex:1;height:10px;background:#e8eef5;border-radius:999px;overflow:hidden;min-width:80px}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),#8ba9ff);transition:.25s}
+main{width:min(1180px,94vw);margin:22px auto 110px}
+.screen{display:none}
+.screen.active{display:block}
+.hero{background:linear-gradient(135deg,#edf3ff,#fff8e8);border:1px solid var(--line);border-radius:26px;padding:28px;box-shadow:var(--shadow)}
+h1{font-size:clamp(34px,5vw,56px);line-height:1.05;margin:0 0 12px}
+h2{font-size:clamp(27px,3.6vw,40px);margin:0 0 16px}
+h3{font-size:22px;margin:0 0 10px}
+.lead{font-size:clamp(18px,2.2vw,25px);line-height:1.45}
+.tag,.time{display:inline-flex;padding:7px 12px;border-radius:999px;font-weight:900;margin:0 7px 10px 0}
+.tag{background:var(--blue2);color:var(--blue)}
+.time{background:var(--orange2);color:#8a5c00}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:var(--shadow)}
+.note,.okbox{border-radius:18px;padding:16px 18px;margin-top:16px}
+.note{background:#fff8e9;border:1px solid #f0d9a7}
+.okbox{background:var(--green2);border:1px solid #bfe8d2}
+.route{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:22px}
+.route .card{text-align:center;padding:14px}
+.route strong{display:block;font-size:28px;color:var(--blue)}
+input[type=number],input[type=text]{padding:12px 13px;border:2px solid #ccd9e6;border-radius:12px;font-size:19px;font-weight:800;color:var(--ink);background:#fff}
+.namebox{width:min(360px,100%)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.feedback{min-height:28px;margin-top:12px;font-weight:900;font-size:17px}
+.data-table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:16px;border:1px solid var(--line);background:#fff}
+.data-table th,.data-table td{padding:13px;text-align:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.data-table th:last-child,.data-table td:last-child{border-right:0}
+.data-table tr:last-child td{border-bottom:0}
+.data-table th{background:#f1f5ff;color:#3457b6}
+.builders{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;align-items:end;margin-top:18px}
+.builder{text-align:center;background:#fff;border:2px solid var(--line);border-radius:18px;padding:14px;min-width:0}
+.builder.drop-target{border-color:var(--blue);background:#f7f9ff}
+.stack{min-height:235px;display:flex;flex-direction:column-reverse;align-items:center;gap:4px;justify-content:flex-start;padding:8px;border-radius:14px}
+.block{
+  width:60px;height:25px;border-radius:7px;background:linear-gradient(#90acff,#6489ef);
+  border:2px solid #4f76db;cursor:grab;box-shadow:0 2px 4px rgba(45,82,160,.14)
+}
+.block:active{cursor:grabbing}
+.block.selected{outline:4px solid var(--orange);outline-offset:2px}
+.builder .value{font-size:27px;font-weight:950;color:var(--blue);margin:8px 0}
+.builder .controls{display:flex;justify-content:center;gap:8px}
+.builder .controls button{padding:7px 12px}
+.eq{font-size:clamp(24px,3vw,38px);font-weight:950;text-align:center;background:#f7faff;border:1px solid #dce7f2;border-radius:18px;padding:17px;margin-top:14px}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{background:#f1f5ff;border:2px solid #cad7ff;color:#3556b0;border-radius:14px;padding:10px 14px;font-size:22px;font-weight:950}
+.choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.choice{background:#fff;border:2px solid #dce5ee;text-align:left;color:var(--ink)}
+.choice.correct{background:var(--green2);border-color:#8fd1af}
+.choice.wrong{background:var(--red2);border-color:#eda8a2}
+.context-icon{font-size:76px;text-align:center}
+.pair{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;align-items:center}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.summary .card{text-align:center}
+.summary strong{font-size:34px;color:var(--blue);display:block}
+.move-help{background:#eef5ff;border:1px solid #cbdafd;border-radius:16px;padding:14px;margin-top:14px}
+footer{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:10px 16px}
+.footer-left{font-size:14px;color:var(--muted);font-weight:800}
+.footer-actions{display:flex;gap:10px}
+@media(max-width:900px){
+  .route{grid-template-columns:repeat(3,1fr)}
+  .builders{grid-template-columns:repeat(2,1fr)}
+  .grid3{grid-template-columns:repeat(2,1fr)}
+  .meta{display:none}
+}
+@media(max-width:700px){
+  header{flex-wrap:wrap}.brand{font-size:15px;flex:1}.progress{order:5;flex-basis:100%}
+  main{width:min(96vw,1180px);margin-top:14px}
+  .grid2,.grid3,.pair,.builders,.route,.summary{grid-template-columns:1fr}
+  .stack{min-height:190px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">📊 Laboratorio del Promedio · 5° básico</div>
+  <div class="meta">70 minutos</div>
+  <div class="progress"><div id="progressBar"></div></div>
+  <button id="fsBtn" class="dark">⛶ Pantalla completa</button>
+</header>
+
+<main>
+<section class="screen active">
+  <div class="hero">
+    <span class="tag">🎯 Actividad interactiva</span><span class="time">70 min</span>
+    <h1>Del reparto equitativo al promedio en la vida real</h1>
+    <p class="lead"><strong>Objetivo de hoy:</strong> Calcular e interpretar el promedio de datos en contextos reales —notas escolares, temperaturas medias y tiempos de carrera— evaluando si el resultado representa adecuadamente al conjunto.</p>
+    <div class="note"><strong>Recordaremos primero:</strong> el promedio como valor equitativo mediante nivelación concreta y luego mediante el algoritmo escrito.</div>
+    <div class="row" style="margin-top:18px">
+      <input id="studentName" class="namebox" type="text" placeholder="Escribe tu nombre">
+      <button class="primary" id="startBtn">Comenzar actividad</button>
+    </div>
+  </div>
+  <div class="route">
+    <div class="card"><strong>10</strong>min<br>Construir datos</div>
+    <div class="card"><strong>15</strong>min<br>Nivelar manualmente</div>
+    <div class="card"><strong>10</strong>min<br>Algoritmo</div>
+    <div class="card"><strong>20</strong>min<br>Contextos reales</div>
+    <div class="card"><strong>10</strong>min<br>Representatividad</div>
+    <div class="card"><strong>5</strong>min<br>Ticket</div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">🧠 Repaso</span><span class="time">10 min</span>
+  <h2>1. Convierte la tabla en bloques</h2>
+  <p class="lead">Construye las torres según la tabla. Después usarás esas mismas cantidades para nivelar.</p>
+  <div class="card">
+    <table class="data-table">
+      <thead><tr><th>Grupo A</th><th>Grupo B</th><th>Grupo C</th><th>Grupo D</th></tr></thead>
+      <tbody><tr><td>2 fichas</td><td>6 fichas</td><td>8 fichas</td><td>4 fichas</td></tr></tbody>
+    </table>
+    <div class="builders" id="builders"></div>
+    <div class="row" style="margin-top:16px">
+      <button class="primary" id="checkBuild">Comprobar torres</button>
+      <button class="secondary" id="resetBuild">Reiniciar</button>
+    </div>
+    <div class="feedback" id="buildFeedback"></div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">🧱 Nivelación manual 1</span><span class="time">Arrastra los bloques</span>
+  <h2>2. Nivela 2, 6, 8 y 4</h2>
+  <p class="lead">Mueve bloques de una torre a otra hasta que las cuatro tengan la misma altura. <strong>No se puede crear ni eliminar ningún bloque.</strong></p>
+  <div class="card">
+    <div class="builders" id="manual1"></div>
+    <div class="move-help">🖱️ <strong>Computador:</strong> arrastra un bloque hacia otra torre. 📱 <strong>Tablet/celular:</strong> toca un bloque y luego toca la torre de destino.</div>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" data-check-level="manual1">Comprobar nivelación</button>
+      <button class="secondary" data-reset-level="manual1">Reiniciar</button>
+    </div>
+    <div class="feedback" id="manual1Fb"></div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">🧱 Nivelación manual 2</span>
+  <h2>3. Nivela 3, 5, 7 y 9</h2>
+  <div class="card">
+    <div class="builders" id="manual2"></div>
+    <div class="move-help">Mueve bloques hasta lograr un reparto equitativo. Observa cómo cambia cada torre, pero el total se mantiene.</div>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" data-check-level="manual2">Comprobar nivelación</button>
+      <button class="secondary" data-reset-level="manual2">Reiniciar</button>
+    </div>
+    <div class="feedback" id="manual2Fb"></div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">🧱 Nivelación manual 3</span>
+  <h2>4. Nivela 4, 6, 10 y 8</h2>
+  <div class="card">
+    <div class="builders" id="manual3"></div>
+    <div class="move-help">Antes de mover, predice mentalmente cuál podría ser la altura final de las cuatro torres.</div>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" data-check-level="manual3">Comprobar nivelación</button>
+      <button class="secondary" data-reset-level="manual3">Reiniciar</button>
+    </div>
+    <div class="feedback" id="manual3Fb"></div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">✍️ Del reparto al algoritmo</span><span class="time">10 min</span>
+  <h2>5. Escribe matemáticamente lo que hiciste</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3>Con 2, 6, 8 y 4</h3>
+      <p>Suma: 2 + 6 + 8 + 4 =</p>
+      <div class="row"><input id="sumRecall" type="number"><button class="primary" id="sumRecallBtn">Comprobar</button></div>
+      <div class="feedback" id="sumRecallFb"></div>
+    </div>
+    <div class="card">
+      <h3>Ahora reparte</h3>
+      <p>Divide el total entre los 4 datos.</p>
+      <div class="row"><input id="avgRecall" type="number"><button class="primary" id="avgRecallBtn">Comprobar</button></div>
+      <div class="feedback" id="avgRecallFb"></div>
+    </div>
+  </div>
+  <div class="eq">Promedio = suma de los datos ÷ cantidad de datos</div>
+</section>
+
+<section class="screen">
+  <span class="tag">🎓 Contexto 1</span>
+  <h2>6. Promedio de notas</h2>
+  <div class="pair">
+    <div class="card">
+      <div class="chips"><span class="chip">5,0</span><span class="chip">6,0</span><span class="chip">4,0</span><span class="chip">7,0</span></div>
+      <p>Completa:</p>
+      <div class="row">
+        <label>Suma:</label><input id="gradeSum" type="number" step="0.1">
+        <label>Cantidad:</label><input id="gradeCount" type="number">
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label>Promedio:</label><input id="gradeAvg" type="number" step="0.1">
+        <button class="primary" id="gradeCheck">Comprobar</button>
+      </div>
+      <div class="feedback" id="gradeFb"></div>
+    </div>
+    <div class="context-icon">🎓📘</div>
+  </div>
+  <div class="note"><strong>Interpreta:</strong> promedio 5,5 no significa que todas las notas hayan sido 5,5.</div>
+</section>
+
+<section class="screen">
+  <span class="tag">🌡️ Contexto 2</span>
+  <h2>7. Temperatura media</h2>
+  <div class="card">
+    <div class="chips"><span class="chip">14 °C</span><span class="chip">16 °C</span><span class="chip">18 °C</span><span class="chip">20 °C</span></div>
+    <p>¿Cuál fue la temperatura media?</p>
+    <div class="row"><input id="tempAvg" type="number" step="0.1"><button class="primary" id="tempCheck">Comprobar</button></div>
+    <div class="feedback" id="tempFb"></div>
+    <div class="choice-grid" id="tempInterpret">
+      <button class="choice" data-v="a">Todos los días hubo exactamente 17 °C.</button>
+      <button class="choice" data-v="b">17 °C representa equilibradamente las cuatro temperaturas.</button>
+      <button class="choice" data-v="c">17 °C fue necesariamente la temperatura del segundo día.</button>
+      <button class="choice" data-v="d">17 °C es la temperatura más alta.</button>
+    </div>
+    <div class="feedback" id="tempInterpretFb"></div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">🏃 Contexto 3</span>
+  <h2>8. Tiempos de carrera</h2>
+  <div class="card">
+    <div class="chips"><span class="chip">12 s</span><span class="chip">14 s</span><span class="chip">13 s</span><span class="chip">15 s</span></div>
+    <p>Calcula el tiempo promedio.</p>
+    <div class="row"><input id="raceAvg" type="number" step="0.1"><button class="primary" id="raceCheck">Comprobar</button></div>
+    <div class="feedback" id="raceFb"></div>
+    <div class="note">En carrera, un tiempo menor es más rápido. El promedio describe el rendimiento general del grupo.</div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">🧩 Práctica autónoma</span>
+  <h2>9. Tres desafíos</h2>
+  <div class="grid3">
+    <div class="card"><h3>Notas</h3><div class="chips"><span class="chip">4</span><span class="chip">5</span><span class="chip">6</span><span class="chip">5</span></div><p>Promedio:</p><div class="row"><input id="p1" type="number"><button class="primary miniCheck" data-id="p1" data-answer="5">✓</button></div><div class="feedback" id="p1Fb"></div></div>
+    <div class="card"><h3>Temperaturas</h3><div class="chips"><span class="chip">11</span><span class="chip">13</span><span class="chip">15</span><span class="chip">17</span></div><p>Promedio:</p><div class="row"><input id="p2" type="number"><button class="primary miniCheck" data-id="p2" data-answer="14">✓</button></div><div class="feedback" id="p2Fb"></div></div>
+    <div class="card"><h3>Carrera</h3><div class="chips"><span class="chip">10</span><span class="chip">12</span><span class="chip">14</span><span class="chip">16</span></div><p>Promedio:</p><div class="row"><input id="p3" type="number"><button class="primary miniCheck" data-id="p3" data-answer="13">✓</button></div><div class="feedback" id="p3Fb"></div></div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">🔎 Representatividad</span><span class="time">10 min</span>
+  <h2>10. ¿El promedio representa bien al conjunto?</h2>
+  <div class="grid2">
+    <div class="card"><h3>Grupo A</h3><div class="chips"><span class="chip">12</span><span class="chip">13</span><span class="chip">13</span><span class="chip">14</span></div></div>
+    <div class="card"><h3>Grupo B</h3><div class="chips"><span class="chip">12</span><span class="chip">13</span><span class="chip">14</span><span class="chip">29</span></div></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <p class="lead">¿En cuál grupo el promedio representa mejor al conjunto?</p>
+    <div class="choice-grid" id="representChoice">
+      <button class="choice" data-v="A">Grupo A</button>
+      <button class="choice" data-v="B">Grupo B</button>
+    </div>
+    <div class="feedback" id="representFb"></div>
+  </div>
+  <div class="note">Un dato extremadamente alto o bajo puede mover el promedio y hacerlo menos representativo.</div>
+</section>
+
+<section class="screen">
+  <span class="tag">🎯 Ticket de salida</span><span class="time">5 min</span>
+  <h2>11. Demuestra lo aprendido</h2>
+  <div class="grid2">
+    <div class="card"><h3>1</h3><p>Calcula el promedio de 4, 6, 8 y 10.</p></div>
+    <div class="card"><h3>2</h3><p>Si la temperatura promedio fue 17 °C, ¿significa que todos los días hubo 17 °C? Explica.</p></div>
+    <div class="card"><h3>3</h3><p>Escribe los dos pasos principales para calcular un promedio.</p></div>
+    <div class="card"><h3>4</h3><p>¿Qué puede ocurrir si existe un dato muy alejado de los demás?</p></div>
+  </div>
+</section>
+
+<section class="screen">
+  <span class="tag">✅ Cierre</span>
+  <h1>Misión completada</h1>
+  <div class="summary">
+    <div class="card"><strong>1</strong>Nivelamos moviendo bloques</div>
+    <div class="card"><strong>2</strong>Calculamos con el algoritmo</div>
+    <div class="card"><strong>3</strong>Interpretamos la representatividad</div>
+  </div>
+  <div class="eq">Promedio = suma de los datos ÷ cantidad de datos</div>
+</section>
+</main>
+
+<footer>
+  <div class="footer-left" id="footerInfo">Actividad 1</div>
+  <div class="footer-actions">
+    <button id="prevBtn" class="secondary">← Anterior</button>
+    <button id="nextBtn" class="primary">Siguiente →</button>
+  </div>
+</footer>
+</div>
+
+<script>
+(() => {
+  const screens=[...document.querySelectorAll('.screen')];
+  let index=0, student='';
+  const pb=document.getElementById('progressBar');
+  const footerInfo=document.getElementById('footerInfo');
+  const prevBtn=document.getElementById('prevBtn');
+  const nextBtn=document.getElementById('nextBtn');
+
+  function show(n){
+    index=Math.max(0,Math.min(screens.length-1,n));
+    screens.forEach((s,i)=>s.classList.toggle('active',i===index));
+    pb.style.width=`${((index+1)/screens.length)*100}%`;
+    footerInfo.textContent=`${student?student+' · ':''}Actividad ${index+1} de ${screens.length}`;
+    prevBtn.disabled=index===0;
+    nextBtn.textContent=index===screens.length-1?'Volver al inicio ↺':'Siguiente →';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  prevBtn.addEventListener('click',()=>show(index-1));
+  nextBtn.addEventListener('click',()=>index===screens.length-1?show(0):show(index+1));
+  document.getElementById('startBtn').addEventListener('click',()=>{
+    student=document.getElementById('studentName').value.trim();
+    if(!student){alert('Escribe tu nombre antes de comenzar.');return;}
+    show(1);
+  });
+
+  document.getElementById('fsBtn').addEventListener('click',async()=>{
+    try{
+      if(!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+    }catch(e){alert('Usa F11 si el navegador bloquea la pantalla completa.');}
+  });
+  document.addEventListener('fullscreenchange',()=>{
+    document.getElementById('fsBtn').textContent=document.fullscreenElement?'⤢ Salir de pantalla completa':'⛶ Pantalla completa';
+  });
+
+  function feedback(el,ok,good,bad){
+    el.textContent=ok?good:bad;
+    el.style.color=ok?'var(--green)':'var(--red)';
+  }
+
+  // Construcción inicial
+  const targets=[2,6,8,4];
+  let build=[0,0,0,0];
+  const builders=document.getElementById('builders');
+  function renderBuild(){
+    builders.innerHTML=build.map((v,i)=>`
+      <div class="builder">
+        <div class="stack">${Array.from({length:v},()=>'<div class="block"></div>').join('')}</div>
+        <div class="value">${v}</div><strong>Grupo ${String.fromCharCode(65+i)}</strong>
+        <div class="controls"><button class="secondary minus" data-i="${i}">−</button><button class="primary plus" data-i="${i}">+</button></div>
+      </div>`).join('');
+    builders.querySelectorAll('.plus').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.i;if(build[i]<12)build[i]++;renderBuild();}));
+    builders.querySelectorAll('.minus').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.i;if(build[i]>0)build[i]--;renderBuild();}));
+  }
+  renderBuild();
+  document.getElementById('checkBuild').addEventListener('click',()=>{
+    const ok=build.every((v,i)=>v===targets[i]);
+    feedback(document.getElementById('buildFeedback'),ok,'¡Correcto! Construiste los datos de la tabla.','Revisa: 2, 6, 8 y 4.');
+  });
+  document.getElementById('resetBuild').addEventListener('click',()=>{build=[0,0,0,0];renderBuild();document.getElementById('buildFeedback').textContent='';});
+
+  // Desafíos manuales
+  const manualConfigs={
+    manual1:{initial:[2,6,8,4], values:[2,6,8,4], selected:null},
+    manual2:{initial:[3,5,7,9], values:[3,5,7,9], selected:null},
+    manual3:{initial:[4,6,10,8], values:[4,6,10,8], selected:null}
+  };
+
+  function renderManual(id){
+    const cfg=manualConfigs[id];
+    const root=document.getElementById(id);
+    root.innerHTML=cfg.values.map((v,i)=>`
+      <div class="builder manual-tower" data-tower="${i}">
+        <div class="stack" data-tower="${i}">
+          ${Array.from({length:v},(_,k)=>`<div class="block" draggable="true" data-source="${i}" data-block="${k}" title="Arrastra este bloque"></div>`).join('')}
+        </div>
+        <div class="value">${v}</div>
+        <strong>Torre ${String.fromCharCode(65+i)}</strong>
+      </div>`).join('');
+
+    root.querySelectorAll('.block').forEach(block=>{
+      block.addEventListener('dragstart',e=>{
+        e.dataTransfer.setData('text/plain',JSON.stringify({id,source:+block.dataset.source}));
+        e.dataTransfer.effectAllowed='move';
+      });
+      block.addEventListener('click',()=>{
+        root.querySelectorAll('.block').forEach(b=>b.classList.remove('selected'));
+        cfg.selected=+block.dataset.source;
+        block.classList.add('selected');
+      });
+    });
+
+    root.querySelectorAll('.manual-tower').forEach(tower=>{
+      tower.addEventListener('dragover',e=>{e.preventDefault();tower.classList.add('drop-target');});
+      tower.addEventListener('dragleave',()=>tower.classList.remove('drop-target'));
+      tower.addEventListener('drop',e=>{
+        e.preventDefault();tower.classList.remove('drop-target');
+        try{
+          const data=JSON.parse(e.dataTransfer.getData('text/plain'));
+          if(data.id!==id) return;
+          moveBlock(id,data.source,+tower.dataset.tower);
+        }catch(_){}
+      });
+      tower.addEventListener('click',e=>{
+        if(e.target.classList.contains('block')) return;
+        if(cfg.selected===null) return;
+        moveBlock(id,cfg.selected,+tower.dataset.tower);
+        cfg.selected=null;
+      });
+    });
+  }
+
+  function moveBlock(id,source,target){
+    const cfg=manualConfigs[id];
+    if(source===target || cfg.values[source]<=0) return;
+    cfg.values[source]--;
+    cfg.values[target]++;
+    renderManual(id);
+  }
+
+  Object.keys(manualConfigs).forEach(renderManual);
+
+  document.querySelectorAll('[data-check-level]').forEach(btn=>btn.addEventListener('click',()=>{
+    const id=btn.dataset.checkLevel;
+    const vals=manualConfigs[id].values;
+    const ok=vals.every(v=>v===vals[0]);
+    const total=vals.reduce((a,b)=>a+b,0);
+    const avg=total/vals.length;
+    feedback(document.getElementById(id+'Fb'),ok,
+      `¡Nivelación lograda! Todas las torres quedaron en ${avg}. Ese es el promedio.`,
+      `Aún no están iguales. El total sigue siendo ${total}; continúa moviendo bloques.`);
+  }));
+
+  document.querySelectorAll('[data-reset-level]').forEach(btn=>btn.addEventListener('click',()=>{
+    const id=btn.dataset.resetLevel;
+    manualConfigs[id].values=[...manualConfigs[id].initial];
+    manualConfigs[id].selected=null;
+    renderManual(id);
+    document.getElementById(id+'Fb').textContent='';
+  }));
+
+  document.getElementById('sumRecallBtn').addEventListener('click',()=>{
+    feedback(document.getElementById('sumRecallFb'),+document.getElementById('sumRecall').value===20,'¡Correcto! La suma es 20.','Suma 2 + 6 + 8 + 4.');
+  });
+  document.getElementById('avgRecallBtn').addEventListener('click',()=>{
+    feedback(document.getElementById('avgRecallFb'),+document.getElementById('avgRecall').value===5,'¡Exacto! 20 ÷ 4 = 5.','Divide 20 entre 4.');
+  });
+
+  document.getElementById('gradeCheck').addEventListener('click',()=>{
+    const ok=+document.getElementById('gradeSum').value===22 && +document.getElementById('gradeCount').value===4 && +document.getElementById('gradeAvg').value===5.5;
+    feedback(document.getElementById('gradeFb'),ok,'¡Muy bien! El promedio es 5,5.','Revisa suma, cantidad de notas y división.');
+  });
+  document.getElementById('tempCheck').addEventListener('click',()=>{
+    feedback(document.getElementById('tempFb'),+document.getElementById('tempAvg').value===17,'¡Correcto! 17 °C.','Suma y divide entre 4.');
+  });
+  document.getElementById('raceCheck').addEventListener('click',()=>{
+    feedback(document.getElementById('raceFb'),+document.getElementById('raceAvg').value===13.5,'¡Correcto! 13,5 s.','Suma los cuatro tiempos y divide entre 4.');
+  });
+  document.querySelectorAll('.miniCheck').forEach(btn=>btn.addEventListener('click',()=>{
+    const id=btn.dataset.id,ans=+btn.dataset.answer,val=+document.getElementById(id).value;
+    feedback(document.getElementById(id+'Fb'),val===ans,`¡Correcto! Promedio = ${String(ans).replace('.',',')}.`,'Revisa la suma y la cantidad de datos.');
+  }));
+
+  function choiceSetup(boxId,correct,fbId,good,bad){
+    const box=document.getElementById(boxId),out=document.getElementById(fbId);
+    box.querySelectorAll('.choice').forEach(btn=>btn.addEventListener('click',()=>{
+      box.querySelectorAll('.choice').forEach(b=>b.classList.remove('correct','wrong'));
+      const ok=btn.dataset.v===correct;
+      btn.classList.add(ok?'correct':'wrong');
+      feedback(out,ok,good,bad);
+    }));
+  }
+  choiceSetup('tempInterpret','b','tempInterpretFb','¡Correcto! El promedio representa equilibradamente el conjunto.','El promedio no significa que todos los días sean iguales.');
+  choiceSetup('representChoice','A','representFb','¡Correcto! En A los datos están más próximos entre sí.','Observa cuál grupo tiene un valor muy alejado.');
+
+  show(0);
+})();
+</script>
+</body>
+</html>
