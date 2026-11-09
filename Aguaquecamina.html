@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#071b34">
+<title>El agua que camina · Hipótesis · 30 minutos</title>
+<style>
+:root{--bg:#071b34;--surface:#102a49;--surface2:#153655;--line:rgba(202,231,255,.17);--white:#f4faff;--muted:#b6c9dd;--aqua:#69eee0;--blue:#86baff;--gold:#ffd88a}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Arial,sans-serif;background:radial-gradient(ellipse at 20% 1%,#16416b 0,transparent 50%),radial-gradient(ellipse at 95% 95%,#103c52 0,transparent 50%),var(--bg);color:var(--white)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+.app{height:100dvh;min-height:590px;max-width:1440px;margin:0 auto;padding:clamp(14px,2vh,28px) clamp(14px,3vw,40px);display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 3px}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
+.logo{width:46px;height:46px;border:1px solid #4b94bb66;display:grid;place-items:center;border-radius:15px;background:#163c59;font-size:24px}
+.brand strong{display:block;font-weight:850;letter-spacing:.09em;font-size:14px}.brand span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.topright{display:flex;align-items:center;gap:10px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:10px 14px;color:#ddedfb;font-weight:750;white-space:nowrap;font-size:13px}
+.iconbtn{background:#163956;border:1px solid #345874;color:white;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:750}
+.iconbtn:hover{background:#235076}
+.stage{min-height:0;overflow:auto;display:flex;align-items:stretch}
+.screen{display:none;width:100%;height:100%;min-height:0;border:1px solid rgba(185,226,255,.2);border-radius:26px;background:linear-gradient(135deg,rgba(23,61,96,.95),rgba(10,34,62,.96));box-shadow:0 28px 80px #0003;padding:clamp(22px,3.2vw,50px);overflow:auto}
+.screen.active{display:flex;flex-direction:column;justify-content:center}
+.grid2{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);align-items:center;gap:clamp(22px,4vw,65px);width:100%}
+.eyebrow{font-size:clamp(12px,1.05vw,15px);color:var(--aqua);font-weight:900;letter-spacing:.15em;text-transform:uppercase;margin:0 0 17px}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(48px,5.5vw,92px);letter-spacing:-.07em;line-height:.98;margin-bottom:23px;font-weight:900}
+h2{font-size:clamp(35px,3.9vw,58px);letter-spacing:-.052em;line-height:1.07;margin-bottom:16px;font-weight:900}
+.highlight{color:var(--aqua)}
+.lead{font-size:clamp(18px,1.55vw,24px);line-height:1.5;color:#d0e4f4;max-width:690px}
+.question{padding:20px 24px;background:#ffffff0a;border:1px solid #8dbfd954;border-radius:18px;margin-top:25px;font-size:clamp(21px,2vw,29px);line-height:1.34;font-weight:830}
+.time{font-size:13px;font-weight:850;letter-spacing:.09em;color:#a0cfff;text-transform:uppercase;margin-bottom:9px}
+.svgwrap{display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(58,136,169,.17),transparent 65%);min-width:0}
+.cupsvg{width:100%;max-width:670px;height:auto;display:block}
+.svg-note{color:var(--muted);font-size:13px;text-align:center;margin-top:-5px}
+.note{color:var(--muted);font-size:clamp(14px,1.14vw,17px);line-height:1.52}
+.panel{background:#ffffff0a;border:1px solid var(--line);border-radius:20px;padding:clamp(17px,1.8vw,26px)}
+.panel h3{font-size:17px;color:var(--aqua);margin:0 0 13px}
+.formgrid{display:grid;grid-template-columns:200px minmax(0,1fr);gap:15px;margin-bottom:15px}
+.field{min-width:0}
+.field label{font-size:14px;font-weight:850;display:block;margin-bottom:7px;color:#e8f4fc}
+input,select,textarea{width:100%;border:1px solid #64819c;background:#f8fcff;border-radius:11px;padding:12px 14px;color:#18314b;font-size:16px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#39dccb;box-shadow:0 0 0 3px #6be9d455}
+textarea{resize:vertical;min-height:102px;max-height:150px;line-height:1.4}
+.helps{font-size:13px;color:#bbd1e0;line-height:1.45;margin:7px 0 0}
+.qbox{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.qbox textarea{min-height:105px}
+.materials{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0}
+.materials span{font-size:14px;font-weight:780;border:1px solid #49728f;background:#153a59;padding:10px 12px;border-radius:11px}
+.steps{display:flex;flex-direction:column;gap:11px;margin:0;padding:0;list-style:none}
+.steps li{display:flex;align-items:flex-start;gap:13px;font-size:clamp(15px,1.33vw,19px);line-height:1.33}
+.steps b.num{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;background:#4bdecf;color:#0b2c40;border-radius:10px;font-weight:900}
+.steps strong{color:#fff}
+.important{padding:12px 14px;border-radius:12px;background:#ffd88a14;border:1px solid #eac77c55;color:#ffe7b6;font-size:14px;line-height:1.4;margin-top:17px}
+.finish{max-width:850px;margin:auto;text-align:center;padding:6px 0}
+.roundicon{font-size:58px;display:inline-grid;place-items:center;background:#54ddca20;border-radius:27px;width:105px;height:105px;margin-bottom:24px}
+.finish h2{font-size:clamp(34px,4vw,61px)}
+.finish p{font-size:clamp(17px,1.5vw,22px);color:#d1e6f4;line-height:1.48}
+.download{margin:15px 0 13px;border:0;border-radius:15px;background:var(--aqua);color:#0a2b3b;padding:18px 29px;font-size:19px;font-weight:900;box-shadow:0 14px 32px #36decc24}
+.download:hover{background:#94fff2}
+.status{min-height:22px;font-size:14px;color:var(--gold);font-weight:750}
+.footer{display:flex;align-items:center;gap:17px;justify-content:space-between;min-height:62px}
+.progress{display:flex;align-items:center;gap:6px;flex:1;max-width:330px}
+.progress .bar{height:6px;flex:1;border-radius:9px;background:#34516c;transition:background .2s}
+.progress .bar.on{background:var(--aqua)}
+.navbuttons{display:flex;align-items:center;gap:10px}
+.btn{border-radius:13px;border:1px solid #426784;color:#fff;background:#163653;padding:14px 21px;font-weight:850;font-size:15px}
+.btn.primary{background:var(--aqua);color:#082b3b;border-color:var(--aqua)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.counter{color:#b9d4e5;font-size:14px;min-width:72px;text-align:center}
+@media(max-width:950px){.grid2{grid-template-columns:1fr;gap:14px}.screen{justify-content:flex-start!important}.svgwrap{max-height:310px}.cupsvg{max-height:285px}.stage{overflow:auto}.screen.active{min-height:100%}.qbox{grid-template-columns:1fr}.app{min-height:650px}}
+@media(max-width:650px){.app{height:auto;min-height:100dvh;padding:12px;display:flex;flex-direction:column}.top{flex-wrap:wrap}.brand strong{font-size:11px}.brand span{font-size:11px}.pill{display:none}.stage{display:block;overflow:visible}.screen{height:auto;min-height:570px;padding:19px;border-radius:19px}.screen.active{display:flex}.formgrid{grid-template-columns:1fr}.qbox{grid-template-columns:1fr}.footer{position:sticky;bottom:0;background:#071b34e8;backdrop-filter:blur(14px);padding:7px 2px}.progress{display:none}.btn{padding:11px 13px;font-size:13px}.note{font-size:14px}h1{font-size:50px}}
+@media(max-height:770px) and (min-width:951px){.app{min-height:0;gap:10px;padding-top:11px;padding-bottom:11px}.top .logo{width:38px;height:38px;font-size:20px}.screen{padding:23px 32px}h1{font-size:clamp(45px,5vw,70px)}h2{font-size:clamp(30px,3.5vw,48px)}.question{margin-top:16px;padding:14px 17px}.formgrid{margin-bottom:10px}.field label{margin-bottom:5px}textarea{min-height:80px}.qbox textarea{min-height:95px}.materials{margin:11px 0}.steps{gap:8px}.important{margin-top:10px}.footer{min-height:48px}.btn{padding:11px 16px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+ <div class="brand"><div class="logo" aria-hidden="true">🔬</div><div><strong>LABORATORIO DE CIENCIAS</strong><span>Día Mundial de la Ciencia · 9 de noviembre de 2026</span></div></div>
+ <div class="topright"><span class="pill">5.º a 8.º básico · 30 minutos</span><button class="iconbtn" id="fullscreen" type="button" title="Usar pantalla completa">⛶ Pantalla completa</button></div>
+</header>
+<main class="stage">
+<section class="screen active" data-slide="0" aria-label="Presentación del desafío">
+ <div class="grid2">
+  <div><div class="eyebrow">01 / 04 · Observar · 5 minutos</div><h1>EL AGUA<br><span class="highlight">QUE CAMINA</span></h1><p class="lead">Hoy iniciaremos una investigación con <strong>tres vasos</strong> y un material cotidiano: <strong>papel Nova</strong>.</p><div class="question">¿Puede el agua llegar a otro vaso sin que la vertamos?</div><p class="note" style="margin-top:16px">Primero montamos el experimento. Luego escribimos nuestras hipótesis. Más tarde comprobaremos nuestras ideas.</p></div>
+  <div class="svgwrap">
+   <svg class="cupsvg" viewBox="0 0 640 340" role="img" aria-label="Tres vasos en fila: el de la izquierda y la derecha tienen agua de distintos colores; el del centro está vacío.">
+    <defs><linearGradient id="glass" x1="0" x2="1"><stop stop-color="#d5f3ff" stop-opacity=".32"/><stop offset=".55" stop-color="#f9fdff" stop-opacity=".05"/><stop offset="1" stop-color="#c6edff" stop-opacity=".28"/></linearGradient></defs>
+    <ellipse cx="320" cy="300" rx="280" ry="20" fill="#07192f" opacity=".6"/>
+    <g stroke="#a8d5eb" stroke-width="4" fill="url(#glass)"><path d="M55 120 L73 281 Q75 290 90 290 H169 Q184 290 186 281 L204 120"/><path d="M241 120 L259 281 Q261 290 276 290 H355 Q370 290 372 281 L390 120"/><path d="M427 120 L445 281 Q447 290 462 290 H541 Q556 290 558 281 L576 120"/></g>
+    <path d="M68 193 H191 L180 280 Q179 283 170 283 H90 Q80 283 79 280Z" fill="#f67a8e" opacity=".84"/>
+    <path d="M440 193 H563 L552 280 Q551 283 542 283 H462 Q452 283 451 280Z" fill="#49c1fa" opacity=".82"/>
+    <g fill="none" stroke="#d5f1ff" stroke-width="5" opacity=".7"><path d="M55 120h149"/><path d="M241 120h149"/><path d="M427 120h149"/></g>
+    <g text-anchor="middle" fill="#e9f7ff" font-family="system-ui" font-size="21" font-weight="800"><text x="130" y="323">A · color 1</text><text x="316" y="323">B · vacío</text><text x="502" y="323">C · color 2</text></g>
+   </svg><p class="svg-note">Así estarán los vasos antes de colocar las tiras de Nova.</p>
+  </div>
+ </div>
+</section>
+<section class="screen" data-slide="1" aria-label="Montaje del experimento">
+ <div class="grid2">
+  <div><div class="eyebrow">02 / 04 · Montar · 10 minutos</div><h2>Primero, <span class="highlight">¡armemos el experimento!</span></h2>
+   <div class="materials"><span>🥤 3 vasos</span><span>💧 Agua</span><span>🎨 2 colores de témpera</span><span>🧻 Papel Nova</span></div>
+   <ol class="steps"><li><b class="num">1</b><span>Coloca <strong>tres vasos en fila</strong>: A, B y C.</span></li><li><b class="num">2</b><span>Pon agua en A y C, al mismo nivel. Mezcla <strong>un color distinto</strong> en cada uno. Deja B vacío.</span></li><li><b class="num">3</b><span>Prepara <strong>dos tiras dobladas de papel Nova</strong>.</span></li><li><b class="num">4</b><span>Conecta A con B usando una tira y C con B usando la otra, con las puntas dentro de los vasos.</span></li><li><b class="num">5</b><span>Deja todo <strong>quieto y estable</strong>. Comienza a observar sin moverlo.</span></li></ol>
+   <div class="important">⚠️ No pruebes el agua ni la témpera. Evita derrames. No anticipamos resultados ni conclusiones.</div>
+  </div>
+  <div class="svgwrap"><svg class="cupsvg" viewBox="0 0 640 360" role="img" aria-label="Montaje: tres vasos, agua coloreada en los laterales, vaso central vacío, dos tiras de Nova uniendo A-B y C-B.">
+    <ellipse cx="320" cy="311" rx="280" ry="17" fill="#061c30" opacity=".5"/>
+    <g fill="none" stroke="#fff3db" stroke-linejoin="round" stroke-linecap="round" stroke-width="22"><path d="M128 200 L140 118 Q161 79 196 92 L289 165 L300 218"/><path d="M513 200 L500 118 Q479 79 444 92 L350 165 L340 218"/></g>
+    <g fill="none" stroke="#d3c4a9" stroke-linecap="round" stroke-width="2" stroke-dasharray="3 7" opacity=".72"><path d="M128 200 L140 118 Q161 79 196 92 L289 165 L300 218"/><path d="M513 200 L500 118 Q479 79 444 92 L350 165 L340 218"/></g>
+    <g stroke="#b8e3fa" stroke-width="4" fill="#c1eaff18"><path d="M48 123 L67 282 Q69 293 81 293 H173 Q185 293 187 282 L206 123"/><path d="M234 123 L253 282 Q255 293 267 293 H359 Q371 293 373 282 L392 123"/><path d="M420 123 L439 282 Q441 293 453 293 H545 Q557 293 559 282 L578 123"/></g>
+    <path d="M61 195H193L183 282Q180 287 173 287H81Q75 287 72 282Z" fill="#f67a8e" opacity=".8"/>
+    <path d="M433 195H565L555 282Q552 287 545 287H453Q446 287 444 282Z" fill="#49c1fa" opacity=".8"/>
+    <g font-family="system-ui" text-anchor="middle" font-weight="800" fill="#e9f7ff" font-size="20"><text x="128" y="331">A</text><text x="313" y="331">B</text><text x="501" y="331">C</text><text x="320" y="42" font-size="22" fill="#ffe6b6">2 tiras de papel Nova</text></g>
+   </svg><p class="svg-note">Montaje inicial: dos tiras del mismo material, sin usar servilletas.</p></div>
+ </div>
+</section>
+<section class="screen" data-slide="2" aria-label="Registrar hipótesis">
+ <div class="eyebrow">03 / 04 · Predecir · 10 minutos</div>
+ <h2>Con el montaje listo, <span class="highlight">¿qué piensas?</span></h2>
+ <p class="note" style="margin-bottom:13px">Escribe tus ideas antes de conocer el resultado final. <strong>No necesitas acertar:</strong> necesitamos una explicación que luego podamos contrastar.</p>
+ <div class="panel">
+  <div class="formgrid"><div class="field"><label for="curso">Curso</label><select id="curso"><option value="">Seleccionar curso…</option><option>5.º básico</option><option>6.º básico</option><option>7.º básico</option><option>8.º básico</option></select></div><div class="field"><label for="equipo">Estudiante(s) o equipo</label><input id="equipo" maxlength="130" placeholder="Escribe los nombres"></div></div>
+  <div class="qbox"><div class="field"><label for="hipotesis">1. ¿Qué crees que sucederá con el agua? ¿Por qué?</label><textarea id="hipotesis" maxlength="2000" placeholder="Creo que… porque…"></textarea></div><div class="field"><label for="prediccion">2. ¿Qué crees que veremos antes del almuerzo?</label><textarea id="prediccion" maxlength="2000" placeholder="Pienso que los vasos…"></textarea></div></div>
+  <p class="helps">Estas respuestas quedan guardadas en este computador. Al final podrás generar un PDF para revisar tus predicciones más tarde.</p>
+ </div>
+</section>
+<section class="screen" data-slide="3" aria-label="Guardar las hipótesis">
+ <div class="finish"><div class="roundicon">📄</div><div class="eyebrow">04 / 04 · Guardar · 5 minutos</div><h2>Guarda tus ideas <span class="highlight">para compararlas después</span></h2>
+  <p>Descarga el PDF con tus hipótesis. <strong>Antes del almuerzo</strong>, volveremos al experimento y revisaremos qué ocurrió realmente.</p>
+  <button id="pdf" class="download" type="button">↓ Descargar PDF de mis hipótesis</button>
+  <div class="status" id="status" role="status" aria-live="polite"></div>
+  <div class="note" style="margin-top:18px">💡 Guarda el archivo con el nombre de tu equipo. No cambies tus predicciones iniciales después de observar el resultado.</div>
+  <button id="reset" class="iconbtn" style="margin-top:18px" type="button">↺ Comenzar con otro equipo</button>
+ </div>
+</section>
+</main>
+<footer class="footer"><div class="progress" aria-label="Progreso"><span class="bar on"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></div><div class="navbuttons"><button id="prev" class="btn" type="button">← Anterior</button><span class="counter" id="counter">1 de 4</span><button id="next" class="btn primary" type="button">Siguiente →</button></div></footer>
+</div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id);const fields=['curso','equipo','hipotesis','prediccion'];const KEY='agua_nova_hipotesis_2026_30min_v2';const screens=[...document.querySelectorAll('.screen')];let page=0;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(Object.fromEntries(fields.map(id=>[id,$(id).value]))))}catch(e){}}
+try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');fields.forEach(id=>{if(typeof s[id]==='string')$(id).value=s[id]})}catch(e){}
+fields.forEach(id=>$(id).addEventListener('input',save));
+function show(n){page=Math.max(0,Math.min(n,screens.length-1));screens.forEach((node,i)=>node.classList.toggle('active',page===i));document.querySelectorAll('.bar').forEach((node,i)=>node.classList.toggle('on',i<=page));$('prev').disabled=page===0;$('next').style.display=page===screens.length-1?'none':'';$('counter').textContent=(page+1)+' de '+screens.length;document.querySelector('.stage').scrollTop=0;}
+$('prev').addEventListener('click',()=>show(page-1));$('next').addEventListener('click',()=>show(page+1));show(0);
+document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select'))return;if(e.key==='ArrowRight'){show(page+1)}else if(e.key==='ArrowLeft'){show(page-1)}});
+$('fullscreen').onclick=()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen();else if(document.exitFullscreen)document.exitFullscreen()};
+$('reset').onclick=()=>{if(!confirm('¿Borrar las respuestas actuales para registrar otro equipo?'))return;fields.forEach(id=>$(id).value='');save();$('status').textContent='';show(0)};
+// Generador de PDF A4 local, independiente de servicios externos. Se usa codificación WinAnsi.
+function toLatin(s){const map={'€':128,'‚':130,'ƒ':131,'„':132,'…':133,'†':134,'‡':135,'ˆ':136,'‰':137,'Š':138,'‹':139,'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'˜':152,'™':153,'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159};return [...String(s)].map(c=>{const n=c.codePointAt(0);return (n===10||n===13||n===9)?c:String.fromCharCode(map[c]??(n>=32&&n<=255?n:63))}).join('')}
+function pdfStr(s){return toLatin(s).replaceAll('\\','\\\\').replaceAll('(','\\(').replaceAll(')','\\)')}
+function wrap(text,max=84){const out=[];String(text||'Sin respuesta registrada').replace(/\r/g,'').split('\n').forEach(p=>{if(!p.trim()){out.push('');return}let line='';p.trim().split(/\s+/).forEach(w=>{if((line+' '+w).trim().length>max&&line){out.push(line);line=''}while(w.length>max){if(line){out.push(line);line=''}out.push(w.slice(0,max));w=w.slice(max)}line=line?line+' '+w:w});if(line)out.push(line)});return out}
+function createPDF(data){const pages=[];let ops=[],y=0;const fresh=()=>{if(ops.length)pages.push(ops.join('\n'));ops=[];ops.push('0.06 0.16 0.28 rg 0 811 595 31 re f','1 1 1 rg BT /B 10 Tf 42 822 Td (LABORATORIO DE CIENCIAS  /  09 NOV 2026) Tj ET','0.10 0.26 0.42 rg BT /B 20 Tf 42 772 Td (EL AGUA QUE CAMINA) Tj ET','0.38 0.47 0.55 rg BT /R 10 Tf 42 752 Td (Registro inicial de hipotesis  -  SOLO PAPEL NOVA) Tj ET','0.71 0.77 0.83 RG 42 741 m 553 741 l S');y=716};
+const ln=(s,size=11,bold=false,after=4)=>{if(y<94)fresh();ops.push(`0.13 0.23 0.35 rg BT /${bold?'B':'R'} ${size} Tf 42 ${y.toFixed(1)} Td (${pdfStr(s)}) Tj ET`);y-=size*1.4+after};
+const section=(s,a)=>{y-=17;ln(s,12,true,9);wrap(a,91).forEach(w=>ln(w,11,false,4))};fresh();ln('Curso: '+(data.curso||'Sin indicar'),12,true);wrap('Equipo: '+(data.equipo||'Sin indicar'),90).forEach(w=>ln(w,11));section('1. ¿Que crees que sucedera con el agua? ¿Por que?',data.hipotesis);section('2. ¿Que esperas observar antes del almuerzo?',data.prediccion);y-=24;ln('Para retomar mas tarde:',12,true);ln('¿Se cumplieron nuestras predicciones? ¿Que vimos realmente?',10);ln('¿Que evidencias respaldan nuestras ideas?',10);pages.push(ops.join('\n'));
+const obj=[null];const add=s=>(obj.push(s),obj.length-1);const root=add('<< /Type /Catalog /Pages 2 0 R >>');const pId=add('');const reg=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');const bold=add('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');const ids=[];pages.forEach(cmd=>{const bytes=toLatin(cmd);const stream=add(`<< /Length ${bytes.length} >>\nstream\n${bytes}\nendstream`);ids.push(add(`<< /Type /Page /Parent ${pId} 0 R /MediaBox [0 0 595 842] /Resources << /Font << /R ${reg} 0 R /B ${bold} 0 R >> >> /Contents ${stream} 0 R >>`))});obj[pId]=`<< /Type /Pages /Kids [${ids.map(id=>id+' 0 R').join(' ')}] /Count ${ids.length} >>`;
+let pdf='%PDF-1.4\n%âãÏÓ\n',off=[0];for(let i=1;i<obj.length;i++){off[i]=pdf.length;pdf+=`${i} 0 obj\n${obj[i]}\nendobj\n`}const xref=pdf.length;pdf+=`xref\n0 ${obj.length}\n0000000000 65535 f \n`;for(let i=1;i<obj.length;i++)pdf+=String(off[i]).padStart(10,'0')+' 00000 n \n';pdf+=`trailer\n<< /Size ${obj.length} /Root ${root} 0 R >>\nstartxref\n${xref}\n%%EOF`;return new Blob([Uint8Array.from(pdf,c=>c.charCodeAt(0))],{type:'application/pdf'});
+}
+$('pdf').onclick=()=>{const data=Object.fromEntries(fields.map(id=>[id,$(id).value.trim()]));if(!data.curso){$('status').textContent='Primero selecciona el curso en la pantalla 3.';return}if(!data.hipotesis||!data.prediccion){$('status').textContent='Completa las dos respuestas de la pantalla 3.';return}const blob=createPDF(data);const url=URL.createObjectURL(blob);const a=document.createElement('a');const slug=(data.equipo||'equipo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]+/g,'_').slice(0,35);a.href=url;a.download=`Hipotesis_agua_Nova_${data.curso[0]}_basico_${slug}.pdf`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);$('status').textContent='✓ PDF descargado. Consérvalo para compararlo antes del almuerzo.';save()};
+})();
+</script>
+</body>
+</html>
