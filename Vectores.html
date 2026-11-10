@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Actividad interactiva de vectores - 7° Básico</title>
+<style>
+:root{
+  --bg:#081725;--panel:#102c44;--panel2:#173d5c;--line:#234a65;--text:#f6fbff;--muted:#c6d7e5;
+  --cyan:#5ac9f7;--gold:#ffd166;--green:#5bd48b;--red:#ff6b6b;--violet:#b99cff;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#06111c,#102d46 60%,#0a2235);color:var(--text);overflow:hidden}
+header{height:72px;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.12);background:rgba(5,15,24,.96)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-size:28px;font-weight:800}
+.subtitle{color:var(--muted);font-size:17px}
+.progressWrap{display:flex;align-items:center;gap:10px;min-width:320px}
+.progressBar{height:12px;flex:1;border-radius:999px;background:#223d52;overflow:hidden}
+.progressBar>div{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green))}
+#app{display:grid;grid-template-columns:1.35fr .95fr;gap:18px;height:calc(100vh - 72px - 74px);padding:16px 18px 10px}
+.panel{background:rgba(16,44,68,.96);border:1px solid rgba(255,255,255,.14);border-radius:24px;box-shadow:0 14px 32px rgba(0,0,0,.24)}
+.left{padding:14px}
+.right{padding:18px 18px 14px;display:flex;flex-direction:column;gap:12px;overflow:auto}
+h1,h2,h3,p{margin:0}
+h2{font-size:clamp(26px,2.3vw,40px)}
+h3{font-size:clamp(20px,1.7vw,28px)}
+p,li,label,button,input,select,textarea{font-size:clamp(16px,1.05vw,22px);line-height:1.3}
+.badge{display:inline-block;border:2px solid var(--cyan);background:rgba(90,201,247,.10);color:#dff7ff;border-radius:999px;padding:6px 12px;font-weight:700}
+.note{padding:12px 14px;border-radius:14px;background:rgba(255,209,102,.10);border:1px solid rgba(255,209,102,.45)}
+.goodbox{padding:12px 14px;border-radius:14px;background:rgba(91,212,139,.12);border:1px solid rgba(91,212,139,.45)}
+.answer{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.08);border:2px dashed rgba(255,255,255,.28)}
+.small{color:var(--muted);font-size:15px}
+svg{width:100%;height:100%;display:block;background:#f8fbfd;border-radius:18px;touch-action:none;user-select:none}
+svg.mode-place{cursor:crosshair}
+svg.mode-pan{cursor:grab}
+svg.mode-pan.dragging{cursor:grabbing}
+.navTools{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.navTools button{padding:7px 11px;font-size:16px}
+.modeBtn.active{outline:3px solid rgba(255,209,102,.75);outline-offset:1px}
+.zoomReadout{min-width:72px;text-align:center;font-weight:800;color:#dff7ff;background:#173d5c;border-radius:999px;padding:6px 9px}
+.planeWrap{height:100%;display:flex;flex-direction:column;gap:8px}
+.planeTop{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.planeBox{flex:1;min-height:0}
+.legend{display:flex;gap:8px;flex-wrap:wrap}
+.tag{padding:6px 10px;border-radius:999px;background:#173d5c;font-size:14px}
+.controlsBottom{height:74px;padding:10px 16px;border-top:1px solid rgba(255,255,255,.12);background:rgba(4,12,19,.96);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{border:0;border-radius:14px;padding:10px 15px;background:var(--cyan);color:#06243a;font-weight:800;cursor:pointer}
+button.secondary{background:#294f6c;color:#fff}
+button.gold{background:var(--gold);color:#3c2a00}
+button.good{background:var(--green);color:#09271a}
+button.violet{background:var(--violet);color:#241640}
+button.bad{background:var(--red);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{background:#0b2539;color:#fff;border:2px solid rgba(255,255,255,.18);border-radius:12px;padding:8px 10px}
+textarea{width:100%;min-height:80px;resize:vertical}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border:1px solid rgba(255,255,255,.14);padding:8px;text-align:center}
+.table th{background:#173d5c}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choiceBtn{background:#173d5c;color:#fff;border:2px solid rgba(255,255,255,.12)}
+.choiceBtn.correct{background:rgba(91,212,139,.22);border-color:var(--green)}
+.choiceBtn.wrong{background:rgba(255,107,107,.2);border-color:var(--red)}
+.big{font-size:clamp(26px,2vw,38px);font-weight:800}
+.center{text-align:center}
+.hidden{display:none!important}
+@media(max-width:1100px){
+  header{height:auto}
+  #app{grid-template-columns:1fr;height:calc(100vh - 150px);padding:10px}
+  .left{height:50vh}.right{height:auto}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div>
+      <div class="brand">🧭 Actividad interactiva: vectores y desplazamientos</div>
+      <div class="subtitle">7° Básico · primera clase del contenido · 90 minutos</div>
+    </div>
+    <div class="progressWrap">
+      <span id="progressText">Actividad 1 de 9</span>
+      <div class="progressBar"><div id="progressFill"></div></div>
+    </div>
+  </div>
+</header>
+
+<div id="app">
+  <section class="panel left">
+    <div class="planeWrap">
+      <div class="planeTop">
+        <div class="badge" id="timeBadge">Tiempo sugerido: 8 min</div>
+        <div class="navTools" aria-label="Controles del plano">
+          <button type="button" id="placeModeBtn" class="modeBtn active" onclick="setInteractionMode('place')">📍 Ubicar</button>
+          <button type="button" id="panModeBtn" class="secondary modeBtn" onclick="setInteractionMode('pan')">✋ Mover</button>
+          <button type="button" class="secondary" onclick="zoomIn()">＋</button>
+          <button type="button" class="secondary" onclick="zoomOut()">−</button>
+          <button type="button" class="secondary" onclick="resetView()">⌂ Centrar</button>
+          <span class="zoomReadout" id="zoomReadout">100%</span>
+        </div>
+        <div class="legend">
+          <span class="tag" id="modeHelp">Modo Ubicar: haz clic en una intersección</span>
+          <span class="tag">Rueda del mouse = zoom</span>
+          <span class="tag" id="nextPointTag">Siguiente: A</span>
+        </div>
+      </div>
+      <div class="planeBox">
+        <svg id="plane" viewBox="0 0 600 600"></svg>
+      </div>
+      <div class="small" id="hoverText">Último clic: —</div>
+    </div>
+  </section>
+
+  <aside class="panel right">
+    <div class="badge" id="phaseBadge">Recordamos</div>
+    <h2 id="title">Título</h2>
+    <div class="note" id="objectiveBox">Objetivo</div>
+    <div class="cardText" id="desc"></div>
+    <div class="goodbox" id="taskBox"></div>
+    <div id="coordBox" class="answer"></div>
+    <div id="inputArea"></div>
+    <div class="group">
+      <button onclick="undoPoint()">↶ Deshacer</button>
+      <button class="secondary" onclick="clearPoints()">Limpiar</button>
+      <button class="gold" onclick="checkActivity()">Comprobar</button>
+      <button class="violet" onclick="giveHint()">Pista</button>
+      <button class="good" id="animateBtn" onclick="animateCurrent()" class="hidden">Animar</button>
+    </div>
+    <div id="feedback" class="answer">Comienza ubicando los puntos o completando lo solicitado.</div>
+  </aside>
+</div>
+
+<div class="controlsBottom">
+  <div class="group">
+    <button class="secondary" onclick="prevActivity()">◀ Anterior</button>
+    <button onclick="nextActivity()">Siguiente ▶</button>
+  </div>
+  <div class="group">
+    <button class="secondary" onclick="toggleTeacher()">🔐 Modo Profesor</button>
+    <button class="secondary" onclick="toggleFullscreen()">⛶ Pantalla completa</button>
+  </div>
+</div>
+
+<script>
+const LS_KEY='vectores7_manual_v2_progress';
+let teacherMode=false;
+let current=0;
+let placedPoints=[];
+let attempts=0;
+let hintsUsed=0;
+let lastCorrect=false;
+
+// Navegación del plano (zoom y desplazamiento)
+let interactionMode='place';
+let view={x:0,y:0,w:600,h:600};
+const VIEW_MIN=240;   // zoom máximo
+const VIEW_MAX=1200;  // zoom mínimo
+const WORLD_MIN=-700;
+const WORLD_MAX=1300;
+let isPanning=false;
+let panStart=null;
+let panViewStart=null;
+let didPan=false;
+
+const activities=[
+  {
+    phase:'Recordamos',
+    title:'1. Recordamos la clase anterior',
+    time:'8 min',
+    objective:'Recordar cómo ubicar manualmente vértices en el plano cartesiano para conjeturar y verificar una figura.',
+    desc:'Ubica los puntos en el plano, en el orden A, B, C y D. Luego selecciona qué figura se forma.',
+    task:'Actividad: reconstruye una figura de la clase pasada. No aparecerán automáticamente; tú debes ubicar cada vértice.',
+    coords:['A=(-4,3)','B=(2,3)','C=(2,-1)','D=(-4,-1)'],
+    type:'figure',
+    targets:[[-4,3],[2,3],[2,-1],[-4,-1]],
+    labels:['A','B','C','D'],
+    figure:'Rectángulo',
+    choices:['Cuadrado','Rectángulo','Trapecio','Triángulo'],
+    success:'Muy bien. Los lados horizontales miden 6 unidades y los verticales 4. Por eso la figura es un rectángulo.'
+  },
+  {
+    phase:'Recordamos',
+    title:'2. Otra figura para verificar',
+    time:'8 min',
+    objective:'Volver a usar coordenadas para verificar una figura distinta.',
+    desc:'Ubica los vértices y decide si se forma un cuadrado, rectángulo o trapecio.',
+    task:'Observa cómo las coordenadas permiten anticipar la figura antes de unirla.',
+    coords:['A=(-4,4)','B=(4,4)','C=(2,-2)','D=(-2,-2)'],
+    type:'figure',
+    targets:[[-4,4],[4,4],[2,-2],[-2,-2]],
+    labels:['A','B','C','D'],
+    figure:'Trapecio',
+    choices:['Cuadrado','Rectángulo','Trapecio','Triángulo'],
+    success:'Correcto. Las bases superior e inferior son horizontales y paralelas, por eso obtenemos un trapecio.'
+  },
+  {
+    phase:'Descubrimos',
+    title:'3. Del punto a la flecha',
+    time:'10 min',
+    objective:'Reconocer que un vector describe un desplazamiento entre un punto inicial y un punto final.',
+    desc:'Ubica el punto inicial A y el punto final B. Luego calcula cuánto cambia en horizontal (Δx) y cuánto cambia en vertical (Δy).',
+    task:'Después de comprobar, podrás ver una animación del recorrido: primero horizontal, luego vertical y finalmente el vector completo.',
+    coords:['A=(-3,-2)','B=(2,3)'],
+    type:'vectorAB',
+    targets:[[-3,-2],[2,3]],
+    labels:['A','B'],
+    expected:{dx:5,dy:5},
+    success:'Exacto. Desde A hasta B el desplazamiento es 5 a la derecha y 5 hacia arriba. El vector es ⟨+5,+5⟩.'
+  },
+  {
+    phase:'Descubrimos',
+    title:'4. El signo indica el sentido',
+    time:'10 min',
+    objective:'Relacionar el signo de las componentes de un vector con el sentido del desplazamiento.',
+    desc:'Ubica A y B. Luego determina Δx y Δy.',
+    task:'Recuerda: Δx positivo = derecha; Δx negativo = izquierda; Δy positivo = arriba; Δy negativo = abajo.',
+    coords:['A=(4,3)','B=(1,-2)'],
+    type:'vectorAB',
+    targets:[[4,3],[1,-2]],
+    labels:['A','B'],
+    expected:{dx:-3,dy:-5},
+    success:'Correcto. El desplazamiento es 3 a la izquierda y 5 hacia abajo, es decir, el vector es ⟨-3,-5⟩.'
+  },
+  {
+    phase:'Practicamos',
+    title:'5. Si conozco el punto y el vector…',
+    time:'10 min',
+    objective:'Representar un punto final a partir de un punto inicial y un vector dado.',
+    desc:'Ubica manualmente el punto inicial A. Luego, usando el vector entregado, ubica el punto final B.',
+    task:'Debes construir el final de la ruta. Primero horizontal, luego vertical.',
+    coords:['A=(-2,1)','Vector ⟨+5,+3⟩','Debes ubicar B'],
+    type:'endpoint',
+    targets:[[-2,1],[3,4]],
+    labels:['A','B'],
+    vector:{dx:5,dy:3},
+    success:'Muy bien. Si partes en (-2,1) y aplicas ⟨+5,+3⟩ llegas al punto B=(3,4).'
+  },
+  {
+    phase:'Practicamos',
+    title:'6. Otra ruta a partir del vector',
+    time:'10 min',
+    objective:'Aplicar desplazamientos con componentes positivas y negativas.',
+    desc:'Ubica A y luego determina dónde queda B aplicando el vector dado.',
+    task:'Ten cuidado con el signo: una componente negativa cambia el sentido del movimiento.',
+    coords:['A=(3,2)','Vector ⟨-4,+2⟩','Debes ubicar B'],
+    type:'endpoint',
+    targets:[[3,2],[-1,4]],
+    labels:['A','B'],
+    vector:{dx:-4,dy:2},
+    success:'Correcto. Desde (3,2), avanzar con ⟨-4,+2⟩ te lleva a (-1,4).'
+  },
+  {
+    phase:'Aplicamos',
+    title:'7. Ruta exploratoria de dos pasos',
+    time:'12 min',
+    objective:'Representar una ruta compuesta por dos desplazamientos sucesivos.',
+    desc:'Ubica el punto inicial A. Luego ubica el punto intermedio P1 después del primer vector y finalmente el punto final F después del segundo vector.',
+    task:'La ruta tiene dos tramos: Vector 1 = ⟨+5,+2⟩ y Vector 2 = ⟨+2,+4⟩.',
+    coords:['A=(-4,-3)','P1 después de ⟨+5,+2⟩','F después de ⟨+2,+4⟩'],
+    type:'route2',
+    targets:[[-4,-3],[1,-1],[3,3]],
+    labels:['A','P1','F'],
+    vectors:[{dx:5,dy:2},{dx:2,dy:4}],
+    success:'Excelente. La ruta pasa por P1=(1,-1) y termina en F=(3,3).'
+  },
+  {
+    phase:'Aplicamos',
+    title:'8. Misión del rover',
+    time:'12 min',
+    objective:'Modelar una ruta real de la base mediante un vector.',
+    desc:'Ubica A y B. Luego escribe el vector que permite ir desde A hasta B.',
+    task:'Imagina que el rover sale de la estación A y debe llegar al módulo B.',
+    coords:['A=(-5,-1)','B=(2,4)'],
+    type:'vectorAB',
+    targets:[[-5,-1],[2,4]],
+    labels:['A','B'],
+    expected:{dx:7,dy:5},
+    success:'Muy bien. La ruta del rover se modela con el vector ⟨+7,+5⟩.'
+  },
+  {
+    phase:'Cierre',
+    title:'9. Ticket de salida',
+    time:'10 min',
+    objective:'Sintetizar lo aprendido sobre desplazamientos y vectores.',
+    desc:'Ubica A y B, determina el vector y explica con tus palabras qué representa la primera componente del vector.',
+    task:'Completa la actividad final para verificar tu comprensión.',
+    coords:['A=(-3,-2)','B=(2,4)'],
+    type:'exit',
+    targets:[[-3,-2],[2,4]],
+    labels:['A','B'],
+    expected:{dx:5,dy:6},
+    success:'Ticket completado. Ya puedes interpretar un vector como un desplazamiento con componente horizontal y vertical.'
+  }
+];
+
+function init(){
+  resetView(false);
+  const saved = Number(localStorage.getItem(LS_KEY));
+  if(Number.isFinite(saved) && saved>=0 && saved<activities.length) current=saved;
+  renderActivity();
+}
+function renderActivity(){
+  const a=activities[current];
+  placedPoints=[]; attempts=0; hintsUsed=0; lastCorrect=false; resetView(false);
+  document.getElementById('phaseBadge').textContent=a.phase;
+  document.getElementById('title').textContent=a.title;
+  document.getElementById('timeBadge').textContent='Tiempo sugerido: '+a.time;
+  document.getElementById('objectiveBox').innerHTML='<b>Objetivo de este tramo:</b> '+a.objective;
+  document.getElementById('desc').innerHTML=a.desc;
+  document.getElementById('taskBox').innerHTML='<b>Qué hacer:</b> '+a.task;
+  document.getElementById('coordBox').innerHTML='<b>Datos:</b><br>'+a.coords.join('<br>');
+  document.getElementById('feedback').textContent='Comienza ubicando los puntos o completando lo solicitado.';
+  document.getElementById('animateBtn').style.display='none';
+  buildInputs(a);
+  drawPlane();
+  updateProgress();
+  localStorage.setItem(LS_KEY,String(current));
+}
+function buildInputs(a){
+  const area=document.getElementById('inputArea');
+  if(a.type==='figure'){
+    area.innerHTML=`<label>Figura que se forma:
+      <select id="figureSelect">
+        <option value="">Selecciona</option>
+        ${a.choices.map(c=>`<option>${c}</option>`).join('')}
+      </select>
+    </label>`;
+  }else if(a.type==='vectorAB'){
+    area.innerHTML=`<div class="group">
+      <label>Δx <input id="dxInput" type="number"></label>
+      <label>Δy <input id="dyInput" type="number"></label>
+    </div>
+    <div class="small">Escribe el cambio horizontal y vertical desde A hasta B.</div>`;
+  }else if(a.type==='endpoint'){
+    area.innerHTML=`<div class="small">No debes escribir nada: ubica A y luego B aplicando el vector dado.</div>`;
+  }else if(a.type==='route2'){
+    area.innerHTML=`<div class="small">Debes ubicar tres puntos en orden: A, luego P1, luego F.</div>`;
+  }else if(a.type==='exit'){
+    area.innerHTML=`<div class="group">
+      <label>Δx <input id="dxInput" type="number"></label>
+      <label>Δy <input id="dyInput" type="number"></label>
+    </div>
+    <label>¿Qué representa la primera componente del vector?
+      <textarea id="exitExplain"></textarea>
+    </label>`;
+  }
+}
+function updateProgress(){
+  document.getElementById('progressText').textContent=`Actividad ${current+1} de ${activities.length}`;
+  document.getElementById('progressFill').style.width=`${((current+1)/activities.length)*100}%`;
+}
+function nextActivity(){
+  if(current<activities.length-1){
+    if(lastCorrect || teacherMode){
+      current++;
+      renderActivity();
+    }else{
+      document.getElementById('feedback').textContent='Antes de avanzar, primero comprueba la actividad actual. Si es necesario, activa Modo Profesor.';
+    }
+  }
+}
+function prevActivity(){ if(current>0){ current--; renderActivity(); } }
+function toggleTeacher(){
+  const p=prompt('Contraseña Modo Profesor:');
+  if(p===null) return;
+  if(p==='Stik'){ teacherMode=!teacherMode; alert(teacherMode?'Modo Profesor activado':'Modo Profesor desactivado');}
+  else alert('Contraseña incorrecta');
+}
+function toggleFullscreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nextActivity();if(e.key==='ArrowLeft')prevActivity();if(e.key.toLowerCase()==='f')toggleFullscreen();});
+
+function drawPlane(){
+  const svg=document.getElementById('plane');
+  const NS='http://www.w3.org/2000/svg';
+  svg.innerHTML='';
+  svg.classList.toggle('mode-place',interactionMode==='place');
+  svg.classList.toggle('mode-pan',interactionMode==='pan');
+  applyViewBox();
+
+  const st=50,o=300;
+
+  // Cuadrícula ampliada para que el plano siga existiendo al mover y hacer zoom.
+  for(let n=-20;n<=20;n++){
+    const x=o+n*st;
+    const y=o-n*st;
+
+    let v=document.createElementNS(NS,'line');
+    v.setAttribute('x1',x);v.setAttribute('x2',x);
+    v.setAttribute('y1',WORLD_MIN);v.setAttribute('y2',WORLD_MAX);
+    v.setAttribute('stroke', n===0 ? '#23455b' : '#d6e0e7');
+    v.setAttribute('stroke-width', n===0 ? 4 : 1);
+    svg.appendChild(v);
+
+    let h=document.createElementNS(NS,'line');
+    h.setAttribute('x1',WORLD_MIN);h.setAttribute('x2',WORLD_MAX);
+    h.setAttribute('y1',y);h.setAttribute('y2',y);
+    h.setAttribute('stroke', n===0 ? '#23455b' : '#d6e0e7');
+    h.setAttribute('stroke-width', n===0 ? 4 : 1);
+    svg.appendChild(h);
+  }
+
+  // Numeración extendida. Se mantiene legible al navegar por el plano.
+  for(let n=-20;n<=20;n++){
+    if(n===0) continue;
+
+    let tx=document.createElementNS(NS,'text');
+    tx.setAttribute('x',o+n*st);
+    tx.setAttribute('y',o+22);
+    tx.setAttribute('text-anchor','middle');
+    tx.setAttribute('fill','#284b62');
+    tx.setAttribute('font-size',16);
+    tx.textContent=n;
+    svg.appendChild(tx);
+
+    let ty=document.createElementNS(NS,'text');
+    ty.setAttribute('x',o-14);
+    ty.setAttribute('y',o-n*st+5);
+    ty.setAttribute('text-anchor','end');
+    ty.setAttribute('fill','#284b62');
+    ty.setAttribute('font-size',16);
+    ty.textContent=n;
+    svg.appendChild(ty);
+  }
+
+  // Origen
+  let origin=document.createElementNS(NS,'circle');
+  origin.setAttribute('cx',o);origin.setAttribute('cy',o);origin.setAttribute('r',5);
+  origin.setAttribute('fill','#23455b');
+  svg.appendChild(origin);
+
+  // Puntos puestos manualmente por el estudiante
+  placedPoints.forEach((p,i)=>plotPoint(
+    svg,p[0],p[1],
+    activities[current].labels[i]||String.fromCharCode(65+i),
+    ['#d62828','#4361ee','#2a9d8f','#f77f00'][i%4]
+  ));
+
+  // Se asignan handlers (no se duplican al redibujar).
+  svg.onclick=handlePlaneClick;
+  svg.onmousemove=handleHover;
+  svg.onwheel=handleWheel;
+  svg.onpointerdown=handlePointerDown;
+  svg.onpointermove=handlePointerMove;
+  svg.onpointerup=handlePointerUp;
+  svg.onpointercancel=handlePointerUp;
+
+  updateNextPointTag();
+  updateNavigationUI();
+}
+
+function applyViewBox(){
+  const svg=document.getElementById('plane');
+  if(!svg) return;
+  svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);
+}
+
+function clampView(){
+  view.w=Math.max(VIEW_MIN,Math.min(VIEW_MAX,view.w));
+  view.h=view.w;
+  const minX=WORLD_MIN;
+  const maxX=WORLD_MAX-view.w;
+  const minY=WORLD_MIN;
+  const maxY=WORLD_MAX-view.h;
+  view.x=Math.max(minX,Math.min(maxX,view.x));
+  view.y=Math.max(minY,Math.min(maxY,view.y));
+}
+
+function updateNavigationUI(){
+  const svg=document.getElementById('plane');
+  if(svg){
+    svg.classList.toggle('mode-place',interactionMode==='place');
+    svg.classList.toggle('mode-pan',interactionMode==='pan');
+  }
+  const placeBtn=document.getElementById('placeModeBtn');
+  const panBtn=document.getElementById('panModeBtn');
+  if(placeBtn) placeBtn.classList.toggle('active',interactionMode==='place');
+  if(panBtn) panBtn.classList.toggle('active',interactionMode==='pan');
+
+  const help=document.getElementById('modeHelp');
+  if(help) help.textContent = interactionMode==='place'
+    ? 'Modo Ubicar: haz clic en una intersección'
+    : 'Modo Mover: arrastra el plano';
+
+  const zr=document.getElementById('zoomReadout');
+  if(zr) zr.textContent=Math.round(600/view.w*100)+'%';
+}
+
+function setInteractionMode(mode){
+  interactionMode = mode==='pan' ? 'pan' : 'place';
+  isPanning=false;
+  didPan=false;
+  updateNavigationUI();
+  document.getElementById('feedback').textContent = interactionMode==='place'
+    ? 'Modo Ubicar activado. Haz clic en la intersección donde debe ir el siguiente punto.'
+    : 'Modo Mover activado. Arrastra el plano; la rueda del mouse también permite acercar o alejar.';
+}
+
+function resetView(redraw=true){
+  view={x:0,y:0,w:600,h:600};
+  clampView();
+  if(redraw){
+    applyViewBox();
+    updateNavigationUI();
+  }
+}
+
+function zoomAt(factor, clientX=null, clientY=null){
+  const svg=document.getElementById('plane');
+  if(!svg) return;
+
+  const oldW=view.w;
+  const newW=Math.max(VIEW_MIN,Math.min(VIEW_MAX,oldW*factor));
+  if(Math.abs(newW-oldW)<0.01) return;
+
+  let wx=view.x+view.w/2;
+  let wy=view.y+view.h/2;
+
+  if(clientX!==null && clientY!==null){
+    const rect=svg.getBoundingClientRect();
+    const px=(clientX-rect.left)/rect.width;
+    const py=(clientY-rect.top)/rect.height;
+    wx=view.x+px*view.w;
+    wy=view.y+py*view.h;
+    view.x=wx-px*newW;
+    view.y=wy-py*newW;
+  }else{
+    view.x=wx-newW/2;
+    view.y=wy-newW/2;
+  }
+
+  view.w=newW;
+  view.h=newW;
+  clampView();
+  applyViewBox();
+  updateNavigationUI();
+}
+
+function zoomIn(){ zoomAt(0.82); }
+function zoomOut(){ zoomAt(1.22); }
+
+function handleWheel(evt){
+  evt.preventDefault();
+  const factor = evt.deltaY<0 ? 0.88 : 1.14;
+  zoomAt(factor,evt.clientX,evt.clientY);
+}
+
+function handlePointerDown(evt){
+  if(interactionMode!=='pan') return;
+  const svg=document.getElementById('plane');
+  isPanning=true;
+  didPan=false;
+  panStart={x:evt.clientX,y:evt.clientY};
+  panViewStart={x:view.x,y:view.y};
+  svg.setPointerCapture?.(evt.pointerId);
+  svg.classList.add('dragging');
+}
+
+function handlePointerMove(evt){
+  if(interactionMode==='pan' && isPanning){
+    const svg=document.getElementById('plane');
+    const rect=svg.getBoundingClientRect();
+    const dx=(evt.clientX-panStart.x)*(view.w/rect.width);
+    const dy=(evt.clientY-panStart.y)*(view.h/rect.height);
+    if(Math.abs(evt.clientX-panStart.x)>3 || Math.abs(evt.clientY-panStart.y)>3) didPan=true;
+    view.x=panViewStart.x-dx;
+    view.y=panViewStart.y-dy;
+    clampView();
+    applyViewBox();
+    return;
+  }
+  handleHover(evt);
+}
+
+function handlePointerUp(evt){
+  if(!isPanning) return;
+  const svg=document.getElementById('plane');
+  isPanning=false;
+  svg.classList.remove('dragging');
+  svg.releasePointerCapture?.(evt.pointerId);
+}
+
+function updateNextPointTag(){
+  const labels=activities[current].labels;
+  const next=placedPoints.length<labels.length ? labels[placedPoints.length] : 'completo';
+  document.getElementById('nextPointTag').textContent='Siguiente: '+next;
+}
+
+function plotPoint(svg,x,y,label,color='#d62828'){
+  const NS='http://www.w3.org/2000/svg',st=50,o=300,cx=o+x*st,cy=o-y*st;
+
+  let c=document.createElementNS(NS,'circle');
+  c.setAttribute('cx',cx);c.setAttribute('cy',cy);c.setAttribute('r',10);
+  c.setAttribute('fill',color);c.setAttribute('stroke','#fff');c.setAttribute('stroke-width',3);
+  svg.appendChild(c);
+
+  let t=document.createElementNS(NS,'text');
+  t.setAttribute('x',cx+12);t.setAttribute('y',cy-12);
+  t.setAttribute('fill','#163649');t.setAttribute('font-size',18);t.setAttribute('font-weight','700');
+  t.textContent=label;
+  svg.appendChild(t);
+}
+
+function handleHover(evt){
+  if(interactionMode!=='place' || isPanning) return;
+  const pt=getGridCoord(evt);
+  if(pt) document.getElementById('hoverText').textContent=`Posición del cursor: (${pt[0]}, ${pt[1]})`;
+}
+
+function screenToWorld(evt){
+  const svg=document.getElementById('plane');
+  const rect=svg.getBoundingClientRect();
+  const px=(evt.clientX-rect.left)/rect.width;
+  const py=(evt.clientY-rect.top)/rect.height;
+  return [view.x+px*view.w, view.y+py*view.h];
+}
+
+function getGridCoord(evt){
+  const [sx,sy]=screenToWorld(evt);
+  const st=50,o=300;
+  let gx=Math.round((sx-o)/st);
+  let gy=Math.round((o-sy)/st);
+  gx=Math.max(-20,Math.min(20,gx));
+  gy=Math.max(-20,Math.min(20,gy));
+  return [gx,gy];
+}
+
+function handlePlaneClick(evt){
+  if(interactionMode!=='place' || didPan) {
+    didPan=false;
+    return;
+  }
+  const a=activities[current];
+  if(placedPoints.length>=a.targets.length) return;
+  const pt=getGridCoord(evt);
+  placedPoints.push(pt);
+  document.getElementById('hoverText').textContent=`Último clic: (${pt[0]}, ${pt[1]})`;
+  drawPlane();
+}
+function undoPoint(){ if(placedPoints.length>0){ placedPoints.pop(); drawPlane(); document.getElementById('feedback').textContent='Se deshizo el último punto.'; } }
+function clearPoints(){ placedPoints=[]; drawPlane(); document.getElementById('feedback').textContent='Plano limpio. Puedes volver a ubicar los puntos.'; }
+
+function checkActivity(){
+  attempts++;
+  const a=activities[current];
+  let msg='';
+  const pointsOk = comparePoints(a.targets, placedPoints);
+  if(a.type==='figure'){
+    const fig=document.getElementById('figureSelect').value;
+    if(pointsOk && fig===a.figure){
+      lastCorrect=true; msg='<b>¡Correcto!</b> '+a.success; drawSolutionFigure();
+    }else{
+      lastCorrect=false; msg=buildFigureFeedback(a, pointsOk, fig);
+    }
+  }else if(a.type==='vectorAB'){
+    const dx = Number(document.getElementById('dxInput').value);
+    const dy = Number(document.getElementById('dyInput').value);
+    if(pointsOk && dx===a.expected.dx && dy===a.expected.dy){
+      lastCorrect=true; msg='<b>¡Correcto!</b> '+a.success; showVectorOverlay(a.targets[0], a.targets[1]); document.getElementById('animateBtn').style.display='inline-block';
+    }else{
+      lastCorrect=false; msg=buildVectorFeedback(a, pointsOk, dx, dy);
+    }
+  }else if(a.type==='endpoint'){
+    if(pointsOk){
+      lastCorrect=true; msg='<b>¡Correcto!</b> '+a.success; showVectorOverlay(a.targets[0], a.targets[1]); document.getElementById('animateBtn').style.display='inline-block';
+    }else{
+      lastCorrect=false; msg=buildEndpointFeedback(a);
+    }
+  }else if(a.type==='route2'){
+    if(pointsOk){
+      lastCorrect=true; msg='<b>¡Correcto!</b> '+a.success; showRouteOverlay(a.targets); document.getElementById('animateBtn').style.display='inline-block';
+    }else{
+      lastCorrect=false; msg=buildRouteFeedback(a);
+    }
+  }else if(a.type==='exit'){
+    const dx = Number(document.getElementById('dxInput').value);
+    const dy = Number(document.getElementById('dyInput').value);
+    const txt = document.getElementById('exitExplain').value.trim();
+    if(pointsOk && dx===a.expected.dx && dy===a.expected.dy && txt.length>=20){
+      lastCorrect=true; msg='<b>Ticket completado.</b> '+a.success;
+    }else{
+      lastCorrect=false;
+      msg = (!pointsOk ? 'Primero revisa la ubicación de A y B. ' : '') +
+            ((dx!==a.expected.dx || dy!==a.expected.dy) ? 'Revisa el cambio horizontal y vertical desde A hasta B. ' : '') +
+            (txt.length<20 ? 'Falta explicar con una oración qué representa la primera componente del vector.' : '');
+    }
+  }
+  document.getElementById('feedback').innerHTML=msg;
+}
+function comparePoints(expected, actual){
+  if(actual.length!==expected.length) return false;
+  for(let i=0;i<expected.length;i++){
+    if(expected[i][0]!==actual[i][0] || expected[i][1]!==actual[i][1]) return false;
+  }
+  return true;
+}
+function buildFigureFeedback(a, pointsOk, fig){
+  if(!pointsOk) return pointHint(a);
+  if(fig!==a.figure) return 'Los puntos están bien ubicados, pero la figura elegida no es la correcta. Observa las longitudes horizontales y verticales.';
+  return 'Revisa nuevamente.';
+}
+function buildVectorFeedback(a, pointsOk, dx, dy){
+  if(!pointsOk) return pointHint(a);
+  if(dx!==a.expected.dx || dy!==a.expected.dy){
+    return 'Los puntos están bien. Ahora revisa las componentes del vector: Δx es el cambio horizontal y Δy el cambio vertical.';
+  }
+  return 'Revisa nuevamente.';
+}
+function buildEndpointFeedback(a){
+  return pointHint(a) + ' Recuerda aplicar primero el desplazamiento horizontal y luego el vertical indicado por el vector.';
+}
+function buildRouteFeedback(a){
+  return pointHint(a) + ' En una ruta de dos pasos, primero se ubica P1 y luego el punto final F.';
+}
+function pointHint(a){
+  if(placedPoints.length<a.targets.length) return 'Aún faltan puntos por ubicar. Debes colocarlos en el orden indicado.';
+  for(let i=0;i<a.targets.length;i++){
+    const exp=a.targets[i], act=placedPoints[i];
+    if(exp[0]!==act[0] || exp[1]!==act[1]){
+      return progressiveHint(a.labels[i], exp, act);
+    }
+  }
+  return 'Revisa cuidadosamente la ubicación de los puntos.';
+}
+function progressiveHint(label, exp, act){
+  hintsUsed++;
+  const q = quadrant(exp[0],exp[1]);
+  if(hintsUsed===1){
+    return `Pista: el punto ${label} debe quedar en el ${q}.`;
+  }else if(hintsUsed===2){
+    return `Pista: para ${label}, la coordenada x correcta es ${exp[0]}.`;
+  }else if(hintsUsed===3){
+    return `Pista: para ${label}, la coordenada y correcta es ${exp[1]}.`;
+  }else{
+    return `Pista completa: ${label}=(${exp[0]},${exp[1]}).`;
+  }
+}
+function quadrant(x,y){
+  if(x>0&&y>0) return 'cuadrante I';
+  if(x<0&&y>0) return 'cuadrante II';
+  if(x<0&&y<0) return 'cuadrante III';
+  if(x>0&&y<0) return 'cuadrante IV';
+  return 'eje';
+}
+function giveHint(){
+  const a=activities[current];
+  document.getElementById('feedback').textContent = pointHint(a);
+}
+function drawSolutionFigure(){
+  const a=activities[current];
+  const svg=document.getElementById('plane');
+  polygon(svg,a.targets,'#5ac9f7');
+}
+function polygon(svg,pts,color='#5ac9f7'){
+  const NS='http://www.w3.org/2000/svg',st=50,o=300;
+  let p=document.createElementNS(NS,'polygon');
+  p.setAttribute('points',pts.map(v=>`${o+v[0]*st},${o-v[1]*st}`).join(' '));
+  p.setAttribute('fill','rgba(90,201,247,.18)');
+  p.setAttribute('stroke',color);
+  p.setAttribute('stroke-width',5);
+  svg.appendChild(p);
+  // redraw points on top
+  pts.forEach((pt,i)=>plotPoint(svg,pt[0],pt[1],activities[current].labels[i],['#d62828','#4361ee','#2a9d8f','#f77f00'][i%4]));
+}
+function addMarker(svg,id,color){
+  const NS='http://www.w3.org/2000/svg';
+  let defs = svg.querySelector('defs');
+  if(!defs){ defs=document.createElementNS(NS,'defs'); svg.appendChild(defs); }
+  let marker=document.createElementNS(NS,'marker');
+  marker.setAttribute('id',id); marker.setAttribute('markerWidth','10'); marker.setAttribute('markerHeight','10');
+  marker.setAttribute('refX','8'); marker.setAttribute('refY','3'); marker.setAttribute('orient','auto'); marker.setAttribute('markerUnits','strokeWidth');
+  let path=document.createElementNS(NS,'path');
+  path.setAttribute('d','M0,0 L0,6 L9,3 z'); path.setAttribute('fill',color);
+  marker.appendChild(path); defs.appendChild(marker);
+}
+function line(svg,x1,y1,x2,y2,color='#b99cff',dash=''){
+  const NS='http://www.w3.org/2000/svg',st=50,o=300;
+  let id='m'+Math.random().toString(36).slice(2);
+  addMarker(svg,id,color);
+  let l=document.createElementNS(NS,'line');
+  l.setAttribute('x1',o+x1*st); l.setAttribute('y1',o-y1*st); l.setAttribute('x2',o+x2*st); l.setAttribute('y2',o-y2*st);
+  l.setAttribute('stroke',color); l.setAttribute('stroke-width',6); if(dash) l.setAttribute('stroke-dasharray',dash);
+  l.setAttribute('marker-end',`url(#${id})`);
+  svg.appendChild(l);
+}
+function showVectorOverlay(A,B){
+  const svg=document.getElementById('plane');
+  // redraw points on top later
+  line(svg,A[0],A[1],B[0],A[1],'#5ac9f7','10 8');
+  line(svg,B[0],A[1],B[0],B[1],'#ffd166','10 8');
+  line(svg,A[0],A[1],B[0],B[1],'#b99cff');
+  plotPoint(svg,A[0],A[1],'A','#d62828');
+  plotPoint(svg,B[0],B[1],'B','#4361ee');
+}
+function showRouteOverlay(pts){
+  const svg=document.getElementById('plane');
+  line(svg,pts[0][0],pts[0][1],pts[1][0],pts[1][1],'#5ac9f7');
+  line(svg,pts[1][0],pts[1][1],pts[2][0],pts[2][1],'#ffd166');
+  pts.forEach((p,i)=>plotPoint(svg,p[0],p[1],activities[current].labels[i],['#d62828','#4361ee','#2a9d8f'][i%3]));
+}
+function animateCurrent(){
+  const a=activities[current];
+  if(a.type==='vectorAB' || a.type==='endpoint'){
+    animateVectorPath(a.targets[0],a.targets[1]);
+  }else if(a.type==='route2'){
+    animateRoutePath(a.targets);
+  }
+}
+function animateVectorPath(A,B){
+  drawPlane();
+  plotPoint(document.getElementById('plane'),A[0],A[1],'A','#d62828');
+  plotPoint(document.getElementById('plane'),B[0],B[1],'B','#4361ee');
+  const pts=[[A[0],A[1]],[B[0],A[1]],[B[0],B[1]]];
+  animateMovingDot(pts,2200);
+}
+function animateRoutePath(pts){
+  drawPlane();
+  pts.forEach((p,i)=>plotPoint(document.getElementById('plane'),p[0],p[1],activities[current].labels[i],['#d62828','#4361ee','#2a9d8f'][i%3]));
+  animateMovingDot([pts[0],pts[1],pts[2]],2400);
+}
+function animateMovingDot(pts,duration=2200){
+  const svg=document.getElementById('plane'), NS='http://www.w3.org/2000/svg', st=50, o=300;
+  const poly=document.createElementNS(NS,'polyline');
+  poly.setAttribute('points',pts.map(v=>`${o+v[0]*st},${o-v[1]*st}`).join(' '));
+  poly.setAttribute('fill','none'); poly.setAttribute('stroke','#ffd166'); poly.setAttribute('stroke-width','5'); poly.setAttribute('stroke-dasharray','10 7');
+  svg.appendChild(poly);
+  const dot=document.createElementNS(NS,'circle');
+  dot.setAttribute('r',12); dot.setAttribute('fill','#ff6b6b'); dot.setAttribute('stroke','#fff'); dot.setAttribute('stroke-width','3'); svg.appendChild(dot);
+
+  let lengths=[], total=0;
+  for(let i=1;i<pts.length;i++){ let dx=pts[i][0]-pts[i-1][0], dy=pts[i][1]-pts[i-1][1], L=Math.hypot(dx,dy); lengths.push(L); total+=L; }
+  let start=performance.now();
+  function frame(now){
+    let t=Math.min(1,(now-start)/duration), d=t*total, seg=0;
+    while(seg<lengths.length-1 && d>lengths[seg]){ d-=lengths[seg]; seg++; }
+    const a=pts[seg], b=pts[seg+1]||a, L=lengths[seg]||1, u=Math.min(1,d/L);
+    const x=a[0]+(b[0]-a[0])*u, y=a[1]+(b[1]-a[1])*u;
+    dot.setAttribute('cx',o+x*st); dot.setAttribute('cy',o-y*st);
+    if(t<1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+init();
+</script>
+</body>
+</html>
