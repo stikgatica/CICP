@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>6° Básico · Laboratorio de Experimentos Aleatorios</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--mut:#64748b;--line:#dbe3ef;--blue:#315efb;--violet:#7c3aed;--green:#15803d;--amber:#b45309;--red:#b91c1c;--soft:#eef2ff;--soft2:#f5efff;--mint:#ecfdf3;--yellow:#fffbeb}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}button,input,textarea{font:inherit}
+header{position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px}.brand{font-weight:950;white-space:nowrap}.progress{height:10px;background:#e8edf6;border-radius:999px;flex:1;overflow:hidden}.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--violet));transition:.25s}.timer{font-weight:950;font-size:22px;font-variant-numeric:tabular-nums;min-width:76px}.step{font-weight:900;min-width:72px;text-align:center}
+main{max-width:1180px;margin:auto;padding:22px}section{display:none}section.active{display:block}
+h1{font-size:clamp(34px,4.5vw,58px);margin:0 0 14px;line-height:1.02}h2{font-size:clamp(27px,3vw,42px);margin:0 0 14px}h3{font-size:clamp(19px,2vw,28px);margin:7px 0 10px}p,li,label{font-size:clamp(17px,1.35vw,21px);line-height:1.42}.lead{font-size:clamp(21px,2vw,29px);color:#334155}
+.badge{display:inline-flex;padding:7px 12px;border-radius:999px;background:var(--soft);color:#2847c7;font-weight:900;margin-bottom:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:17px;box-shadow:0 8px 24px rgba(22,32,51,.06)}.soft{background:var(--soft)}.purple{background:var(--soft2)}.mint{background:var(--mint)}.yellow{background:var(--yellow)}
+.call{background:#fff;border-left:7px solid var(--blue);border-radius:14px;padding:13px 16px;margin:14px 0}.rule{font-size:clamp(22px,2.4vw,34px);font-weight:950;text-align:center;background:#111827;color:#fff;border-radius:17px;padding:14px;margin:14px 0}.btn{border:0;border-radius:13px;padding:10px 15px;font-weight:900;cursor:pointer;background:var(--blue);color:#fff}.btn.secondary{background:#e9eef9;color:#1d2a44}.btn.good{background:var(--green)}.btn.warn{background:var(--amber)}.btn.purple{background:var(--violet)}.btn.red{background:var(--red)}.actions,.nav{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.nav{justify-content:space-between;margin-top:18px}
+.answer{display:grid;gap:8px;margin:10px 0}.opt{border:2px solid var(--line);background:#fff;border-radius:14px;padding:11px 13px;text-align:left;cursor:pointer;font-size:18px}.opt:hover{border-color:#8da1ff}.opt.sel{border-color:var(--blue);background:#eef2ff}.opt.ok{border-color:#22c55e;background:#ecfdf3}.opt.bad{border-color:#ef4444;background:#fef2f2}.feedback{min-height:24px;font-weight:900;margin-top:8px}.hint{display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:13px;padding:12px;margin-top:9px}.hint.show{display:block}
+textarea,input[type="text"]{width:100%;border:2px solid var(--line);border-radius:12px;padding:10px;background:#fff}textarea{min-height:86px;resize:vertical}
+.sim{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;text-align:center;min-height:250px;display:flex;flex-direction:column;justify-content:center}.big{font-size:clamp(50px,8vw,90px);font-weight:950}.coin{width:150px;height:150px;border-radius:50%;margin:10px auto;background:linear-gradient(145deg,#f8fafc,#dbeafe);border:6px solid #172033;display:grid;place-items:center;font-size:48px;font-weight:950;transition:.5s}.coin.spin{transform:rotateY(720deg)}.die{width:150px;height:150px;border-radius:24px;margin:10px auto;background:#fff;border:5px solid #172033;display:grid;place-items:center;font-size:78px;font-weight:950}
+.spinnerWrap{position:relative;width:230px;height:230px;margin:8px auto}.spinner{width:230px;height:230px;border-radius:50%;border:5px solid #172033;background:conic-gradient(#dbeafe 0 25%,#ddd6fe 25% 50%,#dcfce7 50% 75%,#fef3c7 75% 100%);transition:1.2s cubic-bezier(.2,.8,.2,1)}.pointer{position:absolute;left:50%;top:-8px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:28px solid #172033}
+.bag{width:220px;height:160px;margin:10px auto;background:#e2e8f0;border:4px solid #475569;border-radius:20px 20px 60px 60px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:20px}.ball{width:42px;height:42px;border-radius:50%;border:3px solid #172033;display:grid;place-items:center;font-weight:950}.redball{background:#fecaca}.blueball{background:#bfdbfe}.greenball{background:#bbf7d0}.cardDraw{width:120px;height:170px;margin:10px auto;border:4px solid #172033;border-radius:14px;background:#fff;display:grid;place-items:center;font-size:54px;font-weight:950}
+.outcomes{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:10px 0}.outcome{padding:8px 12px;border-radius:12px;background:#eef2ff;border:1px solid #c7d2fe;font-weight:900}.checks{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.checkitem{background:#fff;border:2px solid var(--line);border-radius:13px;padding:10px;cursor:pointer;text-align:center;font-weight:900}.checkitem.on{border-color:var(--blue);background:#eef2ff}.log{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:10px}.log span{background:#f1f5f9;border:1px solid #cbd5e1;border-radius:9px;padding:5px 8px;font-weight:800}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}.stat strong{font-size:40px;color:var(--blue)}
+@media(max-width:900px){.grid2,.grid3,.summary,.checks{grid-template-columns:1fr}header{flex-wrap:wrap}}@media print{header,.btn,.nav{display:none!important}section{display:block!important;page-break-after:always}body{background:#fff}}
+</style></head><body>
+<header><div class="brand">🎲 Laboratorio de Azar</div><div class="progress"><div id="progress"></div></div><div class="step" id="stepText">1 / 11</div><div class="timer" id="timer">90:00</div></header>
+<main>
+<section class="active">
+<div class="badge">6° BÁSICO · PRIMERA CLASE · 90 MIN</div>
+<h1>🎲 Laboratorio de experimentos aleatorios</h1>
+<p class="lead">Hoy aprenderás a reconocer situaciones en las que <b>no sabemos con certeza qué resultado ocurrirá</b> y a escribir <b>todos los resultados posibles</b>.</p>
+<div class="call"><b>Objetivo:</b> Identificar experimentos aleatorios cotidianos y enumerar todos los resultados posibles (espacio muestral).</div>
+<div class="grid3"><div class="card"><h3>Observar</h3><p>¿Qué puede ocurrir?</p></div><div class="card"><h3>Experimentar</h3><p>Simular muchas veces.</p></div><div class="card"><h3>Enumerar</h3><p>Escribir todas las posibilidades.</p></div></div>
+<div class="card yellow" style="margin-top:15px"><p><b>Importante:</b> en esta clase no calcularemos probabilidades. Primero aprenderemos a reconocer el experimento y su espacio muestral.</p></div>
+<div class="nav"><span></span><button class="btn good" onclick="begin()">▶ Comenzar</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 1 · 10 MIN</div><h2>¿Aleatorio o seguro?</h2>
+<p class="lead">Un experimento es aleatorio cuando conocemos lo que <b>podría</b> ocurrir, pero no podemos saber con certeza qué ocurrirá antes de realizarlo.</p>
+<div class="card"><p><b>1.</b> Lanzar una moneda y observar qué lado queda arriba.</p><div class="answer" data-correct="0"><button class="opt" onclick="pick(this)">Aleatorio</button><button class="opt" onclick="pick(this)">No aleatorio</button></div><button class="btn" onclick="checkChoice(this)">Comprobar</button><div class="feedback"></div></div>
+<div class="card" style="margin-top:10px"><p><b>2.</b> Escribir voluntariamente el número 5.</p><div class="answer" data-correct="1"><button class="opt" onclick="pick(this)">Aleatorio</button><button class="opt" onclick="pick(this)">No aleatorio</button></div><button class="btn" onclick="checkChoice(this)">Comprobar</button><div class="feedback"></div></div>
+<div class="card" style="margin-top:10px"><p><b>3.</b> Sacar una ficha sin mirar desde una bolsa.</p><div class="answer" data-correct="0"><button class="opt" onclick="pick(this)">Aleatorio</button><button class="opt" onclick="pick(this)">No aleatorio</button></div><button class="btn" onclick="checkChoice(this)">Comprobar</button><div class="feedback"></div></div>
+<div class="call"><b>Idea clave:</b> “no sé cuál ocurrirá” no significa “no sé cuáles son posibles”.</div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 2 · 10 MIN</div><h2>🪙 Experimento 1: lanzar una moneda</h2>
+<div class="grid2"><div class="sim"><div id="coin" class="coin">?</div><button class="btn good" onclick="flipCoin()">Lanzar moneda</button><div class="log" id="coinLog"></div></div>
+<div class="card"><h3>Antes de simular mucho</h3><p>Selecciona <b>todos</b> los resultados que podrían ocurrir:</p>
+<div class="checks" id="coinChecks"><div class="checkitem" data-v="Cara" onclick="toggleCheck(this)">Cara</div><div class="checkitem" data-v="Sello" onclick="toggleCheck(this)">Sello</div><div class="checkitem" data-v="Borde" onclick="toggleCheck(this)">Borde</div></div>
+<div class="actions" style="margin-top:10px"><button class="btn" onclick="checkSet('coinChecks',['Cara','Sello'],'coinFb')">Comprobar espacio muestral</button><button class="btn secondary" onclick="hint('hcoin')">💡 Pista</button></div><div id="coinFb" class="feedback"></div><div id="hcoin" class="hint">Piensa en los dos lados de una moneda común.</div><p><b>Escribe:</b></p><input type="text" id="coinSpace" placeholder="S = { ... }"></div></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 3 · 12 MIN</div><h2>🎲 Experimento 2: lanzar un dado</h2>
+<div class="grid2"><div class="sim"><div id="die" class="die">?</div><button class="btn good" onclick="rollDie()">Lanzar dado</button><div class="log" id="dieLog"></div></div>
+<div class="card"><h3>Construye el espacio muestral</h3><p>Haz clic en todos los resultados posibles.</p>
+<div class="checks" id="dieChecks"><div class="checkitem" data-v="1" onclick="toggleCheck(this)">1</div><div class="checkitem" data-v="2" onclick="toggleCheck(this)">2</div><div class="checkitem" data-v="3" onclick="toggleCheck(this)">3</div><div class="checkitem" data-v="4" onclick="toggleCheck(this)">4</div><div class="checkitem" data-v="5" onclick="toggleCheck(this)">5</div><div class="checkitem" data-v="6" onclick="toggleCheck(this)">6</div><div class="checkitem" data-v="7" onclick="toggleCheck(this)">7</div><div class="checkitem" data-v="0" onclick="toggleCheck(this)">0</div><div class="checkitem" data-v="10" onclick="toggleCheck(this)">10</div></div>
+<button class="btn" style="margin-top:10px" onclick="checkSet('dieChecks',['1','2','3','4','5','6'],'dieFb')">Comprobar</button><div id="dieFb" class="feedback"></div>
+<p><b>Pregunta:</b> Si lanzas 20 veces y nunca aparece 6, ¿el 6 deja de pertenecer al espacio muestral?</p><textarea id="dieReason"></textarea></div></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 4 · 12 MIN</div><h2>🎡 Experimento 3: girar una ruleta</h2>
+<div class="grid2"><div class="sim"><div class="spinnerWrap"><div class="pointer"></div><div id="spinner" class="spinner"></div></div><button class="btn good" onclick="spinWheel()">Girar ruleta</button><div class="big" id="spinResult">?</div></div>
+<div class="card"><h3>La ruleta tiene 4 sectores</h3><div class="outcomes"><span class="outcome">Azul</span><span class="outcome">Morado</span><span class="outcome">Verde</span><span class="outcome">Amarillo</span></div>
+<p>Escribe el espacio muestral:</p><input type="text" id="wheelSpace" placeholder="S = { azul, morado, ... }">
+<div class="actions" style="margin-top:10px"><button class="btn" onclick="checkTextSet('wheelSpace',['azul','morado','verde','amarillo'],'wheelFb')">Comprobar</button><button class="btn secondary" onclick="hint('hwheel')">💡 Pista</button></div>
+<div id="wheelFb" class="feedback"></div><div id="hwheel" class="hint">El espacio muestral enumera los nombres de todos los sectores que pueden quedar señalados.</div>
+<p><b>Reflexiona:</b> ¿el color que salió en tu primer giro es todo el espacio muestral?</p><textarea id="wheelReason"></textarea></div></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 5 · 12 MIN</div><h2>👜 Experimento 4: sacar una ficha de una bolsa</h2>
+<div class="grid2"><div class="sim"><div class="bag"><div class="ball redball">R</div><div class="ball redball">R</div><div class="ball blueball">A</div><div class="ball blueball">A</div><div class="ball blueball">A</div><div class="ball greenball">V</div></div><button class="btn good" onclick="drawBall()">Sacar una ficha</button><div class="big" id="bagResult">?</div></div>
+<div class="card"><h3>Observa con cuidado</h3><p>Hay fichas rojas, azules y verdes. Algunas se repiten.</p><p><b>¿Cuál es el espacio muestral si solo registramos el color obtenido?</b></p>
+<div class="checks" id="bagChecks"><div class="checkitem" data-v="Roja" onclick="toggleCheck(this)">Roja</div><div class="checkitem" data-v="Azul" onclick="toggleCheck(this)">Azul</div><div class="checkitem" data-v="Verde" onclick="toggleCheck(this)">Verde</div><div class="checkitem" data-v="6 fichas" onclick="toggleCheck(this)">6 fichas</div><div class="checkitem" data-v="Morada" onclick="toggleCheck(this)">Morada</div></div>
+<button class="btn" style="margin-top:10px" onclick="checkSet('bagChecks',['Roja','Azul','Verde'],'bagFb')">Comprobar</button><div id="bagFb" class="feedback"></div>
+<div class="call"><b>Atención:</b> que una ficha se repita muchas veces no crea un resultado nuevo si estamos registrando solamente el color.</div></div></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 6 · 10 MIN</div><h2>🃏 Experimento 5: sacar una carta</h2>
+<div class="grid2"><div class="sim"><p>Usaremos solo estas cuatro cartas:</p><div class="outcomes"><span class="outcome">1</span><span class="outcome">2</span><span class="outcome">3</span><span class="outcome">4</span></div><div id="card" class="cardDraw">?</div><button class="btn good" onclick="drawCard()">Sacar carta</button></div>
+<div class="card"><p><b>1.</b> Escribe el espacio muestral.</p><input type="text" id="cardSpace" placeholder="S = { 1, 2, 3, 4 }"><button class="btn" style="margin-top:10px" onclick="checkTextSet('cardSpace',['1','2','3','4'],'cardFb')">Comprobar</button><div id="cardFb" class="feedback"></div>
+<p><b>2.</b> ¿Cuál de estas afirmaciones es correcta?</p><div class="answer" data-correct="1"><button class="opt" onclick="pick(this)">El espacio muestral es solo la carta que salió.</button><button class="opt" onclick="pick(this)">El espacio muestral contiene todas las cartas que podrían salir.</button><button class="opt" onclick="pick(this)">El espacio muestral cambia después de cada intento.</button></div>
+<button class="btn" onclick="checkChoice(this)">Comprobar</button><div class="feedback"></div></div></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 7 · 7 MIN</div><h2>Experimento vs espacio muestral</h2>
+<div class="grid2"><div class="card soft"><h3>Experimento</h3><p>La acción que realizamos.</p><p><b>Ejemplo:</b> lanzar un dado.</p></div><div class="card purple"><h3>Espacio muestral</h3><p>Todos los resultados posibles de esa acción.</p><p><b>Ejemplo:</b> {1,2,3,4,5,6}.</p></div></div>
+<div class="rule">EXPERIMENTO → ¿QUÉ PUEDE OCURRIR? → ESPACIO MUESTRAL</div>
+<div class="card"><p>Completa con tus palabras:</p><p><b>Experimento:</b></p><textarea id="defExp"></textarea><p><b>Espacio muestral:</b></p><textarea id="defSpace"></textarea></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">ESTACIÓN 8 · 10 MIN</div><h2>🔥 Desafío: dos lanzamientos de moneda</h2>
+<p class="lead">Ahora el experimento tiene <b>dos etapas</b>: lanzar una moneda, registrar, volver a lanzar.</p>
+<div class="grid2"><div class="sim"><div class="actions" style="justify-content:center"><button class="btn good" onclick="twoCoins()">Simular dos lanzamientos</button></div><div class="big" id="twoCoinResult">? → ?</div><div class="log" id="twoCoinLog"></div></div>
+<div class="card"><h3>Selecciona todos los resultados posibles</h3>
+<div class="checks" id="twoChecks"><div class="checkitem" data-v="Cara-Cara" onclick="toggleCheck(this)">Cara-Cara</div><div class="checkitem" data-v="Cara-Sello" onclick="toggleCheck(this)">Cara-Sello</div><div class="checkitem" data-v="Sello-Cara" onclick="toggleCheck(this)">Sello-Cara</div><div class="checkitem" data-v="Sello-Sello" onclick="toggleCheck(this)">Sello-Sello</div><div class="checkitem" data-v="Cara" onclick="toggleCheck(this)">Cara</div><div class="checkitem" data-v="Sello" onclick="toggleCheck(this)">Sello</div></div>
+<button class="btn" style="margin-top:10px" onclick="checkSet('twoChecks',['Cara-Cara','Cara-Sello','Sello-Cara','Sello-Sello'],'twoFb')">Comprobar</button><div id="twoFb" class="feedback"></div>
+<p><b>¿Cuántos resultados posibles tiene este experimento?</b></p><input type="text" id="twoCount" placeholder="Escribe un número"></div></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn" onclick="go(1)">Siguiente →</button></div>
+</section>
+
+<section>
+<div class="badge">MISIÓN FINAL · 5 MIN</div><h2>Clasifica y enumera</h2>
+<div class="card"><p><b>Situación:</b> En una caja hay tarjetas con las letras A, B y C. Se extrae una sin mirar.</p>
+<p><b>1.</b> ¿Es un experimento aleatorio? Explica.</p><textarea id="final1"></textarea>
+<p><b>2.</b> Escribe el espacio muestral.</p><input type="text" id="final2" placeholder="S = { ... }">
+<p><b>3.</b> Si realizas el experimento 10 veces y nunca aparece C, ¿C sigue perteneciendo al espacio muestral? ¿Por qué?</p><textarea id="final3"></textarea></div>
+<div class="nav"><button class="btn secondary" onclick="go(-1)">← Atrás</button><button class="btn good" onclick="finish()">Finalizar actividad</button></div>
+</section>
+
+<section>
+<div class="badge">CIERRE</div><h2>Tu resumen de aprendizaje</h2>
+<div class="summary"><div class="stat"><strong id="correctStat">0</strong><p>Comprobaciones correctas</p></div><div class="stat"><strong id="hintStat">0</strong><p>Pistas utilizadas</p></div><div class="stat"><strong id="timeStat">0</strong><p>Minutos usados</p></div><div class="stat"><strong>✓</strong><p>Actividad completada</p></div></div>
+<div class="card" style="margin-top:15px"><h3>Autoevaluación</h3>
+<label><input type="checkbox"> Puedo reconocer un experimento aleatorio.</label><br>
+<label><input type="checkbox"> Puedo diferenciar un resultado obtenido de todos los resultados posibles.</label><br>
+<label><input type="checkbox"> Puedo escribir el espacio muestral de experimentos simples.</label><br>
+<label><input type="checkbox"> Puedo enumerar resultados de un experimento de dos etapas sencillo.</label></div>
+<div class="rule">NO SÉ QUÉ OCURRIRÁ, PERO SÍ PUEDO ENUMERAR QUÉ PODRÍA OCURRIR.</div>
+<div class="actions"><button class="btn secondary" onclick="window.print()">🖨 Imprimir / Guardar PDF</button><button class="btn red" onclick="resetActivity()">Reiniciar</button></div>
+</section>
+</main>
+
+<script>
+const sections=[...document.querySelectorAll('section')];
+let step=0,seconds=90*60,timerId=null,started=false,correct=0,hints=0,initialSeconds=seconds;
+let coinHistory=[],dieHistory=[],twoHistory=[],rotation=0;
+
+function show(i){
+  step=Math.max(0,Math.min(sections.length-1,i));
+  sections.forEach((s,k)=>s.classList.toggle('active',k===step));
+  stepText.textContent=(step+1)+' / '+sections.length;
+  progress.style.width=((step+1)/sections.length*100)+'%';
+  window.scrollTo(0,0);saveState()
+}
+function go(d){show(step+d)}
+function begin(){started=true;startTimer();show(1)}
+function startTimer(){
+  clearInterval(timerId);
+  timerId=setInterval(()=>{
+    if(seconds>0){seconds--;paintTimer();saveState()}
+    else{clearInterval(timerId);alert('⏱ Tiempo cumplido. Finaliza la actividad en la estación en que estás.')}
+  },1000)
+}
+function paintTimer(){
+  let m=Math.floor(seconds/60),s=seconds%60;
+  timer.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')
+}
+function pick(b){
+  let box=b.closest('.answer');
+  [...box.querySelectorAll('.opt')].forEach(x=>x.classList.remove('sel','ok','bad'));
+  b.classList.add('sel')
+}
+function checkChoice(btn){
+  let container=btn.parentElement,box=container.querySelector('.answer'),fb=container.querySelector('.feedback'),sel=box.querySelector('.sel');
+  if(!sel){fb.textContent='Selecciona una alternativa.';return}
+  let opts=[...box.querySelectorAll('.opt')],ans=Number(box.dataset.correct);
+  opts.forEach((o,i)=>o.classList.toggle('ok',i===ans));
+  if(opts.indexOf(sel)===ans){fb.textContent='✓ Correcto.';fb.style.color='#15803d';correct++}
+  else{sel.classList.add('bad');fb.textContent='Revisa la idea de “no puedo saber con certeza qué ocurrirá”.';fb.style.color='#b91c1c'}
+  saveState()
+}
+function toggleCheck(el){el.classList.toggle('on')}
+function checkSet(id,expected,fbid){
+  let box=document.getElementById(id);
+  let chosen=[...box.querySelectorAll('.checkitem.on')].map(x=>x.dataset.v).sort();
+  let exp=[...expected].sort();
+  let ok=JSON.stringify(chosen)===JSON.stringify(exp);
+  let fb=document.getElementById(fbid);
+  if(ok){fb.textContent='✓ Espacio muestral correcto.';fb.style.color='#15803d';correct++}
+  else{fb.textContent='Revisa: debes seleccionar todos los resultados posibles y ninguno imposible.';fb.style.color='#b91c1c'}
+  saveState()
+}
+function normalizeSetText(s){
+  return s.toLowerCase().replace(/s\s*=/g,'').replace(/[{}()[\]]/g,'').split(/[,;]+/).map(x=>x.trim()).filter(Boolean).sort()
+}
+function checkTextSet(inputId,expected,fbid){
+  let got=normalizeSetText(document.getElementById(inputId).value),exp=[...expected].map(x=>x.toLowerCase()).sort();
+  let ok=JSON.stringify(got)===JSON.stringify(exp),fb=document.getElementById(fbid);
+  if(ok){fb.textContent='✓ Correcto.';fb.style.color='#15803d';correct++}
+  else{fb.textContent='Revisa que aparezcan todos los resultados posibles, sin agregar otros.';fb.style.color='#b91c1c'}
+  saveState()
+}
+function hint(id){document.getElementById(id).classList.add('show');hints++;saveState()}
+function flipCoin(){
+  let r=Math.random()<.5?'Cara':'Sello';
+  coin.classList.remove('spin');void coin.offsetWidth;coin.classList.add('spin');
+  setTimeout(()=>coin.textContent=r==='Cara'?'C':'S',220);
+  coinHistory.push(r);coinHistory=coinHistory.slice(-10);
+  coinLog.innerHTML=coinHistory.map(x=>'<span>'+x+'</span>').join('')
+}
+function rollDie(){
+  let r=1+Math.floor(Math.random()*6);die.textContent=r;
+  dieHistory.push(r);dieHistory=dieHistory.slice(-12);
+  dieLog.innerHTML=dieHistory.map(x=>'<span>'+x+'</span>').join('')
+}
+function spinWheel(){
+  let idx=Math.floor(Math.random()*4),names=['Azul','Morado','Verde','Amarillo'];
+  rotation+=1080+idx*90+45;spinner.style.transform='rotate('+rotation+'deg)';
+  setTimeout(()=>spinResult.textContent=names[(4-idx)%4],1000)
+}
+function drawBall(){
+  let pool=['Roja','Roja','Azul','Azul','Azul','Verde'];
+  bagResult.textContent=pool[Math.floor(Math.random()*pool.length)]
+}
+function drawCard(){card.textContent=1+Math.floor(Math.random()*4)}
+function twoCoins(){
+  let a=Math.random()<.5?'Cara':'Sello',b=Math.random()<.5?'Cara':'Sello',r=a+'-'+b;
+  twoCoinResult.textContent=a+' → '+b;twoHistory.push(r);twoHistory=twoHistory.slice(-8);
+  twoCoinLog.innerHTML=twoHistory.map(x=>'<span>'+x+'</span>').join('')
+}
+function finish(){
+  clearInterval(timerId);correctStat.textContent=correct;hintStat.textContent=hints;
+  timeStat.textContent=Math.max(0,Math.round((initialSeconds-seconds)/60));show(sections.length-1)
+}
+function saveState(){
+  let d={step,seconds,started,correct,hints};
+  document.querySelectorAll('input[type=text],textarea').forEach((el,i)=>d['f'+i]=el.value);
+  localStorage.setItem('azar6_estado',JSON.stringify(d))
+}
+function loadState(){
+  let raw=localStorage.getItem('azar6_estado');if(!raw)return;
+  try{
+    let d=JSON.parse(raw);step=d.step||0;seconds=d.seconds??seconds;started=!!d.started;correct=d.correct||0;hints=d.hints||0;
+    document.querySelectorAll('input[type=text],textarea').forEach((el,i)=>{if(d['f'+i]!==undefined)el.value=d['f'+i]});
+    show(step);paintTimer();if(started&&step<sections.length-1)startTimer()
+  }catch(e){}
+}
+function resetActivity(){localStorage.removeItem('azar6_estado');location.reload()}
+paintTimer();loadState();
+</script></body></html>
